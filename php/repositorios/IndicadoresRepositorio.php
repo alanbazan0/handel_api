@@ -16,12 +16,13 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = " SELECT (SELECT COUNT(*) FROM appshand_dys.usuarios) as usuarios, ".
-	                           "(SELECT COUNT(*) FROM appshand_dys.empresas) as empresas, ".
-	                           "(SELECT COUNT(*) FROM appshand_dys.sedes) as sedes, ".
-	                           "(SELECT COUNT(*) FROM appshand_dys.puestos) as puestos,".
-                                "(SELECT COUNT(*) FROM appshand_dys.areas) as areas," .
-                                "(SELECT COUNT(*) FROM appshand_dys.inspecciones) as inspecciones ";
+        $this->consultaBase = " SELECT (SELECT COUNT(*) FROM usuarios) as usuarios, ".
+	                           "(SELECT COUNT(*) FROM empresas) as empresas, ".
+	                           "(SELECT COUNT(*) FROM tipos_empresa) as tiposEmpresa, ".
+	                           "(SELECT COUNT(*) FROM sedes) as sedes, ".
+	                           "(SELECT COUNT(*) FROM puestos) as puestos,".
+                                "(SELECT COUNT(*) FROM areas) as areas";
+                              
         
         
         
@@ -39,11 +40,12 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
          else
          {
              $consulta =  " SELECT (SELECT COUNT(*) FROM appshand_dys.usuarios WHERE empresa_id = ?) as usuarios, ".
-                 "(SELECT COUNT(*) FROM appshand_dys.empresas WHERE id = ?) as empresas, ".
-                 "(SELECT COUNT(*) FROM appshand_dys.sedes WHERE empresa_id = ?) as sedes, ".
-                 "(SELECT COUNT(*) FROM appshand_dys.puestos WHERE empresa_id = ?) as puestos,".
-                 "(SELECT COUNT(*) FROM appshand_dys.areas WHERE empresa_id = ?) as areas," .
-                 "(SELECT COUNT(*) FROM appshand_dys.inspecciones I INNER JOIN sedes S ON I.sede_id = S.id  WHERE S.empresa_id = ?) as inspecciones ";
+                 "(SELECT COUNT(*) FROM empresas WHERE id = ?) as empresas, ".
+                 "(SELECT COUNT(*) FROM tipos_empresa) as tiposEmpresa, ".
+                 "(SELECT COUNT(*) FROM sedes WHERE empresa_id = ?) as sedes, ".
+                 "(SELECT COUNT(*) FROM puestos WHERE empresa_id = ?) as puestos,".
+                 "(SELECT COUNT(*) FROM areas WHERE empresa_id = ?) as areas";
+               
              
              
              array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->empresaId]);
@@ -60,11 +62,11 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($usuarios, $empresas, $sedes, $puestos, $areas, $inspecciones ))
+                    if ($sentencia->bind_result($usuarios, $empresas, $tiposEmpresa,$sedes, $puestos, $areas ))
                     {
-                        if($row = $sentencia->fetch())
+                        if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($usuarios, $empresas, $sedes, $puestos, $areas,$inspecciones);
+                            $registro = $this->crearRegistro($usuarios, $empresas,$tiposEmpresa, $sedes, $puestos, $areas);
                             //array_push($registros,$registro);
                         }
                         $resultado->valor = $registro;
@@ -86,15 +88,15 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
     }
     
     
-    private function crearRegistro($usuarios, $empresas, $sedes, $puestos, $areas, $inspecciones)
+    private function crearRegistro($usuarios, $empresas, $tiposEmpresa, $sedes, $puestos, $areas)
     {
         $registro= (object) [
             'usuarios' =>  $usuarios,
             'empresas' => $empresas,
+            'tiposEmpresa' => $tiposEmpresa,
             'sedes' => $sedes,
             'puestos' => $puestos,
-            'areas' => $areas,
-            'inspecciones' => $inspecciones
+            'areas' => $areas
         ];
         return $registro;
     }

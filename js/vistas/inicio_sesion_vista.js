@@ -115,7 +115,6 @@ class InicioSesionVista extends Vista
 //		$('#indicador').hide();
 //	}
 }
-var vista = new InicioSesionVista(this);
 var vista = new InicioSesionVista();
 $(document).ready(function() 
 {

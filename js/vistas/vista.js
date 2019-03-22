@@ -1,8 +1,7 @@
 class Vista
 {
-	constructor(ventana) 
+	constructor() 
 	{
-		this._ventana = ventana;
 		this._usuario = null;
 	}
 	

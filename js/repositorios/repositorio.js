@@ -15,9 +15,8 @@ class Repositorio
 		parametros += "&modelo=" + encodeURIComponent(JSON.stringify(modelo));	
 		
 		var contextHandler = new AjaxContextHandler();
-//		var host = window.location.origin + "/" + CARPETA_PROYECTO;	
-//		var url = host + this.servicio;
-		var ai = new Ajaxv2( this.servicio, this, this.insertarResultado, "POST", parametros, contextHandler);		
+		var url = HANDEL_API + "/" + this.servicio;
+		var ai = new Ajaxv2( url, this, this.insertarResultado, "POST", parametros, contextHandler);		
 		contextHandler.AddAjaxv2Object(ai); 		
 		ai.GetPost(true);
 	}
@@ -39,9 +38,8 @@ class Repositorio
 		parametros += "&modelo=" + encodeURIComponent(JSON.stringify(modelo));	
 		
 		var contextHandler = new AjaxContextHandler();
-//		var host = window.location.origin + "/" + CARPETA_PROYECTO;	
-//		var url = host + this.servicio;
-		var ai = new Ajaxv2( this.servicio, this, this.actualizarResultado, "POST", parametros, contextHandler);		
+		var url = HANDEL_API + "/" + this.servicio;
+		var ai = new Ajaxv2( url, this, this.actualizarResultado, "POST", parametros, contextHandler);		
 		contextHandler.AddAjaxv2Object(ai); 		
 		ai.GetPost(true);
 	}
@@ -63,9 +61,8 @@ class Repositorio
 		parametros += "&opcional=" + opcional;	
 		
 		var contextHandler = new AjaxContextHandler();
-//		var host = window.location.origin + "/" + CARPETA_PROYECTO;
-//		var url = host + this.servicio;
-		var ai = new Ajaxv2( this.servicio, this, this.consultarResultado, "POST", parametros, contextHandler);		
+		var url = HANDEL_API + "/" + this.servicio;
+		var ai = new Ajaxv2( url, this, this.consultarResultado, "POST", parametros, contextHandler);		
 		contextHandler.AddAjaxv2Object(ai); 		
 		ai.GetPost(true);
 	}
@@ -85,9 +82,8 @@ class Repositorio
 		parametros = "accion=consultarPorLlaves";
 		parametros += "&llaves=" + encodeURIComponent(JSON.stringify(llaves));
 		var contextHandler = new AjaxContextHandler();
-//		var host = window.location.origin + "/" + CARPETA_PROYECTO;
-//		var url = host + this.servicio;
-		var ai = new Ajaxv2( this.servicio, this, this.consultarPorLlavesResultado, "POST", parametros, contextHandler);		
+		var url = HANDEL_API + "/" + this.servicio;
+		var ai = new Ajaxv2( url, this, this.consultarPorLlavesResultado, "POST", parametros, contextHandler);		
 		contextHandler.AddAjaxv2Object(ai); 		
 		ai.GetPost(true);
 	}
@@ -108,9 +104,8 @@ class Repositorio
 		parametros = "accion=eliminar";
 		parametros += "&llaves=" + encodeURIComponent(JSON.stringify(llaves));
 		var contextHandler = new AjaxContextHandler();
-//		var host = window.location.origin + "/" + CARPETA_PROYECTO;
-//		var url = host + this.servicio;	
-		var ai = new Ajaxv2( this.servicio, this, this.eliminarResultado, "POST", parametros, contextHandler);		
+		var url = HANDEL_API + "/" + this.servicio;
+		var ai = new Ajaxv2( url, this, this.eliminarResultado, "POST", parametros, contextHandler);		
 		contextHandler.AddAjaxv2Object(ai); 		
 		ai.GetPost(true);
 	}
