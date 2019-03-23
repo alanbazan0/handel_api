@@ -39,17 +39,12 @@ class CatalogoVista extends Vista
 //	}
 
 	
-	editar(id)
+	editar()
 	{
-		this._llaves =
-		{
-			id:id	
-		};			
 		this.modo = Modo.CAMBIO;
-		this.limpiarFormulario();	
 		this.mostrarFormulario();
-		if(this.presentador!=null)
-			this.presentador.consultarPorLlaves();
+//		if(this.presentador!=null)
+//			this.presentador.consultarPorLlaves();
 	}
 	
 	agregar()
@@ -147,22 +142,7 @@ class CatalogoVista extends Vista
 	eliminar()
 	{ 
 		var _this = this;
-//		 swal({
-//	            title: "Confirmación",
-//	            text: "¿Esta seguro que desea eliminar el registro?",
-//	            type: "warning",
-//	            html :true,
-//	            showCancelButton: true,
-//	            confirmButtonColor: "#ae3e9e",
-//	            cancelButtonText  : "Cancelar",
-//	            confirmButtonText: "Si, eliminar !!",
-//	            closeOnConfirm: true
-//	        },
-//	        function()
-//	        {
-//	        	_this.presentador.eliminar();
-//	        });
-		 swal({
+		swal({
 	            title: "\u00bfEst\u00E1 seguro de eliminar?",
 	            text: "Se eliminar\u00e1 este registro !!",
 	            type: "warning",
@@ -238,6 +218,19 @@ class CatalogoVista extends Vista
 			$("#modalAlta").on("hidden.bs.modal", function () {
 				$("#modalAlta").remove();
 			});
+			
+			$("body").append(html);
+			$("#modalAlta").on("show.bs.modal", function () {
+				$('#nombreInput').focus();
+				if(_this.modo == Modo.CAMBIO)
+				{	
+					if(_this.presentador!=null)
+						_this.presentador.consultarPorLlaves();
+				}
+				
+			});
+		
+			
 			_this.inicializarValidacionesFormulario();
 			
 			$("#logoImage").attr("src",HANDEL_API + "/php/logos_empresas/default.png")

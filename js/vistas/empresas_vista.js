@@ -165,7 +165,7 @@ class EmpresasVista extends CatalogoVista
 	agregar()
 	{
 		super.agregar();
-		$('#nombreInput').focus();
+		
 		this.consultarTiposEmpresa();
 		this.consultarPaises();
 		this.consultarCorporativos();
@@ -245,7 +245,7 @@ class EmpresasVista extends CatalogoVista
 		$('#direccionInput').val(this.modeloEdicion.direccion);
 		$('#telefonoInput').val(this.modeloEdicion.telefono);		
 		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
-		$('#logoImage').attr('src', "php/logos_empresas/" + this.modeloEdicion.icono);
+		$('#logoImage').attr('src', HANDEL_API + "/php/logos_empresas/" + this.modeloEdicion.icono);
 		$('#logoImage').show();
 		this.consultarTiposEmpresa();
 		this.consultarPaises();
