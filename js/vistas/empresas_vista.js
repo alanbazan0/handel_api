@@ -1,33 +1,128 @@
 class EmpresasVista extends CatalogoVista
 {		
-	constructor(ventana)
+	constructor()
 	{	
-		super(ventana);
+		super();
 		this.presentador = new EmpresasPresentador(this);
+		this._urlFormulario = "html/formularios/empresas.html";
+		this.tabla.alto =  $("body").height() - 350 ;
 	}
 	
 	
 	crearColumnasGrid()
 	{
 		this.tabla.columnas = [
-			{titulo:"",  alias:"icono", alineacion:"D" ,itemRenderer:this.renderLogo},
-			{titulo:"Id",   	alias:"id", alineacion:"D" },
-			{titulo:"Nombre",   	alias:"nombre", alineacion:"I", class: "desc" }, 
-			{titulo:"Nombre corto",   	alias:"nombreCorto", alineacion:"I" }, 
-		//	{titulo:"TELEFONO",   alias:"telefono", alineacion:"I" }, 	
-		//	{titulo:"Tipo de empresa",   alias:"tipoEmpresa", alineacion:"I" }, 
-		//	{titulo:"Dirección",   alias:"direccion", alineacion:"I" }, 
-		//	{longitud:200, 	titulo:"País",   alias:"pais", alineacion:"I" },
-		//	{longitud:200, 	titulo:"Estado",   alias:"estado", alineacion:"I" },
-		//	{longitud:200, 	titulo:"Ciudad",   alias:"ciudad", alineacion:"I" },
-		//	{longitud:200, 	titulo:"Corporativo",   alias:"corporativo", alineacion:"I" },				
-			{titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I", longitud:200  },	
-			{titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I",longitud:200 },
-			{titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
+			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
+			{longitud:200, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I" }, 
+			{longitud:200, 	titulo:"Teléfono",   alias:"telefono", alineacion:"I" }, 	
+			{longitud:200, 	titulo:"Tipo de empresa",   alias:"tipoEmpresa", alineacion:"I" }, 
+			{longitud:200, 	titulo:"Dirección",   alias:"direccion", alineacion:"I" }, 
+			{longitud:200, 	titulo:"País",   alias:"pais", alineacion:"I" },
+			{longitud:200, 	titulo:"Estado",   alias:"estado", alineacion:"I" },
+			{longitud:200, 	titulo:"Ciudad",   alias:"ciudad", alineacion:"I" },
+			{longitud:200, 	titulo:"Corporativo",   alias:"corporativo", alineacion:"I" },				
+			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
+			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
+			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
 		]
 		
-		this.tabla.renderizar();
+		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
+								"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+	
+		this.tabla.registros = [];
 
+	}
+	
+//	datosValidos()
+//	{
+//		var nombre = $("#nombreInput"),
+//		 nombreCorto = $("#nombreCortoInput"),
+//			direccion = $("#direccionInput"),
+//			telefono = $("#telefonoInput"),
+//			tipoEmpresa = $("#tipoEmpresaSelect"),
+//			pais = $("#paisSelect"),
+//			estado = $("#estadoSelect"),
+//			ciudad = $("#ciudadSelect");		
+//        
+//        var allFields = $( [] ).add(nombre).add(nombreCorto).add(direccion).add(telefono).add(tipoEmpresa).add(pais).add(estado).add(ciudad);
+//        var tips = $( ".validateTips" );
+//		tips.text("");
+//		
+//		var valid = true;
+//		allFields.removeClass("ui-state-error");
+//		
+//		valid = valid && this.validaciones.checkValue( nombre, "nombre", tips );	
+//		valid = valid && this.validaciones.checkValue( nombreCorto, "nombre corto", tips );	
+//		valid = valid && this.validaciones.checkValue( telefono, "teléfono", tips );
+//		valid = valid && this.validaciones.checkValue( tipoEmpresa, "tipo de empresa", tips );
+//	    valid = valid && this.validaciones.checkValue( direccion, "dirección", tips );
+//	    valid = valid && this.validaciones.checkValue( pais, "país", tips );
+//	    valid = valid && this.validaciones.checkValue( estado, "estado", tips );
+//	    valid = valid && this.validaciones.checkValue( ciudad, "ciudad", tips );
+//	   
+//	    
+//		return valid;
+//	}	
+	
+	inicializarValidacionesFormulario()
+	{
+		var _this = this;
+		jQuery("#formulario").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+                "nombreInput": {
+                    required: !0
+                },
+                "nombreCortoInput": {
+                    required: !0
+                },
+                "direccionInput": {
+                    required: !0
+                },
+                "telefonoInput": {
+                    required: !0
+                },
+                "tipoEmpresaSelect": {
+                    required: !0
+                },
+                "paisSelect": {
+                    required: !0
+                },
+                "estadoSelect": {
+                    required: !0
+                },
+                "ciudadSelect": {
+                    required: !0
+                }
+               
+            },
+            messages: {
+                "nombreInput": "Por favor ingrese un nombre",
+                "nombreCortoInput": "Por favor ingrese un nombre corto",
+                "direccionInput": "Por favor ingrese una dirección",
+                "telefonoInput": "Por favor ingrese un teléfono",
+                "tipoEmpresaSelect": "Por favor ingrese un tipo de empresa",
+                "paisSelect": "Por favor ingrese un país",
+                "estadoSelect": "Por favor ingrese un estao",
+                "ciudadSelect": "Por favor ingrese una ciudad"
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.guardar();
+            }
+        });
 	}
 	
 	renderLogo(renglon, campo)
@@ -178,36 +273,7 @@ class EmpresasVista extends CatalogoVista
 	 }
 	 
 	
-	datosValidos()
-	{
-		var nombre = $("#nombreInput"),
-		 nombreCorto = $("#nombreCortoInput"),
-			direccion = $("#direccionInput"),
-			telefono = $("#telefonoInput"),
-			tipoEmpresa = $("#tipoEmpresaSelect"),
-			pais = $("#paisSelect"),
-			estado = $("#estadoSelect"),
-			ciudad = $("#ciudadSelect");		
-        
-        var allFields = $( [] ).add(nombre).add(nombreCorto).add(direccion).add(telefono).add(tipoEmpresa).add(pais).add(estado).add(ciudad);
-        var tips = $( ".validateTips" );
-		tips.text("");
-		
-		var valid = true;
-		allFields.removeClass("ui-state-error");
-		
-		valid = valid && this.validaciones.checkValue( nombre, "nombre", tips );	
-		valid = valid && this.validaciones.checkValue( nombreCorto, "nombre corto", tips );	
-		valid = valid && this.validaciones.checkValue( telefono, "teléfono", tips );
-		valid = valid && this.validaciones.checkValue( tipoEmpresa, "tipo de empresa", tips );
-	    valid = valid && this.validaciones.checkValue( direccion, "dirección", tips );
-	    valid = valid && this.validaciones.checkValue( pais, "país", tips );
-	    valid = valid && this.validaciones.checkValue( estado, "estado", tips );
-	    valid = valid && this.validaciones.checkValue( ciudad, "ciudad", tips );
-	   
-	    
-		return valid;
-	}	
+	
 
 	limpiarFormulario()
 	{
@@ -297,5 +363,8 @@ class EmpresasVista extends CatalogoVista
 	}
 	
 }
-var vista = new EmpresasVista(this);
-
+var vista = new EmpresasVista();
+$(document).ready(function() 
+{
+	vista.inicializar();
+});

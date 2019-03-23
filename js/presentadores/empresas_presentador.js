@@ -208,6 +208,7 @@ class EmpresasPresentador
 		 this.vista.ocultarIndicador();	
 		 if(resultado.mensajeError=="")
 		 {
+			 this.vista.cerrarConfirmacionEliminar();
 			 this.vista.mostrarMensaje("Notificación","El registro se eliminó correctamente.");
 			 this.consultar();
 		 }

@@ -11,10 +11,9 @@ class EmpresasRepositorio extends Repositorio
 		data.append("accion", "insertar");
 		data.append("modelo", JSON.stringify(modelo));
     	data.append("file", logo );
-//    	var host = window.location.origin + "/" + CARPETA_PROYECTO;
-//		var url = host + this.servicio;
+    	var url = HANDEL_API + "/" + this.servicio;
         var xhr = new XMLHttpRequest();
-        xhr.open( 'POST', this.servicio, true );
+        xhr.open( 'POST', url, true );
 		xhr.onreadystatechange = function ( resultado ) 
 		{
 		    if (this.readyState == 4 && this.status == 200) 
@@ -32,10 +31,9 @@ class EmpresasRepositorio extends Repositorio
 		data.append("accion", "actualizar");
 		data.append("modelo", JSON.stringify(modelo));
     	data.append("file", logo );
-//    	var host = window.location.origin + "/" + CARPETA_PROYECTO;
-//		var url = host + this.servicio;
+    	var url = HANDEL_API + "/" + this.servicio;
         var xhr = new XMLHttpRequest();
-        xhr.open( 'POST',this.servicio, true );
+        xhr.open( 'POST',url, true );
 		xhr.onreadystatechange = function ( resultado ) 
 		{
 		    if (this.readyState == 4 && this.status == 200) 
@@ -60,9 +58,8 @@ class EmpresasRepositorio extends Repositorio
 		
 		
 		var contextHandler = new AjaxContextHandler();
-//		var host = window.location.origin + "/" + CARPETA_PROYECTO;
-//		var url = host + this.servicio;
-		var ai = new Ajaxv2( this.servicio, this, this.consultarCorporativosResultado, "POST", parametros, contextHandler);		
+		var url = HANDEL_API + "/" + this.servicio;
+		var ai = new Ajaxv2( url, this, this.consultarCorporativosResultado, "POST", parametros, contextHandler);		
 		contextHandler.AddAjaxv2Object(ai); 		
 		ai.GetPost(true);
 	}

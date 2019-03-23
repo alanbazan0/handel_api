@@ -41,7 +41,9 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
             {
                 if( $sentencia->bind_param("issisiiiisi", $id, $modelo->nombre,$modelo->nombreCorto, $modelo->tipoEmpresaId, $modelo->direccion, $modelo->paisId, $modelo->estadoId, $modelo->ciudadId, $modelo->telefono, $modelo->corporativoId, $modelo->estatus))
                 {
-                    if(!$sentencia->execute())                
+                    if($sentencia->execute())       
+                        $resultado->valor = $id;
+                    else    
                         $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;                       
                 }
                 else
@@ -104,7 +106,7 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
         }
         if($usuario!=null)
         {
-            if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR || $usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR_CORPORATIVO)
+            if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','valor'=>$usuario->empresaId]);
         }
         
