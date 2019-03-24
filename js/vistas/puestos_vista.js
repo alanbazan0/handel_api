@@ -6,10 +6,9 @@ class PuestosVista extends CatalogoVista
 		this.presentador = new PuestosPresentador(this);
 	}
 	
-	onLoad()
+	inicializar()
 	{
-		this.inicializarEliminar();
-		this.crearColumnasGrid();
+		super.inicializar();
 		this.consultarEmpresasCriterio();
 	}
 	
@@ -25,7 +24,10 @@ class PuestosVista extends CatalogoVista
 			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
 		]
 		
-		this.tabla.renderizar();		
+		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
+		"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+
+		this.tabla.registros = [];		
 	}
 	
 	agregar()
@@ -144,4 +146,7 @@ class PuestosVista extends CatalogoVista
 	
 }
 var vista = new PuestosVista(this);
-
+$(document).ready(function() 
+{
+	vista.inicializar();
+});

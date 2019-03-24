@@ -2,8 +2,7 @@ class EmpresasPresentador extends CatalogoPresentador
 {
 	 constructor(vista)
 	 {
-		super(new EmpresasRepositorio());
-		this.vista = vista; 
+		super(vista,new EmpresasRepositorio());
 	 }
 	 
 //	 consultar()

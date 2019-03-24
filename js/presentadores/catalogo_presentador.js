@@ -1,8 +1,9 @@
 class CatalogoPresentador
 {
-	 constructor(repositorio)
+	 constructor(vista,repositorio)
 	 {
 		 this._repositorio = repositorio;
+		 this.vista = vista;
 	 }
 	 
 	 consultar()
@@ -18,7 +19,7 @@ class CatalogoPresentador
 		if(resultado.mensajeError=="")
 			this.vista.datos = resultado.valor;
 		else
-			this.vista.mostrarMensaje("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		
 	 }
 	 

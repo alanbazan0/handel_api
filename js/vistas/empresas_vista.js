@@ -5,7 +5,7 @@ class EmpresasVista extends CatalogoVista
 		super();
 		this.presentador = new EmpresasPresentador(this);
 		this._urlFormulario = "html/formularios/empresas.html";
-		this.tabla.alto =  $("body").height() - 350 ;
+		
 	}
 	
 	

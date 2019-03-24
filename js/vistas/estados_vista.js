@@ -10,50 +10,39 @@ class EstadosVista
 		this.modeloActual=null;
 	}
 	
-	onLoad()
-	{			
-		this.crearColumnasGrid();		
-		this.presentador.consultar();
-		//this.mostrarFormulario();
-	}
+//	onLoad()
+//	{			
+//		this.crearColumnasGrid();		
+//		this.presentador.consultar();
+//		//this.mostrarFormulario();
+//	}
 	
 	crearColumnasGrid()
 	{
-		this.grid._columnas = [
+		this.tabla.columnas = [
 			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
 			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I" }, 
 			{longitud:200, 	titulo:"Pais",   alias:"paisNombre", alineacion:"I" },				
 			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
 			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
-			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRender:this.renderEstatus}
+			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
 		]
 		
-		this.grid._origen="vista";
-		this.grid.manejadorEventos=this.manejadorEventos;
-		this.grid._colorSeleccion = COLOR_SELECCION;
-		this.grid._ajustarAltura = true;
-		this.grid._colorRenglon1 = COLOR_RENGLON1;	
-		this.grid._colorRenglon2 = COLOR_RENGLON2;	
-		this.grid._colorEncabezado1 = COLOR_ENCABEZADO1;
-		this.grid._colorEncabezado2 = COLOR_ENCABEZADO2;
-		this.grid._colorLetraEncabezado = COLOR_LETRA_ENCABEZADO;
-		this.grid._colorLetraCuerpo = COLOR_LETRA_CUERPO;
-		this.grid._regExtra=REGISTROS_EXTRA;
-		this.grid._bordesRedondeados = true;
-		this.grid._eliminarLineaVerticales=false;
-		//this.grid._presentacionGranTotal = "SI";
-		this.grid.render();		
+		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
+		"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+
+		this.tabla.registros = [];	
 	}
 	
-	renderEstatus(renglon, campoBase)
-	{    
-		var contenido = "";
-		if(renglon.estatus==1)
-			contenido += "<center><span class='fa "+ ICONO_ACTIVO +" fa-lg' style='color:"+COLOR_ACTIVO+"'></span></center>";
-		else
-			contenido += "<center><span class='fa "+ ICONO_INACTIVO+" fa-lg' style='color:"+COLOR_INACTIVO+"'></span></center>";
-	    return contenido;
-	}
+//	renderEstatus(renglon, campoBase)
+//	{    
+//		var contenido = "";
+//		if(renglon.estatus==1)
+//			contenido += "<center><span class='fa "+ ICONO_ACTIVO +" fa-lg' style='color:"+COLOR_ACTIVO+"'></span></center>";
+//		else
+//			contenido += "<center><span class='fa "+ ICONO_INACTIVO+" fa-lg' style='color:"+COLOR_INACTIVO+"'></span></center>";
+//	    return contenido;
+//	}
 	
 	
 	mostrarIndicador()
@@ -264,4 +253,7 @@ class EstadosVista
 	
 }
 var vista = new EstadosVista(this);
-
+$(document).ready(function() 
+{
+	vista.inicializar();
+});

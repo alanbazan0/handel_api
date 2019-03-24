@@ -20,8 +20,8 @@ class AreasRepositorio extends RepositorioBase implements IAreasRepositorio
         $this->conexion = $conexion;
         $this->consultaBase = " SELECT A.id, A.nombre, E.id empresaId, E.nombre empresaNombre, S.id, S.nombre sedeNombre, A.fecha_alta, A.fecha_modificacion, A.estatus, tipo_area_id " .
             " FROM areas A " .
-            "   INNER JOIN empresas E on E.id = A.empresa_id " .
-            "   INNER JOIN sedes S on S.id = A.sede_id ";
+            "   LEFT JOIN empresas E on E.id = A.empresa_id " .
+            "   LEFT JOIN sedes S on S.id = A.sede_id ";
     }
     
     public function insertar(Area $modelo)
@@ -80,6 +80,7 @@ class AreasRepositorio extends RepositorioBase implements IAreasRepositorio
     
     public function consultar($criteriosSeleccion)
     {
+       
         $resultado = new Resultado();
         $registros = array();
         $filtros = array();
@@ -102,6 +103,7 @@ class AreasRepositorio extends RepositorioBase implements IAreasRepositorio
         }
         $consulta = $this->consultaBase .
         $where . " order by A.nombre";     
+        
         
         if($sentencia = $this->conexion->prepare($consulta))
         {

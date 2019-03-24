@@ -10,131 +10,120 @@ class TiposEmpresaVista
 		this.modeloActual=null;
 	}
 	
-	onLoad()
-	{			
-		this.crearColumnasGrid();		
-		this.presentador.consultar();
-		//this.mostrarFormulario();
-	}
+//	onLoad()
+//	{			
+//		this.crearColumnasGrid();		
+//		this.presentador.consultar();
+//		//this.mostrarFormulario();
+//	}
 	
 	crearColumnasGrid()
 	{
-		this.grid._columnas = [
+		this.tabla.columnas = [
 			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
 			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I" }, 					
 			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
 			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
-			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRender:this.renderEstatus}
+			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
 		]
 		
-		this.grid._origen="vista";
-		this.grid.manejadorEventos=this.manejadorEventos;
-		this.grid._colorSeleccion = COLOR_SELECCION;
-		this.grid._ajustarAltura = true;
-		this.grid._colorRenglon1 = COLOR_RENGLON1;	
-		this.grid._colorRenglon2 = COLOR_RENGLON2;	
-		this.grid._colorEncabezado1 = COLOR_ENCABEZADO1;
-		this.grid._colorEncabezado2 = COLOR_ENCABEZADO2;
-		this.grid._colorLetraEncabezado = COLOR_LETRA_ENCABEZADO;
-		this.grid._colorLetraCuerpo = COLOR_LETRA_CUERPO;
-		this.grid._regExtra=REGISTROS_EXTRA;
-		this.grid._bordesRedondeados = true;
-		this.grid._eliminarLineaVerticales=false;
-		//this.grid._presentacionGranTotal = "SI";
-		this.grid.render();		
+		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
+										"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+
+		this.tabla.registros = [];	
 	}
 	
-	renderEstatus(renglon, campoBase)
-	{    
-		var contenido = "";
-		if(renglon.estatus==1)
-			contenido += "<center><span class='fa "+ ICONO_ACTIVO +" fa-lg' style='color:"+COLOR_ACTIVO+"'></span></center>";
-		else
-			contenido += "<center><span class='fa "+ ICONO_INACTIVO+" fa-lg' style='color:"+COLOR_INACTIVO+"'></span></center>";
-	    return contenido;
-	}
+//	renderEstatus(renglon, campoBase)
+//	{    
+//		var contenido = "";
+//		if(renglon.estatus==1)
+//			contenido += "<center><span class='fa "+ ICONO_ACTIVO +" fa-lg' style='color:"+COLOR_ACTIVO+"'></span></center>";
+//		else
+//			contenido += "<center><span class='fa "+ ICONO_INACTIVO+" fa-lg' style='color:"+COLOR_INACTIVO+"'></span></center>";
+//	    return contenido;
+//	}
 	
 	
-	mostrarIndicador()
-	{
-		$('#indicador').show();				
-	}
+//	mostrarIndicador()
+//	{
+//		$('#indicador').show();				
+//	}
+//	
+//	ocultarIndicador()
+//	{		
+//		$('#indicador').hide();
+//	}
+//	
+//	btnBaja_onClick()
+//	{ 
+//		if(this.grid._selectedItem!=null)
+//		{
+//			var confirmacion = confirm("¿Esta seguro que desea eliminar el registro?")
+//		    if (confirmacion)
+//		    {
+//		    		this.presentador.eliminar();
+//		    }	
+//		}
+//		else
+//			this.mostrarMensaje("Acción no válida","Seleccione un registro para eliminar.");
+//	}
 	
-	ocultarIndicador()
-	{		
-		$('#indicador').hide();
-	}
+//	btnAlta_onClick()
+//	{
+//		this.modo = "ALTA";
+//		this.ocultarIndicador();
+//		this.limpiarFormulario();	
+//		this.mostrarFormulario();
+//		$('#nombreInput').focus();
+//		//this.consultarEmpresas();
+//		
+//	}
+//	
+//	btnCambio_onClick()
+//	{
+//		if(this.grid._selectedItem!=null)
+//		{			
+//			this.modo = "CAMBIO";
+//			this.limpiarFormulario();	
+//			this.mostrarFormulario();
+//			$('#nombreInput').focus();				
+//			this.presentador.consultarPorLlaves();
+//		}
+//		else
+//			this.mostrarMensaje("Acción no válida","Seleccione un registro para modificar.");
+//				
+//	}
 	
-	btnBaja_onClick()
-	{ 
-		if(this.grid._selectedItem!=null)
-		{
-			var confirmacion = confirm("¿Esta seguro que desea eliminar el registro?")
-		    if (confirmacion)
-		    {
-		    		this.presentador.eliminar();
-		    }	
-		}
-		else
-			this.mostrarMensaje("Acción no válida","Seleccione un registro para eliminar.");
-	}
+//	btnConsulta_onClick()
+//	{	
+//		this.presentador.consultar();
+//	}	
+//	
+//	btnGuardarFormulario_onClick()
+//	{		
+//		 if(this.datosValidos())
+//		 {
+//			if(this.modo=='ALTA')
+//				this.presentador.insertar();
+//			else
+//				this.presentador.actualizar();
+//		 }		
+//		
+//	}
 	
-	btnAlta_onClick()
-	{
-		this.modo = "ALTA";
-		this.ocultarIndicador();
-		this.limpiarFormulario();	
-		this.mostrarFormulario();
-		$('#nombreInput').focus();
-		//this.consultarEmpresas();
-		
-	}
-	
-	btnCambio_onClick()
-	{
-		if(this.grid._selectedItem!=null)
-		{			
-			this.modo = "CAMBIO";
-			this.limpiarFormulario();	
-			this.mostrarFormulario();
-			$('#nombreInput').focus();				
-			this.presentador.consultarPorLlaves();
-		}
-		else
-			this.mostrarMensaje("Acción no válida","Seleccione un registro para modificar.");
-				
-	}
-	
-	btnConsulta_onClick()
-	{	
-		this.presentador.consultar();
-	}	
-	
-	btnGuardarFormulario_onClick()
-	{		
-		 if(this.datosValidos())
-		 {
-			if(this.modo=='ALTA')
-				this.presentador.insertar();
-			else
-				this.presentador.actualizar();
-		 }		
-		
-	}
-	
-	btnSalir_onClick()
-	{
-		var confirmacion = confirm("¿Esta seguro que desea salir?")
-	    if (confirmacion)
-	    	{
-		    	
-	    	}
-	}
-	
-	btnSalirFormulario_onClick()
-	{		
-		this.salirFormulario();
-	}	
+//	btnSalir_onClick()
+//	{
+//		var confirmacion = confirm("¿Esta seguro que desea salir?")
+//	    if (confirmacion)
+//	    	{
+//		    	
+//	    	}
+//	}
+//	
+//	btnSalirFormulario_onClick()
+//	{		
+//		this.salirFormulario();
+//	}	
 	
 	get llaves()
 	{
@@ -180,29 +169,29 @@ class TiposEmpresaVista
 			 modelo.id = this.modeloEdicion.id;
 		 return modelo;
 	 }
-	 
-	mostrarMensaje(titulo, mensaje)
-	{
-		$('#dialogo').prop('title', titulo);
-	    $('#dialogo').html(mensaje);
-	    $('#dialogo').dialog({   
-	     autoOpen: false,   
-	     modal: true   
-	    });
-	    $('#dialogo').dialog('open');
-	}
-	
-	mostrarFormulario()
-	{
-		$('#principalDiv').hide();	
-		$('#formularioDiv').show();
-	}
-	
-	salirFormulario()
-	{
-		$('#principalDiv').show()	
-		$('#formularioDiv').hide();
-	}
+//	 
+//	mostrarMensaje(titulo, mensaje)
+//	{
+//		$('#dialogo').prop('title', titulo);
+//	    $('#dialogo').html(mensaje);
+//	    $('#dialogo').dialog({   
+//	     autoOpen: false,   
+//	     modal: true   
+//	    });
+//	    $('#dialogo').dialog('open');
+//	}
+//	
+//	mostrarFormulario()
+//	{
+//		$('#principalDiv').hide();	
+//		$('#formularioDiv').show();
+//	}
+//	
+//	salirFormulario()
+//	{
+//		$('#principalDiv').show()	
+//		$('#formularioDiv').hide();
+//	}
 	
 	
 	datosValidos()
@@ -235,4 +224,7 @@ class TiposEmpresaVista
 	
 }
 var vista = new TiposEmpresaVista(this);
-
+$(document).ready(function() 
+{
+	vista.inicializar();
+});

@@ -12,7 +12,7 @@ class Tabla
 		this._eliminar = true;
 		this._contenidoAdicional = null;
 		this._anchoContenidoAdicional = 200;
-		this._alto = 200;;
+		this._alto =  $("body").height() - 350 ;
 	}
 	
 	set alto(alto)
