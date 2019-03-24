@@ -4,7 +4,9 @@ class AreasVista extends CatalogoVista
 	{	
 		super(ventana);
 		this.presentador = new AreasPresentador(this);
+		this._urlFormulario = "html/formularios/areas.html";
 		this.consultoGrid = false;
+		
 	}
 	
 	inicializar()
@@ -38,9 +40,15 @@ class AreasVista extends CatalogoVista
 		this.tabla.registros = [];
 	}
 	
-	agregar()
+//	agregar()
+//	{
+//		super.agregar();
+//		
+//		
+//	}
+	
+	consultarCombos()
 	{
-		super.agregar();
 		$('#nombreInput').focus();
 		this.consultarEmpresas();
 		this.consultarTiposArea();

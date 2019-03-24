@@ -204,6 +204,16 @@ class CatalogoVista extends Vista
 		{
 			this.renderizarFormulario();
 		}
+		else
+		{
+			$("#modalAlta").modal({backdrop: 'static', keyboard: false});
+			
+		}
+	}
+	
+	consultarCombos()
+	{
+		
 	}
 	
 	renderizarFormulario()
@@ -219,7 +229,6 @@ class CatalogoVista extends Vista
 				$("#modalAlta").remove();
 			});
 			
-			$("body").append(html);
 			$("#modalAlta").on("show.bs.modal", function () {
 				$('#nombreInput').focus();
 				if(_this.modo == Modo.CAMBIO)
@@ -227,7 +236,7 @@ class CatalogoVista extends Vista
 					if(_this.presentador!=null)
 						_this.presentador.consultarPorLlaves();
 				}
-				
+				_this.consultarCombos();
 			});
 		
 			
