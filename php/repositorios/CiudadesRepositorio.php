@@ -89,7 +89,7 @@ class CiudadesRepositorio extends RepositorioBase implements ICiudadesRepositori
             $where = $this->where($filtros);
         }
         $consulta = $this->consultaBase .
-        $where; 
+        $where. " ORDER BY C.nombre"; 
         
         if($sentencia = $this->conexion->prepare($consulta))
         {

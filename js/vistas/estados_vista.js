@@ -14,6 +14,7 @@ class EstadosVista extends CatalogoVista
 //		//this.mostrarFormulario();
 //	}
 	
+	
 	crearColumnasGrid()
 	{
 		this.tabla.columnas = [
@@ -29,6 +30,42 @@ class EstadosVista extends CatalogoVista
 		"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
 		this.tabla.registros = [];	
+	}
+	
+	inicializarValidacionesFormulario()
+	{
+		var _this = this;
+		jQuery("#formulario").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+                "paisSelect": {
+                    required: !0
+                },
+                "nombreInput": {
+                    required: !0
+                }
+            },
+            messages: {
+            	"paisSelect": "Por favor ingrese un pais",
+                "nombreInput": "Por favor ingrese un nombre"
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.guardar();
+            }
+        });
 	}
 	
 //	renderEstatus(renglon, campoBase)
@@ -66,6 +103,11 @@ class EstadosVista extends CatalogoVista
 //			this.mostrarMensaje("Acción no válida","Seleccione un registro para eliminar.");
 //	}
 	
+	
+	consultarCombos()
+	{
+		this.consultarPaises();
+	}
 //	btnAlta_onClick()
 //	{
 //		this.modo = "ALTA";
@@ -162,7 +204,7 @@ class EstadosVista extends CatalogoVista
 		 {		
 			 nombre:$('#nombreInput').val(),
 			 paisId:$('#paisSelect').val(),
-			 estatus:$('input[name=estatus]:checked').val()
+			 estatus:$('#estatusRadio').is(':checked')?1:0
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;

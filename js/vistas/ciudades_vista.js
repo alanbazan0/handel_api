@@ -32,6 +32,52 @@ class CiudadesVista extends CatalogoVista
 		this.tabla.registros = [];
 	}
 	
+
+	inicializarValidacionesFormulario()
+	{
+		var _this = this;
+		jQuery("#formulario").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+                "paisSelect": {
+                    required: !0
+                },
+                "estadoSelect": {
+                    required: !0
+                },
+                "nombreInput": {
+                    required: !0
+                }
+            },
+            messages: {
+            	"paisSelect": "Por favor ingrese un pais",
+            	"estadoSelect": "Por favor ingrese un estado",
+                "nombreInput": "Por favor ingrese un nombre"
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.guardar();
+            }
+        });
+	}
+	
+	consultarCombos()
+	{
+		this.consultarPaises();
+	}
+	
 //	renderEstatus(renglon, campoBase)
 //	{    
 //		var contenido = "";
@@ -164,7 +210,7 @@ class CiudadesVista extends CatalogoVista
 			 nombre:$('#nombreInput').val(),
 			 paisId:$('#paisSelect').val(),
 			 estadoId:$('#estadoSelect').val(),
-			 estatus:$('input[name=estatus]:checked').val()
+			 estatus:$('#estatusRadio').is(':checked')?1:0
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;

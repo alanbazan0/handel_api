@@ -24,7 +24,7 @@ class PaisesRepositorio extends RepositorioBase implements IPaisesRepositorio
     
     public function insertar(Pais $modelo)
     {
-        $resultado =  $this->calcularId("id","tipos_empresa");
+        $resultado =  $this->calcularId("id","paises");
         if($resultado->mensajeError=="")
         {
             $id = $resultado->valor;

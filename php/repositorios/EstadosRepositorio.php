@@ -86,8 +86,8 @@ class EstadosRepositorio extends RepositorioBase implements IEstadosRepositorio
                 array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'E','campo'=>'nombre','valor'=>$criteriosSeleccion->nombre]);
                 $where = $this->where($filtros);
         }
-        $consulta = $this->consultaBase .
-        $where;
+        $consulta = $this->consultaBase . 
+        $where . " ORDER BY E.nombre";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
