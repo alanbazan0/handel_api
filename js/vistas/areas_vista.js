@@ -49,7 +49,10 @@ class AreasVista extends CatalogoVista
 	
 	consultarCombos()
 	{
-		$('#nombreInput').focus();
+		 setTimeout(function (){
+			 $('#nombreInput').focus();
+		    }, 1000);
+		
 		this.consultarEmpresas();
 		this.consultarTiposArea();
 	}
@@ -57,6 +60,7 @@ class AreasVista extends CatalogoVista
 	editar(id)
 	{
 		super.editar(id);
+		
 		$('#nombreInput').focus();
 	}
 	

@@ -1,13 +1,10 @@
-class TiposEmpresaVista
+class TiposEmpresaVista extends CatalogoVista
 {		
-	constructor(ventana)
+	constructor()
 	{	
-		this.ventana = ventana;
+		super();
 		this.presentador = new TiposEmpresaPresentador(this);
-		this.manejadorEventos = new ManejadorEventos();
-		this.grid = new GridReg("grid");	
-		this.validaciones = new Validaciones();
-		this.modeloActual=null;
+		this._urlFormulario = "html/formularios/tipos_empresa.html";
 	}
 	
 //	onLoad()
@@ -125,14 +122,14 @@ class TiposEmpresaVista
 //		this.salirFormulario();
 //	}	
 	
-	get llaves()
-	{
-		var llaves =
-		{
-			id:this.grid._selectedItem.id	
-		}
-		return llaves;
-	}
+//	get llaves()
+//	{
+//		var llaves =
+//		{
+//			id:this.grid._selectedItem.id	
+//		}
+//		return llaves;
+//	}
 	
 	
 	get criteriosSeleccion()
@@ -144,12 +141,12 @@ class TiposEmpresaVista
 		 return criteriosSeleccion;
 	}		
 
-	set datos(valor)
-	{
-		this.grid._dataProvider = valor;	
-		this.grid.render();
-	}
-	
+//	set datos(valor)
+//	{
+//		this.grid._dataProvider = valor;	
+//		this.grid.render();
+//	}
+//	
 	set modelo(valor)
 	{		
 		this.modeloEdicion = valor;
@@ -211,12 +208,12 @@ class TiposEmpresaVista
 		return valid;
 	}	
 
-	limpiarFormulario()
-	{
-		$('#nombreInput').val("");
-		//this.cargandoOpciones('#empresaSelect');
-	}
-	
+//	limpiarFormulario()
+//	{
+//		$('#nombreInput').val("");
+//		//this.cargandoOpciones('#empresaSelect');
+//	}
+//	
 	
 	
 	
