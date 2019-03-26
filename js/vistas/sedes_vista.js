@@ -1,11 +1,10 @@
 class SedesVista extends CatalogoVista
 {		
-	constructor(ventana)
+	constructor()
 	{	
-		super(ventana);
+		super();
 		this.presentador = new SedesPresentador(this);
-		this.tabla.rendererBotones = this.rendererBotones;
-		this.usuario = null;
+		this._urlFormulario = "html/formularios/sedes.html";
 	}
 	
 	inicializar()
@@ -229,7 +228,6 @@ class SedesVista extends CatalogoVista
 }
 
 var vista = new SedesVista(this);	
-vista.usuario = usuario;
 $(document).ready(function() 
 {
 	vista.inicializar();

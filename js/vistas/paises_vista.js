@@ -1,26 +1,23 @@
-class CiudadesVista extends CatalogoVista
+class PaisesVista extends CatalogoVista
 {		
 	constructor()
 	{	
 		super();
-		this.presentador = new CiudadesPresentador(this);
-		this._urlFormulario = "html/formularios/ciudades.html";
+		this.presentador = new PaisesPresentador(this);
+		this._urlFormulario = "html/formularios/paises.html";
 	}
 	
 //	onLoad()
 //	{			
 //		this.crearColumnasGrid();		
 //		this.presentador.consultar();
-//		//this.mostrarFormulario();
 //	}
 	
 	crearColumnasGrid()
 	{
 		this.tabla.columnas = [
 			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
-			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I" }, 
-			{longitud:200, 	titulo:"Pais",   alias:"paisNombre", alineacion:"I" },	
-			{longitud:200, 	titulo:"Estado",   alias:"estadoNombre", alineacion:"I" },	
+			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I" }, 					
 			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
 			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
 			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
@@ -31,7 +28,7 @@ class CiudadesVista extends CatalogoVista
 
 		this.tabla.registros = [];
 	}
-	
+//	
 //	renderEstatus(renglon, campoBase)
 //	{    
 //		var contenido = "";
@@ -41,7 +38,7 @@ class CiudadesVista extends CatalogoVista
 //			contenido += "<center><span class='fa "+ ICONO_INACTIVO+" fa-lg' style='color:"+COLOR_INACTIVO+"'></span></center>";
 //	    return contenido;
 //	}
-//	
+	
 	
 //	mostrarIndicador()
 //	{
@@ -66,7 +63,7 @@ class CiudadesVista extends CatalogoVista
 //		else
 //			this.mostrarMensaje("Acción no válida","Seleccione un registro para eliminar.");
 //	}
-	
+//	
 //	btnAlta_onClick()
 //	{
 //		this.modo = "ALTA";
@@ -74,7 +71,6 @@ class CiudadesVista extends CatalogoVista
 //		this.limpiarFormulario();	
 //		this.mostrarFormulario();
 //		$('#nombreInput').focus();
-//		this.consultarPaises();
 //		
 //	}
 //	
@@ -92,7 +88,7 @@ class CiudadesVista extends CatalogoVista
 //			this.mostrarMensaje("Acción no válida","Seleccione un registro para modificar.");
 //				
 //	}
-	
+//	
 //	btnConsulta_onClick()
 //	{	
 //		this.presentador.consultar();
@@ -118,7 +114,7 @@ class CiudadesVista extends CatalogoVista
 //		    	
 //	    	}
 //	}
-	
+//	
 //	btnSalirFormulario_onClick()
 //	{		
 //		this.salirFormulario();
@@ -132,7 +128,7 @@ class CiudadesVista extends CatalogoVista
 //		}
 //		return llaves;
 //	}
-	
+//	
 	
 	get criteriosSeleccion()
 	{
@@ -148,22 +144,20 @@ class CiudadesVista extends CatalogoVista
 //		this.grid._dataProvider = valor;	
 //		this.grid.render();
 //	}
-	
+//	
 	set modelo(valor)
 	{		
 		this.modeloEdicion = valor;
 		$('#nombreInput').val(this.modeloEdicion.nombre);
 		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
-		this.consultarPaises();
+		//this.consultarEmpresas();
 	}
 	
 	get modelo()
 	{
 		 var modelo = 
 		 {		
-			 nombre:$('#nombreInput').val(),
-			 paisId:$('#paisSelect').val(),
-			 estadoId:$('#estadoSelect').val(),
+			 nombre:$('#nombreInput').val(),			 
 			 estatus:$('input[name=estatus]:checked').val()
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
@@ -171,17 +165,8 @@ class CiudadesVista extends CatalogoVista
 		 return modelo;
 	 }
 	 
-//	mostrarMensaje(titulo, mensaje)
-//	{
-//		$('#dialogo').prop('title', titulo);
-//	    $('#dialogo').html(mensaje);
-//	    $('#dialogo').dialog({   
-//	     autoOpen: false,   
-//	     modal: true   
-//	    });
-//	    $('#dialogo').dialog('open');
-//	}
-//	
+
+	
 //	mostrarFormulario()
 //	{
 //		$('#principalDiv').hide();	
@@ -193,97 +178,40 @@ class CiudadesVista extends CatalogoVista
 //		$('#principalDiv').show()	
 //		$('#formularioDiv').hide();
 //	}
-	
+//	
 	
 	datosValidos()
 	{
-		var nombre = $("#nombreInput"),
-	        pais = $("#paisSelect"),
-	        estado = $("#estadoSelect");;
+		var nombre = $("#nombreInput");
+	        
         
-        var allFields = $( [] ).add(nombre).add(pais).add(estado);
+        var allFields = $( [] ).add(nombre);
         var tips = $( ".validateTips" );
 		tips.text("");
 		
 		var valid = true;
 		allFields.removeClass("ui-state-error");
 		
-		valid = valid && this.validaciones.checkValue( pais, "pais",tips );
-		valid = valid && this.validaciones.checkValue( estado, "estado",tips );
 	    valid = valid && this.validaciones.checkValue( nombre, "nombre", tips );
 	   
-	    
 		return valid;
 	}	
 
 	limpiarFormulario()
 	{
 		$('#nombreInput').val("");
-		this.cargandoOpciones('#paisSelect');
-		this.cargandoOpciones('#estadoSelect');
-	}
-	
-	consultarPaises()
-	{
-		this.cargandoOpciones("#paisSelect");
-		this.presentador.consultarPaises();
-	}
-	
-	consultarEstados()
-	{
-		this.cargandoOpciones("#estadoSelect");
-		this.presentador.consultarEstados();
-	}
-
-	cambiarPais()
-	{
-		//this.cargandoOpciones("#estadoSelect");
-		
-		
-	
-		//this.consultarPaises();
-		this.consultarEstados();
-		
-		
+		//this.cargandoOpciones('#empresaSelect');
 	}
 	
 	
-	set paises(registros)
-	{		
-		$('#paisSelect').empty();
-		$('#paisSelect').append($('<option></option>').val("").html("-Seleccione"));
-		$.each(registros, function(i, p) {
-		    $('#paisSelect').append($('<option></option>').val(p.id).html(p.nombre));
-		});
-		if(this.modo=='CAMBIO' && this.modeloEdicion!=null)
-			$('#paisSelect').val(this.modeloEdicion.paisId);
-	}
-	
-	set estados(registros)
-	{		
-		$('#estadoSelect').empty();
-		$('#estadoSelect').append($('<option></option>').val("").html("-Seleccione"));
-		$.each(registros, function(i, p) {
-		    $('#estadoSelect').append($('<option></option>').val(p.id).html(p.nombre));
-		});
-		if(this.modo=='CAMBIO' && this.modeloEdicion!=null)
-			$('#estadoSelect').val(this.modeloEdicion.estadoId);
-	}
-
-	
-//	cargandoOpciones(select)
-//	{
-//		$(select).empty();
-//		$(select).append('<option value="">Cargando...</option>');
-//	
-//	}
 	
 	
 
 	
 }
-var vista = new CiudadesVista(this);
+var vista = new PaisesVista(this);
 $(document).ready(function() 
 {
 	vista.inicializar();
 });
+

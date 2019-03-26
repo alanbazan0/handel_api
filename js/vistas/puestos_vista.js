@@ -4,6 +4,7 @@ class PuestosVista extends CatalogoVista
 	{	
 		super(ventana);
 		this.presentador = new PuestosPresentador(this);
+		this._urlFormulario = "html/formularios/puestos.html";
 	}
 	
 	inicializar()

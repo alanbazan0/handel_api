@@ -1,13 +1,10 @@
-class EstadosVista
+class EstadosVista extends CatalogoVista
 {		
-	constructor(ventana)
+	constructor()
 	{	
-		this.ventana = ventana;
+		super();
 		this.presentador = new EstadosPresentador(this);
-		this.manejadorEventos = new ManejadorEventos();
-		this.grid = new GridReg("grid");	
-		this.validaciones = new Validaciones();
-		this.modeloActual=null;
+		this._urlFormulario = "html/formularios/estados.html";
 	}
 	
 //	onLoad()
@@ -45,95 +42,95 @@ class EstadosVista
 //	}
 	
 	
-	mostrarIndicador()
-	{
-		$('#indicador').show();				
-	}
+//	mostrarIndicador()
+//	{
+//		$('#indicador').show();				
+//	}
+//	
+//	ocultarIndicador()
+//	{		
+//		$('#indicador').hide();
+//	}
+//	
+//	btnBaja_onClick()
+//	{ 
+//		if(this.grid._selectedItem!=null)
+//		{
+//			var confirmacion = confirm("¿Esta seguro que desea eliminar el registro?")
+//		    if (confirmacion)
+//		    {
+//		    		this.presentador.eliminar();
+//		    }	
+//		}
+//		else
+//			this.mostrarMensaje("Acción no válida","Seleccione un registro para eliminar.");
+//	}
 	
-	ocultarIndicador()
-	{		
-		$('#indicador').hide();
-	}
+//	btnAlta_onClick()
+//	{
+//		this.modo = "ALTA";
+//		this.ocultarIndicador();
+//		this.limpiarFormulario();	
+//		this.mostrarFormulario();
+//		$('#nombreInput').focus();
+//		this.consultarPaises();
+//		
+//	}
+//	
+//	btnCambio_onClick()
+//	{
+//		if(this.grid._selectedItem!=null)
+//		{			
+//			this.modo = "CAMBIO";
+//			this.limpiarFormulario();	
+//			this.mostrarFormulario();
+//			$('#nombreInput').focus();				
+//			this.presentador.consultarPorLlaves();
+//		}
+//		else
+//			this.mostrarMensaje("Acción no válida","Seleccione un registro para modificar.");
+//				
+//	}
 	
-	btnBaja_onClick()
-	{ 
-		if(this.grid._selectedItem!=null)
-		{
-			var confirmacion = confirm("¿Esta seguro que desea eliminar el registro?")
-		    if (confirmacion)
-		    {
-		    		this.presentador.eliminar();
-		    }	
-		}
-		else
-			this.mostrarMensaje("Acción no válida","Seleccione un registro para eliminar.");
-	}
-	
-	btnAlta_onClick()
-	{
-		this.modo = "ALTA";
-		this.ocultarIndicador();
-		this.limpiarFormulario();	
-		this.mostrarFormulario();
-		$('#nombreInput').focus();
-		this.consultarPaises();
-		
-	}
-	
-	btnCambio_onClick()
-	{
-		if(this.grid._selectedItem!=null)
-		{			
-			this.modo = "CAMBIO";
-			this.limpiarFormulario();	
-			this.mostrarFormulario();
-			$('#nombreInput').focus();				
-			this.presentador.consultarPorLlaves();
-		}
-		else
-			this.mostrarMensaje("Acción no válida","Seleccione un registro para modificar.");
-				
-	}
-	
-	btnConsulta_onClick()
-	{	
-		this.presentador.consultar();
-	}	
-	
-	btnGuardarFormulario_onClick()
-	{		
-		 if(this.datosValidos())
-		 {
-			if(this.modo=='ALTA')
-				this.presentador.insertar();
-			else
-				this.presentador.actualizar();
-		 }		
-		
-	}
-	
-	btnSalir_onClick()
-	{
-		var confirmacion = confirm("¿Esta seguro que desea salir?")
-	    if (confirmacion)
-	    	{
-		    	
-	    	}
-	}
-	
-	btnSalirFormulario_onClick()
-	{		
-		this.salirFormulario();
-	}	
-	
-	get llaves()
-	{
-		var llaves =
-		{
-			id:this.grid._selectedItem.id	
-		}
-		return llaves;
-	}
+//	btnConsulta_onClick()
+//	{	
+//		this.presentador.consultar();
+//	}	
+//	
+//	btnGuardarFormulario_onClick()
+//	{		
+//		 if(this.datosValidos())
+//		 {
+//			if(this.modo=='ALTA')
+//				this.presentador.insertar();
+//			else
+//				this.presentador.actualizar();
+//		 }		
+//		
+//	}
+//	
+//	btnSalir_onClick()
+//	{
+//		var confirmacion = confirm("¿Esta seguro que desea salir?")
+//	    if (confirmacion)
+//	    	{
+//		    	
+//	    	}
+//	}
+//	
+//	btnSalirFormulario_onClick()
+//	{		
+//		this.salirFormulario();
+//	}	
+//	
+//	get llaves()
+//	{
+//		var llaves =
+//		{
+//			id:this.grid._selectedItem.id	
+//		}
+//		return llaves;
+//	}
 	
 	
 	get criteriosSeleccion()
@@ -145,11 +142,11 @@ class EstadosVista
 		 return criteriosSeleccion;
 	}		
 
-	set datos(valor)
-	{
-		this.grid._dataProvider = valor;	
-		this.grid.render();
-	}
+//	set datos(valor)
+//	{
+//		this.grid._dataProvider = valor;	
+//		this.grid.render();
+//	}
 	
 	set modelo(valor)
 	{		
@@ -172,28 +169,28 @@ class EstadosVista
 		 return modelo;
 	 }
 	 
-	mostrarMensaje(titulo, mensaje)
-	{
-		$('#dialogo').prop('title', titulo);
-	    $('#dialogo').html(mensaje);
-	    $('#dialogo').dialog({   
-	     autoOpen: false,   
-	     modal: true   
-	    });
-	    $('#dialogo').dialog('open');
-	}
-	
-	mostrarFormulario()
-	{
-		$('#principalDiv').hide();	
-		$('#formularioDiv').show();
-	}
-	
-	salirFormulario()
-	{
-		$('#principalDiv').show()	
-		$('#formularioDiv').hide();
-	}
+//	mostrarMensaje(titulo, mensaje)
+//	{
+//		$('#dialogo').prop('title', titulo);
+//	    $('#dialogo').html(mensaje);
+//	    $('#dialogo').dialog({   
+//	     autoOpen: false,   
+//	     modal: true   
+//	    });
+//	    $('#dialogo').dialog('open');
+//	}
+//	
+//	mostrarFormulario()
+//	{
+//		$('#principalDiv').hide();	
+//		$('#formularioDiv').show();
+//	}
+//	
+//	salirFormulario()
+//	{
+//		$('#principalDiv').show()	
+//		$('#formularioDiv').hide();
+//	}
 	
 	
 	datosValidos()
@@ -215,11 +212,11 @@ class EstadosVista
 		return valid;
 	}	
 
-	limpiarFormulario()
-	{
-		$('#nombreInput').val("");
-		this.cargandoOpciones('#paisSelect');
-	}
+//	limpiarFormulario()
+//	{
+//		$('#nombreInput').val("");
+//		this.cargandoOpciones('#paisSelect');
+//	}
 	
 	consultarPaises()
 	{
@@ -241,12 +238,12 @@ class EstadosVista
 	}
 
 	
-	cargandoOpciones(select)
-	{
-		$(select).empty();
-		$(select).append('<option value="">Cargando...</option>');
-	
-	}
+//	cargandoOpciones(select)
+//	{
+//		$(select).empty();
+//		$(select).append('<option value="">Cargando...</option>');
+//	
+//	}
 	
 	
 

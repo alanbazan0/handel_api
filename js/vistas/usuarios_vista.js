@@ -4,6 +4,7 @@ class UsuariosVista extends CatalogoVista
 	{	
 		super(ventana);
 		this.presentador = new UsuariosPresentador(this);
+		this._urlFormulario = "html/formularios/usuarios.html";
 		
 	}
 
