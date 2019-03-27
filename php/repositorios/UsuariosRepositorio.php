@@ -214,11 +214,11 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         ];
         
         $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
-        $registro->fotoPerfil =  "../fotos_usuarios/usuario". $registro->id .".jpg";
+        $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
         if(file_exists($registro->fotoPerfil))
-            $registro->fotoPerfil =  "php/fotos_usuarios/usuario". $registro->id .".jpg";
+            $registro->fotoPerfil =  "php/fotos/usuario". $registro->id .".jpg";
         else
-             $registro->fotoPerfil =  "php/fotos_usuarios/default.jpg";
+             $registro->fotoPerfil =  "php/fotos/default.jpg";
         
         return $registro;
     }
