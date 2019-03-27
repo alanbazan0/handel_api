@@ -112,15 +112,17 @@ class Vista
 	
 	cerrarSesion()
 	{
+		this.mostrarIndicador();
 		var repositorio = new UsuariosRepositorio(this);		
 		 repositorio.cerrarSesion(this,this.cerrarSesionResultado);
 	}
 	
 	 cerrarSesionResultado(resultado)
 	 {
+		 this.ocultarIndicador();
 		 if(resultado.mensajeError=="")
 		 {
-			 this._ventana.location.replace("inicio_sesion.php");
+			 window.location.replace("inicio_sesion.php");
 		 }
 	 }
 	
