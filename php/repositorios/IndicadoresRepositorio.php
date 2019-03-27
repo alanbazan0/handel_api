@@ -35,7 +35,7 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
         $resultado = new Resultado();
         $filtros = array();
 
-         if($usuario->tipoUsuarioId == \TipoUsuario::SUPERUSUARIO)
+         if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
              $consulta = $this->consultaBase;
          else
          {

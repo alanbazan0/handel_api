@@ -132,7 +132,7 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
                         }
                         if($opcional=="true")
                         {
-                            if($usuario->tipoUsuarioId == \TipoUsuario::SUPERUSUARIO)
+                            if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
                             {
                                 $registro = $this->crearRegistro("", "Todas las empresas","",null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
                                 array_unshift($registros, $registro);

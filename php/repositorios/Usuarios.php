@@ -81,7 +81,7 @@ try
                 $resultado = $repositorio->consultarUsuario($nombreUsuario,$contrasena);
                 if($resultado->valor!=null)
                 {
-                    if($resultado->valor->tipoUsuarioId == TipoUsuario::SUPERUSUARIO || $resultado->valor->tipoUsuarioId == TipoUsuario::ADMINISTRADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::ADMINISTRADOR_CORPORATIVO)
+                    if($resultado->valor->tipoUsuarioId == TipoUsuario::ADMINISTRADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::COORDINADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::SUPERVISOR)
                     {
                         $_SESSION['usuario']=$resultado->valor; 
                         $historialAccesoRepositorio = new HistorialAccesoRepositorio($conexion);
@@ -91,7 +91,7 @@ try
                     else
                     {
                         $resultado->valor = null;
-                        $resultado->mensajeError="El acceso a la plataforma en linea de 10y7 esta restringido a usuarios autorizados, si necesita ingresar para realizar cambios por favor solicite los cambios con su supervisor autorizado";
+                        $resultado->mensajeError="El acceso a la plataforma en linea esta restringido a usuarios autorizados, si necesita ingresar para realizar cambios por favor solicite los cambios con su supervisor autorizado";
                         unset($_SESSION['usuario']);
                     }
                 }

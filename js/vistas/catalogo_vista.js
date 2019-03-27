@@ -131,7 +131,10 @@ class CatalogoVista extends Vista
 	consultar()
 	{	
 		if(this.presentador!=null)
+		{
+			$("#tablaTabla_processing").show();
 			this.presentador.consultar();
+		}
 	}	
 	
 	crearColumnasGrid()

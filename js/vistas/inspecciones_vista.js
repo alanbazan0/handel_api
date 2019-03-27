@@ -8,19 +8,25 @@ class InspeccionesVista extends CatalogoVista
 		
 	}
 	
-	onLoad()
+	inicializar()
 	{
-		//this.tabla = new Tabla(this,"#tabla");	
-		//this.tabla.rendererBotones = this.rendererBotones;
-		//this.tabla.editar = false;
-		//this.tabla.eliminar = false;
-		this.inspeccionesTabla = $('#inspeccionesTabla');
-		this.crearFechas();
-		this.inicializarEliminar();
-		this.crearColumnasGrid();
+		super.inicializar();
 		this.consultarEmpresasCriterio();
-		
 	}
+	
+//	onLoad()
+//	{
+//		//this.tabla = new Tabla(this,"#tabla");	
+//		//this.tabla.rendererBotones = this.rendererBotones;
+//		//this.tabla.editar = false;
+//		//this.tabla.eliminar = false;
+//		this.inspeccionesTabla = $('#inspeccionesTabla');
+//		this.crearFechas();
+//		this.inicializarEliminar();
+//		this.crearColumnasGrid();
+//		this.consultarEmpresasCriterio();
+//		
+//	}
 	
 	crearColumnasGrid()
 	{
@@ -33,7 +39,10 @@ class InspeccionesVista extends CatalogoVista
 			{longitud:250, 	titulo:"Fecha de inspección",   alias:"fechaInspeccion", alineacion:"I" }
 		]
 		
-		this.tabla.renderizar();		
+		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
+		"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+
+		this.tabla.registros = [];
 	}
 	
 	crearFechas()
@@ -302,17 +311,17 @@ class InspeccionesVista extends CatalogoVista
 		}
 	}
 	
-	consultar()
-	{	
-		this.configurarGrid([]);
-		$("#inspeccionesTabla_processing").show();
-		super.consultar();
-	}	
-	
-	set datos(datos)
-	{
-		this.configurarGrid(datos);
-	}
+//	consultar()
+//	{	
+//		this.configurarGrid([]);
+//		$("#inspeccionesTabla_processing").show();
+//		super.consultar();
+//	}	
+//	
+//	set datos(datos)
+//	{
+//		this.configurarGrid(datos);
+//	}
 	
 	configurarGrid(inspecciones)
 	{
@@ -407,4 +416,7 @@ class InspeccionesVista extends CatalogoVista
 	
 }
 var vista = new InspeccionesVista(this);
-
+$(document).ready(function() 
+{
+	vista.inicializar();
+});

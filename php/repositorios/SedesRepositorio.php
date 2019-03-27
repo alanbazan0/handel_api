@@ -199,11 +199,11 @@ class SedesRepositorio extends RepositorioBase implements ISedesRepositorio
         
         $filtros = array(); 
         $where="";
-        if($usuario->tipoUsuarioId == \TipoUsuario::SUPERUSUARIO)
+        if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$empresaId]);
-        else  if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR_CORPORATIVO)
+        else  if($usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
                 array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$empresaId]);
-        else  if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
+        else  if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR)
         {
             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'id','valor'=>$usuario->sedeId]);
@@ -231,7 +231,7 @@ class SedesRepositorio extends RepositorioBase implements ISedesRepositorio
                         }
                         if($opcional=="true")
                         {
-                            if($usuario->tipoUsuarioId == \TipoUsuario::SUPERUSUARIO || $usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR_CORPORATIVO  )
+                            if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR  )
                             {
                                 $registro = $this->crearRegistro("", "Todas las sedes",null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
                                 array_unshift($registros, $registro);
