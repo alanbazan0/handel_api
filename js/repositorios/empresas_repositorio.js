@@ -47,26 +47,32 @@ class EmpresasRepositorio extends Repositorio
 	
 	
 
-	consultarCorporativos(contexto,functionRetorno, empresaId)
+	consultarCorporativos(contexto,funcion, empresaId)
 	{		
-		this.contexto = contexto;
-		this.functionRetorno = functionRetorno;
+//		this.contexto = contexto;
+//		this.functionRetorno = functionRetorno;
+//		
+//		var parametros;
+//		parametros = "accion=consultarCorporativos";
+//		parametros += "&empresaId=" + empresaId;	
+//		
+//		
+//		var contextHandler = new AjaxContextHandler();
+//		var url = HANDEL_API + "/" + this.servicio;
+//		var ai = new Ajaxv2( url, this, this.consultarCorporativosResultado, "POST", parametros, contextHandler);		
+//		contextHandler.AddAjaxv2Object(ai); 		
+//		ai.GetPost(true);
 		
-		var parametros;
-		parametros = "accion=consultarCorporativos";
-		parametros += "&empresaId=" + empresaId;	
-		
-		
-		var contextHandler = new AjaxContextHandler();
 		var url = HANDEL_API + "/" + this.servicio;
-		var ai = new Ajaxv2( url, this, this.consultarCorporativosResultado, "POST", parametros, contextHandler);		
-		contextHandler.AddAjaxv2Object(ai); 		
-		ai.GetPost(true);
+		$.post(url, {accion : "consultarCorporativos", empresaId : empresaId}, function(resultado) 
+		{
+			funcion.call(contexto,resultado);
+		});
 	}
 	
-	consultarCorporativosResultado(resultado)
-	{
-		var datos = JSON.parse(resultado);
-		this.functionRetorno.call(this.contexto,JSON.parse(resultado));
-	}	
+//	consultarCorporativosResultado(resultado)
+//	{
+//		var datos = JSON.parse(resultado);
+//		this.functionRetorno.call(this.contexto,JSON.parse(resultado));
+//	}	
 }

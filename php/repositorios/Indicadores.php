@@ -10,6 +10,7 @@ ini_set('display_errors', 1);
 
 include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
+include '../configuracion.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/IndicadoresRepositorio.php';
 
@@ -17,6 +18,7 @@ include '../repositorios/IndicadoresRepositorio.php';
 
 header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json; charset=UTF-8');
+
 
 $administrador_conexion = new AdministradorConexion();
 $resultado = new Resultado();

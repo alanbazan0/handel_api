@@ -11,6 +11,7 @@ class InspeccionesVista extends CatalogoVista
 	inicializar()
 	{
 		super.inicializar();
+		this.crearFechas();
 		this.consultarEmpresasCriterio();
 	}
 	
@@ -39,8 +40,7 @@ class InspeccionesVista extends CatalogoVista
 			{longitud:250, 	titulo:"Fecha de inspección",   alias:"fechaInspeccion", alineacion:"I" }
 		]
 		
-		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
-		"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Reporte'  type='button' class='imprimir btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active' style='background-color:#d62929'><span  data-toggle='tooltip' class='fa fa-file-pdf-o fa-lg'></span></button>";
 
 		this.tabla.registros = [];
 	}
@@ -125,6 +125,27 @@ class InspeccionesVista extends CatalogoVista
 				
 	}
 	
+	inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave)
+	{
+		super.inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave);
+		var _this = this;
+		$(tbody).on("click", "button.imprimir", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.imprimirReporte();
+			}
+		});
+	}
+	
 	rendererBotones(registro)
 	{
 		var html="";
@@ -140,10 +161,10 @@ class InspeccionesVista extends CatalogoVista
 		return html;
 	}
 	
-	imprimirReporte(id)
+	imprimirReporte()
 	{
 		var submitForm = this.getNewSubmitForm("php/reportes/reporte.php");
-		this.createNewFormElement(submitForm, "inspeccionId", JSON.stringify(id));	 
+		this.createNewFormElement(submitForm, "inspeccionId", JSON.stringify(this._llaves.id));	 
 	    submitForm.target= "_blank";
 	    submitForm.submit();
 	}

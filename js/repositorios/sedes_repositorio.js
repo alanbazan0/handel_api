@@ -5,26 +5,32 @@ class SedesRepositorio extends Repositorio
 		super("php/repositorios/Sedes.php");
 	}
 	
-	consultarPorEmpresa(contexto,functionRetorno, empresaId, opcional)
+	consultarPorEmpresa(contexto,funcion, empresaId, opcional)
 	{		
-		this.contexto = contexto;
-		this.functionRetorno = functionRetorno;
+//		this.contexto = contexto;
+//		this.functionRetorno = functionRetorno;
+//		
+//		var parametros;
+//		parametros = "accion=consultarPorEmpresa";
+//		parametros += "&empresaId=" + empresaId;		
+//		parametros += "&opcional=" + opcional;	
+//		
+//		var contextHandler = new AjaxContextHandler();
+//		var url = HANDEL_API + "/" + this.servicio;
+//		var ai = new Ajaxv2( url, this, this.consultarPorEmpresaResultado, "POST", parametros, contextHandler);		
+//		contextHandler.AddAjaxv2Object(ai); 		
+//		ai.GetPost(true);
 		
-		var parametros;
-		parametros = "accion=consultarPorEmpresa";
-		parametros += "&empresaId=" + empresaId;		
-		parametros += "&opcional=" + opcional;	
-		
-		var contextHandler = new AjaxContextHandler();
 		var url = HANDEL_API + "/" + this.servicio;
-		var ai = new Ajaxv2( url, this, this.consultarPorEmpresaResultado, "POST", parametros, contextHandler);		
-		contextHandler.AddAjaxv2Object(ai); 		
-		ai.GetPost(true);
+		$.post(url, {accion : "consultarPorEmpresa", empresaId : empresaId, opcional : opcional}, function(resultado) 
+		{
+			funcion.call(contexto,resultado);
+		});
 	}
-	
-	consultarPorEmpresaResultado(resultado)
-	{
-		var datos = JSON.parse(resultado);
-		this.functionRetorno.call(this.contexto,JSON.parse(resultado));
-	}	
+//	
+//	consultarPorEmpresaResultado(resultado)
+//	{
+//		var datos = JSON.parse(resultado);
+//		this.functionRetorno.call(this.contexto,JSON.parse(resultado));
+//	}	
 }

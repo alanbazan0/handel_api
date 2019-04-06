@@ -5,24 +5,30 @@ class TiposUsuarioRepositorio
 		this.servicio = "php/repositorios/TiposUsuario.php";
 	}
 	
-	consultar(contexto,functionRetorno)
+	consultar(contexto,funcion)
 	{		
-		this.contexto = contexto;
-		this.functionRetorno = functionRetorno;
+//		this.contexto = contexto;
+//		this.functionRetorno = functionRetorno;
+//		
+//		var parametros;
+//		parametros = "accion=consultar";		
+//		
+//		var contextHandler = new AjaxContextHandler();
+//		var url = HANDEL_API + "/" + this.servicio;
+//		var ai = new Ajaxv2( url, this, this.consultarResultado, "POST", parametros, contextHandler);		
+//		contextHandler.AddAjaxv2Object(ai); 		
+//		ai.GetPost(true);
 		
-		var parametros;
-		parametros = "accion=consultar";		
-		
-		var contextHandler = new AjaxContextHandler();
 		var url = HANDEL_API + "/" + this.servicio;
-		var ai = new Ajaxv2( url, this, this.consultarResultado, "POST", parametros, contextHandler);		
-		contextHandler.AddAjaxv2Object(ai); 		
-		ai.GetPost(true);
+		$.post(url, {accion : "consultar"}, function(resultado) 
+		{
+			funcion.call(contexto,resultado);
+		});
 	}
 	
-	consultarResultado(resultado)
-	{
-		var datos = JSON.parse(resultado);
-		this.functionRetorno.call(this.contexto,JSON.parse(resultado));
-	}	
+//	consultarResultado(resultado)
+//	{
+//		var datos = JSON.parse(resultado);
+//		this.functionRetorno.call(this.contexto,JSON.parse(resultado));
+//	}	
 }

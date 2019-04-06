@@ -10,10 +10,6 @@ class InicioSesionVista extends Vista
 	
 	inicializar()
 	{
-		var _this = this;
-		$("#ingresarButton").click(function(){
-			_this.iniciarSesion();
-		});
 		
 		this.inicializarValidacionesCuenta();
 	}

@@ -61,9 +61,13 @@ class PDF extends FPDF
         $this->imprimirSubtitulo();
         $this->imprimirInspector();
         $this->imprimirInformacionTransporte();
-        $this->imprimirInspeccionTractor();
-        $this->AddPage();
-        $this->imprimirInspeccionContenedor();
+        if(count($this->inspeccion->puntos1)>0)
+            $this->imprimirInspeccionTractor();
+        if(count($this->inspeccion->puntos2)>0)
+        {
+            $this->AddPage();
+            $this->imprimirInspeccionContenedor();
+        }
         $this->AddPage();
         $this->imprimirFotos();
 

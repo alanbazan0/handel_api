@@ -15,6 +15,7 @@ ini_set('display_errors', 1);
 
 include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
+include '../configuracion.php';
 include '../clases/AdministradorConexion.php';
 include '../clases/AdministradorArchivos.php';
 include '../clases/AdministradorCorreo.php';
@@ -24,8 +25,16 @@ include '../repositorios/UsuariosRepositorio.php';
 include "../repositorios/HistorialAccesoRepositorio.php";
 
 
-header('Access-Control-Allow-Origin: *');
+
+
+
+header('Access-Control-Allow-Origin: '.$_SERVER['HTTP_ORIGIN']);
+header('Access-Control-Allow-Credentials: true');
 header('Content-Type: application/json; charset=UTF-8');
+
+
+// if($session_cookie_domain!="")
+//     ini_set('session.cookie_domain', $session_cookie_domain);
 
 $administrador_conexion = new AdministradorConexion();
 $resultado = new Resultado();
@@ -75,7 +84,10 @@ try
                 $resultado = $repositorio->consultar($criteriosSeleccion);               
             break;
             case 'iniciarSesion':
+                
+              
                 session_start();
+                //session_regenerate_id();
                 $nombreUsuario = REQUEST('nombreUsuario');
                 $contrasena = REQUEST('contrasena');
                 $resultado = $repositorio->consultarUsuario($nombreUsuario,$contrasena);
@@ -84,9 +96,12 @@ try
                     if($resultado->valor->tipoUsuarioId == TipoUsuario::ADMINISTRADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::COORDINADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::SUPERVISOR)
                     {
                         $_SESSION['usuario']=$resultado->valor; 
+                        
                         $historialAccesoRepositorio = new HistorialAccesoRepositorio($conexion);
                         $ip = GET_IP();
                         $historialAccesoRepositorio->insertar($nombreUsuario,$ip);
+                       // setcookie('PHPSESSID',session_id(),time()+86400,'/','.apps-handel.com');
+                        //echo session_id();
                     }
                     else
                     {
@@ -112,15 +127,8 @@ try
                 if(isset($_SESSION['usuario']))
                 {
                     $usuario = $_SESSION['usuario'];
-//                     $adminstradorArchivos = new AdministradorArchivos();
-//                     $archivo = FILES("file");
-//                     $carpeta = "../fotos/";
-//                     $nombreArchivo = "perfil".$usuario->id.".jpg";
-//                     $resultado = $adminstradorArchivos->subir($carpeta,$archivo,$nombreArchivo);
-                    
                     $adminstradorArchivos = new AdministradorArchivos();
                     $archivo = FILES("file");
-                    // $carpeta = "../logos_empresas/";
                     $carpeta = "fotos";
                     $nombreArchivo = "perfil".$usuario->id.".png";
                     $resultado=$adminstradorArchivos->subir($carpeta,$archivo,$nombreArchivo);

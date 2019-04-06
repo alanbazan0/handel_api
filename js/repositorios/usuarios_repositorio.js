@@ -3,23 +3,57 @@ class UsuariosRepositorio extends Repositorio
 	constructor()
 	{
 		super("php/repositorios/Usuarios.php");
+		$.ajaxSetup({
+			  xhrFields: {
+			    withCredentials: true
+			  }
+			});
 	}
 	
-	iniciarSesion(contexto,functionRetorno, nombreUsuario, contrasena)
+	iniciarSesion(contexto,funcion, nombreUsuario, contrasena)
 	{		
-		this.contexto = contexto;
-		this.functionRetorno = functionRetorno;
+//		this.contexto = contexto;
+//		this.functionRetorno = funcion;
+//		
+//		var parametros;
+//		parametros = "accion=iniciarSesion";
+//		parametros += "&nombreUsuario=" + encodeURIComponent(nombreUsuario);		
+//		parametros += "&contrasena=" + encodeURIComponent(contrasena);		
+//		
+//		var contextHandler = new AjaxContextHandler();
+//		var url = HANDEL_API + "/" + this.servicio;
+//		var ai = new Ajaxv2( url , this, this.iniciarSesionResultado, "POST", parametros, contextHandler);		
+//		contextHandler.AddAjaxv2Object(ai); 		
+//		ai.GetPost(true);
 		
-		var parametros;
-		parametros = "accion=iniciarSesion";
-		parametros += "&nombreUsuario=" + encodeURIComponent(nombreUsuario);		
-		parametros += "&contrasena=" + encodeURIComponent(contrasena);		
+//		var url = HANDEL_API + "/" + this.servicio;
+//		$.post(url, {accion : "iniciarSesion", nombreUsuario : nombreUsuario, contrasena : contrasena }, function(resultado) 
+//		{
+//			funcion.call(contexto,resultado);
+//		});
 		
-		var contextHandler = new AjaxContextHandler();
 		var url = HANDEL_API + "/" + this.servicio;
-		var ai = new Ajaxv2( url , this, this.iniciarSesionResultado, "POST", parametros, contextHandler);		
-		contextHandler.AddAjaxv2Object(ai); 		
-		ai.GetPost(true);
+		 $.ajax({
+             url: url,
+             type: 'POST',
+             data: {accion : "iniciarSesion", nombreUsuario : nombreUsuario, contrasena : contrasena },
+             success: function( data, textStatus, jQxhr )
+             {
+               //  $('#response pre').html( data );
+                 	
+                 funcion.call(contexto,data);
+             },
+             error: function( jqXhr, textStatus, errorThrown )
+             {
+            	 funcion.call(contexto,{ mensajeError : textStatus});
+             },
+             fail: function( jqXhr, textStatus, errorThrown )
+             {
+            	 funcion.call(contexto,{ mensajeError : textStatus});
+             }
+         });
+		
+	
 	}
 	
 	iniciarSesionResultado(resultado)
@@ -28,49 +62,61 @@ class UsuariosRepositorio extends Repositorio
 		this.functionRetorno.call(this.contexto,JSON.parse(resultado));
 	}	
 	
-	cerrarSesion(contexto,functionRetorno)
+	cerrarSesion(contexto,funcion)
 	{		
-		this.contexto = contexto;
-		this.functionRetorno = functionRetorno;
-		
-		var parametros;
-		parametros = "accion=cerrarSesion";
-		
-		var contextHandler = new AjaxContextHandler();
+//		this.contexto = contexto;
+//		this.functionRetorno = functionRetorno;
+//		
+//		var parametros;
+//		parametros = "accion=cerrarSesion";
+//		
+//		var contextHandler = new AjaxContextHandler();
+//		var url = HANDEL_API + "/" + this.servicio;
+//		var ai = new Ajaxv2( url, this, this.cerrarSesionResultado, "POST", parametros, contextHandler);		
+//		contextHandler.AddAjaxv2Object(ai); 		
+//		ai.GetPost(true);
 		var url = HANDEL_API + "/" + this.servicio;
-		var ai = new Ajaxv2( url, this, this.cerrarSesionResultado, "POST", parametros, contextHandler);		
-		contextHandler.AddAjaxv2Object(ai); 		
-		ai.GetPost(true);
+		$.post(url, {accion : "cerrarSesion" }, function(resultado) 
+		{
+			//funcion.call(contexto,resultado);
+			funcion.call(contexto,resultado);
+		});
 	}
 	
-	cerrarSesionResultado(resultado)
-	{
-		var datos = JSON.parse(resultado);
-		this.functionRetorno.call(this.contexto,JSON.parse(resultado));
-	}	
+//	cerrarSesionResultado(resultado)
+//	{
+//		var datos = JSON.parse(resultado);
+//		this.functionRetorno.call(this.contexto,JSON.parse(resultado));
+//	}	
 	
-	consultarSupervisoresPorEmpresa(contexto,functionRetorno, empresaId, usuarioId)
+	consultarSupervisoresPorEmpresa(contexto,funcion, empresaId, usuarioId)
 	{		
-		this.contexto = contexto;
-		this.functionRetorno = functionRetorno;
-		
-		var parametros;
-		parametros = "accion=consultarSupervisoresPorEmpresa";
-		parametros += "&empresaId=" + empresaId;	
-		parametros += "&usuarioId=" + usuarioId;
-		
-		var contextHandler = new AjaxContextHandler();
+//		this.contexto = contexto;
+//		this.functionRetorno = functionRetorno;
+//		
+//		var parametros;
+//		parametros = "accion=consultarSupervisoresPorEmpresa";
+//		parametros += "&empresaId=" + empresaId;	
+//		parametros += "&usuarioId=" + usuarioId;
+//		
+//		var contextHandler = new AjaxContextHandler();
+//		var url = HANDEL_API + "/" + this.servicio;
+//		var ai = new Ajaxv2( url, this, this.consultarSupervisoresPorEmpresaResultado, "POST", parametros, contextHandler);		
+//		contextHandler.AddAjaxv2Object(ai); 		
+//		ai.GetPost(true);
 		var url = HANDEL_API + "/" + this.servicio;
-		var ai = new Ajaxv2( url, this, this.consultarSupervisoresPorEmpresaResultado, "POST", parametros, contextHandler);		
-		contextHandler.AddAjaxv2Object(ai); 		
-		ai.GetPost(true);
+		$.post(url, {accion : "consultarSupervisoresPorEmpresa", empresaId : empresaId, usuarioId : usuarioId }, function(resultado) 
+		{
+			//funcion.call(contexto,resultado);
+			funcion.call(contexto,resultado);
+		});
 	}
 	
-	consultarSupervisoresPorEmpresaResultado(resultado)
-	{
-		var datos = JSON.parse(resultado);
-		this.functionRetorno.call(this.contexto,JSON.parse(resultado));
-	}	
+//	consultarSupervisoresPorEmpresaResultado(resultado)
+//	{
+//		var datos = JSON.parse(resultado);
+//		this.functionRetorno.call(this.contexto,JSON.parse(resultado));
+//	}	
 	
 	
 	subirFotoPerfil(contexto, funcionResultado,archivo)
