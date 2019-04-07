@@ -17,6 +17,7 @@ class UsuariosVista extends CatalogoVista
 	crearColumnasGrid()
 	{
 		this.tabla.columnas = [
+			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogo},
 			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
 			{longitud:200, 	titulo:"Nombre de usuario",   	alias:"nombreUsuario", alineacion:"I", classSpan:"block-email" }, 
 			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I",class: "desc" }, 
@@ -88,6 +89,15 @@ class UsuariosVista extends CatalogoVista
         });
 	}
 
+	renderLogo(renglon, type, set)
+	{    
+		var fecha = new Date();
+		var contenido = "";
+		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+fecha.getTime();
+		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
+	    return contenido;
+	}
+	
 	agregar()
 	{
 		super.agregar();
