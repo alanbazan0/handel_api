@@ -20,11 +20,30 @@ class InspeccionesRepositorio extends Repositorio
 //		var ai = new Ajaxv2(url, this, this.consultarPorEmpresaSedeResultado, "POST", parametros, contextHandler);		
 //		contextHandler.AddAjaxv2Object(ai); 		
 //		ai.GetPost(true);
+//		var url = HANDEL_API + "/" + this.servicio;
+//		$.post(url, {accion : "consultarPorEmpresaSede", empresaId : empresaId, sedeId: sedeId}, function(resultado) 
+//		{
+//			funcion.call(contexto,resultado);
+//		});
+		
 		var url = HANDEL_API + "/" + this.servicio;
-		$.post(url, {accion : "consultarPorEmpresaSede", empresaId : empresaId, sedeId: sedeId}, function(resultado) 
-		{
-			funcion.call(contexto,resultado);
-		});
+			$.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarPorEmpresaSede", empresaId : empresaId, sedeId: sedeId},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       }
+	   });
 	}
 	
 //	consultarPorEmpresaSedeResultado(resultado)
@@ -46,11 +65,30 @@ class InspeccionesRepositorio extends Repositorio
 //		var ai = new Ajaxv2(url, this, this.consultarInspeccionesEmpresaResultado, "POST", parametros, contextHandler);		
 //		contextHandler.AddAjaxv2Object(ai); 		
 //		ai.GetPost(true);
+//		var url = HANDEL_API + "/" + this.servicio;
+//		$.post(url, {accion : "consultarInspeccionesEmpresa"}, function(resultado) 
+//		{
+//			funcion.call(contexto,resultado);
+//		});
+//		
 		var url = HANDEL_API + "/" + this.servicio;
-		$.post(url, {accion : "consultarInspeccionesEmpresa"}, function(resultado) 
-		{
-			funcion.call(contexto,resultado);
-		});
+			$.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarInspeccionesEmpresa"},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       }
+	   });
 	}
 	
 //	consultarInspeccionesEmpresaResultado(resultado)
@@ -72,11 +110,30 @@ class InspeccionesRepositorio extends Repositorio
 //		var ai = new Ajaxv2(url, this, this.consultarInspeccionesMesResultado, "POST", parametros, contextHandler);		
 //		contextHandler.AddAjaxv2Object(ai); 		
 //		ai.GetPost(true);
+//		var url = HANDEL_API + "/" + this.servicio;
+//		$.post(url, {accion : "consultarInspeccionesMes"}, function(resultado) 
+//		{
+//			funcion.call(contexto,resultado);
+//		});
+		
 		var url = HANDEL_API + "/" + this.servicio;
-		$.post(url, {accion : "consultarInspeccionesMes"}, function(resultado) 
-		{
-			funcion.call(contexto,resultado);
-		});
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarInspeccionesMes"},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       }
+	   });
 	}
 	
 //	consultarInspeccionesMesResultado(resultado)
@@ -98,11 +155,30 @@ class InspeccionesRepositorio extends Repositorio
 //		var ai = new Ajaxv2(url, this, this.consultarInspeccionesSedeResultado, "POST", parametros, contextHandler);		
 //		contextHandler.AddAjaxv2Object(ai); 		
 //		ai.GetPost(true);
+//		var url = HANDEL_API + "/" + this.servicio;
+//		$.post(url, {accion : "consultarInspeccionesSede"}, function(resultado) 
+//		{
+//			funcion.call(contexto,resultado);
+//		});
+		
 		var url = HANDEL_API + "/" + this.servicio;
-		$.post(url, {accion : "consultarInspeccionesSede"}, function(resultado) 
-		{
-			funcion.call(contexto,resultado);
-		});
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarInspeccionesSede"},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       }
+	   });
 	}
 	
 //	consultarInspeccionesSedeResultado(resultado)

@@ -9,22 +9,23 @@
 			</div>
 			<div class="modal-body">
 				<form id="formulario" action="#"  method="post">
-					<div class="form-group">
-						<div>
-							<label for="nombreInput" class="control-label mb-1">Nombre</label>
-							<input id="nombreInput" name="nombreInput" type="text" class="form-control">
-						</div>
-					</div>
+					
 					<div class="form-group">
 						<div>
 							<label for="empresaSelect" class="control-label mb-1">Empresa</label>
-							<select name="empresaSelect" id="empresaSelect" class="form-control" onchange="vista.cambiarEmpresa();"></select>
+							<select name="empresaSelect" id="empresaSelect" class="form-control" onchange="vista.cambiarEmpresa();"><option value="">Cargando...</option></select>
 						</div>
 					</div>
 					<div class="form-group">
 						<div>
 							<label for="sedeSelect" class="control-label mb-1">Sede</label> 
-							<select name="sedeSelect" id="sedeSelect" class="form-control"></select>
+							<select name="sedeSelect" id="sedeSelect" class="form-control"><option value="">Cargando...</option></select>
+						</div>
+					</div>
+					<div class="form-group">
+						<div>
+							<label for="nombreInput" class="control-label mb-1">Nombre</label>
+							<input id="nombreInput" name="nombreInput" type="text" class="form-control">
 						</div>
 					</div>
 					<div class="form-group">

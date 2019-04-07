@@ -31,10 +31,51 @@ class PuestosVista extends CatalogoVista
 		this.tabla.registros = [];		
 	}
 	
+	inicializarValidacionesFormulario()
+	{
+		var _this = this;
+		jQuery("#formulario").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+            	 "empresaSelect": {
+                     required: !0
+                 },
+                "nombreInput": {
+                    required: !0
+                },
+                "sedeSelect": {
+                    required: !0
+                }
+               
+            },
+            messages: {
+            	 "empresaSelect": "Por favor ingrese una empresa",
+                "nombreInput": "Por favor ingrese un nombre",
+                "sedeSelect": "Por favor ingrese una sede"
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.guardar();
+            }
+        });
+	}
+	
 	agregar()
 	{
 		super.agregar();
-		$('#nombreInput').focus();
+		//$('#nombreInput').focus();
 		this.consultarEmpresas();
 		
 	}

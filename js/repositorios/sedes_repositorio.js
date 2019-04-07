@@ -21,11 +21,30 @@ class SedesRepositorio extends Repositorio
 //		contextHandler.AddAjaxv2Object(ai); 		
 //		ai.GetPost(true);
 		
+//		var url = HANDEL_API + "/" + this.servicio;
+//		$.post(url, {accion : "consultarPorEmpresa", empresaId : empresaId, opcional : opcional}, function(resultado) 
+//		{
+//			funcion.call(contexto,resultado);
+//		});
+		
 		var url = HANDEL_API + "/" + this.servicio;
-		$.post(url, {accion : "consultarPorEmpresa", empresaId : empresaId, opcional : opcional}, function(resultado) 
-		{
-			funcion.call(contexto,resultado);
-		});
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarPorEmpresa", empresaId : empresaId, opcional : opcional},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       }
+	   });
 	}
 //	
 //	consultarPorEmpresaResultado(resultado)

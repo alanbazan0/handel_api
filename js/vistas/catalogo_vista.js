@@ -259,6 +259,14 @@ class CatalogoVista extends Vista
 	{
 		
 	}
+	
+	set guardando(guardando)
+	{
+		if(guardando)
+			$("#guardarButton").attr("disabled",true);
+		else
+			$("#guardarButton").attr("disabled",false);
+	}
 		
 	salirFormulario()
 	{

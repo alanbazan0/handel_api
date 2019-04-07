@@ -39,8 +39,6 @@ class UsuariosRepositorio extends Repositorio
              data: {accion : "iniciarSesion", nombreUsuario : nombreUsuario, contrasena : contrasena },
              success: function( data, textStatus, jQxhr )
              {
-               //  $('#response pre').html( data );
-                 	
                  funcion.call(contexto,data);
              },
              error: function( jqXhr, textStatus, errorThrown )
@@ -75,12 +73,31 @@ class UsuariosRepositorio extends Repositorio
 //		var ai = new Ajaxv2( url, this, this.cerrarSesionResultado, "POST", parametros, contextHandler);		
 //		contextHandler.AddAjaxv2Object(ai); 		
 //		ai.GetPost(true);
+//		var url = HANDEL_API + "/" + this.servicio;
+//		$.post(url, {accion : "cerrarSesion" }, function(resultado) 
+//		{
+//			//funcion.call(contexto,resultado);
+//			funcion.call(contexto,resultado);
+//		});
+		
 		var url = HANDEL_API + "/" + this.servicio;
-		$.post(url, {accion : "cerrarSesion" }, function(resultado) 
-		{
-			//funcion.call(contexto,resultado);
-			funcion.call(contexto,resultado);
-		});
+		 $.ajax({
+            url: url,
+            type: 'POST',
+            data: {accion : "cerrarSesion" },
+            success: function( data, textStatus, jQxhr )
+            {
+                funcion.call(contexto,data);
+            },
+            error: function( jqXhr, textStatus, errorThrown )
+            {
+           	 funcion.call(contexto,{ mensajeError : textStatus});
+            },
+            fail: function( jqXhr, textStatus, errorThrown )
+            {
+           	 funcion.call(contexto,{ mensajeError : textStatus});
+            }
+        });
 	}
 	
 //	cerrarSesionResultado(resultado)
@@ -104,12 +121,31 @@ class UsuariosRepositorio extends Repositorio
 //		var ai = new Ajaxv2( url, this, this.consultarSupervisoresPorEmpresaResultado, "POST", parametros, contextHandler);		
 //		contextHandler.AddAjaxv2Object(ai); 		
 //		ai.GetPost(true);
+//		var url = HANDEL_API + "/" + this.servicio;
+//		$.post(url, {accion : "consultarSupervisoresPorEmpresa", empresaId : empresaId, usuarioId : usuarioId }, function(resultado) 
+//		{
+//			//funcion.call(contexto,resultado);
+//			funcion.call(contexto,resultado);
+//		});
+		
 		var url = HANDEL_API + "/" + this.servicio;
-		$.post(url, {accion : "consultarSupervisoresPorEmpresa", empresaId : empresaId, usuarioId : usuarioId }, function(resultado) 
-		{
-			//funcion.call(contexto,resultado);
-			funcion.call(contexto,resultado);
-		});
+		 $.ajax({
+           url: url,
+           type: 'POST',
+           data: {accion : "consultarSupervisoresPorEmpresa", empresaId : empresaId, usuarioId : usuarioId },
+           success: function( data, textStatus, jQxhr )
+           {
+               funcion.call(contexto,data);
+           },
+           error: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : textStatus});
+           },
+           fail: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : textStatus});
+           }
+       });
 	}
 	
 //	consultarSupervisoresPorEmpresaResultado(resultado)

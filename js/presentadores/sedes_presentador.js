@@ -33,7 +33,7 @@ class SedesPresentador extends CatalogoPresentador
 		if(resultado.mensajeError=="")
 		{
 			this.vista.empresas = resultado.valor;
-			this.vista.cambiarEmpresa();
+			//this.vista.cambiarEmpresa();
 			
 		}
 		else

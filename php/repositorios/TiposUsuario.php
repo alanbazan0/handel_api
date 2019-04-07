@@ -11,8 +11,12 @@ include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/TiposUsuarioRepositorio.php';
 
-header('Access-Control-Allow-Origin: *');
+$origin = "*";
+if(isset($_SERVER['HTTP_ORIGIN']))
+    $origin =$_SERVER['HTTP_ORIGIN'];
+header('Access-Control-Allow-Origin: '.$origin);
 header('Content-Type: application/json; charset=UTF-8');
+header('Access-Control-Allow-Credentials: true');
 
 $administrador_conexion = new AdministradorConexion();
 $resultado = new Resultado();

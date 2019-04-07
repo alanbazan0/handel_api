@@ -30,6 +30,36 @@ class TiposEmpresaVista extends CatalogoVista
 		this.tabla.registros = [];	
 	}
 	
+	inicializarValidacionesFormulario()
+	{
+		var _this = this;
+		jQuery("#formulario").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+                "nombreInput": { required: !0}
+            },
+            messages: {
+                "nombreInput": "Por favor ingrese un nombre"
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.guardar();
+            }
+        });
+	}
+	
 //	renderEstatus(renglon, campoBase)
 //	{    
 //		var contenido = "";
@@ -160,7 +190,7 @@ class TiposEmpresaVista extends CatalogoVista
 		 var modelo = 
 		 {		
 			 nombre:$('#nombreInput').val(),			 
-			 estatus:$('input[name=estatus]:checked').val()
+			 estatus:$('#estatusRadio').is(':checked')?1:0
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;

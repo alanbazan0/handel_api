@@ -12,6 +12,7 @@ class EmpresasVista extends CatalogoVista
 	crearColumnasGrid()
 	{
 		this.tabla.columnas = [
+			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogo},
 			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
 			{longitud:200, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I" }, 
 			{longitud:200, 	titulo:"Teléfono",   alias:"telefono", alineacion:"I" }, 	
@@ -125,11 +126,11 @@ class EmpresasVista extends CatalogoVista
         });
 	}
 	
-	renderLogo(renglon, campo)
+	renderLogo(renglon, type, set)
 	{    
 		var fecha = new Date();
 		var contenido = "";
-		var icono ="php/logos_empresas/" + renglon.icono+"?"+fecha.getTime();
+		var icono = HANDEL_API+ "/php/logos_empresas/" + renglon.icono+"?"+fecha.getTime();
 		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
 	    return contenido;
 	}

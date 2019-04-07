@@ -20,11 +20,30 @@ class PuestosRepositorio extends Repositorio
 //		var ai = new Ajaxv2( url, this, this.consultarPorEmpresaSedeResultado, "POST", parametros, contextHandler);		
 //		contextHandler.AddAjaxv2Object(ai); 		
 //		ai.GetPost(true);
+//		var url = HANDEL_API + "/" + this.servicio;
+//		$.post(url, {accion : "consultarPorEmpresaSede", empresaId: empresaId, sedeId : sedeId}, function(resultado) 
+//		{
+//			funcion.call(contexto,resultado);
+//		});
+		
 		var url = HANDEL_API + "/" + this.servicio;
-		$.post(url, {accion : "consultarPorEmpresaSede", empresaId: empresaId, sedeId : sedeId}, function(resultado) 
-		{
-			funcion.call(contexto,resultado);
-		});
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarPorEmpresaSede", empresaId: empresaId, sedeId : sedeId},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       }
+	   });
 	}
 	
 //	consultarPorEmpresaSedeResultado(resultado)

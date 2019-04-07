@@ -25,6 +25,7 @@ class CatalogoPresentador
 	 
 	 insertar()
 	 {
+		 this.vista.guardando = true;
 		 this.vista.mostrarIndicador();	
 		 this._repositorio.insertar(this,this.insertarResultado,this.vista.modelo, this.vista.logo);	
 	 }
@@ -39,12 +40,14 @@ class CatalogoPresentador
 			this.consultar();
 		}
 		else
-			this.vista.mostrarMensajeError("Error","Ocurrió un error al guardar el registro. " + resultado.mensajeError);			
+			this.vista.mostrarMensajeError("Error","Ocurrió un error al guardar el registro. " + resultado.mensajeError);		
+		 this.vista.guardando = false;
 			
 	 }	
 
 	 actualizar()
 	 {
+		 this.vista.guardando = true;
 		 this.vista.mostrarIndicador();	
 		 this._repositorio.actualizar(this,this.actualizarResultado,this.vista.modelo, this.vista.logo);
 	 }
@@ -59,7 +62,8 @@ class CatalogoPresentador
 			this.consultar();
 		 }
 		 else
-			this.vista.mostrarMensajeError("Error","Ocurrió un error al actualizar el registro. " + resultado.mensajeError);			
+			this.vista.mostrarMensajeError("Error","Ocurrió un error al actualizar el registro. " + resultado.mensajeError);		
+		 this.vista.guardando = false;
 	 }
 	   
 	 consultarPorLlaves()
@@ -88,9 +92,10 @@ class CatalogoPresentador
 	 eliminarResultado(resultado)
 	 {		
 		 this.vista.ocultarIndicador();	
+		 this.vista.cerrarConfirmacionEliminar();
 		 if(resultado.mensajeError=="")
 		 {
-			 this.vista.cerrarConfirmacionEliminar();
+			
 			 this.vista.mostrarMensaje("Notificación","El registro se eliminó correctamente.");
 			 this.consultar();
 		 }

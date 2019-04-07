@@ -200,7 +200,19 @@ class SedesRepositorio extends RepositorioBase implements ISedesRepositorio
         $filtros = array(); 
         $where="";
         if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
-            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$empresaId]);
+        {
+//             if($opcional=="true")
+//             {
+//                 if($empresaId!="")
+//                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$empresaId]);
+//             }
+//             else
+//             {
+//                 array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$empresaId]);
+//             }
+                array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$empresaId]);
+              
+        }
         else  if($usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
                 array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$empresaId]);
         else  if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR)
@@ -208,6 +220,7 @@ class SedesRepositorio extends RepositorioBase implements ISedesRepositorio
             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'id','valor'=>$usuario->sedeId]);
         }
+        
         
         $where = $this->where($filtros);
         

@@ -35,27 +35,72 @@ class SedesVista extends CatalogoVista
 		this.tabla.registros = [];	
 	}
 	
-	rendererBotones(registro)
+	inicializarValidacionesFormulario()
 	{
-		var html="";
-		if(this._usuario!=null)
-		{
-			if(this._usuario.tipoUsuarioId == TipoUsuario.SUPERUSUARIO)
-			{
-				html+="<button class='item' data-toggle='tooltip' data-placement='top' title='Historial de creditos' style='background-color:#d3d60f;cursor:pointer' onclick='vista.verCreditos("+registro.id+")'>";
-				html+="<i class='fas fa-calendar-check-o' style='color:#ffffff;'></i>";
-				html+="</button>";
-			}
-		}
-		return html;
+		var _this = this;
+		jQuery("#formulario").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+            	 "empresaSelect": {required: !0},
+                "nombreInput": {required: !0},
+                "nombreCortoInput": {required: !0},
+                "direccionInput": {required: !0},
+                "tipoEmpresaSelect": {required: !0},
+                "paisSelect": {required: !0},
+                "estadoSelect": {required: !0},
+                "ciudadSelect": {required: !0
+                }
+               
+            },
+            messages: {
+            	 "empresaSelect": "Por favor ingrese un nombre",
+                "nombreInput": "Por favor ingrese un nombre",
+                "nombreCortoInput": "Por favor ingrese un nombre corto",
+                "direccionInput": "Por favor ingrese una dirección",
+                "tipoEmpresaSelect": "Por favor ingrese un tipo de empresa",
+                "paisSelect": "Por favor ingrese un país",
+                "estadoSelect": "Por favor ingrese un estao",
+                "ciudadSelect": "Por favor ingrese una ciudad"
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.guardar();
+            }
+        });
 	}
+//	
+//	rendererBotones(registro)
+//	{
+//		var html="";
+//		if(this._usuario!=null)
+//		{
+//			if(this._usuario.tipoUsuarioId == TipoUsuario.SUPERUSUARIO)
+//			{
+//				html+="<button class='item' data-toggle='tooltip' data-placement='top' title='Historial de creditos' style='background-color:#d3d60f;cursor:pointer' onclick='vista.verCreditos("+registro.id+")'>";
+//				html+="<i class='fas fa-calendar-check-o' style='color:#ffffff;'></i>";
+//				html+="</button>";
+//			}
+//		}
+//		return html;
+//	}
 	
 	
 	
 	agregar()
 	{
 		super.agregar();
-		$('#nombreInput').focus();
 		this.consultarEmpresas();
 		this.consultarPaises();
 	}
