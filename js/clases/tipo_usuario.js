@@ -1,11 +1,11 @@
 class TipoUsuario
 {
-	static get SUPERUSUARIO()
+	static get ADMINISTRADOR()
 	{
 		return 1;
 	}
 	
-	static get ADMINISTRADOR()
+	static get COORDINADOR()
 	{
 		return  2;
 	}
@@ -20,7 +20,7 @@ class TipoUsuario
 		return  3;
 	}
 		
-	static get ADMINISTRADOR_CORPORATIVO()
+	static get SUPERVISOR()
 	{
 		return  5;
 	}

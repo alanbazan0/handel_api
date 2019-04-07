@@ -1,8 +1,8 @@
-class TiposUsuarioRepositorio 
+class TiposUsuarioRepositorio extends Repositorio
 {	
 	constructor()
 	{
-		this.servicio = "php/repositorios/TiposUsuario.php";
+		super("php/repositorios/TiposUsuario.php");
 	}
 	
 //	consultar(contexto,funcion)

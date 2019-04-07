@@ -40,7 +40,7 @@ class UsuariosPresentador extends CatalogoPresentador
 			
 		}
 		else
-			this.vista.mostrarMensaje("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		
 	 }
 	 
@@ -59,7 +59,7 @@ class UsuariosPresentador extends CatalogoPresentador
 			this.vista.tiposUsuario = resultado.valor;			
 		}
 		else
-			this.vista.mostrarMensaje("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		
 	 }
 	 
@@ -77,7 +77,7 @@ class UsuariosPresentador extends CatalogoPresentador
 		if(resultado.mensajeError=="")
 			this.vista.areas = resultado.valor;
 		else
-			this.vista.mostrarMensaje("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 	 }
 	 
 	 consultarPuestos()	
@@ -93,7 +93,7 @@ class UsuariosPresentador extends CatalogoPresentador
 		if(resultado.mensajeError=="")
 			this.vista.puestos = resultado.valor;
 		else
-			this.vista.mostrarMensaje("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		
 	 }
 	 
@@ -113,7 +113,7 @@ class UsuariosPresentador extends CatalogoPresentador
 			this.vista.cambiarSede();
 		}
 		else
-			this.vista.mostrarMensaje("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		
 	 }
 	 
@@ -134,7 +134,7 @@ class UsuariosPresentador extends CatalogoPresentador
 			this.vista.supervisores3 = resultado.valor;
 		}
 		else
-			this.vista.mostrarMensaje("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		
 	 }
 	 

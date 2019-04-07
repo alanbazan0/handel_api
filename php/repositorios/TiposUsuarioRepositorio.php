@@ -21,17 +21,17 @@ class TiposUsuarioRepositorio extends RepositorioBase implements ITiposUsuarioRe
     {     
         $resultado = new Resultado();
         $registros = array();     
-        if($usuario->tipoUsuarioId == \TipoUsuario::SUPERUSUARIO)
+        if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
         {
             $consulta = " SELECT id, nombre " .                  
                     " FROM tipos_usuario order by orden";       
         }
-        if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR_CORPORATIVO)
+        if($usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
         {
             $consulta = " SELECT id, nombre " .
                 " FROM tipos_usuario  WHERE id IN(2, 3, 4) order by orden";   
         }
-        if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
+        if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR)
         {
             $consulta = " SELECT id, nombre " .
                 " FROM tipos_usuario WHERE id IN(3,4) order by orden";

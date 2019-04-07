@@ -70,7 +70,7 @@ class SedesVista extends CatalogoVista
                 "direccionInput": "Por favor ingrese una dirección",
                 "tipoEmpresaSelect": "Por favor ingrese un tipo de empresa",
                 "paisSelect": "Por favor ingrese un país",
-                "estadoSelect": "Por favor ingrese un estao",
+                "estadoSelect": "Por favor ingrese un estado",
                 "ciudadSelect": "Por favor ingrese una ciudad"
                 	
                 
