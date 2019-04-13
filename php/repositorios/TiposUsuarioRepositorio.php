@@ -29,12 +29,12 @@ class TiposUsuarioRepositorio extends RepositorioBase implements ITiposUsuarioRe
         if($usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
         {
             $consulta = " SELECT id, nombre " .
-                " FROM tipos_usuario  WHERE id IN(2, 3, 4) order by orden";   
+                " FROM tipos_usuario  WHERE id IN(3) order by orden";   
         }
         if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR)
         {
             $consulta = " SELECT id, nombre " .
-                " FROM tipos_usuario WHERE id IN(3,4) order by orden";
+                " FROM tipos_usuario WHERE id IN(3) order by orden";
         }
         
         if($sentencia = $this->conexion->prepare($consulta))
