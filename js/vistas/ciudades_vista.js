@@ -4,7 +4,7 @@ class CiudadesVista extends CatalogoVista
 	{	
 		super();
 		this.presentador = new CiudadesPresentador(this);
-		this._urlFormulario = "html/formularios/ciudades.html";
+		this._urlFormulario = "html/formularios/ciudades.php";
 	}
 	
 //	onLoad()

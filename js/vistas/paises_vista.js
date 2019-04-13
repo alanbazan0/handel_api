@@ -4,7 +4,7 @@ class PaisesVista extends CatalogoVista
 	{	
 		super();
 		this.presentador = new PaisesPresentador(this);
-		this._urlFormulario = "html/formularios/paises.html";
+		this._urlFormulario = "html/formularios/paises.php";
 	}
 	
 //	onLoad()

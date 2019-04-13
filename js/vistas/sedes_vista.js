@@ -4,7 +4,7 @@ class SedesVista extends CatalogoVista
 	{	
 		super();
 		this.presentador = new SedesPresentador(this);
-		this._urlFormulario = "html/formularios/sedes.html";
+		this._urlFormulario = "html/formularios/sedes.php";
 	}
 	
 	inicializar()

@@ -4,7 +4,7 @@ class EstadosVista extends CatalogoVista
 	{	
 		super();
 		this.presentador = new EstadosPresentador(this);
-		this._urlFormulario = "html/formularios/estados.html";
+		this._urlFormulario = "html/formularios/estados.php";
 	}
 	
 //	onLoad()

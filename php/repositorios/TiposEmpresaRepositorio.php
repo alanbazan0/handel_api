@@ -86,7 +86,7 @@ class TiposEmpresaRepositorio extends RepositorioBase implements ITiposEmpresaRe
                 $where = $this->where($filtros);
         }
         $consulta = $this->consultaBase .
-        $where;
+        $where . " order by nombre";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {

@@ -16,12 +16,8 @@ include '../repositorios/PlantillasRepositorio.php';
 
 
 
-$origin = "*";
-if(isset($_SERVER['HTTP_ORIGIN']))
-    $origin =$_SERVER['HTTP_ORIGIN'];
-header('Access-Control-Allow-Origin: '.$origin);
+header('Access-Control-Allow-Origin: *');
 header('Content-Type: application/json; charset=UTF-8');
-header('Access-Control-Allow-Credentials: true');
 
 $administrador_conexion = new AdministradorConexion();
 $resultado = new Resultado();

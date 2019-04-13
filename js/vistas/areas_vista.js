@@ -4,7 +4,7 @@ class AreasVista extends CatalogoVista
 	{	
 		super(ventana);
 		this.presentador = new AreasPresentador(this);
-		this._urlFormulario = "html/formularios/areas.html";
+		this._urlFormulario = "html/formularios/areas.php";
 		this.consultoGrid = false;
 		
 	}

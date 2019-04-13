@@ -59,6 +59,9 @@ class Tabla
 		this.renderizarRegistros();
 //		$(this._id).html(html);
 		$('[data-toggle="tooltip"]').tooltip();
+		
+		$(".paginate_button").attr("href","#");
+		
 	}
 	
 	get columnasDataTable()
@@ -128,6 +131,9 @@ class Tabla
 		
 		$('#'+this._id+"Table").DataTable( {
 			  data: this._registros,
+			  "drawCallback": function( settings ) {
+				  $(".paginate_button").attr("href","#");
+			    },
 			    "info":true,
 		        "searching":true,
 				"destroy":true,
@@ -166,6 +172,10 @@ class Tabla
 			   
 			  } );
 	
+//		$('#'+this._id+"Table").on( 'page.dt', function () 
+//		{
+//			$(".paginate_button").attr("href","#");
+//		} );
 		
 		
 	}
@@ -254,6 +264,8 @@ class Tabla
 		html+="</table>";
 		
 		$("#"+this._id).html(html);	
+		
+		
 	}
 
 

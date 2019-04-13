@@ -4,7 +4,7 @@ class EmpresasVista extends CatalogoVista
 	{	
 		super();
 		this.presentador = new EmpresasPresentador(this);
-		this._urlFormulario = "html/formularios/empresas.html";
+		this._urlFormulario = "html/formularios/empresas.php";
 		
 	}
 	

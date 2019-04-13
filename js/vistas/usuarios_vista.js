@@ -4,7 +4,7 @@ class UsuariosVista extends CatalogoVista
 	{	
 		super(ventana);
 		this.presentador = new UsuariosPresentador(this);
-		this._urlFormulario = "html/formularios/usuarios.html";
+		this._urlFormulario = "html/formularios/usuarios.php";
 		
 	}
 
@@ -33,7 +33,11 @@ class UsuariosVista extends CatalogoVista
 			{longitud:200, 	titulo:"Ultimo acceso",   alias:"ultimoAcceso", alineacion:"I" },			
 			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
 			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
-			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
+			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus},
+			{longitud:100, 	titulo:"SAHA",   alias:"permisoSAHA", alineacion:"D", itemRenderer:this.renderPermisoSAHA},
+			{longitud:100, 	titulo:"SIVAH",   alias:"permisoSIVAH", alineacion:"D", itemRenderer:this.renderPermisoSIVAH},
+			{longitud:100, 	titulo:"10 Y 7",   alias:"permiso10y7", alineacion:"D", itemRenderer:this.renderPermiso10y7}
+	
 		]
 		
 		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
@@ -41,6 +45,8 @@ class UsuariosVista extends CatalogoVista
 
 		this.tabla.registros = [];	
 	}
+	
+	
 	
 	inicializarValidacionesFormulario()
 	{
@@ -95,6 +101,36 @@ class UsuariosVista extends CatalogoVista
 		var contenido = "";
 		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+fecha.getTime();
 		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
+	    return contenido;
+	}
+	
+	renderPermisoSAHA(renglon, type, set)
+	{    
+		var contenido = "";
+		if(renglon.permisoSAHA==1)
+			contenido += "<center><span class='fa fa-check fa-lg text-success'></span></center>";
+		else
+			contenido += "<center><span class='fa fa-close fa-lg text-danger'></span></center>";
+	    return contenido;
+	}
+	
+	renderPermisoSIVAH(renglon, type, set)
+	{    
+		var contenido = "";
+		if(renglon.permisoSIVAH==1)
+			contenido += "<center><span class='fa fa-check fa-lg text-success'></span></center>";
+		else
+			contenido += "<center><span class='fa fa-close fa-lg text-danger'></span></center>";
+	    return contenido;
+	}
+	
+	renderPermiso10y7(renglon, type, set)
+	{    
+		var contenido = "";
+		if(renglon.permiso10y7==1)
+			contenido += "<center><span class='fa fa-check fa-lg text-success'></span></center>";
+		else
+			contenido += "<center><span class='fa fa-close fa-lg text-danger'></span></center>";
 	    return contenido;
 	}
 	

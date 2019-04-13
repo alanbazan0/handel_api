@@ -30,6 +30,7 @@ class Inspeccion
     public $profundidad;
     public $entrada_salida;
     public $puntos;
+    public $tipoInspeccionId;
     
 }
 

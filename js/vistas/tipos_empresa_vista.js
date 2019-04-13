@@ -4,7 +4,7 @@ class TiposEmpresaVista extends CatalogoVista
 	{	
 		super();
 		this.presentador = new TiposEmpresaPresentador(this);
-		this._urlFormulario = "html/formularios/tipos_empresa.html";
+		this._urlFormulario = "html/formularios/tipos_empresa.php";
 	}
 	
 //	onLoad()
