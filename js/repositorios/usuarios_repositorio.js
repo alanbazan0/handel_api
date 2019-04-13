@@ -155,22 +155,49 @@ class UsuariosRepositorio extends Repositorio
 //	}	
 	
 	
-	subirFotoPerfil(contexto, funcionResultado,archivo)
+	subirFotoPerfil(contexto, funcion,archivo)
 	{
+//		var data = new FormData();
+//		data.append("accion", "subirFotoPerfil");
+//    	data.append("file", archivo );
+//    	var url = HANDEL_API + "/" + this.servicio;
+//        var xhr = new XMLHttpRequest();
+//        xhr.open( 'POST', url, true );
+//        xhr.withCredentials = true; 
+//		xhr.onreadystatechange = function ( resultado ) 
+//		{
+//		    if (this.readyState == 4 && this.status == 200) 
+//		    {
+//		    	var datos = JSON.parse(resultado.target.response);
+//		    	funcionResultado.call(contexto,datos);
+//		    }
+//		};
+//		xhr.send( data );  
 		var data = new FormData();
 		data.append("accion", "subirFotoPerfil");
     	data.append("file", archivo );
     	var url = HANDEL_API + "/" + this.servicio;
-        var xhr = new XMLHttpRequest();
-        xhr.open( 'POST', url, true );
-		xhr.onreadystatechange = function ( resultado ) 
-		{
-		    if (this.readyState == 4 && this.status == 200) 
-		    {
-		    	var datos = JSON.parse(resultado.target.response);
-		    	funcionResultado.call(contexto,datos);
-		    }
-		};
-		xhr.send( data );  
+    	 $.ajax({
+             url: url,
+             type: 'POST',
+             method: 'POST',
+             cache: false,
+             contentType: false,
+             processData: false,
+             data: data,
+             success: function( data, textStatus, jQxhr )
+             {
+                 funcion.call(contexto,data);
+             },
+             error: function( jqXhr, textStatus, errorThrown )
+             {
+            	 funcion.call(contexto,{ mensajeError : textStatus});
+             },
+             fail: function( jqXhr, textStatus, errorThrown )
+             {
+            	 funcion.call(contexto,{ mensajeError : textStatus});
+             }
+         });
+		
 	}
 }

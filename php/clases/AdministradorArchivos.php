@@ -35,9 +35,11 @@ class AdministradorArchivos
                 }
                 
             }
+            else 
+                $resultado->mensajeError = "No existe la carpeta destino.";
         }
         else
-            $resultado->mensajeError = "";
+            $resultado->mensajeError = "No se recibió ningun archivo";
         return $resultado;
     }
     

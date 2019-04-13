@@ -209,8 +209,8 @@ class Vista
 	set fotoPerfil(fotoPerfil)
 	{
 		var fecha = new Date();
-		$("#imgFotoPefil1").attr('src',"php/fotos/" + fotoPerfil+"?"+fecha.getTime());
-		$("#imgFotoPefil2").attr('src',"php/fotos/" + fotoPerfil+"?"+fecha.getTime());
+		$("#imgFotoPefil1").attr('src',HANDEL_API+ "/php/fotos/" + fotoPerfil+"?"+fecha.getTime());
+		$("#imgFotoPefil2").attr('src',HANDEL_API+"/php/fotos/" + fotoPerfil+"?"+fecha.getTime());
 		
 		$("#menuPerfil").removeClass("show-dropdown");
 	}

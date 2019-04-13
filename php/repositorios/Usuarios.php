@@ -132,9 +132,16 @@ try
                     $adminstradorArchivos = new AdministradorArchivos();
                     $archivo = FILES("file");
                     $carpeta = "fotos";
-                    $nombreArchivo = "perfil".$usuario->id.".png";
+                    $nombreArchivo = "usuario".$usuario->id.".jpg";
                     $resultado=$adminstradorArchivos->subir($carpeta,$archivo,$nombreArchivo);
+                    if($resultado->mensajeError=="")
+                    {
+                        $usuario->fotoPerfil =  "php/fotos/usuario". $usuario->id .".jpg";
+                        $_SESSION['usuario'] = $usuario;
+                    }
                 }
+                else
+                    $resultado->mensajeError = "No se ha iniciado sesión";
                
             break;
             default:
