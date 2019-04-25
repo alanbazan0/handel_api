@@ -17,21 +17,21 @@ class TiposAreaRepositorio extends RepositorioBase implements ITiposAreaReposito
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = " SELECT T.id, T.nombre " .
+        $this->consultaBase = " SELECT T.id, T.nombre, fecha_alta, fecha_modificacion, estatus " .
             " FROM tipos_area T ";
     }
     
     public function insertar(TipoArea $modelo)
     {
-        $resultado =  $this->calcularId("id","areas");
+        $resultado =  $this->calcularId("id","tipos_area");
         if($resultado->mensajeError=="")
         {
             $id = $resultado->valor;
-            $consulta = "INSERT INTO areas(id, nombre, empresa_id, fecha_alta, fecha_modificacion, estatus) " .
-                "VALUE(?, ?, ?, NOW(), NOW(), ?)";
+            $consulta = "INSERT INTO tipos_area(id, nombre, fecha_alta, fecha_modificacion, estatus) " .
+                "VALUE(?, ?, NOW(), NOW(), ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if( $sentencia->bind_param("isii", $id, $modelo->nombre,$modelo->empresaId, $modelo->estatus))
+                if( $sentencia->bind_param("isi", $id, $modelo->nombre,$modelo->estatus))
                 {
                     if(!$sentencia->execute())
                         $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
@@ -48,16 +48,15 @@ class TiposAreaRepositorio extends RepositorioBase implements ITiposAreaReposito
     public function actualizar(TipoArea $modelo)
     {
         $resultado = new Resultado();
-        $consulta = " UPDATE areas " .
+        $consulta = " UPDATE tipos_area " .
             "SET nombre = ?, " .
-            "  empresa_id = ?, " .
             "  estatus = ?, " .
             "  fecha_modificacion= NOW() " .
             "WHERE id = ? ";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if( $sentencia->bind_param("siii", $modelo->nombre, $modelo->empresaId, $modelo->estatus,$modelo->id ))
+            if( $sentencia->bind_param("sii", $modelo->nombre, $modelo->estatus,$modelo->id ))
             {
                 if($sentencia->execute())
                 {
@@ -82,12 +81,7 @@ class TiposAreaRepositorio extends RepositorioBase implements ITiposAreaReposito
         if($criteriosSeleccion!=null)
         {
             if(isset($criteriosSeleccion->nombre))
-                array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'A','campo'=>'nombre','valor'=>$criteriosSeleccion->nombre]);
-            if(isset($criteriosSeleccion->empresaId))
-            {
-                if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'A','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
-            }
+                array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'T','campo'=>'nombre','valor'=>$criteriosSeleccion->nombre]);
              $where = $this->where($filtros);
         }
         $consulta = $this->consultaBase .
@@ -99,11 +93,11 @@ class TiposAreaRepositorio extends RepositorioBase implements ITiposAreaReposito
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombre))
+                    if ($sentencia->bind_result($id, $nombre, $fecha_alta,$fecha_modificacion, $estatus))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombre);
+                            $registro = $this->crearRegistro($id, $nombre,$fecha_alta,$fecha_modificacion, $estatus);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -128,18 +122,18 @@ class TiposAreaRepositorio extends RepositorioBase implements ITiposAreaReposito
     {
         $resultado = new Resultado();
         $consulta = $this->consultaBase .
-        " WHERE A.id  = ?";
+        " WHERE T.id  = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param("i",$llaves->id))
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombre,$empresaId, $empresaNombre, $fechaAlta, $fechaModificacion, $estatus))
+                    if ($sentencia->bind_result($id, $nombre,$fechaAlta, $fechaModificacion, $estatus))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombre,$empresaId, $empresaNombre, $fechaAlta, $fechaModificacion, $estatus);
+                            $registro = $this->crearRegistro($id, $nombre, $fechaAlta, $fechaModificacion, $estatus);
                             $resultado->valor = $registro;
                         }
                         else
@@ -159,11 +153,14 @@ class TiposAreaRepositorio extends RepositorioBase implements ITiposAreaReposito
             return $resultado;
     }
     
-    private function crearRegistro($id, $nombre)
+    private function crearRegistro($id, $nombre,$fecha_alta,$fecha_modificacion, $estatus)
     {
         $registro= (object) [
             'id' =>  $id,
-            'nombre' => $nombre
+            'nombre' => $nombre,
+            'fechaAlta' => $fecha_alta,
+            'fechaModificacion' => $fecha_modificacion,
+            'estatus' => $estatus
         ];
         return $registro;
     }
@@ -206,7 +203,7 @@ class TiposAreaRepositorio extends RepositorioBase implements ITiposAreaReposito
     public function eliminar($llaves)
     {
         $resultado = new Resultado();
-        $consulta = " DELETE FROM areas "
+        $consulta = " DELETE FROM tipos_area "
             . "  WHERE id  = ? ";
             if($sentencia = $this->conexion->prepare($consulta))
             {

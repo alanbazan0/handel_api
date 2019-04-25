@@ -19,5 +19,8 @@ class Usuario
     public $estatus;
     public $nombreCompleto;
     public $fotoPerfil;
+    public $permisoSAHA;
+    public $permisoSIVAH;
+    public $permiso10y7;
 }
 

@@ -61,11 +61,14 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                         . " supervisor3_id, "
                         . " fecha_alta, "
                         . " fecha_modificacion, "
-                        . " estatus) "
-                        . " VALUE(?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW(),?) ";
+                        . " estatus, "
+                        . " permiso_saha, "
+                        . " permiso_sivah, "
+                        . " permiso_10y7) "
+                        . " VALUE(?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW(),?,?,?,?) ";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if( $sentencia->bind_param("issssiiiiiiiii",
+                if( $sentencia->bind_param("issssiiiiiiiiiiii",
                     $id, 
                     $modelo->nombreUsuario,
                     $modelo->contrasena,
@@ -79,7 +82,10 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                     $modelo->supervisor1Id,
                     $modelo->supervisor2Id,
                     $modelo->supervisor3Id,
-                    $modelo->estatus))
+                    $modelo->estatus,
+                    $modelo->permisoSAHA,
+                    $modelo->permisoSIVAH,
+                    $modelo->permiso10y7))
                 {
                     if(!$sentencia->execute())              
                     {
@@ -153,12 +159,15 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                     " supervisor2_id = ?, " .  
                     " supervisor3_id = ?, " .  
                     " fecha_modificacion=NOW(), " .
-                    " estatus = ? " .
+                    " estatus = ?, " .
+                    " permiso_saha = ?, " .
+                    " permiso_sivah = ?, " .
+                    " permiso_10y7 = ? " .
                     "WHERE id = ?";    
                         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("ssssiiiiiiiiii",
+            if($sentencia->bind_param("ssssiiiiiiiiiiiii",
                 $modelo->nombreUsuario, 
                 $modelo->contrasena,
                 $modelo->nombre,
@@ -172,6 +181,9 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 $modelo->supervisor2Id,
                 $modelo->supervisor3Id,
                 $modelo->estatus,
+                $modelo->permisoSAHA,
+                $modelo->permisoSIVAH,
+                $modelo->permiso10y7,
                 $modelo->id))
             {
                if($sentencia->execute())

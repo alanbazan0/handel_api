@@ -157,6 +157,18 @@ class UsuariosVista extends CatalogoVista
 		$('#nombreInput').val(this.modeloEdicion.nombre);
 		$('#apellidoInput').val(this.modeloEdicion.apellido);
 		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
+		if(this.modeloEdicion.permisoSAHA)
+			$("#permisoSAHARadio").prop('checked', true);
+		else
+			$("#permisoSAHARadio").prop('checked', false);
+		if(this.modeloEdicion.permisoSIVAH)
+			$("#permisoSIVAHRadio").prop('checked', true);
+		else
+			$("#permisoSIVAHRadio").prop('checked', false);
+		if(this.modeloEdicion.permiso10y7)
+			$("#permiso10y7Radio").prop('checked', true);
+		else
+			$("#permiso10y7Radio").prop('checked', false);
 		this.consultarTiposUsuario();
 		this.consultarEmpresas();
 	}
@@ -177,7 +189,10 @@ class UsuariosVista extends CatalogoVista
 			 supervisor2Id:$('#supervisor2Select').val(),
 			 supervisor3Id:$('#supervisor3Select').val(),
 			 tipoUsuarioId:$('#tipoUsuarioSelect').val(),
-			 estatus:$('#estatusRadio').is(':checked')?1:0
+			 estatus:$('#estatusRadio').is(':checked')?1:0,
+			 permisoSAHA:$('#permisoSAHARadio').is(':checked')?1:0,
+			 permisoSIVAH:$('#permisoSIVAHRadio').is(':checked')?1:0,
+		 	 permiso10y7:$('#permiso10y7Radio').is(':checked')?1:0
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;

@@ -5,5 +5,6 @@ class TipoArea
 {
     public $id;
     public $nombre;  
+    public $estatus;
 }
 

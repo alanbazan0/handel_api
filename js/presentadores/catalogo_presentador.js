@@ -40,8 +40,13 @@ class CatalogoPresentador
 			this.consultar();
 		}
 		else
-			this.vista.mostrarMensajeError("Error","Ocurrió un error al guardar el registro. " + resultado.mensajeError);		
-		 this.vista.guardando = false;
+			this.vista.mostrarMensajeError("Error","Ocurrió un error al guardar el registro. " + resultado.mensajeError);	
+		
+		 setTimeout(function()
+		{
+			 this.vista.guardando = false;
+         }, 2000);
+		
 			
 	 }	
 
@@ -63,7 +68,10 @@ class CatalogoPresentador
 		 }
 		 else
 			this.vista.mostrarMensajeError("Error","Ocurrió un error al actualizar el registro. " + resultado.mensajeError);		
-		 this.vista.guardando = false;
+		 setTimeout(function()
+		{
+			 this.vista.guardando = false;
+         }, 2000);
 	 }
 	   
 	 consultarPorLlaves()

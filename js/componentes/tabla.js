@@ -58,7 +58,7 @@ class Tabla
 		this.renderizarTabla();
 		this.renderizarRegistros();
 //		$(this._id).html(html);
-		$('[data-toggle="tooltip"]').tooltip();
+		//$('[data-toggle="tooltip"]').tooltip();
 		
 		$(".paginate_button").attr("href","#");
 		

@@ -54,6 +54,45 @@ class PlantillasVista extends CatalogoVista
 		    tolerance: "pointer",
 		});
 	    $( "#listaRespuestas" ).disableSelection();
+	    
+	    
+	}
+	
+	inicializarValidacionesFormulario()
+	{
+		var _this = this;
+		jQuery("#formulario").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+                "nombreInput": {
+                    required: !0
+                },
+                "descripcionInput": {
+                    required: !0
+                }
+               
+            },
+            messages: {
+                "nombreInput": "Por favor ingrese un nombre",
+                "descripcionInput": "Por favor ingrese una descripci\u00f3n"
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.guardar();
+            }
+        });
 	}
 	
 	crearFecha()
@@ -149,18 +188,82 @@ class PlantillasVista extends CatalogoVista
 		});
 	}
 
-	
-	
-	btnAlta_onClick()
+	agregar()
 	{
+		
 		this.modo = "ALTA";
 		this.ocultarIndicador();
 		this.limpiarFormulario();	
 		this.mostrarFormulario();
 		$('#nombreInput').focus();
+		this.inicializarValidacionesFormulario();
 		this.presentador.consultarCategorias();
+	}
 	
+//	btnAlta_onClick()
+//	{
+//		this.modo = "ALTA";
+//		this.ocultarIndicador();
+//		this.limpiarFormulario();	
+//		this.mostrarFormulario();
+//		$('#nombreInput').focus();
+//		this.presentador.consultarCategorias();
+//	
+//		
+//	}
+//	
+	
+	set guardando(guardando)
+	{
+		if(guardando)
+			$("#guardarButton").hide();
+		else
+			$("#guardarButton").show();       
+	}
+	
+	btnGuardarFormulario_onClick()
+	{		
+		$("#formulario").submit();
+//		 if(this.datosValidos())
+//		 {
+//			if(this.modo=='ALTA')
+//				this.presentador.insertar();
+//			else
+//				this.presentador.actualizar();
+//		 }		
 		
+		
+		
+	}
+	
+	
+
+//	btnSalir_onClick()
+//	{
+//		var confirmacion = confirm("¿Esta seguro que desea salir?")
+//	    if (confirmacion)
+//	    	{
+//		    	
+//	    	}
+//	}
+	
+	btnSalirFormulario_onClick()
+	{		
+		this.salirFormulario();
+	}	
+
+	mostrarFormulario()
+	{
+		$('#principalDiv').hide();	
+		$('#formularioDiv').show();
+		//$('#guardarButton').hide();
+		
+	}
+	
+	salirFormulario()
+	{
+		$('#principalDiv').show()	
+		$('#formularioDiv').hide();
 	}
 
 //	btnCambio_onClick()
@@ -510,6 +613,11 @@ class PlantillasVista extends CatalogoVista
 			
 			
 		$('#ventanaRespuestasContenedor').fadeOut(this.velocidadAnimacion);
+	}
+	
+	editar(id)
+	{
+		
 	}
 	
 	editarSecciones()
