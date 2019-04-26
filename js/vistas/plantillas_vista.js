@@ -284,7 +284,7 @@ class PlantillasVista extends CatalogoVista
 //	
 	ejecutar()
 	{
-		var submitForm = getNewSubmitForm("auditoria.php");
+		var submitForm = getNewSubmitForm("auditoria.php","post");
 		createNewFormElement(submitForm, "plantillaId", this._llaves.id);
 		submitForm.target= "auditoria" + Math.floor(Math.random()*10000);
 		submitForm.submit();
@@ -395,7 +395,7 @@ class PlantillasVista extends CatalogoVista
 			 nombre:$('#nombreInput').val(),		
 			 descripcion:$('#descripcionInput').val(),	
 			 fechaProgramada:$('#fechaProgramadaInput').val(),	
-			 estatus:$('input[name=estatus]:checked').val(),
+			 estatus:$('#estatusRadio').is(':checked')?1:0,
 			 secciones: this.listaSecciones.secciones
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
@@ -617,7 +617,11 @@ class PlantillasVista extends CatalogoVista
 	
 	editar(id)
 	{
-		
+		this.modo = "CAMBIO";
+		this.limpiarFormulario();	
+		this.mostrarFormulario();
+		$('#nombreInput').focus();				
+		this.presentador.consultarPorLlaves();
 	}
 	
 	editarSecciones()

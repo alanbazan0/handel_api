@@ -5,9 +5,9 @@ class AuditoriaVista extends Vista
 		super();
 		this.ventana = ventana;
 		this.presentador = new AuditoriaPresentador(this);
-		this.manejadorEventos = new ManejadorEventos();
-		this.grid = new GridReg("grid");	
-		this.validaciones = new Validaciones();
+		//this.manejadorEventos = new ManejadorEventos();
+		//this.grid = new GridReg("grid");	
+		//this.validaciones = new Validaciones();
 		this.modeloActual=null;
 		//this.listaSecciones = new ListaSecciones("listaSecciones");
 		this.listaPreguntas = new ListaPreguntasEjecucion("listaPreguntas");
@@ -17,16 +17,23 @@ class AuditoriaVista extends Vista
 		this.preguntaEdicion = null;
 		this.seccionEdicion = null;
 		this.velocidadAnimacion = 400;
+		this._modo = Modo.ALTA;
 	}
-//	
-//	onLoad()
-//	{	
-//		
-//		this.presentador.consultarPorLlaves();
-//		//this.presentador.consultar();
-//		
-//		
-//	}
+	
+	get modo()
+	{
+		return this._modo;
+	}
+	
+	
+	inicializar()
+	{	
+		
+		this.presentador.consultarPorLlaves();
+		//this.presentador.consultar();
+		
+		
+	}
 	
 	get plantillaId()
 	{
@@ -54,135 +61,146 @@ class AuditoriaVista extends Vista
 				 };
 		
 				 $.datepicker.setDefaults($.datepicker.regional['es']);
-				
-				$(function () {
-					$("#fechaProgramadaInput").datepicker();
-					});
+//				
+//				$(function () {
+//					$("#fechaProgramadaInput").datepicker();
+//					});
 	}
 	
-	crearColumnasGrid()
-	{
-		this.tabla.columnas = [
-			{longitud:50, 	titulo:"",   	alias:"icono", alineacion:"D", itemRenderer:this.renderIcono},
-			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
-			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I" }, 		
-			{longitud:300, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I" }, 	
-			{longitud:250, 	titulo:"Último uso",   alias:"ultimoUso", alineacion:"I" },
-			{longitud:250, 	titulo:"Fecha programada",   alias:"fechaProgramada", alineacion:"I" },
-			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
-			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
-			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
-		]
-		
-		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
-									"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+//	crearColumnasGrid()
+//	{
+//		this.grid._columnas = [
+//			{longitud:50, 	titulo:"",   	alias:"icono", alineacion:"D", itemRender:this.renderIcono},
+//			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
+//			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I" }, 		
+//			{longitud:300, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I" }, 	
+//			{longitud:250, 	titulo:"Último uso",   alias:"ultimoUso", alineacion:"I" },
+//			{longitud:250, 	titulo:"Fecha programada",   alias:"fechaProgramada", alineacion:"I" },
+//			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
+//			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
+//			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRender:this.renderEstatus}
+//		]
+//		
+//		this.grid._origen="vista";
+//		this.grid.manejadorEventos=this.manejadorEventos;
+//		this.grid._colorSeleccion = COLOR_SELECCION;
+//		this.grid._ajustarAltura = true;
+//		this.grid._colorRenglon1 = COLOR_RENGLON1;	
+//		this.grid._colorRenglon2 = COLOR_RENGLON2;	
+//		this.grid._colorEncabezado1 = COLOR_ENCABEZADO1;
+//		this.grid._colorEncabezado2 = COLOR_ENCABEZADO2;
+//		this.grid._colorLetraEncabezado = COLOR_LETRA_ENCABEZADO;
+//		this.grid._colorLetraCuerpo = COLOR_LETRA_CUERPO;
+//		this.grid._regExtra=REGISTROS_EXTRA;
+//		this.grid._bordesRedondeados = true;
+//		this.grid._eliminarLineaVerticales=false;
+//		//this.grid._presentacionGranTotal = "SI";
+//		this.grid.render();		
+//	}
+//	
+//	renderIcono(renglon, campoBase)
+//	{    
+//		var contenido = "";
+//		var icono ="php/iconos/" + renglon.icono;
+//		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
+//	    return contenido;
+//	}
 
-		this.tabla.registros = [];
-	}
+//	btnBaja_onClick()
+//	{ 
+//		if(this.grid._selectedItem!=null)
+//		{
+//			var confirmacion = confirm("¿Esta seguro que desea eliminar el registro?")
+//		    if (confirmacion)
+//		    {
+//		    		this.presentador.eliminar();
+//		    }	
+//		}
+//		else
+//			this.mostrarMensaje("Acción no válida","Seleccione un registro para eliminar.");
+//	}
+//	
+//	btnAlta_onClick()
+//	{
+//		this.modo = "ALTA";
+//		this.ocultarIndicador();
+//		this.limpiarFormulario();	
+//		this.mostrarFormulario();
+//		$('#nombreInput').focus();
+//		this.presentador.consultarCategorias();
+//	
+//		
+//	}
+//
+//	btnCambio_onClick()
+//	{
+//		if(this.grid._selectedItem!=null)
+//		{			
+//			this.modo = "CAMBIO";
+//			this.limpiarFormulario();	
+//			this.mostrarFormulario();
+//			$('#nombreInput').focus();				
+//			this.presentador.consultarPorLlaves();
+//			
+//		}
+//		else
+//			this.mostrarMensaje("Acción no válida","Seleccione un registro para modificar.");
+//				
+//	}
+//	
+//	btnEjecutar_onClick()
+//	{
+//		if(this.grid._selectedItem!=null)
+//		{
+//			var submitForm = getNewSubmitForm("auditoria.php");
+//			createNewFormElement(submitForm, "plantillaId", this.grid._selectedItem.id);
+//			submitForm.target= "auditoria" + Math.floor(Math.random()*10000);
+//			submitForm.submit();
+//		}
+//	}
+//	
+//	btnConsulta_onClick()
+//	{	
+//		this.presentador.consultar();
+//	}	
 	
-	renderIcono(renglon, campoBase)
-	{    
-		var contenido = "";
-		var icono ="php/iconos/" + renglon.icono;
-		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
-	    return contenido;
-	}
-
-	btnBaja_onClick()
-	{ 
-		if(this.grid._selectedItem!=null)
-		{
-			var confirmacion = confirm("¿Esta seguro que desea eliminar el registro?")
-		    if (confirmacion)
-		    {
-		    		this.presentador.eliminar();
-		    }	
-		}
-		else
-			this.mostrarMensaje("Acción no válida","Seleccione un registro para eliminar.");
-	}
-	
-	btnAlta_onClick()
-	{
-		this.modo = "ALTA";
-		this.ocultarIndicador();
-		this.limpiarFormulario();	
-		this.mostrarFormulario();
-		$('#nombreInput').focus();
-		this.presentador.consultarCategorias();
-	
-		
-	}
-
-	btnCambio_onClick()
-	{
-		if(this.grid._selectedItem!=null)
-		{			
-			this.modo = "CAMBIO";
-			this.limpiarFormulario();	
-			this.mostrarFormulario();
-			$('#nombreInput').focus();				
-			this.presentador.consultarPorLlaves();
-			
-		}
-		else
-			this.mostrarMensaje("Acción no válida","Seleccione un registro para modificar.");
-				
-	}
-	
-	btnEjecutar_onClick()
-	{
-		if(this.grid._selectedItem!=null)
-		{
-			var submitForm = getNewSubmitForm("auditoria.php");
-			createNewFormElement(submitForm, "plantillaId", this.grid._selectedItem.id);
-			submitForm.target= "auditoria" + Math.floor(Math.random()*10000);
-			submitForm.submit();
-		}
-	}
-	
-	btnConsulta_onClick()
-	{	
-		this.presentador.consultar();
-	}	
-	
-	btnGuardarFormulario_onClick()
-	{		
-		if(this.seccionEdicion!=null)
-			this.seccionEdicion.preguntas = this.listaPreguntas.preguntas;
-		 if(this.datosValidos())
-		 {
-			if(this.modo=='ALTA')
-				this.presentador.insertar();
-			else
-				this.presentador.actualizar();
-		 }		
-		
-	}
-	
-	btnSalir_onClick()
-	{
-		var confirmacion = confirm("¿Esta seguro que desea salir?")
-	    if (confirmacion)
-	    	{
-		    	
-	    	}
-	}
-	
-	btnSalirFormulario_onClick()
-	{	
-		this.confirmar("¿Esta seguro que desea salir?",this,this.cerrarVentana,null);
+//	btnGuardarFormulario_onClick()
+//	{		
+//		if(this.seccionEdicion!=null)
+//			this.seccionEdicion.preguntas = this.listaPreguntas.preguntas;
+//		 if(this.datosValidos())
+//		 {
+//			if(this.modo=='ALTA')
+//				this.presentador.insertar();
+//			else
+//				this.presentador.actualizar();
+//		 }		
+//		
+//	}
+//	
+//	btnSalir_onClick()
+//	{
 //		var confirmacion = confirm("¿Esta seguro que desea salir?")
 //	    if (confirmacion)
-//    	{
-//	    	this.cerrarVentana();
-//    	}
-	}	
+//	    	{
+//		    	
+//	    	}
+//	}
 	
-	cerrarVentana(cerrar)
-	{
-		this.ventana.close();
-	}
+//	btnSalirFormulario_onClick()
+//	{	
+//		this.confirmar("¿Esta seguro que desea salir?",this,this.cerrarVentana,null);
+////		var confirmacion = confirm("¿Esta seguro que desea salir?")
+////	    if (confirmacion)
+////    	{
+////	    	this.cerrarVentana();
+////    	}
+//	}	
+//	
+//	cerrarVentana(cerrar)
+//	{
+//		this.ventana.close();
+//	}
 	
 	set categorias(valor)
 	{
@@ -260,6 +278,7 @@ class AuditoriaVista extends Vista
 		});
 		
 		
+		this.calcularPorcentajes();
 		
 		//var h = $('#listaPreguntas').height();
 	}
@@ -273,126 +292,252 @@ class AuditoriaVista extends Vista
 	
 	siguiente()
 	{
+		this.funcion = "siguente";
+		this.guardar();
+	
+		
+	}
+	
+	mostrarSiguiente()
+	{
 		var indice = this.listaPreguntas.siguiente();
 		$('#secciones').prop('selectedIndex',indice);
 	}
 	
-	atras()
+	mostrarAnterior()
 	{
 		var indice = this.listaPreguntas.atras();
 		$('#secciones').prop('selectedIndex',indice);
 	}
 	
+	atras()
+	{
+		this.funcion = "atras";
+		this.guardar();
+		
+		
+	}
+	
 	guardar()
 	{
-		alert("guardar...");
+		var campo = this.campoVacio();
+		if(campo==null)
+		{
+			this.presentador.guardar();
+		}
+		else
+		{
+			var _this = this;
+		  swal({
+	            title: "¿Esta seguro de querer guardar?",
+	            text: "Falta información por llenar: </br>" + campo.texto,
+	            html: true,
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#ae3e9e",
+	            confirmButtonText: "Si, guardar!!",
+	            cancelButtonText  : "Cancelar",
+	            closeOnConfirm: true
+	        },
+	        function(){
+	        	_this.presentador.guardar();
+	        });
+		}
 	}
+	
+	
+	get empresaId()
+	{
+		var preguntas = this.preguntas;
+		if(preguntas.length>0)
+		{
+			var preguntaEmpresa = preguntas[0];
+			if(preguntaEmpresa.tipo=="cat")
+				return preguntaEmpresa.valor;
+			
+		}
+		return "";
+	}
+	
+	get preguntas()
+	{
+		var preguntas = [];
+		var seccionIndice = $("#secciones").prop("selectedIndex");
+		//var seccionSeleccionada =  this.listaPreguntas.secciones[seccionIndex].id;
+		if(seccionIndice>=0 && seccionIndice<   this.listaPreguntas.secciones.length)
+		{
+			var seccion = this.listaPreguntas.secciones[seccionIndice];
+			var componentesPreguntas = seccion.componentes;
+			for(var i=0;  i  < componentesPreguntas.length;i++ )
+			{
+				var componente = componentesPreguntas[i];
+				var pregunta = componente.pregunta;
+				pregunta.respuestas = componente.respuestas;
+				//pregunta.respuestasNo = componente.respuestasNo;
+				pregunta.valor = componente.valor;
+				preguntas.push(pregunta);
+			}
+			
+		}
+		return preguntas;
+	}
+	
+	get preguntasAuditoria()
+	{
+		var preguntas = [];
+		var seccionIndice = $("#secciones").prop("selectedIndex");
+		if(seccionIndice>=0 && seccionIndice<   this.listaPreguntas.secciones.length)
+		{
+			var seccion = this.listaPreguntas.secciones[seccionIndice];
+			var componentesPreguntas = seccion.componentes;
+			for(var i=0;  i  < componentesPreguntas.length;i++ )
+			{
+				var componente = componentesPreguntas[i];
+				var pregunta ={ id: componente.pregunta.id, valor:  componente.valor, respuestas: componente.respuestas}; ;
+				preguntas.push(pregunta);
+			}
+			
+		}
+		return preguntas;
+	}
+	
+    get seccionId()
+    {
+    	return $("#secciones").val();
+    }
 	
 	get modelo()
 	{
 		 var modelo = 
 		 {		
-			 nombre:$('#nombreInput').val(),		
-			 descripcion:$('#descripcionInput').val(),	
-			 fechaProgramada:$('#fechaProgramadaInput').val(),	
-			 estatus:$('input[name=estatus]:checked').val(),
-			 secciones: this.listaSecciones.secciones
+			 empresaId: this.empresaId,		
+			 seccionId:this.seccionId,	
+			 plantillaId:this.plantillaId,	
+			 preguntas: this.preguntasAuditoria
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
 		 return modelo;
 	 }
 	
-	datosValidos()
+	campoVacio()
 	{
-		var nombre = $("#nombreInput"),
-			descripcion = $("#descripcionInput"),
-			fechaProgramada = $("#fechaProgramadaInput");
-	        
-        
-        var allFields = $( [] ).add(nombre).add(descripcion).add(fechaProgramada);
-        var tips = $( ".validateTips" );
-		tips.text("");
-		
-		var valid = true;
-		allFields.removeClass("ui-state-error");
-		
-	    valid = valid && this.validaciones.checkValue( nombre, "nombre", tips );
-	    valid = valid && this.validaciones.checkValue( descripcion, "descripción", tips );
-	   
-		return valid;
-	}	
 
-	limpiarFormulario()
-	{
-		$('#nombreInput').val("");
-		$('#descripcionInput').val("");
-		$('#fechaProgramadaInput').val("");
-		$('#listaPreguntas').html("");
-		$("#tituloSeccionDiv").hide();
-		$("#botonesSuperiores").hide();
-		$("#botonesAgregarDiv").hide();
-		$("#guardarButton").hide();
-		$("#ayudaPreguntas").hide();
-	}
-	
-	agregarSeccion()
-	{
-		this.listaSecciones.agregarSeccion("");
-	}
-	
-	agregarPregunta()
-	{
-		this.listaPreguntas.agregarPregunta();
-	}
-	
-	agregarTexto()
-	{
-		this.listaPreguntas.agregarTexto();
-	}
-	
-	agregarFecha()
-	{
-		this.listaPreguntas.agregarFecha();
-	}
-	
-	agregarEncabezado()
-	{
-		this.listaPreguntas.agregarEncabezado();
-	}
-	
-	agregarMapa()
-	{
-		this.listaPreguntas.agregarMapa();
-	}
-	
-	agregarRespuesta()
-	{
-		this.listaRespuestas.agregarRespuesta();
-	}
-	
-	eliminarSeccion(event, seccionId)
-	{
-		if(this.listaSecciones.secciones.length>1)
+		var preguntas = this.preguntas;
+		for(var i=0; i < preguntas.length; i++)
 		{
-			//this.listaSecciones.eliminarSeccion(seccionId);
-			this.confirmar("¿Desea eliminar esta sección?",this.listaSecciones,this.listaSecciones.eliminarSeccion,seccionId);
+			var pregunta = preguntas[i];
+			if(pregunta.tipo=="sn")
+			{
+				if(pregunta.valor=="")
+					return pregunta;
+//				else if (pregunta.valor=="S")
+//				{
+//					if(!this.contestadas(pregunta.respuestas))
+//						return pregunta;
+//					
+//				}
+//				else if (pregunta.valor=="N")
+//				{
+//					if(!this.contestadas(pregunta.respuestas))
+//						return pregunta;
+//				}
+			}
+			else
+			{
+				if(pregunta.tipo!="e")
+					if(pregunta.valor=="")
+						return pregunta;
+			}
 		}
-		else
-			this.mostrarMensaje("Error","Es necesario contar al menos con una sección. ");		
-	}
+		
+		return null;
+	}	
 	
-	eliminarPregunta(event, preguntaId)
+	contestadas(respuestas)
 	{
-		this.confirmar("¿Desea eliminar esta pregunta?",this.listaPreguntas,this.listaPreguntas.eliminarPregunta,preguntaId);
-		//this.listaPreguntas.eliminarPregunta(preguntaId);
+		if(respuestas.length==0)
+			return true;
+		
+		for(var i = 0; i < respuestas.length; i++)
+		{
+			var respuesta = respuestas[i];
+			if(respuesta.valor!=null && respuesta.valor!="" && respuesta.valor!=0)
+				return true;
+		}
+		return false;
 	}
+
+//	limpiarFormulario()
+//	{
+//		$('#nombreInput').val("");
+//		$('#descripcionInput').val("");
+//		$('#fechaProgramadaInput').val("");
+//		$('#listaPreguntas').html("");
+//		$("#tituloSeccionDiv").hide();
+//		$("#botonesSuperiores").hide();
+//		$("#botonesAgregarDiv").hide();
+//		$("#guardarButton").hide();
+//		$("#ayudaPreguntas").hide();
+//	}
 	
-	eliminarRespuesta(event, respuestaId)
-	{
-		this.confirmar("¿Desea eliminar esta respuesta?",this.listaRespuestas,this.listaRespuestas.eliminarRespuesta,respuestaId);
-		//this.listaRespuestas.eliminarRespuesta(respuestaId);
-	}
+//	agregarSeccion()
+//	{
+//		this.listaSecciones.agregarSeccion("");
+//	}
+//	
+//	agregarPregunta()
+//	{
+//		this.listaPreguntas.agregarPregunta();
+//	}
+//	
+//	agregarTexto()
+//	{
+//		this.listaPreguntas.agregarTexto();
+//	}
+//	
+//	agregarFecha()
+//	{
+//		this.listaPreguntas.agregarFecha();
+//	}
+//	
+//	agregarEncabezado()
+//	{
+//		this.listaPreguntas.agregarEncabezado();
+//	}
+//	
+//	agregarMapa()
+//	{
+//		this.listaPreguntas.agregarMapa();
+//	}
+//	
+//	agregarRespuesta()
+//	{
+//		this.listaRespuestas.agregarRespuesta();
+//	}
+//	
+//	eliminarSeccion(event, seccionId)
+//	{
+//		if(this.listaSecciones.secciones.length>1)
+//		{
+//			//this.listaSecciones.eliminarSeccion(seccionId);
+//			this.confirmar("¿Desea eliminar esta sección?",this.listaSecciones,this.listaSecciones.eliminarSeccion,seccionId);
+//		}
+//		else
+//			this.mostrarMensaje("Error","Es necesario contar al menos con una sección. ");		
+//	}
+//	
+//	eliminarPregunta(event, preguntaId)
+//	{
+//		this.confirmar("¿Desea eliminar esta pregunta?",this.listaPreguntas,this.listaPreguntas.eliminarPregunta,preguntaId);
+//		//this.listaPreguntas.eliminarPregunta(preguntaId);
+//	}
+//	
+//	eliminarRespuesta(event, respuestaId)
+//	{
+//		this.confirmar("¿Desea eliminar esta respuesta?",this.listaRespuestas,this.listaRespuestas.eliminarRespuesta,respuestaId);
+//		//this.listaRespuestas.eliminarRespuesta(respuestaId);
+//	}
 	
 	confirmar(textoDialogo,contexto,funcion,parametro)
 	{
@@ -453,6 +598,8 @@ class AuditoriaVista extends Vista
 			this.listaPreguntas.preguntas = seccion.preguntas;
 		else
 			this.listaPreguntas.preguntas = [];
+		
+		this.calcularPorcentajes();
 	}
 	
 	
@@ -535,8 +682,115 @@ class AuditoriaVista extends Vista
 	{
 		$('#modalMapa').modal("hide");
 	}
+	
+	calcularPorcentajes()
+	{
+		var preguntas = this.preguntas;
+		var indicesEncabezados = [];
+		for(var i=0; i < preguntas.length; i++)
+		{
+			var pregunta = preguntas[i];
+			if(pregunta.tipo=="e")
+			{
+				indicesEncabezados.push(i);
+			}
+		}
+		
+		var puntuaciones = [];
+		for(var i=0; i < indicesEncabezados.length; i++)
+		{
+			var indice = indicesEncabezados[i];
+			var puntuacion = this.calcularPorcenjateEncabezado(indice);
+			puntuaciones.push(puntuacion);
+		}
+		
+		this.calcularPuntuacionSeccion(puntuaciones);
+	}
+	
+	calcularPuntuacionSeccion(puntuaciones)
+	{
+		var x = 0;
+		var y = 0;
+		var porcentaje = 0;
+		for(var i=0; i < puntuaciones.length; i++)
+		{
+			var puntuacion = puntuaciones[i];
+			x+=puntuacion.x;
+			y+=puntuacion.y;
+		}
+		
+		if(y!=0)
+			porcentaje = x / y * 100;	
+		else
+			porcentaje = 0;
+		
+		var textoPorcentaje = parseFloat(porcentaje).toFixed(2);
+		var decimales = textoPorcentaje.split(".")[1];
+		if(decimales=="00")
+		{
+			textoPorcentaje =  textoPorcentaje.split(".")[0];
+		}
+		
+		var puntuacionTexto = x + "/" + y + " (" +  textoPorcentaje + "%)";
+		
+		var indice = $("#secciones").prop('selectedIndex');
+		var seccionId = this.listaPreguntas.secciones[indice].id;
+		$("#listaPreguntas_labelPuntuacion"  +seccionId).html(puntuacionTexto);
+		
+	}
+	
+	calcularPorcenjateEncabezado(indice)
+	{
+		var x = 0;
+		var y = 0;
+		var porcentaje = 0;
+		var preguntas = this.preguntas;
+		for(var i=indice+1; i < preguntas.length; i++)
+		{
+			var pregunta = preguntas[i];
+			if(pregunta.tipo=="e")
+				break;
+			else
+			{
+				if(pregunta.tipo=="sn")
+				{
+					if(pregunta.valor=="S")
+					{
+						y+= pregunta.peso;
+						var pesoRespuestas = pregunta.peso - this.listaPreguntas.getPesoRespuestas(pregunta.id);
+						x+= pesoRespuestas;
+					}
+					else if(pregunta.valor=="N")
+					{
+						y+= pregunta.peso;
+					}
+				}
+			}
+		}
+		var encabezado = preguntas[indice];
+		
+		if(y!=0)
+			porcentaje = x / y * 100;	
+		else
+			porcentaje = 0;
+		
+		var textoPorcentaje = parseFloat(porcentaje).toFixed(2);
+		var decimales = textoPorcentaje.split(".")[1];
+		if(decimales=="00")
+		{
+			textoPorcentaje =  textoPorcentaje.split(".")[0];
+		}
+		
+		var puntuacionTexto = x + "/" + y + " (" +  textoPorcentaje + "%)";
+		if(encabezado.tipo=="e")
+			this.listaPreguntas.setValor(encabezado.id,puntuacionTexto);
+		
+		var puntuacion = {x: x, y : y, porcentaje : porcentaje};
+		return puntuacion;
+	}
+	
 }
-var vista = new AuditoriaVista(this);
+var vista = new AuditoriaVista();
 $(document).ready(function() 
 {
 	vista.inicializar();
