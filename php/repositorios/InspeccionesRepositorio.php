@@ -35,11 +35,11 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
         if($resultado->mensajeError=="")
         {
             $modelo->id = $resultado->valor;
-            $consulta = "INSERT INTO inspecciones(id, sede_id, usuario_id, inspector_id, area_id, fecha_inspeccion, fecha_finalizacion, numero_caja,  transportista, chofer, numero_tractor, placas_tractor, placas_caja, color_tractor, color_caja, numero_contenedor, tipo_caja, sello, sello_viajero, alto, ancho, profundidad, entrada_salida, tipo_inspeccion_id, fecha_inicio) " .
-                "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $consulta = "INSERT INTO inspecciones(id, sede_id, usuario_id, inspector_id, area_id, fecha_inspeccion, fecha_finalizacion, numero_caja,  transportista, chofer, numero_tractor, placas_tractor, placas_caja, color_tractor, color_caja, numero_contenedor, tipo_caja, sello, sello_viajero, alto, ancho, profundidad, entrada_salida, tipo_inspeccion_id, fecha_inicio,tablet_id) " .
+                "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if( $sentencia->bind_param("iiiiissississssisssiiisis", $modelo->id, $modelo->sedeId,$modelo->usuarioId, $modelo->inspectorId, $modelo->areaId, $modelo->fechaInspeccion, $modelo->fechaFinalizacion, $modelo->numeroCaja, $modelo->transportista, $modelo->chofer, $modelo->numeroTractor, $modelo->placasTractor, $modelo->placasCaja, $modelo->colorTractor, $modelo->colorCaja, $modelo->numeroContenedor, $modelo->tipoCaja, $modelo->sello, $modelo->selloViajero,$modelo->alto, $modelo->ancho, $modelo->profundidad, $modelo->entradaSalida, $modelo->tipoInspeccionId, $modelo->fechaInicio))
+                if( $sentencia->bind_param("iiiiissississssisssiiisisi", $modelo->id, $modelo->sedeId,$modelo->usuarioId, $modelo->inspectorId, $modelo->areaId, $modelo->fechaInspeccion, $modelo->fechaFinalizacion, $modelo->numeroCaja, $modelo->transportista, $modelo->chofer, $modelo->numeroTractor, $modelo->placasTractor, $modelo->placasCaja, $modelo->colorTractor, $modelo->colorCaja, $modelo->numeroContenedor, $modelo->tipoCaja, $modelo->sello, $modelo->selloViajero,$modelo->alto, $modelo->ancho, $modelo->profundidad, $modelo->entradaSalida, $modelo->tipoInspeccionId, $modelo->fechaInicio, $modelo->tabletId))
                 {
                     if($sentencia->execute())
                     {

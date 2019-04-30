@@ -31,6 +31,6 @@ class Inspeccion
     public $entrada_salida;
     public $puntos;
     public $tipoInspeccionId;
-    
+    public $entradaSalida;
 }
 
