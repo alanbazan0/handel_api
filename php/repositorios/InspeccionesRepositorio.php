@@ -19,14 +19,15 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = " SELECT I.id, E.id empresaId, E.nombre empresaNombre, I.id sedeId, S.nombre sedeNombre, usuario_id usuarioId, US.nombre usuarioNombre, inspector_id inspectorId, CONCAT(INS.nombre,' ', INS.apellido) inspectorNombre, IFNULL(DATE_FORMAT(fecha_inspeccion ,'%d/%m/%Y %H:%i:%s'),'')fechaInspeccion, I.area_id, A.nombre, numero_caja numeroCaja, E.nombre_corto, S.nombre_corto, A.tipo_area_id, TA.nombre, IFNULL(DATE_FORMAT(fecha_finalizacion ,'%d/%m/%Y %H:%i:%s'),'')fechaFinalizacion, transportista, chofer, numero_tractor, placas_tractor, placas_caja, color_tractor, color_caja, numero_contenedor, tipo_caja, sello, sello_viajero, alto,  ancho, profundidad,  entrada_salida " .
+        $this->consultaBase = " SELECT I.id, E.id empresaId, E.nombre empresaNombre, I.id sedeId, S.nombre sedeNombre, usuario_id usuarioId, US.nombre usuarioNombre, inspector_id inspectorId, CONCAT(INS.nombre,' ', INS.apellido) inspectorNombre, IFNULL(DATE_FORMAT(fecha_inspeccion ,'%d/%m/%Y %H:%i:%s'),'')fechaInspeccion, I.area_id, A.nombre, numero_caja numeroCaja, E.nombre_corto, S.nombre_corto, A.tipo_area_id, TA.nombre, IFNULL(DATE_FORMAT(fecha_finalizacion ,'%d/%m/%Y %H:%i:%s'),'')fechaFinalizacion, transportista, chofer, numero_tractor, placas_tractor, placas_caja, color_tractor, color_caja, numero_contenedor, tipo_caja, sello, sello_viajero, alto,  ancho, profundidad,  entrada_salida, TI.id, TI.descripcion " .
             " FROM inspecciones I " .
             "   LEFT JOIN sedes S ON S.id = I.sede_id " .
             "   LEFT JOIN empresas E ON E.id = S.empresa_id " .
             "   LEFT JOIN areas A ON A.id = I.area_id " .
             "   LEFT JOIN tipos_area TA ON A.tipo_area_id = TA.id " .
             "   LEFT JOIN usuarios US ON US.id = I.usuario_id " .
-            "   LEFT JOIN usuarios INS ON INS.id = I.usuario_id ";
+            "   LEFT JOIN usuarios INS ON INS.id = I.usuario_id " .
+            "   INNER JOIN tipo_inspeccion TI ON I.tipo_inspeccion_id = TI.id";
     }
     
     public function insertar(Inspeccion $modelo)
@@ -239,11 +240,11 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId,$areaNombre, $numeroCaja, $empresaNombreCorto, $sedeNombreCorto, $tipoAreaId, $tipoAreaNombre, $fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero, $alto, $ancho, $profundidad, $entrada_salida))
+                    if ($sentencia->bind_result($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId,$areaNombre, $numeroCaja, $empresaNombreCorto, $sedeNombreCorto, $tipoAreaId, $tipoAreaNombre, $fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero, $alto, $ancho, $profundidad, $entrada_salida, $tipoInspeccionId, $tipoInspeccionDescripcion))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId, $areaNombre,$numeroCaja, $empresaNombreCorto, $sedeNombreCorto,$tipoAreaId, $tipoAreaNombre,$fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero,  $alto, $ancho, $profundidad, $entrada_salida);
+                            $registro = $this->crearRegistro($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId, $areaNombre,$numeroCaja, $empresaNombreCorto, $sedeNombreCorto,$tipoAreaId, $tipoAreaNombre,$fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero,  $alto, $ancho, $profundidad, $entrada_salida,$tipoInspeccionId, $tipoInspeccionDescripcion);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -275,11 +276,11 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId,$areaNombre, $numeroCaja, $empresaNombreCorto, $sedeNombreCorto,$tipoAreaId, $tipoAreaNombre,$fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero, $alto, $ancho, $profundidad, $entrada_salida))
+                    if ($sentencia->bind_result($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId,$areaNombre, $numeroCaja, $empresaNombreCorto, $sedeNombreCorto,$tipoAreaId, $tipoAreaNombre,$fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero, $alto, $ancho, $profundidad, $entrada_salida,$tipoInspeccionId, $tipoInspeccionDescripcion))
                     {
                         if($sentencia->fetch())
                         {
-                            $inspeccion = $this->crearRegistro($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId, $areaNombre, $numeroCaja, $empresaNombreCorto, $sedeNombreCorto,$tipoAreaId, $tipoAreaNombre,$fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero, $alto, $ancho, $profundidad, $entrada_salida);
+                            $inspeccion = $this->crearRegistro($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId, $areaNombre, $numeroCaja, $empresaNombreCorto, $sedeNombreCorto,$tipoAreaId, $tipoAreaNombre,$fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero, $alto, $ancho, $profundidad, $entrada_salida,$tipoInspeccionId, $tipoInspeccionDescripcion);
                             $resultado->valor = $inspeccion;
                             
                             $sentencia->close();
@@ -320,7 +321,7 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             return $resultado;
     }
     
-    private function crearRegistro($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId, $areaNombre, $numeroCaja, $empresaNombreCorto, $sedeNombreCorto,$tipoAreaId, $tipoAreaNombre,$fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero, $alto, $ancho, $profundidad, $entrada_salida)
+    private function crearRegistro($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId, $areaNombre, $numeroCaja, $empresaNombreCorto, $sedeNombreCorto,$tipoAreaId, $tipoAreaNombre,$fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero, $alto, $ancho, $profundidad, $entrada_salida,$tipoInspeccionId, $tipoInspeccionDescripcion)
     {
         $registro= (object) [
             'id' =>  $id,
@@ -355,7 +356,9 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             'alto' => $alto,
             'ancho' => $ancho,
             'profundidad' => $profundidad,
-            'entradaSalida' => $entrada_salida
+            'entradaSalida' => $entrada_salida,
+            'tipoInspeccionId' => $tipoInspeccionId,
+            'tipoInspeccionDescripcion' => $tipoInspeccionDescripcion
         ];
         return $registro;
     }

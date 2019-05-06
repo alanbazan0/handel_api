@@ -21,7 +21,10 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
 	                           "(SELECT COUNT(*) FROM tipos_empresa) as tiposEmpresa, ".
 	                           "(SELECT COUNT(*) FROM sedes) as sedes, ".
 	                           "(SELECT COUNT(*) FROM puestos) as puestos,".
-                                "(SELECT COUNT(*) FROM areas) as areas";
+                                "(SELECT COUNT(*) FROM areas) as areas,".
+                                "(SELECT COUNT(*) FROM justificaciones) as justificaciones,".
+                                "(SELECT COUNT(*) FROM certificaciones) as certificaciones,".
+                                "(SELECT COUNT(*) FROM inspecciones) as inspecciones";
                               
         
         
@@ -39,15 +42,17 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
              $consulta = $this->consultaBase;
          else
          {
-             $consulta =  " SELECT (SELECT COUNT(*) FROM appshand_dys.usuarios WHERE empresa_id = ?) as usuarios, ".
+             $consulta =  " SELECT (SELECT COUNT(*) FROM usuarios WHERE empresa_id = ?) as usuarios, ".
                  "(SELECT COUNT(*) FROM empresas WHERE id = ?) as empresas, ".
                  "(SELECT COUNT(*) FROM tipos_empresa) as tiposEmpresa, ".
                  "(SELECT COUNT(*) FROM sedes WHERE empresa_id = ?) as sedes, ".
                  "(SELECT COUNT(*) FROM puestos WHERE empresa_id = ?) as puestos,".
-                 "(SELECT COUNT(*) FROM areas WHERE empresa_id = ?) as areas";
+                 "(SELECT COUNT(*) FROM areas WHERE empresa_id = ?) as areas,".
+                 "(SELECT COUNT(*) FROM inspecciones WHERE empresa_id = ?) as inspecciones";
                
              
              
+             array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->empresaId]);
              array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->empresaId]);
              array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->empresaId]);
              array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->empresaId]);
@@ -62,11 +67,11 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($usuarios, $empresas, $tiposEmpresa,$sedes, $puestos, $areas ))
+                    if ($sentencia->bind_result($usuarios, $empresas, $tiposEmpresa, $sedes, $puestos, $areas, $justificaciones, $certificaciones, $inspecciones ))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($usuarios, $empresas,$tiposEmpresa, $sedes, $puestos, $areas);
+                            $registro = $this->crearRegistro($usuarios, $empresas,$tiposEmpresa, $sedes, $puestos, $areas, $justificaciones, $certificaciones, $inspecciones);
                             //array_push($registros,$registro);
                         }
                         $resultado->valor = $registro;
@@ -88,7 +93,7 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
     }
     
     
-    private function crearRegistro($usuarios, $empresas, $tiposEmpresa, $sedes, $puestos, $areas)
+    private function crearRegistro($usuarios, $empresas, $tiposEmpresa, $sedes, $puestos, $areas, $justificaciones, $certificaciones, $inspecciones)
     {
         $registro= (object) [
             'usuarios' =>  $usuarios,
@@ -96,7 +101,10 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
             'tiposEmpresa' => $tiposEmpresa,
             'sedes' => $sedes,
             'puestos' => $puestos,
-            'areas' => $areas
+            'areas' => $areas,
+            'justificaciones' => $justificaciones,
+            'certificaciones' => $certificaciones,
+            'inspecciones' => $inspecciones
         ];
         return $registro;
     }

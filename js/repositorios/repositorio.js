@@ -12,30 +12,12 @@ class Repositorio
 
 	insertar(contexto,funcion, modelo)
 	{		
-//		this.contexto = contexto;
-//		this.functionRetorno = functionRetorno;
-//		
-//		var parametros;
-//		parametros = "accion=insertar";
-//		parametros += "&modelo=" + encodeURIComponent(JSON.stringify(modelo));	
-//		
-//		var contextHandler = new AjaxContextHandler();
-//		var url = HANDEL_API + "/" + this.servicio;
-//		var ai = new Ajaxv2( url, this, this.insertarResultado, "POST", parametros, contextHandler);		
-//		contextHandler.AddAjaxv2Object(ai); 		
-//		ai.GetPost(true);
-		
-//		var url = HANDEL_API + "/" + this.servicio;
-//		$.post(url, {accion : "insertar", modelo: encodeURIComponent(JSON.stringify(modelo))}, function(resultado) 
-//		{
-//			funcion.call(contexto,resultado);
-//		});
-		
+		var modeloString = JSON.stringify(modelo);
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
 	        url: url,
 	        type: 'POST',
-	        data: {accion : "insertar",modelo: JSON.stringify(modelo)},
+	        data: {accion : "insertar",modelo: modeloString},
 	        success: function( data, textStatus, jQxhr )
 	        {
 	            funcion.call(contexto,data);

@@ -1,4 +1,4 @@
-<?php 
+<?php
 use php\clases\AdministradorConexion;
 use php\repositorios\InspeccionesRepositorio;
 use php\modelos\Resultado;
@@ -13,7 +13,7 @@ class PDF extends FPDF
     private $font = "Helvetica";
     private $inspeccion;
     
-    function setInspeccion($inspeccion) 
+    function setInspeccion($inspeccion)
     {
         $this->inspeccion = $inspeccion;
     }
@@ -38,18 +38,18 @@ class PDF extends FPDF
         $folio.=$this->inspeccion->sedeNombreCorto;
         if($this->inspeccion->tipoAreaId==1)
             $folio.="C";
-        else  if($this->inspeccion->tipoAreaId==2)
-            $folio.="E";
-        
-        $fecha = substr($this->inspeccion->fechaInspeccion,0,10);
-        list($dia, $mes, $ano) = explode("/", $fecha);
-        $folio.=$dia.$mes.$ano;
-        
-        if($this->inspeccion->numeroCaja!="")
-            $folio.="C".$this->inspeccion->numeroCaja ;
-        else
-            $folio.="T".$this->inspeccion->numeroTractor;
-        return $folio;
+            else  if($this->inspeccion->tipoAreaId==2)
+                $folio.="E";
+                
+                $fecha = substr($this->inspeccion->fechaInspeccion,0,10);
+                list($dia, $mes, $ano) = explode("/", $fecha);
+                $folio.=$dia.$mes.$ano;
+                
+                if($this->inspeccion->numeroCaja!="")
+                    $folio.="C".$this->inspeccion->numeroCaja ;
+                    else
+                        $folio.="T".$this->inspeccion->numeroTractor;
+                        return $folio;
     }
     
     public function generar()
@@ -60,9 +60,16 @@ class PDF extends FPDF
         $this->imprimirTitulo();
         $this->imprimirSubtitulo();
         $this->imprimirInspector();
-        $this->imprimirInformacionTransporte();
+        if($this->inspeccion->tipoInspeccionId==1)
+            $this->imprimirInformacionTransporte17();
+        else  if($this->inspeccion->tipoInspeccionId==2)
+            $this->imprimirInformacionTransporte7();
+        else  if($this->inspeccion->tipoInspeccionId==3)
+            $this->imprimirInformacionTransporte10();
+                    
+                    
         if(count($this->inspeccion->puntos1)>0)
-            $this->imprimirInspeccionTractor();
+             $this->imprimirInspeccionTractor();
         if(count($this->inspeccion->puntos2)>0)
         {
             $this->AddPage();
@@ -70,8 +77,8 @@ class PDF extends FPDF
         }
         $this->AddPage();
         $this->imprimirFotos();
-
-       
+                        
+                        
     }
     
     public function imprimir()
@@ -100,8 +107,8 @@ class PDF extends FPDF
         $logo = "../logos_empresas/logo$empresaId.png";
         if (file_exists($logo))
             $this->Image($logo,10,12,40,0,'','http://www.fpdf.org');
-        else
-            $this->Image("default.png",10,12,40,0,'','http://www.fpdf.org');
+            else
+                $this->Image("default.png",10,12,40,0,'','http://www.fpdf.org');
         $this->SetLeftMargin(45);
         $this->SetFontSize(11);
         
@@ -124,9 +131,9 @@ class PDF extends FPDF
         $entrada_salida= $this->inspeccion->entradaSalida;
         if($entrada_salida=="")
             $entrada_salida="ENTRADA";
-        $this->SetFont($this->font  ,'',11);
-        $this->Ln();
-        $this->Cell(0,10,$this->texto("(".strtoupper($entrada_salida) ." DE UNIDAD)"),0,2,'C');
+            $this->SetFont($this->font  ,'',11);
+            $this->Ln();
+            $this->Cell(0,10,$this->texto("(".strtoupper($entrada_salida) ." DE UNIDAD)"),0,2,'C');
     }
     
     function formatoFecha($fecha)
@@ -169,7 +176,7 @@ class PDF extends FPDF
         
     }
     
-    function imprimirInformacionTransporte()
+    function imprimirInformacionTransporte17()
     {
         $transportista = strtoupper($this->inspeccion->transportista);
         $chofer = strtoupper($this->inspeccion->chofer);
@@ -187,10 +194,10 @@ class PDF extends FPDF
         
         if($alto=="")
             $alto = "-";
-        
+            
         if($ancho=="")
             $ancho = "-";
-    
+            
         if($profundidad=="")
             $profundidad = "-";
         
@@ -218,7 +225,7 @@ class PDF extends FPDF
         $this->SetLeftMargin(10);
         $this->Ln();
         $this->SetFont($this->font, 'B', 11);
-       
+        
         $this->Cell(0,8,$this->texto("Vehículo "),$borde,1,'C');
         $this->SetDrawColor(191,191,191);
         $y = 93;
@@ -271,7 +278,7 @@ class PDF extends FPDF
         $this->SetFont($this->font, '', 10);
         $this->Cell(55, 8, $this->texto($sello), $borde, 0, 'L');
         $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "Sello viajero:", $borde, 0, 'L');   
+        $this->Cell(30, 8, "Sello viajero:", $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
         $this->Cell(55, 8, $this->texto($selloViajero), $borde, 0, 'L');
         
@@ -306,8 +313,241 @@ class PDF extends FPDF
         $this->SetFont($this->font, 'I', 8);
         $leyenda = "Las medidas interiores del contenedor no se muestran cuando el contenedor se encontraba sellado al momento de hacer la inspección";
         $this->Cell(170, 8, $this->texto($leyenda), $borde, 0, 'C');
+                    
+                    
+    }
+    
+    function imprimirInformacionTransporte7()
+    {
+        $transportista = strtoupper($this->inspeccion->transportista);
+        $chofer = strtoupper($this->inspeccion->chofer);
+        $numeroTractor = $this->inspeccion->numeroTractor;
+        $numeroCaja = $this->inspeccion->numeroCaja;
+        $colorTractor = strtoupper($this->inspeccion->colorTractor);
+        $colorCaja = strtoupper($this->inspeccion->colorCaja);
+        $numeroContenedor = $this->inspeccion->numeroContenedor;
+        $tipoCaja = strtoupper($this->inspeccion->tipoCaja);
+        $sello =  $this->inspeccion->sello;
+        $selloViajero =  $this->inspeccion->selloViajero;
+        $alto = $this->inspeccion->alto;
+        $ancho = $this->inspeccion->ancho;
+        $profundidad = $this->inspeccion->profundidad;
+        
+        if($alto=="")
+            $alto = "-";
+            
+        if($ancho=="")
+            $ancho = "-";
+            
+        if($profundidad=="")
+            $profundidad = "-";
+                    
+        $borde = 0;
+        $this->SetLeftMargin(10);
+        $this->SetFont($this->font, 'B', 13);
+        $this->Ln();
+        $this->SetFillColor(242, 242, 242);
+        $this->Cell(0,8,$this->texto("INFORMACIÓN DE TRANSPORTE"),$borde,2,'C',1);
+        
+        $this->SetDrawColor(0,0,0);
+        $y = 80;
+        $this->Line(10, $y, 210-10, $y);
+        
+        $this->SetLeftMargin(20);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(30, 6, "Transportista", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 6, $this->texto($transportista), $borde, 0, 'L');
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(30, 6, "Chofer", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 6, $this->texto($chofer), $borde, 0, 'L');
+        
+        $this->SetLeftMargin(10);
+        $this->Ln();
+        $this->SetFont($this->font, 'B', 11);
+        
+        $this->Cell(0,8,$this->texto("Vehículo "),$borde,1,'C');
+        $this->SetDrawColor(191,191,191);
+        $y = 93;
+        $this->Line(10, $y, 210-10, $y);
         
         
+        $this->SetLeftMargin(20);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(30, 8, "No. Caja:", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 8, $this->texto($numeroCaja), $borde, 0, 'L');
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(30, 8, "Tipo caja:", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 8, $this->texto($tipoCaja), $borde, 0, 'L');
+        
+        $this->Ln();
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(30, 8, "Color caja:", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 8, $this->texto($colorCaja), $borde, 0, 'L');
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(30, 8, "Sello colocado:", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 8, $this->texto(""), $borde, 0, 'L');
+        
+        $this->Ln();
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(30, 8, "Sello retirado:", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 8, $this->texto(""), $borde, 0, 'L');
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(30, 8, $this->texto("Inspección aleatoria:"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 8, $this->texto(""), $borde, 0, 'L');
+        
+        
+        $this->SetLeftMargin(10);
+        $this->SetFont($this->font, 'B', 13);
+        $this->Ln();
+        $this->SetFillColor(242, 242, 242);
+        $this->Cell(0,8,$this->texto("DIMENSIONES DEL CONTENEDOR"),$borde,2,'C',1);
+        
+        $this->SetLeftMargin(20);
+        $this->Ln();
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(28.33, 8, "Alto:", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(28.33, 8, $this->texto($alto), $borde, 0, 'L');
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(28.33, 8, "Ancho:", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(28.33, 8, $this->texto($ancho), $borde, 0, 'L');
+        
+        //$this->Ln();
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(28.33, 8, "Profundidad:", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(28.33, 8, $this->texto($profundidad), $borde, 0, 'L');
+        
+        $this->SetDrawColor(0,0,0);
+        $y = 126;
+        $this->Line(10, $y, 210-10, $y);
+        
+        $this->Ln();
+        $this->SetFont($this->font, 'I', 8);
+        $leyenda = "Las medidas interiores del contenedor no se muestran cuando el contenedor se encontraba sellado al momento de hacer la inspección";
+        $this->Cell(170, 8, $this->texto($leyenda), $borde, 0, 'C');
+                    
+                    
+    }
+    
+    function imprimirInformacionTransporte10()
+    {
+        $transportista = strtoupper($this->inspeccion->transportista);
+        $chofer = strtoupper($this->inspeccion->chofer);
+        $numeroTractor = $this->inspeccion->numeroTractor;
+        $numeroCaja = $this->inspeccion->numeroCaja;
+        $colorTractor = strtoupper($this->inspeccion->colorTractor);
+        $colorCaja = strtoupper($this->inspeccion->colorCaja);
+        $numeroContenedor = $this->inspeccion->numeroContenedor;
+        $tipoCaja = strtoupper($this->inspeccion->tipoCaja);
+        $sello =  $this->inspeccion->sello;
+        $selloViajero =  $this->inspeccion->selloViajero;
+        $alto = $this->inspeccion->alto;
+        $ancho = $this->inspeccion->ancho;
+        $profundidad = $this->inspeccion->profundidad;
+        
+        if($alto=="")
+            $alto = "-";
+            
+        if($ancho=="")
+            $ancho = "-";
+    
+        if($profundidad=="")
+            $profundidad = "-";
+        
+        $borde = 0;
+        $this->SetLeftMargin(10);
+        $this->SetFont($this->font, 'B', 13);
+        $this->Ln();
+        $this->SetFillColor(242, 242, 242);
+        $this->Cell(0,8,$this->texto("INFORMACIÓN DE TRANSPORTE"),$borde,2,'C',1);
+        
+        $this->SetDrawColor(0,0,0);
+        $y = 80;
+        $this->Line(10, $y, 210-10, $y);
+        
+        $this->SetLeftMargin(20);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(30, 6, "Transportista", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 6, $this->texto($transportista), $borde, 0, 'L');
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(30, 6, "Chofer", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 6, $this->texto($chofer), $borde, 0, 'L');
+        
+        $this->SetLeftMargin(10);
+        $this->Ln();
+        $this->SetFont($this->font, 'B', 11);
+        
+        $this->Cell(0,8,$this->texto("Vehículo "),$borde,1,'C');
+        $this->SetDrawColor(191,191,191);
+        $y = 93;
+        $this->Line(10, $y, 210-10, $y);
+        
+        
+        $this->SetLeftMargin(20);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(30, 8, "No. Tractor:", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 8, $this->texto($numeroTractor), $borde, 0, 'L');
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(30, 8, "Sello viajero:", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 8, $this->texto($selloViajero), $borde, 0, 'L');
+        
+        $this->Ln();
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(30, 8, "Placas Tractor:", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 8, $this->texto("580AT4"), $borde, 0, 'L');
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(30, 8, "Color Tractor:", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 8, $this->texto($colorTractor), $borde, 0, 'L');
+        
+//         $this->SetLeftMargin(10);
+//         $this->SetFont($this->font, 'B', 13);
+//         $this->Ln();
+//         $this->SetFillColor(242, 242, 242);
+//         $this->Cell(0,8,$this->texto("DIMENSIONES DEL CONTENEDOR"),$borde,2,'C',1);
+        
+//         $this->SetLeftMargin(20);
+//         $this->Ln();
+//         $this->SetFont($this->font, 'B', 10);
+//         $this->Cell(28.33, 8, "Alto:", $borde, 0, 'L');
+//         $this->SetFont($this->font, '', 10);
+//         $this->Cell(28.33, 8, $this->texto($alto), $borde, 0, 'L');
+//         $this->SetFont($this->font, 'B', 10);
+//         $this->Cell(28.33, 8, "Ancho:", $borde, 0, 'L');
+//         $this->SetFont($this->font, '', 10);
+//         $this->Cell(28.33, 8, $this->texto($ancho), $borde, 0, 'L');
+        
+//         //$this->Ln();
+//         $this->SetFont($this->font, 'B', 10);
+//         $this->Cell(28.33, 8, "Profundidad:", $borde, 0, 'L');
+//         $this->SetFont($this->font, '', 10);
+//         $this->Cell(28.33, 8, $this->texto($profundidad), $borde, 0, 'L');
+        
+//         $this->SetDrawColor(0,0,0);
+//         $y = 118;
+//         $this->Line(10, $y, 210-10, $y);
+        
+//         $this->Ln();
+//         $this->SetFont($this->font, 'I', 8);
+//         $leyenda = "Las medidas interiores del contenedor no se muestran cuando el contenedor se encontraba sellado al momento de hacer la inspección";
+//         $this->Cell(170, 8, $this->texto($leyenda), $borde, 0, 'C');
+                    
+                    
     }
     
     function imprimirInspeccionTractor()
@@ -322,7 +562,7 @@ class PDF extends FPDF
         $this->Ln();
         $this->SetFillColor(242, 242, 242);
         $this->Cell(0,8,$this->texto("INSPECCIÓN DE TRACTOR"),$borde,2,'C',1);
-     
+        
         
         $this->SetFont($this->font, 'B', 10);
         $this->Cell($anchoColumna1, 8, $this->texto("Descripción"), $borde, 0, 'C', 1);
@@ -355,17 +595,17 @@ class PDF extends FPDF
                 $this->SetFont($this->font, '', 9);
                 $resultado =  "N/A";
             }
-           
-           
+            
+            
             $this->Cell($anchoColumna2, 8, $resultado, $borde, 0, 'C');
             $this->SetFont($this->font, '', 9);
             $this->Cell($anchoColumna3, 8, $observaciones, $borde, 0, 'L');
         }
-       
+        
         $this->SetDrawColor(0,0,0);
         $y = 173;
-        $this->Line(10, $y, 210-10, $y);
-            
+       // $this->Line(10, $y, 210-10, $y);
+        
     }
     
     function imprimirInspeccionContenedor()
@@ -418,11 +658,11 @@ class PDF extends FPDF
             $this->SetFont($this->font, '', 9);
             $this->Cell($anchoColumna3, 8, $observaciones, $borde, 0, 'L');
         }
-  
+        
         $this->SetDrawColor(0,0,0);
         $y = 26;
         $this->Line(10, $y, 210-10, $y);
-       
+        
         
     }
     
@@ -436,7 +676,7 @@ class PDF extends FPDF
             if(count($seccion->fotos)>0)
                 array_push($seccionesFotos,$seccion);
         }
-       
+        
         $borde = 0;
         
         
@@ -447,7 +687,7 @@ class PDF extends FPDF
         $separacionY = 20;
         
         $yFotos = $separacionY;
-       
+        
         for($i = 0 ; $i < count($seccionesFotos); $i++)
         {
             $seccion = $seccionesFotos[$i];
@@ -460,7 +700,7 @@ class PDF extends FPDF
             $this->SetFillColor(242, 242, 242);
             $this->Cell(0,8,$this->texto($titulo),$borde,2,'C',0);
             
-           
+            
             $numeroFotos = count($seccion->fotos);
             $anchoTotal = (($numeroFotos-1) * $separacionX) + $numeroFotos * $anchoFoto;
             $xFoto = 10 + (95 - $anchoTotal/2);
@@ -481,12 +721,12 @@ class PDF extends FPDF
             }
         }
         
-       
+        
         
     }
     
     function correctImageOrientation($filename) {
-      
+        
         if (function_exists('exif_read_data')) {
             $exif = exif_read_data($filename);
             if($exif && isset($exif['Orientation'])) {
@@ -521,18 +761,18 @@ class PDF extends FPDF
         $foto = "../fotos_inspecciones/".$inspeccionId ."_" . $punto->id ."_1.jpg";
         if (file_exists($foto))
             array_push($fotos,$foto);
-        $foto = "../fotos_inspecciones/".$inspeccionId ."_" . $punto->id ."_2.jpg";
-        if (file_exists($foto))
-            array_push($fotos,$foto);
-        $foto = "../fotos_inspecciones/".$inspeccionId ."_" . $punto->id ."_3.jpg";
-        if (file_exists($foto))
-            array_push($fotos,$foto);
-        $seccion= (object) [
-            'id' =>  $punto->id,
-            'descripcion' => $punto->descripcion,
-            'fotos' => $fotos
-        ];
-        return $seccion;
+            $foto = "../fotos_inspecciones/".$inspeccionId ."_" . $punto->id ."_2.jpg";
+            if (file_exists($foto))
+                array_push($fotos,$foto);
+                $foto = "../fotos_inspecciones/".$inspeccionId ."_" . $punto->id ."_3.jpg";
+                if (file_exists($foto))
+                    array_push($fotos,$foto);
+                    $seccion= (object) [
+                        'id' =>  $punto->id,
+                        'descripcion' => $punto->descripcion,
+                        'fotos' => $fotos
+                    ];
+                    return $seccion;
     }
     
     function texto($texto)
@@ -557,7 +797,7 @@ try
         
         
         $resultado = $repositorio->consultarPorLlaves($llaves);
-      
+        
         if($resultado->mensajeError=="")
         {
             $pdf = new PDF();
@@ -568,7 +808,7 @@ try
         }
         else
             echo $resultado->mensajeError;
-
+            
     }
 }
 catch(Exception $e)

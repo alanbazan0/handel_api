@@ -33,6 +33,7 @@ class InspeccionesVista extends CatalogoVista
 	{
 		this.tabla.columnas = [
 			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
+			{longitud:50, 	titulo:"Tipo de inspección",   	alias:"tipoInspeccionDescripcion", alineacion:"I" },
 			{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },		
 			{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" },
 			{longitud:200, 	titulo:"Area",   alias:"areaNombre", alineacion:"I" },		
@@ -163,7 +164,7 @@ class InspeccionesVista extends CatalogoVista
 	
 	imprimirReporte()
 	{
-		var submitForm = this.getNewSubmitForm("php/reportes/reporte.php");
+		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte.php");
 		this.createNewFormElement(submitForm, "inspeccionId", JSON.stringify(this._llaves.id));	 
 	    submitForm.target= "_blank";
 	    submitForm.submit();
