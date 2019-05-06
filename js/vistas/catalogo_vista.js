@@ -37,6 +37,8 @@ class CatalogoVista extends Vista
 //			  
 //		});
 //	}
+	
+	
 
 	
 	editar()

@@ -22,7 +22,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         $this->consultaBase = " SELECT A.id, A.plantilla_id, P.nombre, IFNULL(DATE_FORMAT(A.fecha_ejecucion,'%d/%m/%Y %H:%i:%s'),'')fecha_ejecucion, A.empresa_id, E.nombre, IFNULL(E.nombre_corto,'')nombre_corto, A.contador_empresa " .
             " FROM auditorias A " .
             " INNER JOIN plantillas P on A.plantilla_id = P.id  " .
-            " INNER JOIN empresas E on A.empresa_id = E.id ";
+            " LEFT JOIN empresas E on A.empresa_id = E.id ";
            
     }
     
@@ -63,8 +63,12 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     public function insertar(Auditoria $modelo)
     {
         $resultado = new Resultado();
+        $this->conexion->autocommit(FALSE);
         if($modelo->id=="")
         {
+            if($modelo->empresaId=="")
+                $modelo->empresaId = NULL;
+            
             $resultado =  $this->calcularId("id","auditorias");
             if($resultado->mensajeError=="")
             {
@@ -83,28 +87,46 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                         {
                             $sentencia->close();
                             
-//                             $resultado = $this->insertarDatosPlantilla($modelo);
-//                             if($resultado->mensajeError=="")
-//                                 $resultado->valor = $modelo->id;
+                            $resultado = $this->insertarDatosAuditoria($modelo);
+                            if($resultado->mensajeError=="")
+                            {
+                              
+                                $resultado = $this->consultarEncabezado($modelo->id);
+                                if($resultado->mensajeError=="")
+                                {
+                                    $this->conexion->commit();
+                                   
+                                }
+                                else
+                                    $this->conexion->rollback();
+                               
+                            }
     
                         }
                         else
                         {
                             $resultado->mensajeError = "Falló la ejecución insertar(" . $this->conexion->errno . ") " . $this->conexion->error;
+                            $this->conexion->rollback();
                         }
                     }
                     else
+                    {
                         $resultado->mensajeError = "Falló el enlace de parámetros";
+                        $this->conexion->rollback();
+                    }
                 }
                 else
+                {
                     $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    $this->conexion->rollback();
+                }
         
             }
         }
         
 //         if($this->existeAuditoria($modelo->id))
 //         {
-//              $resultado = $this->insertarDatosPlantilla($modelo);
+//              $resultado = $this->insertarDatosAuditoria($modelo);
 //              if($resultado->mensajeError=="")
 //                 $resultado->valor = $modelo->id;
 //         }
@@ -115,6 +137,40 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             
         return $resultado;
     }
+    
+//     private function consultarReferencia($auditoriaId)
+//     {
+//         $consulta = "SELECT E.id,   IFNULL(E.nombre_corto,'')nombre_corto, A.contador_empresa,IFNULL(DATE_FORMAT(A.fecha_ejecucion,'%d/%m/%Y %H:%i:%s'),'')fecha_ejecucion " .
+//             " FROM auditorias A " .
+//             " INNER JOIN plantillas P on A.plantilla_id = P.id  " .
+//             " INNER JOIN empresas E on A.empresa_id = E.id " .
+//             "WHERE A.id = ?";
+//         if($sentencia = $this->conexion->prepare($consulta))
+//         {
+//             if($sentencia->bind_param("i",$auditoriaId))
+//             {
+//                 if($sentencia->execute())
+//                 {
+//                     if ($sentencia->bind_result($empresaId,$empresaNombreCorto, $contadorEmpresa, $fechaEjecucion))
+//                     {
+//                         if($sentencia->fetch())
+//                         {
+//                             $fecha = substr($fechaEjecucion,0,10);
+//                             $fecha = str_replace( '/', '.', $fecha );
+                            
+//                             if($empresaNombreCorto=="" || $empresaNombreCorto==null)
+//                                 $empresaNombreCorto = "EMP".$empresaId;
+                            
+//                             $referencia = $empresaNombreCorto . "-".$fecha."-".$contadorEmpresa;
+//                             return $referencia;
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//         return "";
+                            
+//     }
     
     private function existeAuditoria($id)
     {
@@ -421,54 +477,43 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         return $resultado;
     }
     
-    private function insertarPreguntas($plantillaId,$secciones)
+    private function insertarPreguntas($auditoriaId,$plantillaId,$seccionId,$preguntas)
     {
-       
         $resultado = new Resultado();
-        
-        for ($i = 0; $i <  count($secciones); $i++)
+        for ($i = 0; $i <  count($preguntas); $i++)
         {
-            $seccion = $secciones[$i];
-            
-            for ($j = 0; $j < count($seccion->preguntas); $j++)
+            $pregunta = $preguntas[$i];
+            $consulta = "INSERT INTO auditoria_preguntas(auditoria_id, plantilla_id, seccion_id, pregunta_id, valor) " .
+                "VALUE(?, ?, ?, ?, ?)";
+            if($sentencia = $this->conexion->prepare($consulta))
             {
-                $pregunta = $seccion->preguntas[$j];
-                $consulta = "INSERT INTO preguntas(plantilla_id, seccion_id, id, texto, hallazgo, recomendacion, colapsado, tipo, practicas, observaciones, peso) " .
-                    "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                if($sentencia = $this->conexion->prepare($consulta))
+                if($sentencia->bind_param("iiiis",$auditoriaId,$plantillaId,$seccionId, $pregunta->id, $pregunta->valor))
                 {
-                    if($sentencia->bind_param("iiisssisssi",$plantillaId,$seccion->id, $pregunta->id, $pregunta->texto, $pregunta->hallazgo, $pregunta->recomendacion, $pregunta->colapsado, $pregunta->tipo,$pregunta->practicas, $pregunta->observaciones, $pregunta->peso))
+                    if($sentencia->execute())
                     {
-                        if($sentencia->execute())
-                        {
-                            $sentencia->close();
-                          
-                        }
-                        else
-                        {
-                            $resultado->codigoError = $this->conexion->errno;
-                            $resultado->mensajeError = "Falló la ejecución insertarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
-                            break;
-                        }
-                        
+                        $sentencia->close();
                     }
                     else
                     {
-                        $resultado->mensajeError = "Falló el enlace de parámetros";
+                        $resultado->codigoError = $this->conexion->errno;
+                        $resultado->mensajeError = "Falló la ejecución insertarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
                         break;
                     }
                 }
                 else
                 {
-                    $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    $resultado->mensajeError = "Falló el enlace de parámetros";
                     break;
                 }
             }
+            else
+            {
+                $resultado->codigoError = $this->conexion->errno;
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                break;
+            }
             
         }
-        
-        
         return $resultado;
     }
     
@@ -756,24 +801,20 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         
         $this->conexion->autocommit(FALSE);
         
-        $consulta = " UPDATE plantillas " .
-            "SET nombre = ?, " .      
-            "  descripcion = ?, " .
-            "  fecha_programada = ?, " .
-            "  estatus = ?, " .
-            "  fecha_modificacion= NOW() " .
+        $consulta = " UPDATE auditorias " .
+            "SET empresa_id = ? " .      
             "WHERE id = ? ";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if( $sentencia->bind_param("sssii", $modelo->nombre,$modelo->descripcion,$datetime, $modelo->estatus,$modelo->id ))
+            if( $sentencia->bind_param("ii", $modelo->empresaId,$modelo->id))
             {
                 if($sentencia->execute())
                 {
                     $resultado->valor=true;
                     $sentencia->close();
                     
-                    $resultado = $this->insertarDatosPlantilla($modelo);
+                    $resultado = $this->insertarDatosAuditoria($modelo);
                 }
                 else
                     $resultado->mensajeError = "Falló la ejecución actualizar(" . $this->conexion->errno . ") " . $this->conexion->error;
@@ -787,18 +828,18 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         return $resultado;
     }
     
-    public function insertarDatosPlantilla($modelo)
+    public function insertarDatosAuditoria($modelo)
     {
-        $resultado =  $this->insertarPreguntas($modelo->id,$modelo->secciones);
+        $resultado =  $this->insertarPreguntas($modelo->id,$modelo->plantillaId, $modelo->seccionId,$modelo->preguntas);
         if($resultado->mensajeError=="")
         {
-            $resultado =  $this->insertarRespuestas($modelo->id,$modelo->secciones);
-            if($resultado->mensajeError=="")
-            {
-                $this->conexion->commit();
-            }
-            else
-                $this->conexion->rollback();
+//             $resultado =  $this->insertarRespuestas($modelo->id,$modelo->secciones);
+//             if($resultado->mensajeError=="")
+//             {
+//                 $this->conexion->commit();
+//             }
+//             else
+//                 $this->conexion->rollback();
         }
         else
             $this->conexion->rollback();
@@ -854,6 +895,41 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         else
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
+        return $resultado;
+    }
+    
+    public function consultarEncabezado($auitoriaId)
+    {
+       
+        $resultado = new Resultado();
+        $consulta = $this->consultaBase .
+        " WHERE A.id  = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$auitoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa))
+                    {
+                        if($row = $sentencia->fetch())
+                        {
+                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa);
+                            $resultado->valor = $registro;
+                        }
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado.";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+             
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
         return $resultado;
     }
     
@@ -1323,6 +1399,12 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         $fecha = substr($fechaEjecucion,0,10);
         $fecha = str_replace( '/', '.', $fecha );
         
+        if($empresaId==null)
+            $empresaId = ".NA";
+        
+        if($empresaNombreCorto=="" || $empresaNombreCorto==null)
+            $empresaNombreCorto = "EMP".$empresaId;
+        
         $referencia = $empresaNombreCorto . "-".$fecha."-".$contadorEmpresa;
         
         $registro= (object) [
@@ -1333,7 +1415,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             'fechaEjecucion' => $fechaEjecucion,
             'empresaId' => $empresaId,   
             'empresaNombre' => $empresaNombre,   
-            '$empresaNombreCorto' => $empresaNombreCorto,   
+            'empresaNombreCorto' => $empresaNombreCorto,   
             'contadorEmpresa' => $contadorEmpresa ,
             'referencia' => $referencia
             

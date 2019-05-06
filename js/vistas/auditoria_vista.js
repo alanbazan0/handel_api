@@ -25,6 +25,22 @@ class AuditoriaVista extends Vista
 		return this._modo;
 	}
 	
+	set modo(modo)
+	{
+		this._modo = modo;
+	}
+	
+	set llaves(llaves)
+	{
+		this._llaves = llaves;
+	}
+	
+	setModoCambio(id)
+	{
+		this._modo = Modo.CAMBIO;
+		this._llaves = { id : id};
+	}
+	
 	
 	inicializar()
 	{	
@@ -419,6 +435,12 @@ class AuditoriaVista extends Vista
 			 modelo.id = this.modeloEdicion.id;
 		 return modelo;
 	 }
+	
+	mostrarReferencia()
+	{
+		$("#referenciaDiv").show();
+		$("#referenciaLabel").html("REFERENCIA: " +this.modeloEdicion.referencia);
+	}
 	
 	campoVacio()
 	{

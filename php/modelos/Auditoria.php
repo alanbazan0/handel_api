@@ -5,6 +5,7 @@ class Auditoria
 {
     public $id;
     public $plantillaId;
+    public $seccionId;
     public $empresaId; 
     public $contadorEmpresa;
     public $fechaEjecucion;
