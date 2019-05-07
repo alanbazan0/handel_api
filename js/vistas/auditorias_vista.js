@@ -32,6 +32,60 @@ class AuditoriasVista extends CatalogoVista
 
 	}
 	
+	inicializarEventosTabla(tbody, table)
+	{
+		this.inicializarEventosBotonesTabla(tbody, table, ["id"]);
+		var _this = this;
+		$(tbody).on("click", "button.ejecutar", function()
+		{			
+			var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.ejecutar();
+			}
+		});
+		$(tbody).on("click", "button.reporte", function()
+		{			
+			var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.imprimirReporte();
+			}
+		});
+	}
+	
+	ejecutar()
+	{
+		var submitForm = this.getNewSubmitForm("auditoria.php","post");
+		this.createNewFormElement(submitForm, "plantillaId", this._llaves.id);
+		this.createNewFormElement(submitForm, "modo", Modo.CAMBIO);
+		submitForm.target= "auditoria" + Math.floor(Math.random()*10000);
+		submitForm.submit();
+	}
+	
+	imprimirReporte()
+	{
+		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_auditoria.php");
+		this.createNewFormElement(submitForm, "auditoriaId", JSON.stringify(this._llaves.id));	 
+	    submitForm.target= "_blank";
+	    submitForm.submit();
+	}
+	
+	
 	crearFecha()
 	{
 		$.datepicker.regional['es'] = {

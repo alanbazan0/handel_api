@@ -938,7 +938,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         $resultado = new Resultado();
         ini_set('max_execution_time', 300);
         $consulta = $this->consultaBase .
-        " WHERE P.id  = ?";
+        " WHERE A.id  = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param("i",$llaves->id))
@@ -956,13 +956,13 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                             
                             $sentencia->close();
                             
-                            $resultadoSecciones = $this->consultarSecciones($plantilla->id);
-                            if($resultadoSecciones->mensajeError=="")
-                            {
-                                $plantilla->secciones = $resultadoSecciones->valor;
-                            }
-                            else
-                                $resultado->mensajeError = $resultadoSecciones->mensajeError;
+//                             $resultadoSecciones = $this->consultarSecciones($plantilla->id);
+//                             if($resultadoSecciones->mensajeError=="")
+//                             {
+//                                 $plantilla->secciones = $resultadoSecciones->valor;
+//                             }
+//                             else
+//                                 $resultado->mensajeError = $resultadoSecciones->mensajeError;
                         }
                         else
                             $resultado->mensajeError = "No se encontró ningún resultado.";
