@@ -18,6 +18,102 @@ class PDF extends FPDF
         $this->modelo = $modelo;
     }
     
+    function Cell($w, $h=0, $txt='', $border=0, $ln=0, $align='', $fill=false, $link='')
+    {
+        $k=$this->k;
+        if($this->y+$h>$this->PageBreakTrigger && !$this->InHeader && !$this->InFooter && $this->AcceptPageBreak())
+        {
+            $x=$this->x;
+            $ws=$this->ws;
+            if($ws>0)
+            {
+                $this->ws=0;
+                $this->_out('0 Tw');
+            }
+            $this->AddPage($this->CurOrientation);
+            $this->x=$x;
+            if($ws>0)
+            {
+                $this->ws=$ws;
+                $this->_out(sprintf('%.3F Tw',$ws*$k));
+            }
+        }
+        if($w==0)
+            $w=$this->w-$this->rMargin-$this->x;
+            $s='';
+            if($fill || $border==1)
+            {
+                if($fill)
+                    $op=($border==1) ? 'B' : 'f';
+                    else
+                        $op='S';
+                        $s=sprintf('%.2F %.2F %.2F %.2F re %s ',$this->x*$k,($this->h-$this->y)*$k,$w*$k,-$h*$k,$op);
+            }
+            if(is_string($border))
+            {
+                $x=$this->x;
+                $y=$this->y;
+                if(is_int(strpos($border,'L')))
+                    $s.=sprintf('%.2F %.2F m %.2F %.2F l S ',$x*$k,($this->h-$y)*$k,$x*$k,($this->h-($y+$h))*$k);
+                    if(is_int(strpos($border,'T')))
+                        $s.=sprintf('%.2F %.2F m %.2F %.2F l S ',$x*$k,($this->h-$y)*$k,($x+$w)*$k,($this->h-$y)*$k);
+                        if(is_int(strpos($border,'R')))
+                            $s.=sprintf('%.2F %.2F m %.2F %.2F l S ',($x+$w)*$k,($this->h-$y)*$k,($x+$w)*$k,($this->h-($y+$h))*$k);
+                            if(is_int(strpos($border,'B')))
+                                $s.=sprintf('%.2F %.2F m %.2F %.2F l S ',$x*$k,($this->h-($y+$h))*$k,($x+$w)*$k,($this->h-($y+$h))*$k);
+            }
+            if($txt!='')
+            {
+                if($align=='R')
+                    $dx=$w-$this->cMargin-$this->GetStringWidth($txt);
+                    elseif($align=='C')
+                    $dx=($w-$this->GetStringWidth($txt))/2;
+                    elseif($align=='FJ')
+                    {
+                        //Set word spacing
+                        $wmax=($w-2*$this->cMargin);
+                        $this->ws=($wmax-$this->GetStringWidth($txt))/substr_count($txt,' ');
+                        $this->_out(sprintf('%.3F Tw',$this->ws*$this->k));
+                        $dx=$this->cMargin;
+                    }
+                    else
+                        $dx=$this->cMargin;
+                        $txt=str_replace(')','\\)',str_replace('(','\\(',str_replace('\\','\\\\',$txt)));
+                        if($this->ColorFlag)
+                            $s.='q '.$this->TextColor.' ';
+                            $s.=sprintf('BT %.2F %.2F Td (%s) Tj ET',($this->x+$dx)*$k,($this->h-($this->y+.5*$h+.3*$this->FontSize))*$k,$txt);
+                            if($this->underline)
+                                $s.=' '.$this->_dounderline($this->x+$dx,$this->y+.5*$h+.3*$this->FontSize,$txt);
+                                if($this->ColorFlag)
+                                    $s.=' Q';
+                                    if($link)
+                                    {
+                                        if($align=='FJ')
+                                            $wlink=$wmax;
+                                            else
+                                                $wlink=$this->GetStringWidth($txt);
+                                                $this->Link($this->x+$dx,$this->y+.5*$h-.5*$this->FontSize,$wlink,$this->FontSize,$link);
+                                    }
+            }
+            if($s)
+                $this->_out($s);
+                if($align=='FJ')
+                {
+                    //Remove word spacing
+                    $this->_out('0 Tw');
+                    $this->ws=0;
+                }
+                $this->lasth=$h;
+                if($ln>0)
+                {
+                    $this->y+=$h;
+                    if($ln==1)
+                        $this->x=$this->lMargin;
+                }
+                else
+                    $this->x+=$w;
+    }
+    
     function Header()
     {
         $this->SetLineWidth(1);
@@ -118,28 +214,16 @@ class PDF extends FPDF
     public function generar()
     {
         $this->SetFont($this->font,'',20);
-        $this->AddPage();
-        $this->imprimirEncabezado();
-//         $this->imprimirTitulo();
-//         $this->imprimirSubtitulo();
-//         $this->imprimirInspector();
-//         if($this->modelo->tipoInspeccionId==1)
-//             $this->imprimirInformacionTransporte17();
-//         else  if($this->modelo->tipoInspeccionId==2)
-//             $this->imprimirInformacionTransporte7();
-//         else  if($this->modelo->tipoInspeccionId==3)
-//             $this->imprimirInformacionTransporte10();
-                    
-                    
-//         if(count($this->modelo->puntos1)>0)
-//              $this->imprimirInspeccionTractor();
-//         if(count($this->modelo->puntos2)>0)
-//         {
-//             $this->AddPage();
-//             $this->imprimirInspeccionContenedor();
-//         }
-//         $this->AddPage();
-//         $this->imprimirFotos();
+      
+        $this->encabezado();
+        $this->datosGenerales();
+        $this->metodologia();
+        $this->graficosCompania();
+        $this->aplicacionResultados();
+        $this->comparacionGlobal();
+        $this->observaciones();
+        $this->incidencias();
+
                         
                         
     }
@@ -160,50 +244,315 @@ class PDF extends FPDF
         }
     }
     
-    function imprimirEncabezado()
+    function datosGenerales()
     {
+        $this->AddPage();
+        
+       // $this->SetY(20);
+        //$this->SetX(20);
+        $borde = 'B';
+        $w1 = 85;
+        $w2 = 85;
+        
+        //Titulo datos generales
+//         $this->SetTextColor(63,103,151);
+//         $this->SetDrawColor(118, 159, 209);
+//         $this->SetLeftMargin(20);
+//         $this->SetFont($this->font, 'I', 10);
+//         $this->Cell(170, 10,$this->texto("I. Datos generales"), $borde, 0, 'L');
+        $this->imprimirTituloHoja("I. Datos generales");
+        
+        //Numero de registro
+        $this->Ln();
+        $this->Ln();
+        $this->SetDrawColor(130, 130, 130);
+        $this->SetLeftMargin(20);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell($w1, 10,$this->texto("Referencia:"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($w2, 10, $this->texto($this->modelo->referencia), $borde, 0, 'L');
+        //Empresa
+        $this->Ln();
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell($w1, 10,$this->texto("Compañia:"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($w2, 10, $this->texto($this->modelo->empresaNombre), $borde, 0, 'L');
+    }
+    
+    function metodologia()
+    {
+        $this->AddPage();
+       // $this->SetY(20);
+       // $this->SetX(20);
+        $borde = 0;
+        $w1 = 85;
+        $w2 = 85;
+        
+        //Titulo metodologia
+//         $this->SetTextColor(63,103,151);
+//         $this->SetDrawColor(118, 159, 209);
+//         $this->SetLeftMargin(20);
+//         $this->SetFont($this->font, '', 10);
+//         $this->Cell(170, 10,$this->texto("II. Metodología"), 'B', 0, 'L');
+
+        $this->imprimirTituloHoja("II. Metodología");
+        
+        $this->Ln();
+        $this->SetLeftMargin(30);
+        $this->SetFont($this->font, '', 10);
+        $this->SetFillColor(242, 242, 242);
+        $this->SetTextColor(0,0,0);
+        //$this->cMargin=10;
+        //Print 2 Cells
+        $tamanoLinea = 6;
+        $this->Ln();
+        $this->Cell(150,$tamanoLinea,$this->texto('    Esta autoevaluación fue diseñada utilizando como referencia las guías de seguridad'),$borde,1,'FJ',1);
+        $this->Cell(150,$tamanoLinea,$this->texto('del	programa C-TPAT	(Custom	Trade Partnership Against Terrorism) en	sus	requisitos'),$borde,1,'FJ',1);
+        $this->Cell(150,$tamanoLinea,$this->texto('mínimos	de	seguridad, las gráficas de referencia fueron tomadas de evaluaciones en'),$borde,1,'FJ',1);
+        $this->Cell(150,$tamanoLinea,$this->texto('empresas similares en rama a la	suya según se indica individualmente. Los porcentajes'),$borde,1,'FJ',1);
+        $this->Cell(150,$tamanoLinea,$this->texto('que	aparecen son aproximados en	base a la auditoría	realizada.'),$borde,1,'L',1);
+
+        $this->Cell(150,$tamanoLinea,'',$borde,1,'L',1);
+        $this->Cell(150,$tamanoLinea,$this->texto('En este punto se indica su estado en tres aspectos:'),$borde,1,'L',1);
+        
+        $this->Cell(150,$tamanoLinea,'',$borde,1,'L',1);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(150,$tamanoLinea,$this->texto('Nivel de compromiso	y manejo de	amenazas'),$borde,1,'L',1);
+        
+        $this->Cell(150,$tamanoLinea,'',$borde,1,'L',1);
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(150,$tamanoLinea,$this->texto('    Mide el conocimiento y manejo de amenazas de las iniciativas de	seguridad y	su'),$borde,1,'FJ',1);
+        $this->Cell(150,$tamanoLinea,$this->texto('compromiso en integrarlas en la	operación diaria así como la asignación	de'),$borde,1,'FJ',1);
+        $this->Cell(150,$tamanoLinea,$this->texto('responsabilidades desde la alta administración buscando la mejora continua.'),$borde,1,'L',1);
+        
+        $this->Cell(150,$tamanoLinea,'',$borde,1,'L',1);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(150,$tamanoLinea,$this->texto('Implementación'),$borde,1,'L',1);
+        
+        $this->Cell(150,$tamanoLinea,'',$borde,1,'L',1);
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(150,$tamanoLinea,$this->texto('    Mide el nivel de implementación de aspectos críticos de los criterios de seguridad en'),$borde,1,'FJ',1);
+        $this->Cell(150,$tamanoLinea,$this->texto('la cadena de suministro.'),$borde,1,'L',1);
+        
+        $this->Cell(150,$tamanoLinea,'',$borde,1,'L',1);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(150,$tamanoLinea,$this->texto('Verificación y mejora continúa'),$borde,1,'L',1);
+        
+        $this->Cell(150,$tamanoLinea,'',$borde,1,'L',1);
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(150,$tamanoLinea,$this->texto('   Mide la existencia de un proceso para evaluar de forma regular las prácticas de la'),$borde,1,'FJ',1);
+        $this->Cell(150,$tamanoLinea,$this->texto('cadena de suministro así como las políticas de ajuste contra los requerimientos recién'),$borde,1,'FJ',1);
+        $this->Cell(150,$tamanoLinea,$this->texto('establecidos al hacer mejoras según sea necesario. '),$borde,1,'L',1);
+    }
+    
+    function graficosCompania()
+    {
+        $this->AddPage();
+//         $this->SetY(20);
+//         $this->SetX(20);
+
+        $this->imprimirTituloHoja("III. Gráficos de la compañia");
+        $borde = 0;
+        $w1 = 60;
+        $w2 = 110;
+        
+//         //Titulo metodologia
+//         $this->SetTextColor(63,103,151);
+//         $this->SetDrawColor(118, 159, 209);
+        
+//         $this->SetLeftMargin(20);
+//         $this->SetFont($this->font, '', 10);
+//         $this->Cell(170, 10,$this->texto("III. Gráficos de la compañia"), 'B', 0, 'L');
+        
+        $this->Ln();
+        $this->Ln();
+        $this->cMargin=5;
+        $this->SetFillColor(242, 242, 242);
+        $this->SetLeftMargin(20);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell($w1, 10,$this->texto("Resultados en su compañia"), $borde, 0, 'L',1);
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($w2, 10, $this->texto("Es el resultado de la evaluación realizada por Händel"), $borde, 0, 'L',1);
+       
+        $this->Ln();
+        $this->cMargin=5;
+        $this->SetFillColor(242, 242, 242);
+        $this->SetLeftMargin(20);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell($w1, 10,$this->texto("País"), $borde, 0, 'L',1);
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($w2, 10, $this->texto("Puntaje promedio de empresas evaluadas en el país"), $borde, 0, 'L',1);
+        
+        $this->Ln();
+        $this->cMargin=5;
+        $this->SetFillColor(242, 242, 242);
+        $this->SetLeftMargin(20);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell($w1, 10,$this->texto("Sector de la industria"), $borde, 0, 'L',1);
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($w2, 10, $this->texto("Puntaje promedio de empresas evaluadas en el sector especifco "), $borde, 0, 'L',1);
+       
+    }
+    
+    function imprimirTituloHoja($titulo)
+    {
+        $this->SetY(20);
+        $this->SetX(20);
+        $this->SetTextColor(63,103,151);
+        $this->SetDrawColor(118, 159, 209);
+        $this->SetLeftMargin(20);
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(170, 10,$this->texto($titulo), 'B', 0, 'L');
+    }
+    
+    function aplicacionResultados()
+    {
+        $this->AddPage();
+        $this->imprimirTituloHoja("IV. Aplicación de resultados");
+
+        $borde = 0;
+        $this->Ln();
+        $this->Ln();
+        $this->cMargin=10;
+        $this->SetFillColor(242, 242, 242);
+        $this->SetLeftMargin(20);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(170, 6,$this->texto("En esta seccion aparecerá un comparativo de las gráficas conforme se avance en el"), $borde, 1, 'FJ',1);
+        $this->Cell(170, 6,$this->texto("paquete de mantenimiento contratado con Händel SCE."), $borde, 1, 'L',1);
+        
+       
+    }
+    
+    function comparacionGlobal()
+    {
+        $this->AddPage();
+        $this->imprimirTituloHoja("V. Comparación global de referencia");
+        
+        $borde = 0;
+        $this->Ln();
+        $this->Ln();
+        $this->cMargin=10;
+        $this->SetFillColor(242, 242, 242);
+        $this->SetLeftMargin(20);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(170, 6,$this->texto("Ilustra el estado actual de la compañía en los puntos básicos de seguridad del programa"), $borde, 1, 'FJ',1);
+        $this->Cell(170, 6,$this->texto("C-TPAT	referente a empresas de transporte."), $borde, 1, 'L',1);
+        
+    }
+    
+    
+    function observaciones()
+    {
+        $this->AddPage();
+        $this->imprimirTituloHoja("VI. Observaciones, acciones y recomendaciones");
+        
+        $borde = 0;
+        $this->Ln();
+        $this->Ln();
+        $this->cMargin=10;
+        $this->SetFillColor(242, 242, 242);
+        $this->SetLeftMargin(20);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(170, 6,$this->texto("Se	identifican los aspectos encontrados durante la inspección realizada."), $borde, 1, 'L',1);
+        
+    }
+    
+    function incidencias()
+    {
+        $this->AddPage();
+        $this->imprimirTituloHoja("VII. Incidencias y observaciones varias");
+        
+        $borde = 0;
+        $this->Ln();
+        $this->Ln();
+        $this->cMargin=10;
+        $this->SetFillColor(242, 242, 242);
+        $this->SetLeftMargin(20);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(170, 6,$this->texto("Se	listan a continuación incidentes menores	observados durante	la visita de inspección."), $borde, 1, 'L',1);
+        
+    }
+    
+    
+    
+    function encabezado()
+    {
+        $this->AddPage();
         $imagen = "../imagenes/encabezado_sivah.jpg";
         $anchoFoto = 120;
         $x = (210/2) - ($anchoFoto/2);
         $y = 30;
         $this->Image($imagen,$x,$y,$anchoFoto);
-//         $empresaId = $this->modelo->empresaId;
-//         $folio = strtoupper($this->calcularFolio());
-//         //$area = strtoupper($this->modelo->areaNombre);
-//         $fecha= $this->modelo->fechaEjecucion;
         
-//         $logo = "../logos_empresas/logo$empresaId.png";
-//         if (file_exists($logo))
-//             $this->Image($logo,10,12,40,0,'','http://apps-handel.com');
-//             else
-//                 $this->Image("default.png",10,12,40,0,'','http://apps-handel.com');
-//         $this->SetLeftMargin(45);
-//         $this->SetFontSize(11);
-        
-//         $this->Cell(150,10,$this->texto("FOLIO: $folio"),0,1,'R');
-//         $this->Cell(150,10,$this->texto("AREA: "),0,1,'R');
-//         $this->Cell(150,10,$this->texto("FECHA DE EMBARQUE: $fecha"),0,1,'R');
-    }
-    
-    function imprimirTitulo()
-    {
-        $this->SetLeftMargin(10);
-        $this->SetFont($this->font,'B',14);
+        $this->SetY(135);
+        $this->SetX(65);
+        $this->SetFont($this->font,'B',15);
+        $this->SetTextColor(255, 255, 255);
+        $this->SetFillColor(63, 103, 151);
+        $this->Cell(130, 15, $this->texto("Reporte de Auditoría"),0,1,'L',1);       
+
+        $borde = 0;
+        $w1 = 50;
+        $w2 = 100; 
+        //Numero de registro
         $this->Ln();
-        $this->Cell(0,0,$this->texto("INSPECCIÓN DE VEHICULOS DE CARGA"),0,2,'C');
+        $this->SetLeftMargin(30);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell($w1, 10,$this->texto("Referencia:"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($w2, 10, $this->texto($this->modelo->referencia), $borde, 0, 'L');
+        //Empresa
+        $this->Ln();
+        $this->SetLeftMargin(30);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell($w1, 10,$this->texto("Compañia:"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($w2, 10, $this->texto($this->modelo->empresaNombre), $borde, 0, 'L');
+        //Fecha
+        $this->Ln();
+        $this->SetLeftMargin(30);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell($w1, 10,$this->texto("Fecha de auditoría"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($w2, 10, $this->texto($this->modelo->fechaEjecucion), $borde, 0, 'L');
+        
+        $this->SetDrawColor(130,130,130);
+        $y = 175;
+        $this->Line(30, $y, 210-30, $y);
+        $y = 185;
+        $this->Line(30, $y, 210-30, $y);
+        $y = 195;
+        $this->Line(30, $y, 210-30, $y);
+        
+        //Puntuacion
+        $puntuacion = 0;
+        $this->Ln();
+        $this->Ln();
+        $this->SetLeftMargin(30);
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($w1, 10,$this->texto("Puntuación total: "), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($w2, 10, $this->texto($puntuacion  . "%"), $borde, 0, 'L');
+        
+        
+        $this->SetDrawColor(118, 159, 209);
+        $y = 240;
+        $this->Line(30, $y, 210-30, $y);
     }
     
-    
-    function imprimirSubtitulo()
-    {
-        $entrada_salida= $this->modelo->entradaSalida;
-        if($entrada_salida=="")
-            $entrada_salida="ENTRADA";
-            $this->SetFont($this->font  ,'',11);
-            $this->Ln();
-            $this->Cell(0,10,$this->texto("(".strtoupper($entrada_salida) ." DE UNIDAD)"),0,2,'C');
-    }
-    
+
     function formatoFecha($fecha)
     {
         $f = substr($fecha,0,10);
@@ -213,586 +562,7 @@ class PDF extends FPDF
         return $fecha;
     }
     
-    
-    function imprimirInspector()
-    {
-        $inspectorNombre = strtoupper($this->modelo->inspectorNombre);
-        //$fechaInicio = $this->formatoFecha($this->modelo->fechaInspeccion);
-        //$fechaFinalizacion= $this->formatoFecha($this->modelo->fechaFinalizacion);
-        
-        $fechaInicio = $this->modelo->fechaInspeccion;
-        $fechaFinalizacion= $this->modelo->fechaFinalizacion;
-        
-        $borde = 0;
-        $this->SetLeftMargin(10);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 6, "Montacarguista /", $borde, 0, 'L');
-        $this->Cell(100, 6, "", $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(15, 6, "Inicio:", $borde, 0, 'R');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 6, $fechaInicio, $borde, 0, 'R');
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 6, $this->texto("Inspector"), $borde, 0, 'L');
-        $this->SetFont($this->font,'',10);
-        $this->Cell(100, 6, $this->texto($inspectorNombre), $borde, 0, 'C');
-        $this->SetFont($this->font,'B',10);
-        $this->Cell(15, 6, "Fin:", $borde, 0, 'R');
-        $this->SetFont($this->font  ,'', 10);
-        $this->Cell(45, 6, $fechaFinalizacion, $borde, 0, 'R');
-        
-    }
-    
-    function imprimirInformacionTransporte17()
-    {
-        $transportista = strtoupper($this->modelo->transportista);
-        $chofer = strtoupper($this->modelo->chofer);
-        $numeroTractor = $this->modelo->numeroTractor;
-        $numeroCaja = $this->modelo->numeroCaja;
-        $colorTractor = strtoupper($this->modelo->colorTractor);
-        $colorCaja = strtoupper($this->modelo->colorCaja);
-        $numeroContenedor = $this->modelo->numeroContenedor;
-        $tipoCaja = strtoupper($this->modelo->tipoCaja);
-        $sello =  $this->modelo->sello;
-        $selloViajero =  $this->modelo->selloViajero;
-        $alto = $this->modelo->alto;
-        $ancho = $this->modelo->ancho;
-        $profundidad = $this->modelo->profundidad;
-        
-        if($alto=="")
-            $alto = "-";
-            
-        if($ancho=="")
-            $ancho = "-";
-            
-        if($profundidad=="")
-            $profundidad = "-";
-        
-        $borde = 0;
-        $this->SetLeftMargin(10);
-        $this->SetFont($this->font, 'B', 13);
-        $this->Ln();
-        $this->SetFillColor(242, 242, 242);
-        $this->Cell(0,8,$this->texto("INFORMACIÓN DE TRANSPORTE"),$borde,2,'C',1);
-        
-        $this->SetDrawColor(0,0,0);
-        $y = 80;
-        $this->Line(10, $y, 210-10, $y);
-        
-        $this->SetLeftMargin(20);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 6, "Transportista", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 6, $this->texto($transportista), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 6, "Chofer", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 6, $this->texto($chofer), $borde, 0, 'L');
-        
-        $this->SetLeftMargin(10);
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 11);
-        
-        $this->Cell(0,8,$this->texto("Vehículo "),$borde,1,'C');
-        $this->SetDrawColor(191,191,191);
-        $y = 93;
-        $this->Line(10, $y, 210-10, $y);
-        
-        
-        $this->SetLeftMargin(20);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "No. Tractor:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($numeroTractor), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "No. Caja:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($numeroCaja), $borde, 0, 'L');
-        
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "Placas Tractor:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto("580AT4"), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "Placas Caja:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto("P425905"), $borde, 0, 'L');
-        
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "Color Tractor:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($colorTractor), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "Color Caja:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($colorCaja), $borde, 0, 'L');
-        
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "No. Contenedor:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($numeroContenedor), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "Tipo Caja:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($tipoCaja), $borde, 0, 'L');
-        
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "Sello:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($sello), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "Sello viajero:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($selloViajero), $borde, 0, 'L');
-        
-        $this->SetLeftMargin(10);
-        $this->SetFont($this->font, 'B', 13);
-        $this->Ln();
-        $this->SetFillColor(242, 242, 242);
-        $this->Cell(0,8,$this->texto("DIMENSIONES DEL CONTENEDOR"),$borde,2,'C',1);
-        
-        $this->SetLeftMargin(20);
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(28.33, 8, "Alto:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(28.33, 8, $this->texto($alto), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(28.33, 8, "Ancho:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(28.33, 8, $this->texto($ancho), $borde, 0, 'L');
-        
-        //$this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(28.33, 8, "Profundidad:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(28.33, 8, $this->texto($profundidad), $borde, 0, 'L');
-        
-        $this->SetDrawColor(0,0,0);
-        $y = 142;
-        $this->Line(10, $y, 210-10, $y);
-        
-        $this->Ln();
-        $this->SetFont($this->font, 'I', 8);
-        $leyenda = "Las medidas interiores del contenedor no se muestran cuando el contenedor se encontraba sellado al momento de hacer la inspección";
-        $this->Cell(170, 8, $this->texto($leyenda), $borde, 0, 'C');
-                    
-                    
-    }
-    
-    function imprimirInformacionTransporte7()
-    {
-        $transportista = strtoupper($this->modelo->transportista);
-        $chofer = strtoupper($this->modelo->chofer);
-        $numeroTractor = $this->modelo->numeroTractor;
-        $numeroCaja = $this->modelo->numeroCaja;
-        $colorTractor = strtoupper($this->modelo->colorTractor);
-        $colorCaja = strtoupper($this->modelo->colorCaja);
-        $numeroContenedor = $this->modelo->numeroContenedor;
-        $tipoCaja = strtoupper($this->modelo->tipoCaja);
-        $sello =  $this->modelo->sello;
-        $selloViajero =  $this->modelo->selloViajero;
-        $alto = $this->modelo->alto;
-        $ancho = $this->modelo->ancho;
-        $profundidad = $this->modelo->profundidad;
-        
-        if($alto=="")
-            $alto = "-";
-            
-        if($ancho=="")
-            $ancho = "-";
-            
-        if($profundidad=="")
-            $profundidad = "-";
-                    
-        $borde = 0;
-        $this->SetLeftMargin(10);
-        $this->SetFont($this->font, 'B', 13);
-        $this->Ln();
-        $this->SetFillColor(242, 242, 242);
-        $this->Cell(0,8,$this->texto("INFORMACIÓN DE TRANSPORTE"),$borde,2,'C',1);
-        
-        $this->SetDrawColor(0,0,0);
-        $y = 80;
-        $this->Line(10, $y, 210-10, $y);
-        
-        $this->SetLeftMargin(20);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 6, "Transportista", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 6, $this->texto($transportista), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 6, "Chofer", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 6, $this->texto($chofer), $borde, 0, 'L');
-        
-        $this->SetLeftMargin(10);
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 11);
-        
-        $this->Cell(0,8,$this->texto("Vehículo "),$borde,1,'C');
-        $this->SetDrawColor(191,191,191);
-        $y = 93;
-        $this->Line(10, $y, 210-10, $y);
-        
-        
-        $this->SetLeftMargin(20);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "No. Caja:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($numeroCaja), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "Tipo caja:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($tipoCaja), $borde, 0, 'L');
-        
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "Color caja:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($colorCaja), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "Sello colocado:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto(""), $borde, 0, 'L');
-        
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "Sello retirado:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto(""), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, $this->texto("Inspección aleatoria:"), $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto(""), $borde, 0, 'L');
-        
-        
-        $this->SetLeftMargin(10);
-        $this->SetFont($this->font, 'B', 13);
-        $this->Ln();
-        $this->SetFillColor(242, 242, 242);
-        $this->Cell(0,8,$this->texto("DIMENSIONES DEL CONTENEDOR"),$borde,2,'C',1);
-        
-        $this->SetLeftMargin(20);
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(28.33, 8, "Alto:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(28.33, 8, $this->texto($alto), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(28.33, 8, "Ancho:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(28.33, 8, $this->texto($ancho), $borde, 0, 'L');
-        
-        //$this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(28.33, 8, "Profundidad:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(28.33, 8, $this->texto($profundidad), $borde, 0, 'L');
-        
-        $this->SetDrawColor(0,0,0);
-        $y = 126;
-        $this->Line(10, $y, 210-10, $y);
-        
-        $this->Ln();
-        $this->SetFont($this->font, 'I', 8);
-        $leyenda = "Las medidas interiores del contenedor no se muestran cuando el contenedor se encontraba sellado al momento de hacer la inspección";
-        $this->Cell(170, 8, $this->texto($leyenda), $borde, 0, 'C');
-                    
-                    
-    }
-    
-    function imprimirInformacionTransporte10()
-    {
-        $transportista = strtoupper($this->modelo->transportista);
-        $chofer = strtoupper($this->modelo->chofer);
-        $numeroTractor = $this->modelo->numeroTractor;
-        $numeroCaja = $this->modelo->numeroCaja;
-        $colorTractor = strtoupper($this->modelo->colorTractor);
-        $colorCaja = strtoupper($this->modelo->colorCaja);
-        $numeroContenedor = $this->modelo->numeroContenedor;
-        $tipoCaja = strtoupper($this->modelo->tipoCaja);
-        $sello =  $this->modelo->sello;
-        $selloViajero =  $this->modelo->selloViajero;
-        $alto = $this->modelo->alto;
-        $ancho = $this->modelo->ancho;
-        $profundidad = $this->modelo->profundidad;
-        
-        if($alto=="")
-            $alto = "-";
-            
-        if($ancho=="")
-            $ancho = "-";
-    
-        if($profundidad=="")
-            $profundidad = "-";
-        
-        $borde = 0;
-        $this->SetLeftMargin(10);
-        $this->SetFont($this->font, 'B', 13);
-        $this->Ln();
-        $this->SetFillColor(242, 242, 242);
-        $this->Cell(0,8,$this->texto("INFORMACIÓN DE TRANSPORTE"),$borde,2,'C',1);
-        
-        $this->SetDrawColor(0,0,0);
-        $y = 80;
-        $this->Line(10, $y, 210-10, $y);
-        
-        $this->SetLeftMargin(20);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 6, "Transportista", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 6, $this->texto($transportista), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 6, "Chofer", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 6, $this->texto($chofer), $borde, 0, 'L');
-        
-        $this->SetLeftMargin(10);
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 11);
-        
-        $this->Cell(0,8,$this->texto("Vehículo "),$borde,1,'C');
-        $this->SetDrawColor(191,191,191);
-        $y = 93;
-        $this->Line(10, $y, 210-10, $y);
-        
-        
-        $this->SetLeftMargin(20);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "No. Tractor:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($numeroTractor), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "Sello viajero:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($selloViajero), $borde, 0, 'L');
-        
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "Placas Tractor:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto("580AT4"), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 8, "Color Tractor:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($colorTractor), $borde, 0, 'L');
-        
-//         $this->SetLeftMargin(10);
-//         $this->SetFont($this->font, 'B', 13);
-//         $this->Ln();
-//         $this->SetFillColor(242, 242, 242);
-//         $this->Cell(0,8,$this->texto("DIMENSIONES DEL CONTENEDOR"),$borde,2,'C',1);
-        
-//         $this->SetLeftMargin(20);
-//         $this->Ln();
-//         $this->SetFont($this->font, 'B', 10);
-//         $this->Cell(28.33, 8, "Alto:", $borde, 0, 'L');
-//         $this->SetFont($this->font, '', 10);
-//         $this->Cell(28.33, 8, $this->texto($alto), $borde, 0, 'L');
-//         $this->SetFont($this->font, 'B', 10);
-//         $this->Cell(28.33, 8, "Ancho:", $borde, 0, 'L');
-//         $this->SetFont($this->font, '', 10);
-//         $this->Cell(28.33, 8, $this->texto($ancho), $borde, 0, 'L');
-        
-//         //$this->Ln();
-//         $this->SetFont($this->font, 'B', 10);
-//         $this->Cell(28.33, 8, "Profundidad:", $borde, 0, 'L');
-//         $this->SetFont($this->font, '', 10);
-//         $this->Cell(28.33, 8, $this->texto($profundidad), $borde, 0, 'L');
-        
-//         $this->SetDrawColor(0,0,0);
-//         $y = 118;
-//         $this->Line(10, $y, 210-10, $y);
-        
-//         $this->Ln();
-//         $this->SetFont($this->font, 'I', 8);
-//         $leyenda = "Las medidas interiores del contenedor no se muestran cuando el contenedor se encontraba sellado al momento de hacer la inspección";
-//         $this->Cell(170, 8, $this->texto($leyenda), $borde, 0, 'C');
-                    
-                    
-    }
-    
-    function imprimirInspeccionTractor()
-    {
-        $borde = 0;
-        $anchoColumna1 = 48;
-        $anchoColumna2 = 30;
-        $anchoColumna3 = 112;
-        
-        $this->SetLeftMargin(10);
-        $this->SetFont($this->font, 'B', 13);
-        $this->Ln();
-        $this->SetFillColor(242, 242, 242);
-        $this->Cell(0,8,$this->texto("INSPECCIÓN DE TRACTOR"),$borde,2,'C',1);
-        
-        
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell($anchoColumna1, 8, $this->texto("Descripción"), $borde, 0, 'C', 1);
-        $this->Cell($anchoColumna2, 8, "Resultado", $borde, 0, 'C', 1);
-        $this->Cell($anchoColumna3, 8, "Observaciones", $borde, 0, 'C', 1);
-        
-        for($i = 0 ; $i < count($this->modelo->puntos1); $i++)
-        {
-            $punto = $this->modelo->puntos1[$i];
-            $descripcion = $punto->id .". " . $punto->descripcion;
-            $observaciones = $punto->observaciones;
-            
-            $this->Ln();
-            $this->SetFont($this->font, '', 9);
-            $this->Cell($anchoColumna1, 8, $this->texto($descripcion), $borde, 0, 'L');
-            
-            $resultado = "";
-            if($punto->resultado == "S")
-            {
-                $this->SetFont("ZapfDingbats", '', 9);
-                $resultado =  chr(52);
-            }
-            else if($punto->resultado == "N")
-            {
-                $this->SetFont("ZapfDingbats", '', 9);
-                $resultado =  chr(54);
-            }
-            else
-            {
-                $this->SetFont($this->font, '', 9);
-                $resultado =  "N/A";
-            }
-            
-            
-            $this->Cell($anchoColumna2, 8, $resultado, $borde, 0, 'C');
-            $this->SetFont($this->font, '', 9);
-            $this->Cell($anchoColumna3, 8, $observaciones, $borde, 0, 'L');
-        }
-        
-        $this->SetDrawColor(0,0,0);
-        $y = 173;
-       // $this->Line(10, $y, 210-10, $y);
-        
-    }
-    
-    function imprimirInspeccionContenedor()
-    {
-        $borde = 0;
-        $anchoColumna1 = 48;
-        $anchoColumna2 = 30;
-        $anchoColumna3 = 112;
-        
-        $this->SetLeftMargin(10);
-        $this->SetFont($this->font, 'B', 13);
-        $this->Ln();
-        $this->SetFillColor(242, 242, 242);
-        $this->Cell(0,8,$this->texto("INSPECCIÓN DE CONTENEDOR"),$borde,2,'C',1);
-        
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell($anchoColumna1, 8, $this->texto("Descripción"), $borde, 0, 'C', 1);
-        $this->Cell($anchoColumna2, 8, "Resultado", $borde, 0, 'C', 1);
-        $this->Cell($anchoColumna3, 8, "Observaciones", $borde, 0, 'C', 1);
-        
-        for($i = 0 ; $i < count($this->modelo->puntos2); $i++)
-        {
-            $punto = $this->modelo->puntos2[$i];
-            $descripcion = $punto->id .". " . $punto->descripcion;
-            $observaciones = $punto->observaciones;
-            
-            $this->Ln();
-            $this->SetFont($this->font, '', 9);
-            $this->Cell($anchoColumna1, 8, $this->texto($descripcion), $borde, 0, 'L');
-            
-            $resultado = "";
-            if($punto->resultado == "S")
-            {
-                $this->SetFont("ZapfDingbats", '', 9);
-                $resultado =  chr(52);
-            }
-            else if($punto->resultado == "N")
-            {
-                $this->SetFont("ZapfDingbats", '', 9);
-                $resultado =  chr(54);
-            }
-            else
-            {
-                $this->SetFont($this->font, '', 9);
-                $resultado =  "N/A";
-            }
-            
-            
-            $this->Cell($anchoColumna2, 8, $resultado, $borde, 0, 'C');
-            $this->SetFont($this->font, '', 9);
-            $this->Cell($anchoColumna3, 8, $observaciones, $borde, 0, 'L');
-        }
-        
-        $this->SetDrawColor(0,0,0);
-        $y = 26;
-        $this->Line(10, $y, 210-10, $y);
-        
-        
-    }
-    
-    function imprimirFotos()
-    {
-        $seccionesFotos = array();
-        for($i = 0 ; $i < count($this->modelo->puntos1); $i++)
-        {
-            $punto = $this->modelo->puntos1[$i];;
-            $seccion = $this->crearSeccionFotos($this->modelo->id,$punto);
-            if(count($seccion->fotos)>0)
-                array_push($seccionesFotos,$seccion);
-        }
-        
-        $borde = 0;
-        
-        
-        
-        $anchoFoto = 50;
-        $altoFoto = $anchoFoto * 40 / 30;
-        $separacionX =  5;
-        $separacionY = 20;
-        
-        $yFotos = $separacionY;
-        
-        for($i = 0 ; $i < count($seccionesFotos); $i++)
-        {
-            $seccion = $seccionesFotos[$i];
-            $titulo = $seccion->id .". ".$seccion->descripcion;
-            
-            $this->SetXY(0, $yFotos - $separacionY);
-            $this->SetLeftMargin(10);
-            $this->SetFont($this->font, 'B', 13);
-            $this->Ln();
-            $this->SetFillColor(242, 242, 242);
-            $this->Cell(0,8,$this->texto($titulo),$borde,2,'C',0);
-            
-            
-            $numeroFotos = count($seccion->fotos);
-            $anchoTotal = (($numeroFotos-1) * $separacionX) + $numeroFotos * $anchoFoto;
-            $xFoto = 10 + (95 - $anchoTotal/2);
-            for($j = 0 ; $j < $numeroFotos; $j++)
-            {
-                $foto = $seccion->fotos[$j];
-                
-                $this->correctImageOrientation($foto);
-                
-                $this->Image($foto,$xFoto,$yFotos,$anchoFoto,$altoFoto);
-                $xFoto = $xFoto + $anchoFoto +  $separacionX;
-            }
-            $yFotos = $yFotos + $separacionY + $altoFoto;
-            if(($i+1) % 3 ==0 && $i<count($seccionesFotos)-1)
-            {
-                $yFotos = $separacionY;
-                $this->AddPage();
-            }
-        }
-        
-        
-        
-    }
-    
+   
     function correctImageOrientation($filename) {
         
         if (function_exists('exif_read_data')) {
@@ -821,26 +591,6 @@ class PDF extends FPDF
                 } // if there is some rotation necessary
             } // if have the exif orientation info
         } // if function exists
-    }
-    
-    function crearSeccionFotos($inspeccionId, $punto)
-    {
-        $fotos = array();
-        $foto = "../fotos_inspecciones/".$inspeccionId ."_" . $punto->id ."_1.jpg";
-        if (file_exists($foto))
-            array_push($fotos,$foto);
-            $foto = "../fotos_inspecciones/".$inspeccionId ."_" . $punto->id ."_2.jpg";
-            if (file_exists($foto))
-                array_push($fotos,$foto);
-                $foto = "../fotos_inspecciones/".$inspeccionId ."_" . $punto->id ."_3.jpg";
-                if (file_exists($foto))
-                    array_push($fotos,$foto);
-                    $seccion= (object) [
-                        'id' =>  $punto->id,
-                        'descripcion' => $punto->descripcion,
-                        'fotos' => $fotos
-                    ];
-                    return $seccion;
     }
     
     function texto($texto)
