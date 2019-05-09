@@ -318,12 +318,16 @@ class AuditoriaVista extends Vista
 	{
 		var indice = this.listaPreguntas.siguiente();
 		$('#secciones').prop('selectedIndex',indice);
+		if(this._modo==Modo.CAMBIO)
+			this.presentador.consultarValores();
 	}
 	
 	mostrarAnterior()
 	{
 		var indice = this.listaPreguntas.atras();
 		$('#secciones').prop('selectedIndex',indice);
+		if(this._modo==Modo.CAMBIO)
+			this.presentador.consultarValores();
 	}
 	
 	atras()
@@ -364,15 +368,17 @@ class AuditoriaVista extends Vista
 	
 	get empresaId()
 	{
-		var preguntas = this.preguntas;
-		if(preguntas.length>0)
-		{
-			var preguntaEmpresa = preguntas[0];
-			if(preguntaEmpresa.tipo=="cat")
-				return preguntaEmpresa.valor;
-			
-		}
-		return "";
+		
+//		var preguntas = this.preguntas;
+//		if(preguntas.length>0)
+//		{
+//			var preguntaEmpresa = preguntas[0];
+//			if(preguntaEmpresa.tipo=="cat")
+//				return preguntaEmpresa.valor;
+//			
+//		}
+		return this.listaPreguntas.empresaId;
+		
 	}
 	
 	get preguntas()

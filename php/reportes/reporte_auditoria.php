@@ -223,8 +223,6 @@ class PDF extends FPDF
         $this->comparacionGlobal();
         $this->observaciones();
         $this->incidencias();
-
-                        
                         
     }
     

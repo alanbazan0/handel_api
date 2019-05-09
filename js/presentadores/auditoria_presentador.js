@@ -34,7 +34,7 @@ class AuditoriaPresentador extends CatalogoPresentador
 				this.vista.mostrarSiguiente();
 			else
 				this.vista.mostrarAnterior();
-			this.vista.mostrarMensaje("Notificación","Guardado. ") ;
+			this.vista.mostrarMensaje("Guardado"," Referencia: " + this.vista.modeloEdicion.referencia) ;
 		 }
 		 else
 		 {
@@ -57,11 +57,13 @@ class AuditoriaPresentador extends CatalogoPresentador
 		 this.vista.ocultarIndicador();	
 		 if(resultado.mensajeError=="")
 		 {
-			if(this.vista.funcion="siguente")
+			this.vista.modeloEdicion= resultado.valor;
+			this.vista.mostrarReferencia();
+			if(this.vista.funcion=="siguente")
 				this.vista.mostrarSiguiente();
 			else
 				this.vista.mostrarAnterior();
-			this.vista.mostrarMensaje("Notificación","Guardado. ") ;
+			this.vista.mostrarMensaje("Actualización"," Referencia: " + this.vista.modeloEdicion.referencia) ;
 		 }
 		 else
 		 {
@@ -71,5 +73,47 @@ class AuditoriaPresentador extends CatalogoPresentador
 				 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar el registro. " + resultado.mensajeError);
 		 }
 	 }
+	
+	consultarValores()
+	{
+		 this.vista.mostrarIndicador();	
+		 var repositorio = new AuditoriasRepositorio();
+		 var llaves ={plantillaId: this.vista.modeloEdicion.plantillaId,
+				 	auditoriaId: this.vista.modeloEdicion.auditoriaId,
+				 	seccionIdId: this.vista.modeloEdicion.seccionIdId
+		 			};
+		 repositorio.consultarValoresSeccion(this,this.consultarValoresResultado,llaves);
+	}
+	
+	consultarValoresResultado(resultado)
+	 {		
+		 this.vista.ocultarIndicador();	
+		 if(resultado.mensajeError=="")
+		 {
+			// this.vista.modelo = resultado.valor;
+		 }
+		 else
+			 this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+	 }
+	
+	 consultarPorLlaves()
+	 {
+		 this.vista.mostrarIndicador();	
+		 var repositorio = new PlantillasRepositorio();
+		 repositorio.consultarPorLlaves(this,this.consultarPorLlavesResultado,this.vista.llaves);
+	 }
+	 
+	 consultarPorLlavesResultado(resultado)
+	 {		
+		 this.vista.ocultarIndicador();	
+		 if(resultado.mensajeError=="")
+		 {
+			 this.vista.modelo = resultado.valor;
+		 }
+		 else
+			 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError);
+	 }
+	
+
 	 
 }

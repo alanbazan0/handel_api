@@ -5,6 +5,28 @@ class AuditoriasRepositorio extends Repositorio
 		super("/php/repositorios/Auditorias.php");
 	}
 	
+	consultarValoresSeccion(contexto,funcion, llaves)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+           url: url,
+           type: 'POST',
+           data: {accion : "consultarValoresSeccion",llaves: JSON.stringify(llaves)},
+           success: function( data, textStatus, jQxhr )
+           {
+               funcion.call(contexto,data);
+           },
+           error: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : textStatus});
+           },
+           fail: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : textStatus});
+           }
+       });
+	}
+	
 //	insertarAuditoria(contexto,functionRetorno,empresaId, plantillaId, seccionId, preguntas)
 //	{		
 //		this.contexto = contexto;

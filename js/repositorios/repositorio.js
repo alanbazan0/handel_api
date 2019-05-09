@@ -42,30 +42,12 @@ class Repositorio
 
 	actualizar(contexto,funcion, modelo)
 	{		
-//		this.contexto = contexto;
-//		this.functionRetorno = functionRetorno;
-//		
-//		var parametros;
-//		parametros = "accion=actualizar";
-//		parametros += "&modelo=" + encodeURIComponent(JSON.stringify(modelo));	
-//		
-//		var contextHandler = new AjaxContextHandler();
-//		var url = HANDEL_API + "/" + this.servicio;
-//		var ai = new Ajaxv2( url, this, this.actualizarResultado, "POST", parametros, contextHandler);		
-//		contextHandler.AddAjaxv2Object(ai); 		
-//		ai.GetPost(true);
-		
-//		var url = HANDEL_API + "/" + this.servicio;
-//		$.post(url, {accion : "actualizar", modelo: encodeURIComponent(JSON.stringify(modelo))}, function(resultado) 
-//		{
-//			funcion.call(contexto,resultado);
-//		});
-		
+		var modeloString = JSON.stringify(modelo);
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
          url: url,
          type: 'POST',
-         data: {accion : "actualizar",modelo: JSON.stringify(modelo)},
+         data: {accion : "actualizar",modelo: modeloString},
          success: function( data, textStatus, jQxhr )
          {
              funcion.call(contexto,data);
@@ -89,29 +71,7 @@ class Repositorio
 	
 	consultar(contexto,funcion, criteriosSeleccion, opcional)
 	{		
-//		this.contexto = contexto;
-//		this.functionRetorno = functionRetorno;
-//		
-//		var parametros;
-//		parametros = "accion=consultar";
-//		parametros += "&criteriosSeleccion=" + encodeURIComponent(JSON.stringify(criteriosSeleccion));		
-//		parametros += "&opcional=" + opcional;	
-//		
-//		var contextHandler = new AjaxContextHandler();
-//		var url = HANDEL_API + "/" + this.servicio;
-//		var ai = new Ajaxv2( url, this, this.consultarResultado, "POST", parametros, contextHandler);		
-//		contextHandler.AddAjaxv2Object(ai); 		
-//		ai.GetPost(true);
-		
-//		var url = HANDEL_API + "/" + this.servicio;
-//		$.post(url, {accion : "consultar", criteriosSeleccion: JSON.stringify(criteriosSeleccion), opcional: opcional}, function(resultado) 
-//		{
-//			funcion.call(contexto,resultado);
-//		}).fail(function(xhr, status, error) 
-//	    {
-//			var resultado = { mensajeError : error.message};
-//			funcion.call(contexto,resultado);
-//		});
+
 		
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
@@ -141,23 +101,6 @@ class Repositorio
 //	
 	consultarPorLlaves(contexto,funcion, llaves)
 	{		
-//		this.contexto = contexto;
-//		this.functionRetorno = functionRetorno;
-//		
-//		var parametros;
-//		parametros = "accion=consultarPorLlaves";
-//		parametros += "&llaves=" + encodeURIComponent(JSON.stringify(llaves));
-//		var contextHandler = new AjaxContextHandler();
-//		var url = HANDEL_API + "/" + this.servicio;
-//		var ai = new Ajaxv2( url, this, this.consultarPorLlavesResultado, "POST", parametros, contextHandler);		
-//		contextHandler.AddAjaxv2Object(ai); 		
-//		ai.GetPost(true);
-//		var url = HANDEL_API + "/" + this.servicio;
-//		$.post(url, {accion : "consultarPorLlaves", llaves: encodeURIComponent(JSON.stringify(llaves))}, function(resultado) 
-//		{
-//			funcion.call(contexto,resultado);
-//		});
-		
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
            url: url,

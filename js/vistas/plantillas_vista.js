@@ -503,9 +503,11 @@ class PlantillasVista extends CatalogoVista
 		this.confirmar("¿Desea eliminar esta respuesta?",this.listaRespuestas,this.listaRespuestas.eliminarRespuesta,respuestaId);
 		//this.listaRespuestas.eliminarRespuesta(respuestaId);
 	}
+	
+	
 //	
-//	confirmar(textoDialogo,contexto,funcion,parametro)
-//	{
+	confirmar(textoDialogo,contexto,funcion,parametro)
+	{
 //		$('#dialogo').prop('title', 'Confirmación');
 //		$('#dialogo').html(textoDialogo);
 //		$('#dialogo').data('contexto', contexto);
@@ -540,7 +542,32 @@ class PlantillasVista extends CatalogoVista
 //			    }]
 //		});
 //		$('#dialogo').dialog('open');
-//	}
+		
+		var _this = this;
+		swal({
+	            title: "",
+	            text: textoDialogo,
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Si, eliminar!!",
+	            cancelButtonText: "No",
+	            closeOnConfirm: false,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	 setTimeout(function()
+	            			 {
+	            			funcion.call(contexto,parametro);
+	            			swal.close();
+	 	            }, 1000);
+	            }
+	        });
+	}
 	
 	seleccionarSeccion(event, seccionId)
 	{
