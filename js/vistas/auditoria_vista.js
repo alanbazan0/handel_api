@@ -399,6 +399,17 @@ class AuditoriaVista extends Vista
 		
 	}
 	
+	set modeloDatos(modeloDatos)
+	{
+		$("#referenciaDiv").show();
+		$("#referenciaLabel").html("REFERENCIA: " +modeloDatos.referencia);
+		for(var i=0; i < modeloDatos.preguntas.length; i++)
+		{
+			var pregunta = modeloDatos.preguntas[i];
+			this.listaPreguntas.setValor(pregunta.seccionId, pregunta.preguntaId, pregunta.valor);
+		}
+	}
+	
 	get preguntas()
 	{
 		var preguntas = [];
@@ -829,7 +840,7 @@ class AuditoriaVista extends Vista
 		
 		var puntuacionTexto = x + "/" + y + " (" +  textoPorcentaje + "%)";
 		if(encabezado.tipo=="e")
-			this.listaPreguntas.setValor(encabezado.id,puntuacionTexto);
+			this.listaPreguntas.setValor(this.seccionId,encabezado.id,puntuacionTexto);
 		
 		var puntuacion = {x: x, y : y, porcentaje : porcentaje};
 		return puntuacion;

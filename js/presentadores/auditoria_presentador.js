@@ -80,7 +80,7 @@ class AuditoriaPresentador extends CatalogoPresentador
 		 var repositorio = new AuditoriasRepositorio();
 		 var llaves ={plantillaId: this.vista.modeloEdicion.plantillaId,
 				 	auditoriaId: this.vista.modeloEdicion.auditoriaId,
-				 	seccionId: this.vista.modeloEdicion.seccionId
+				 	seccionId: this.vista.seccionId
 		 			};
 		 repositorio.consultarValoresSeccion(this,this.consultarValoresResultado,llaves);
 	}
@@ -90,7 +90,7 @@ class AuditoriaPresentador extends CatalogoPresentador
 		 this.vista.ocultarIndicador();	
 		 if(resultado.mensajeError=="")
 		 {
-			// this.vista.modelo = resultado.valor;
+			 this.vista.modeloDatos = resultado.valor;
 		 }
 		 else
 			 this.vista.mostrarMensajeError("Error",resultado.mensajeError);

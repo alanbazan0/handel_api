@@ -982,7 +982,20 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     {
         $resultado = new Resultado();
         
-        $resultado = $this->consultarPreguntas($llaves->plantillaId, $llaves->auditoriaId, $llaves->seccionId);
+        $llaves->id = $llaves->auditoriaId;
+        
+        $resultado = $this->consultarPorLlaves($llaves);
+        if($resultado->mensajeError=="")
+        {
+            $resultadoPreguntas = $this->consultarPreguntas($llaves->plantillaId, $llaves->auditoriaId, $llaves->seccionId);
+            if($resultado->mensajeError=="")
+            {
+                $resultado->valor->preguntas = $resultadoPreguntas->valor;
+            }
+            else
+                $resultado->mensajeError = $resultadoPreguntas->mensajeError;
+        }
+        
         
         return $resultado;
     }
