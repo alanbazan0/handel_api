@@ -80,7 +80,7 @@ class AuditoriaPresentador extends CatalogoPresentador
 		 var repositorio = new AuditoriasRepositorio();
 		 var llaves ={plantillaId: this.vista.modeloEdicion.plantillaId,
 				 	auditoriaId: this.vista.modeloEdicion.auditoriaId,
-				 	seccionIdId: this.vista.modeloEdicion.seccionIdId
+				 	seccionId: this.vista.modeloEdicion.seccionId
 		 			};
 		 repositorio.consultarValoresSeccion(this,this.consultarValoresResultado,llaves);
 	}

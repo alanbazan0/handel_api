@@ -50,7 +50,11 @@ try
             case 'consultarPorLlaves':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->consultarPorLlaves($llaves);
-            break;            
+            break;       
+            case 'consultarValoresSeccion':
+                $llaves = json_decode(REQUEST('llaves'));
+                $resultado = $repositorio->consultarValoresSeccion($llaves);
+                break;     
             case 'eliminar':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);

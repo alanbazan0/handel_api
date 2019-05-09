@@ -7,11 +7,12 @@ class AuditoriasRepositorio extends Repositorio
 	
 	consultarValoresSeccion(contexto,funcion, llaves)
 	{		
+		var llavesString = JSON.stringify(llaves);
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
            url: url,
            type: 'POST',
-           data: {accion : "consultarValoresSeccion",llaves: JSON.stringify(llaves)},
+           data: {accion : "consultarValoresSeccion",llaves: llavesString},
            success: function( data, textStatus, jQxhr )
            {
                funcion.call(contexto,data);

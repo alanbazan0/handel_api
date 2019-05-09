@@ -978,6 +978,15 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         return $resultado;
     }
     
+    public function consultarValoresSeccion($llaves)
+    {
+        $resultado = new Resultado();
+        
+        $resultado = $this->consultarPreguntas($llaves->plantillaId, $llaves->auditoriaId, $llaves->seccionId);
+        
+        return $resultado;
+    }
+    
     public function consultarPorLlaves($llaves)
     {
         $resultado = new Resultado();
@@ -1028,87 +1037,52 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     }
     
  
-    private function consultarPreguntas($plantillaId,$seccionId)
+    private function consultarPreguntas($plantillaId,$auditoriaId,$seccionId)
     {
         
         $resultado = new Resultado();
         $preguntas = array();
-        $consulta = "SELECT id, RTRIM(texto) texto, IFNULL(hallazgo,'') hallazgo, IFNULL(recomendacion,'') recomendacion, tipo, IFNULL(colapsado,0) colapsado,IFNULL(practicas,'') practicas,IFNULL(observaciones,'') observaciones, IFNULL(peso,0) peso  " .
-                     "FROM preguntas " .        
-                    " WHERE plantilla_id  = ? AND seccion_id = ? ".
-                    "ORDER BY id";
+        $consulta = "SELECT seccion_id, pregunta_id, RTRIM(valor) valor  " .
+                     "FROM auditoria_preguntas " .        
+                    " WHERE plantilla_id  = ? AND auditoria_id = ? AND seccion_id = ? ";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             
-            if($sentencia->bind_param("ii",$plantillaId,$seccionId))
+            if($sentencia->bind_param("iii",$plantillaId,$auditoriaId, $seccionId))
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $texto, $hallazgo, $recomendacion, $tipo, $colapsado, $practicas, $observaciones, $peso))
+                    if ($sentencia->bind_result($seccionId, $preguntaId,  $valor))
                     {
-                       
                         while($sentencia->fetch())
                         {
                            
                             $pregunta= (object) [
-                                'id' =>  $id,
-                                'texto' => $texto,
-                                'hallazgo' => $hallazgo,
-                                'recomendacion' => $recomendacion,
-                                'tipo' => $tipo,
-                                'colapsado' => $colapsado,
-                                'practicas' => $practicas,
-                                'observaciones' => $observaciones,
-                                'peso' => $peso 
-                                
+                                'seccionId' =>  $seccionId,
+                                'preguntaId' => $preguntaId,
+                                'valor' => $valor
                             ];
                             array_push($preguntas,$pregunta);
                         }
                         $resultado->valor = $preguntas;
                         
                         $sentencia->close();
-                        for($i=0; $i < count($preguntas);$i++)
-                        {
-                            $pregunta = $preguntas[$i];
-                            $resultadoRespuestas = $this->consultarPreguntasCategorias($plantillaId,$seccionId,$pregunta->id);
-                            if($resultadoRespuestas->mensajeError=="")
-                            {
-                                $pregunta->categorias = $resultadoRespuestas->valor;
-                            }
-                            else
-                            {
-                                $resultado->mensajeError = $resultadoRespuestas->mensajeError;
-                                break;
-                            }
-                        }
-                        for($i=0; $i < count($preguntas);$i++)
-                        {
-                            $pregunta = $preguntas[$i];
-                            $resultadoRespuestas = $this->consultarRespuestasSi($plantillaId,$seccionId,$pregunta->id);
-                            if($resultadoRespuestas->mensajeError=="")
-                            {
-                                $pregunta->respuestas_si = $resultadoRespuestas->valor;
-                            }
-                            else
-                            {
-                                $resultado->mensajeError = $resultadoRespuestas->mensajeError;
-                                break;
-                            }
-                        }
-                        for($i=0; $i < count($preguntas);$i++)
-                        {
-                            $pregunta = $preguntas[$i];
-                            $resultadoRespuestas = $this->consultarRespuestasNo($plantillaId,$seccionId,$pregunta->id);
-                            if($resultadoRespuestas->mensajeError=="")
-                            {
-                                $pregunta->respuestas_no = $resultadoRespuestas->valor;
-                            }
-                            else
-                            {
-                                $resultado->mensajeError = $resultadoRespuestas->mensajeError;
-                                break;
-                            }
-                        }
+                       
+//                         for($i=0; $i < count($preguntas);$i++)
+//                         {
+//                             $pregunta = $preguntas[$i];
+//                             $resultadoRespuestas = $this->consultarRespuestasSi($plantillaId,$seccionId,$pregunta->id);
+//                             if($resultadoRespuestas->mensajeError=="")
+//                             {
+//                                 $pregunta->respuestas_si = $resultadoRespuestas->valor;
+//                             }
+//                             else
+//                             {
+//                                 $resultado->mensajeError = $resultadoRespuestas->mensajeError;
+//                                 break;
+//                             }
+//                         }
+                        
                     }
                     else
                         $resultado->mensajeError = "Falló el enlace del resultado";

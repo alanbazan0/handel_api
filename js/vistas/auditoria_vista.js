@@ -17,7 +17,13 @@ class AuditoriaVista extends Vista
 		this.preguntaEdicion = null;
 		this.seccionEdicion = null;
 		this.velocidadAnimacion = 400;
-		this._modo = Modo.ALTA;
+		
+		this._modo = $("#modo").val()
+		if(this._modo==""  || this._modo==undefined)
+			this._modo = Modo.ALTA;
+		
+		
+		
 	}
 	
 	get modo()
@@ -54,6 +60,11 @@ class AuditoriaVista extends Vista
 	get plantillaId()
 	{
 		return $("#plantillaId").val();
+	}
+	
+	get auditoriaId()
+	{
+		return $("#auditoriaId").val();
 	}
 	
 	crearFecha()
@@ -296,14 +307,21 @@ class AuditoriaVista extends Vista
 		
 		this.calcularPorcentajes();
 		
-		//var h = $('#listaPreguntas').height();
+		if(this._modo==Modo.CAMBIO)
+		{
+			this.modeloEdicion.plantillaId = this.modeloEdicion.id;
+			this.modeloEdicion.auditoriaId = this.auditoriaId;
+			this.modeloEdicion.seccionId = this.seccionId;
+			this.presentador.consultarValores();
+		}
 	}
 	
 	cambiarSeccion(event)
 	{
 		var indice = $("#secciones").prop('selectedIndex');
 		this.listaPreguntas.mostrarSeccion(indice);
-		//$('#panel').height(this.listaPreguntas.altura + 300);
+		if(this._modo==Modo.CAMBIO)
+			this.presentador.consultarValores();
 	}
 	
 	siguiente()

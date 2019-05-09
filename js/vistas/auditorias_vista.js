@@ -47,7 +47,7 @@ class AuditoriasVista extends CatalogoVista
 			_this._registroSeleccionado  = table.row( tr ).data();
 			if (_this._registroSeleccionado != undefined)
 			{
-				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id","plantillaId"]);
 				_this.ejecutar();
 			}
 		});
@@ -71,7 +71,8 @@ class AuditoriasVista extends CatalogoVista
 	ejecutar()
 	{
 		var submitForm = this.getNewSubmitForm("auditoria.php","post");
-		this.createNewFormElement(submitForm, "plantillaId", this._llaves.id);
+		this.createNewFormElement(submitForm, "plantillaId", this._llaves.plantillaId);
+		this.createNewFormElement(submitForm, "auditoriaId", this._llaves.id);
 		this.createNewFormElement(submitForm, "modo", Modo.CAMBIO);
 		submitForm.target= "auditoria" + Math.floor(Math.random()*10000);
 		submitForm.submit();
