@@ -648,6 +648,7 @@ class PlantillasVista extends CatalogoVista
 		this.limpiarFormulario();	
 		this.mostrarFormulario();
 		$('#nombreInput').focus();				
+		this.inicializarValidacionesFormulario();
 		this.presentador.consultarPorLlaves();
 	}
 	

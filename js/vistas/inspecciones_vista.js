@@ -37,6 +37,7 @@ class InspeccionesVista extends CatalogoVista
 			{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },		
 			{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" },
 			{longitud:200, 	titulo:"Area",   alias:"areaNombre", alineacion:"I" },		
+			{longitud:200, 	titulo:"Inspector",   alias:"inspectorNombre", alineacion:"I" },		
 			{longitud:200, 	titulo:"Número caja",   alias:"numeroCaja", alineacion:"I" },		
 			{longitud:250, 	titulo:"Fecha de inspección",   alias:"fechaInspeccion", alineacion:"I" }
 		]

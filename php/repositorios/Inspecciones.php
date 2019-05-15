@@ -98,6 +98,17 @@ try
                     $resultado = $repositorio->consultarInspeccionesSede($usuario);
                 }
                 break;
+            case 'consultarInspeccionesArea':
+                session_start();
+                $usuario = null;
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                if(isset($_SESSION['usuario']))
+                {
+                    $usuario = $_SESSION['usuario'];
+                    $resultado = $repositorio->consultarInspeccionesArea($usuario,$criteriosSeleccion);
+                }
+                break;
+               
             default:
                 $resultado->mensajeError = "Acción no válida";
             break;

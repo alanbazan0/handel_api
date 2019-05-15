@@ -13,6 +13,26 @@ class CatalogoVista extends Vista
 	
 	inicializar()
 	{
+		$.datepicker.regional['es'] = {
+				 closeText: 'Cerrar',
+				 prevText: '< Ant',
+				 nextText: 'Sig >',
+				 currentText: 'Hoy',
+				 monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+				 monthNamesShort: ['Ene','Feb','Mar','Abr', 'May','Jun','Jul','Ago','Sep', 'Oct','Nov','Dic'],
+				 dayNames: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+				 dayNamesShort: ['Dom','Lun','Mar','Mié','Juv','Vie','Sáb'],
+				 dayNamesMin: ['Do','Lu','Ma','Mi','Ju','Vi','Sá'],
+				 weekHeader: 'Sm',
+				 dateFormat: 'dd/mm/yy',
+				 firstDay: 1,
+				 isRTL: false,
+				 showMonthAfterYear: false,
+				 yearSuffix: ''
+				 };
+		
+		$.datepicker.setDefaults($.datepicker.regional['es']);
+				
 		var _this = this;
 		$("#consultarButton").click(function(){
 			_this.consultar();
@@ -26,27 +46,11 @@ class CatalogoVista extends Vista
 		this.crearColumnasGrid();		
 		this.presentador.consultar();
 	}
-//	
-//	inicializarEliminar()
-//	{
-//		$('#modalEliminar').on('click', '.btn-danger', function(e) 
-//		{
-//			var presentador= $('#modalEliminar').find('#buttonEliminar').data('presentador');
-//			$('#modalEliminar').modal('hide')
-//			presentador.eliminar();
-//			  
-//		});
-//	}
-	
-	
-
 	
 	editar()
 	{
 		this.modo = Modo.CAMBIO;
 		this.mostrarFormulario();
-//		if(this.presentador!=null)
-//			this.presentador.consultarPorLlaves();
 	}
 	
 	agregar()
@@ -55,10 +59,6 @@ class CatalogoVista extends Vista
 		this.ocultarIndicador();
 		this.mostrarFormulario();
 	}
-	
-	
-	
-	
 
 	set datos(datos)
 	{
@@ -181,16 +181,6 @@ class CatalogoVista extends Vista
 	}
 	
 	
-//	renderEstatus(renglon, campoBase)
-//	{    
-//		var contenido = "";
-//		if(renglon.estatus==1)
-//			contenido += "<span class='status--process'>Activo</span>";
-//		else
-//			contenido += "<span class='status--denied'>Inactivo</span>";
-//	    return contenido;
-//	}
-	
 	renderEstatus(renglon, type, set)
 	{    
 		var contenido = "";
@@ -201,8 +191,6 @@ class CatalogoVista extends Vista
 	    return contenido;
 	}
 	
-	
-	 
 	mostrarFormulario()
 	{
 		if($("#modalAlta").length ==0)
