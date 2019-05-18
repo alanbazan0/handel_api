@@ -14,6 +14,8 @@ class UsuariosVista extends CatalogoVista
 		this.consultarEmpresasCriterio();
 	}
 	
+	
+	
 	crearColumnasGrid()
 	{
 		this.tabla.columnas = [
@@ -79,6 +81,51 @@ class UsuariosVista extends CatalogoVista
             messages: {
             	 "tipoUsuarioSelect": "Por favor seleccione un tipo de usuario",
             	 "nombreUsuarioInput": "Por favor ingrese un nombre de usuario",
+            	 "contrasenaInput": "Por favor ingrese una contraseña",
+                "nombreInput": "Por favor ingrese un nombre",
+                "apellidoInput": "Por favor ingrese un apellido",
+                "empresaSelect": "Por favor seleccione una empresa",
+                "sedeSelect": "Por favor seleccione una sede",
+                "puestoSelect": "Por favor seleccione un puesto",
+                "areaSelect": "Por favor seleccione un área"
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.guardar();
+            }
+        });
+	}
+	
+	inicializarValidacionesFormularioInspector()
+	{
+		var _this = this;
+		jQuery("#formulario").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+            	 "tipoUsuarioSelect": {required: !0},
+                "contrasenaInput": {required: !0},
+                "nombreInput": {required: !0},
+                "apellidoInput": {required: !0},
+                "empresaSelect": {required: !0},
+                "sedeSelect": {required: !0},
+                "puestoSelect": {required: !0},
+                "areaSelect": {required: !0}
+               
+            },
+            messages: {
+            	 "tipoUsuarioSelect": "Por favor seleccione un tipo de usuario",
             	 "contrasenaInput": "Por favor ingrese una contraseña",
                 "nombreInput": "Por favor ingrese un nombre",
                 "apellidoInput": "Por favor ingrese un apellido",
@@ -310,6 +357,10 @@ class UsuariosVista extends CatalogoVista
 	cambiarTipoUsuario()
 	{
 		var tipo = $('#tipoUsuarioSelect').val();
+		
+		var validator = $("#formulario").validate();
+		validator.destroy();
+		
 		if(tipo==TipoUsuario.INSPECTOR)
 		{
 			$('#nombreUsuarioDiv').hide();
@@ -318,6 +369,7 @@ class UsuariosVista extends CatalogoVista
 				var contrasena = this.generarContrasenaNumerica(4);
 				$('#contrasenaInput').val(contrasena);
 			}
+			this.inicializarValidacionesFormularioInspector();
 		}
 		else
 		{
@@ -327,12 +379,24 @@ class UsuariosVista extends CatalogoVista
 				var contrasena = this.generarContrasena(10);
 				$('#contrasenaInput').val(contrasena);
 			}
-			
+			this.inicializarValidacionesFormulario();
 		}
 		var ayudaTipoUsuario = this.getAyudaTipoUsuario(tipo);
 		$("#tipoUsuarioSelect").attr("data-original-title",ayudaTipoUsuario);
 		$('[data-toggle="tooltip"]').tooltip("hide");
 	}
+	
+	clearValidation(formElement){
+		 //Internal $.validator is exposed through $(form).validate()
+		 var validator = $(formElement).validate();
+		 //Iterate through named elements inside of the form, and mark them as error free
+		 $('[name]',formElement).each(function(){
+		   validator.successList.push(this);//mark as error free
+		   validator.showErrors();//remove error messages if present
+		 });
+		 validator.resetForm();//remove error class on name elements and clear history
+		 validator.reset();//remove all error and success data
+		}
 	
 	getAyudaTipoUsuario(tipo)
 	{

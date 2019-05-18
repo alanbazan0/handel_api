@@ -26,7 +26,7 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             "   LEFT JOIN areas A ON A.id = I.area_id " .
             "   LEFT JOIN tipos_area TA ON A.tipo_area_id = TA.id " .
             "   LEFT JOIN usuarios US ON US.id = I.usuario_id " .
-            "   LEFT JOIN usuarios INS ON INS.id = I.usuario_id " .
+            "   LEFT JOIN usuarios INS ON INS.id = I.inspector_id " .
             "   INNER JOIN tipo_inspeccion TI ON I.tipo_inspeccion_id = TI.id";
     }
     
@@ -430,7 +430,7 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
         return $resultado;
     }
     
-    public function consultarInspeccionesEmpresa()
+    public function consultarInspeccionesEmpresa($usuario, $criteriosSeleccion)
     {
         $resultado = new Resultado();
         $registros = array();
@@ -474,7 +474,7 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             return $resultado;
     }
     
-    public function consultarInspeccionesMes($usuario)
+    public function consultarInspeccionesMes($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
         $registros = array();
@@ -486,26 +486,51 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
         
         
         $filtro = "";
-        if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR) //SUPERVISOR
-            $filtro = " AND S.empresa_id = $usuario->empresaId  AND sede_id = $usuario->sedeId";
-        else 
-            if($usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR) //COORDINADOR
-                $filtro = " AND S.empresa_id = $usuario->empresaId";
+
             
         $ano = date("Y");
+        if($criteriosSeleccion!=null)
+        {
+            if(isset($criteriosSeleccion->ano))
+                $ano = $criteriosSeleccion->ano;
+            if(isset($criteriosSeleccion->empresaId))
+            {
+                if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
+                    $filtro .= " AND S.empresa_id = $criteriosSeleccion->empresaId";
+            }
+            if(isset($criteriosSeleccion->sedeId))
+            {
+                if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
+                    $filtro .= " AND S.id = $criteriosSeleccion->sedeId";
+            }
+            if(isset($criteriosSeleccion->areaId))
+            {
+                if($criteriosSeleccion->areaId!="" && $criteriosSeleccion->areaId!=null)
+                    $filtro .= " AND I.area_id = $criteriosSeleccion->areaId";
+            }
+        }
+        else 
+        {
+            if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR) //SUPERVISOR
+                $filtro = " AND S.empresa_id = $usuario->empresaId  AND sede_id = $usuario->sedeId";
+            else
+                    if($usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR) //COORDINADOR
+                        $filtro = " AND S.empresa_id = $usuario->empresaId";
+        }
+           
             
-        $consulta = "SELECT 1, 'E' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 1 $filtro) valor  UNION " .
-            "SELECT 2, 'F' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 2 $filtro) valor UNION " .
-            "SELECT 3, 'M' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 3 $filtro) valor UNION " .
-            "SELECT 4, 'A' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 4 $filtro) valor UNION " .
-            "SELECT 5, 'M' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 5 $filtro) valor UNION " .
-            "SELECT 6, 'J' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 6 $filtro) valor UNION " .
-            "SELECT 7, 'J' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 7 $filtro) valor UNION " .
-            "SELECT 8, 'A' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 8 $filtro) valor UNION " .
-            "SELECT 9, 'S' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 9 $filtro) valor UNION " .
-            "SELECT 10, 'O' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 10 $filtro) valor UNION " .
-            "SELECT 11, 'N' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 11 $filtro) valor UNION " .
-            "SELECT 12, 'D' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 12 $filtro) valor  ";
+        $consulta = "SELECT 1, 'Ene' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 1 $filtro) valor  UNION " .
+            "SELECT 2, 'Feb' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 2 $filtro) valor UNION " .
+            "SELECT 3, 'Mar' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 3 $filtro) valor UNION " .
+            "SELECT 4, 'Abr' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 4 $filtro) valor UNION " .
+            "SELECT 5, 'May' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 5 $filtro) valor UNION " .
+            "SELECT 6, 'Jun' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 6 $filtro) valor UNION " .
+            "SELECT 7, 'Jul' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 7 $filtro) valor UNION " .
+            "SELECT 8, 'Ago' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 8 $filtro) valor UNION " .
+            "SELECT 9, 'Sep' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 9 $filtro) valor UNION " .
+            "SELECT 10, 'Oct' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 10 $filtro) valor UNION " .
+            "SELECT 11, 'Nov' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 11 $filtro) valor UNION " .
+            "SELECT 12, 'Dic' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE YEAR(fecha_inspeccion)=$ano AND MONTH(fecha_inspeccion) = 12 $filtro) valor  ";
           
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -540,7 +565,108 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             return $resultado;
     }
     
-    public function consultarInspeccionesSede($usuario)
+    public function consultarInspeccionesHora($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+       
+                
+                
+        $filtro = "";
+        
+        
+        $ano = date("Y");
+        if($criteriosSeleccion!=null)
+        {
+            if(isset($criteriosSeleccion->ano))
+                $ano = $criteriosSeleccion->ano;
+                if(isset($criteriosSeleccion->empresaId))
+                {
+                    if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
+                        $filtro .= " AND S.empresa_id = $criteriosSeleccion->empresaId";
+                }
+                if(isset($criteriosSeleccion->sedeId))
+                {
+                    if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
+                        $filtro .= " AND S.id = $criteriosSeleccion->sedeId";
+                }
+                if(isset($criteriosSeleccion->areaId))
+                {
+                    if($criteriosSeleccion->areaId!="" && $criteriosSeleccion->areaId!=null)
+                        $filtro .= " AND I.area_id = $criteriosSeleccion->areaId";
+                }
+                if(isset($criteriosSeleccion->fecha))
+                {
+                    if($criteriosSeleccion->fecha!="" && $criteriosSeleccion->fecha!=null)
+                    {
+                        list($ano, $mes, $dia) = explode("/", $criteriosSeleccion->fecha);
+                        //$fecha = $ano."-".$mes."-".$dia;
+                        $filtro .= " AND YEAR(fecha_inspeccion) = $ano AND MONTH(fecha_inspeccion) = $mes AND DAY(fecha_inspeccion) = $dia ";
+                    }
+                }
+        }
+      
+                
+        $consulta = "SELECT 0, '0' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 0 $filtro) valor  UNION " .
+        "SELECT 1, '1' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 1 $filtro) valor  UNION " .
+        "SELECT 2, '2' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 2 $filtro) valor  UNION " .
+        "SELECT 3, '3' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 3 $filtro) valor  UNION " .
+        "SELECT 4, '4' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 4 $filtro) valor  UNION " .
+        "SELECT 5, '5' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 5 $filtro) valor  UNION " .
+        "SELECT 6, '6' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 6 $filtro) valor  UNION " .
+        "SELECT 7, '7' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 7 $filtro) valor  UNION " .
+        "SELECT 8, '8' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 8 $filtro) valor  UNION " .
+        "SELECT 9, '9' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 9 $filtro) valor  UNION " .
+        "SELECT 10, '10' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 10 $filtro) valor  UNION " .
+        "SELECT 11, '11' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 11 $filtro) valor  UNION " .
+        "SELECT 12, '12' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 12 $filtro) valor  UNION " .
+        "SELECT 13, '13' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 13 $filtro) valor  UNION " .
+        "SELECT 14, '14' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 14 $filtro) valor  UNION " .
+        "SELECT 15, '15' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 15 $filtro) valor  UNION " .
+        "SELECT 16, '16' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 16 $filtro) valor  UNION " .
+        "SELECT 17, '17' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 17 $filtro) valor  UNION " .
+        "SELECT 18, '18' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 18 $filtro) valor  UNION " .
+        "SELECT 19, '19' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 19 $filtro) valor  UNION " .
+        "SELECT 20, '20' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 20 $filtro) valor  UNION " .
+        "SELECT 21, '21' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 21 $filtro) valor  UNION " .
+        "SELECT 22, '22' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 22 $filtro) valor  UNION " .
+        "SELECT 23, '23' nombre, (SELECT count(*) valor FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id INNER JOIN empresas E ON S.empresa_id = E.id WHERE HOUR(fecha_inspeccion) = 23 $filtro) valor ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            //             if($sentencia->bind_param("ii",$empresaId,$sedeId))
+            //{
+            if($sentencia->execute())
+            {
+                if ($sentencia->bind_result($id, $nombre,$valor))
+                {
+                    while($row = $sentencia->fetch())
+                    {
+                        $registro= (object) [
+                            'id' =>  $id,
+                            'nombre' => $nombre,
+                            'valor' => $valor
+                        ];
+                        array_push($registros,$registro);
+                    }
+                    $resultado->valor = $registros;
+                }
+                else
+                    $resultado->mensajeError = "Falló el enlace del resultado";
+            }
+            else
+                $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                //             }
+            //             else
+            //                 $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        return $resultado;
+    }
+    
+    public function consultarInspeccionesSede($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
         $registros = array();
@@ -617,17 +743,6 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
         $filtros = array();
         $where="";
         
-//         if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
-//         {
-//             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
-//             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'sede_id','valor'=>$usuario->sedeId]);
-            
-//         }
-//         else if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR_CORPORATIVO)
-//         {
-//             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
-            
-//         }
         if($criteriosSeleccion!=null)
         {
             if(isset($criteriosSeleccion->empresaId))
@@ -667,6 +782,130 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             $where .
             "GROUP BY A.id, A.nombre "  .
             "ORDER BY A.nombre";
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($this->bind_param($sentencia, $filtros))
+                {
+                    if($sentencia->execute())
+                    {
+                        if ($sentencia->bind_result($id, $nombre,$valor))
+                        {
+                            while($row = $sentencia->fetch())
+                            {
+                                $registro= (object) [
+                                    'id' =>  $id,
+                                    'nombre' => $nombre,
+                                    'valor' => $valor
+                                ];
+                                array_push($registros,$registro);
+                            }
+                            $resultado->valor = $registros;
+                        }
+                        else
+                            $resultado->mensajeError = "Falló el enlace del resultado";
+                    }
+                    else
+                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = "Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                return $resultado;
+    }
+    
+    public function consultarAnos()
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        
+        $consulta = "SELECT YEAR(fecha_inspeccion) id, YEAR(fecha_inspeccion) nombre " .
+            " FROM inspecciones I " .
+            "GROUP BY YEAR(fecha_inspeccion) "  .
+            "ORDER BY YEAR(fecha_inspeccion)";
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+//                 if($this->bind_param($sentencia, $filtros))
+//                 {
+                    if($sentencia->execute())
+                    {
+                        if ($sentencia->bind_result($id,$nombre))
+                        {
+                            while($row = $sentencia->fetch())
+                            {
+                                $registro= (object) [
+                                    'id' =>  $id,
+                                    'nombre' => $nombre
+                                ];
+                                array_push($registros,$registro);
+                            }
+                            $resultado->valor = $registros;
+                        }
+                        else
+                            $resultado->mensajeError = "Falló el enlace del resultado";
+                    }
+                    else
+                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+//                 }
+//                 else
+//                     $resultado->mensajeError = "Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                return $resultado;
+    }
+    
+    public function consultarInspeccionesInspector($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $filtros = array();
+        $where="";
+        
+        if($criteriosSeleccion!=null)
+        {
+            if(isset($criteriosSeleccion->empresaId))
+            {
+                if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+            }
+            if(isset($criteriosSeleccion->sedeId))
+            {
+                if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+            }
+            if(isset($criteriosSeleccion->areaId))
+            {
+                if($criteriosSeleccion->areaId!="" && $criteriosSeleccion->areaId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'area_id','valor'=>$criteriosSeleccion->areaId]);
+            }
+            if(isset($criteriosSeleccion->fechaInicial))
+            {
+                if($criteriosSeleccion->fechaInicial!="" && $criteriosSeleccion->fechaInicial!=null)
+                    array_push($filtros,(object)['tipoDato'=>'date','operador'=>'>=','tabla'=>'I','campo'=>'fecha_inspeccion','valor'=>$criteriosSeleccion->fechaInicial]);
+            }
+            if(isset($criteriosSeleccion->fechaFinal))
+            {
+                if($criteriosSeleccion->fechaFinal!="" && $criteriosSeleccion->fechaFinal!=null)
+                    array_push($filtros,(object)['tipoDato'=>'date','operador'=>'<=','tabla'=>'I','campo'=>'fecha_inspeccion','valor'=>$criteriosSeleccion->fechaFinal]);
+            }
+            $where = $this->where($filtros);
+        }
+        //$where = $this->where($filtros);
+        
+        $consulta = "SELECT U.id, CONCAT(U.nombre,' ', U.apellido)  nombre, count(I.id) valor " .
+            " FROM inspecciones I " .
+            "   INNER JOIN sedes S ON S.id = I.sede_id " .
+            "   INNER JOIN usuarios U ON U.id = I.inspector_id " .
+            "   INNER JOIN empresas E ON E.id = S.empresa_id " .
+            $where .
+            "GROUP BY U.id, U.nombre "  .
+            "ORDER BY U.nombre";
             
             if($sentencia = $this->conexion->prepare($consulta))
             {

@@ -1,9 +1,9 @@
-class GraficaInspeccionesAreaVista extends CatalogoVista
+class GraficaInspeccionesInspectorVista extends CatalogoVista
 {		
 	constructor(ventana)
 	{	
 		super(ventana);
-		this.presentador = new GraficaInspeccionesAreaPresentador(this);
+		this.presentador = new GraficaInspeccionesInspectorPresentador(this);
 		this.consulto = false;
 		
 	}
@@ -196,7 +196,7 @@ class GraficaInspeccionesAreaVista extends CatalogoVista
 	}
 	
 }
-var vista = new GraficaInspeccionesAreaVista(this);
+var vista = new GraficaInspeccionesInspectorVista(this);
 $(document).ready(function() 
 {
 	vista.inicializar();

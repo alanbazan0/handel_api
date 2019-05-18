@@ -42,9 +42,18 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             $modelo->supervisor2Id=null;
         if($modelo->supervisor3Id=="")
             $modelo->supervisor3Id=null;
+        
+       
+            
         if($resultado->mensajeError=="")
         {
             $id = $resultado->valor;
+            
+            if($modelo->tipoUsuarioId==\TipoUsuario::INSPECTOR)
+            {
+                $modelo->nombreUsuario = "inspector".$id;
+            }
+            
             $consulta = " INSERT INTO usuarios "
                         . " (id, "
                         . " nombre_usuario, "

@@ -77,25 +77,44 @@ try
                 $resultado = $repositorio->eliminar($llaves);
             break;
             case 'consultarInspeccionesEmpresa':
-                
-                $resultado = $repositorio->consultarInspeccionesEmpresa();
+                session_start();
+                $usuario = null;
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                if(isset($_SESSION['usuario']))
+                {
+                    $usuario = $_SESSION['usuario'];
+                    $resultado = $repositorio->consultarInspeccionesEmpresa($usuario,$criteriosSeleccion);
+                }
+               
             break;
             case 'consultarInspeccionesMes':
                 session_start();
                 $usuario = null;
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 if(isset($_SESSION['usuario']))
                 {
                     $usuario = $_SESSION['usuario'];
-                    $resultado = $repositorio->consultarInspeccionesMes($usuario);
+                    $resultado = $repositorio->consultarInspeccionesMes($usuario,$criteriosSeleccion);
                 }
             break;
+            case 'consultarInspeccionesHora':
+                session_start();
+                $usuario = null;
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                if(isset($_SESSION['usuario']))
+                {
+                    $usuario = $_SESSION['usuario'];
+                    $resultado = $repositorio->consultarInspeccionesHora($usuario,$criteriosSeleccion);
+                }
+                break;
             case 'consultarInspeccionesSede':
                 session_start();
                 $usuario = null;
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 if(isset($_SESSION['usuario']))
                 {
                     $usuario = $_SESSION['usuario'];
-                    $resultado = $repositorio->consultarInspeccionesSede($usuario);
+                    $resultado = $repositorio->consultarInspeccionesSede($usuario,$criteriosSeleccion);
                 }
                 break;
             case 'consultarInspeccionesArea':
@@ -107,6 +126,19 @@ try
                     $usuario = $_SESSION['usuario'];
                     $resultado = $repositorio->consultarInspeccionesArea($usuario,$criteriosSeleccion);
                 }
+            break;
+            case 'consultarInspeccionesInspector':
+                session_start();
+                $usuario = null;
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                if(isset($_SESSION['usuario']))
+                {
+                    $usuario = $_SESSION['usuario'];
+                    $resultado = $repositorio->consultarInspeccionesInspector($usuario,$criteriosSeleccion);
+                }
+            break;
+            case 'consultarAnos':
+                $resultado = $repositorio->consultarAnos();
                 break;
                
             default:

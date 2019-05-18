@@ -1,18 +1,21 @@
-class GraficaInspeccionesAreaVista extends CatalogoVista
+class GraficaInspeccionesMesVista extends CatalogoVista
 {		
 	constructor(ventana)
 	{	
 		super(ventana);
-		this.presentador = new GraficaInspeccionesAreaPresentador(this);
+		this.presentador = new GraficaInspeccionesMesPresentador(this);
 		this.consulto = false;
 		
 	}
 	
 	inicializar()
 	{
-		super.inicializar();
-		this.crearFechas();
+		var _this = this;
+		$("#consultarButton").click(function(){
+			_this.consultar();
+		});
 		this.consultarEmpresasCriterio();
+		this.consultarAnosCriterio();
 	}
 	
 	set datos(datos)
@@ -73,62 +76,62 @@ class GraficaInspeccionesAreaVista extends CatalogoVista
 			}); // end am4core.ready()
 	}
 	
-	crearFechas()
-	{
-		 $(function() 
-		{
-		    $.datepicker._updateDatepicker_original = $.datepicker._updateDatepicker;
-		    $.datepicker._updateDatepicker = function(inst) {
-		        $.datepicker._updateDatepicker_original(inst);
-		        var afterShow = this._get(inst, 'afterShow');
-		        if (afterShow)
-		            afterShow.apply((inst.input ? inst.input[0] : null));  // trigger custom callback
-		    }
-		    
-		    $( "#fechaInicialInputCriterio" ).datepicker({ 
-		      afterShow : function(inst) 
-		      {
-		    		var div = $("#ui-datepicker-div");
-		    		var a = div.find("a");
-		    		if(a!=null)
-			    	  a.attr("href","#");
-		      },
-		    });
-		    
-		    $( "#fechaFinalInputCriterio" ).datepicker({ 
-			      afterShow : function(inst) 
-			      {
-			    		var div = $("#ui-datepicker-div");
-			    		var a = div.find("a");
-			    		if(a!=null)
-				    	  a.attr("href","#");
-			      },
-			    });
-		});
-	 
-		var hoy = new Date();
-		var manana = new Date();
-		manana.setDate(hoy.getDate() + 1);
-		
-		var dd = manana.getDate();
-		var mm = manana.getMonth()+1; 
-		var yyyy = manana.getFullYear();
-		
-		if(dd<10) 
-		{
-		    dd='0'+dd;
-		} 
-	
-		if(mm<10) 
-		{
-		    mm='0'+mm;
-		} 
-		
-		var fecha =  dd+'/'+mm+'/'+yyyy;
-		
-		$("#fechaFinalInputCriterio").val(fecha);
-				
-	}
+//	crearFechas()
+//	{
+//		 $(function() 
+//		{
+//		    $.datepicker._updateDatepicker_original = $.datepicker._updateDatepicker;
+//		    $.datepicker._updateDatepicker = function(inst) {
+//		        $.datepicker._updateDatepicker_original(inst);
+//		        var afterShow = this._get(inst, 'afterShow');
+//		        if (afterShow)
+//		            afterShow.apply((inst.input ? inst.input[0] : null));  // trigger custom callback
+//		    }
+//		    
+//		    $( "#fechaInicialInputCriterio" ).datepicker({ 
+//		      afterShow : function(inst) 
+//		      {
+//		    		var div = $("#ui-datepicker-div");
+//		    		var a = div.find("a");
+//		    		if(a!=null)
+//			    	  a.attr("href","#");
+//		      },
+//		    });
+//		    
+//		    $( "#fechaFinalInputCriterio" ).datepicker({ 
+//			      afterShow : function(inst) 
+//			      {
+//			    		var div = $("#ui-datepicker-div");
+//			    		var a = div.find("a");
+//			    		if(a!=null)
+//				    	  a.attr("href","#");
+//			      },
+//			    });
+//		});
+//	 
+//		var hoy = new Date();
+//		var manana = new Date();
+//		manana.setDate(hoy.getDate() + 1);
+//		
+//		var dd = manana.getDate();
+//		var mm = manana.getMonth()+1; 
+//		var yyyy = manana.getFullYear();
+//		
+//		if(dd<10) 
+//		{
+//		    dd='0'+dd;
+//		} 
+//	
+//		if(mm<10) 
+//		{
+//		    mm='0'+mm;
+//		} 
+//		
+//		var fecha =  dd+'/'+mm+'/'+yyyy;
+//		
+//		$("#fechaFinalInputCriterio").val(fecha);
+//				
+//	}
 
 	get criteriosSeleccion()
 	{
@@ -137,8 +140,9 @@ class GraficaInspeccionesAreaVista extends CatalogoVista
 			empresaId: $('#empresaSelectCriterio').val(),
 			sedeId: $('#sedeSelectCriterio').val(),
 			areaId: $('#areaSelectCriterio').val(),
-			fechaInicial: this.getFecha($('#fechaInicialInputCriterio').val()),
-			fechaFinal: this.getFecha($('#fechaFinalInputCriterio').val()),
+			ano: $('#anoSelectCriterio').val()
+//			fechaInicial: this.getFecha($('#fechaInicialInputCriterio').val()),
+//			fechaFinal: this.getFecha($('#fechaFinalInputCriterio').val()),
 		 }
 		 return criteriosSeleccion;
 	}		
@@ -147,7 +151,14 @@ class GraficaInspeccionesAreaVista extends CatalogoVista
 	{
 		this.cargandoOpciones("#empresaSelectCriterio");
 		this.cargandoOpciones("#sedeSelectCriterio");
+		this.cargandoOpciones("#areaSelectCriterio");
 		this.presentador.consultarEmpresasCriterio();
+	}
+	
+	consultarAnosCriterio()
+	{
+		this.cargandoOpciones("#anoSelectCriterio");
+		this.presentador.consultarAnoCriterio();
 	}
 	
 	set empresasCriterio(registros)
@@ -188,15 +199,17 @@ class GraficaInspeccionesAreaVista extends CatalogoVista
 	{		
 		this.cargarOpciones('#areaSelectCriterio', registros);
 		//agregar en ultimo criterio
-		if(this.consulto==false)
-		{
-			this.consultar();
-			this.consultoGrid=true;
-		}
+		
+	}
+	
+	set anosCriterio(anos)
+	{
+		this.cargarOpciones('#anoSelectCriterio', anos);
+		this.consultar();
 	}
 	
 }
-var vista = new GraficaInspeccionesAreaVista(this);
+var vista = new GraficaInspeccionesMesVista(this);
 $(document).ready(function() 
 {
 	vista.inicializar();

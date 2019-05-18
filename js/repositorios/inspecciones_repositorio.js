@@ -5,6 +5,28 @@ class InspeccionesRepositorio extends Repositorio
 		super("php/repositorios/Inspecciones.php");
 	}
 	
+	consultarAnos(contexto,funcion)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+			$.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarAnos"},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       }
+	   });
+	}
+	
 	consultarPorEmpresaSede(contexto,funcion, empresaId, sedeId)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;
@@ -27,13 +49,14 @@ class InspeccionesRepositorio extends Repositorio
 	   });
 	}
 	
-	consultarInspeccionesEmpresa(contexto,funcion)
+	consultarInspeccionesEmpresa(contexto,funcion,criteriosSeleccion)
 	{		
+		var criteriosSeleccionString = JSON.stringify(criteriosSeleccion);
 		var url = HANDEL_API + "/" + this.servicio;
 			$.ajax({
 	       url: url,
 	       type: 'POST',
-	       data: {accion : "consultarInspeccionesEmpresa"},
+	       data: {accion : "consultarInspeccionesEmpresa", criteriosSeleccion : criteriosSeleccionString},
 	       success: function( data, textStatus, jQxhr )
 	       {
 	           funcion.call(contexto,data);
@@ -49,14 +72,14 @@ class InspeccionesRepositorio extends Repositorio
 	   });
 	}
 	
-	consultarInspeccionesMes(contexto,funcion)
+	consultarInspeccionesMes(contexto,funcion,criteriosSeleccion)
 	{		
-		
+		var criteriosSeleccionString = JSON.stringify(criteriosSeleccion);
 		var url = HANDEL_API + "/" + this.servicio;
 		   $.ajax({
 	       url: url,
 	       type: 'POST',
-	       data: {accion : "consultarInspeccionesMes"},
+	       data: {accion : "consultarInspeccionesMes", criteriosSeleccion : criteriosSeleccionString},
 	       success: function( data, textStatus, jQxhr )
 	       {
 	           funcion.call(contexto,data);
@@ -72,13 +95,14 @@ class InspeccionesRepositorio extends Repositorio
 	   });
 	}
 	
-	consultarInspeccionesSede(contexto,funcion)
+	consultarInspeccionesSede(contexto,funcion,criteriosSeleccion)
 	{		
+		var criteriosSeleccionString = JSON.stringify(criteriosSeleccion);
 		var url = HANDEL_API + "/" + this.servicio;
 		   $.ajax({
 	       url: url,
 	       type: 'POST',
-	       data: {accion : "consultarInspeccionesSede"},
+	       data: {accion : "consultarInspeccionesSede", criteriosSeleccion : criteriosSeleccionString},
 	       success: function( data, textStatus, jQxhr )
 	       {
 	           funcion.call(contexto,data);
@@ -102,6 +126,52 @@ class InspeccionesRepositorio extends Repositorio
 	       url: url,
 	       type: 'POST',
 	       data: {accion : "consultarInspeccionesArea", criteriosSeleccion : criteriosSeleccionString},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       }
+	   });
+	}
+	
+	consultarInspeccionesInspector(contexto,funcion,criteriosSeleccion)
+	{		
+		var criteriosSeleccionString = JSON.stringify(criteriosSeleccion);
+		var url = HANDEL_API + "/" + this.servicio;
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarInspeccionesInspector", criteriosSeleccion : criteriosSeleccionString},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       }
+	   });
+	}
+	
+	consultarInspeccionesHora(contexto,funcion,criteriosSeleccion)
+	{		
+		var criteriosSeleccionString = JSON.stringify(criteriosSeleccion);
+		var url = HANDEL_API + "/" + this.servicio;
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarInspeccionesHora", criteriosSeleccion : criteriosSeleccionString},
 	       success: function( data, textStatus, jQxhr )
 	       {
 	           funcion.call(contexto,data);
