@@ -101,6 +101,11 @@ class SedesVista extends CatalogoVista
 	agregar()
 	{
 		super.agregar();
+		
+	}
+	
+	consultarCombos()
+	{
 		this.consultarEmpresas();
 		this.consultarPaises();
 	}
@@ -119,8 +124,7 @@ class SedesVista extends CatalogoVista
 		$('#nombreCortoInput').val(this.modeloEdicion.nombreCorto);
 		$('#direccionInput').val(this.modeloEdicion.direccion);
 		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
-		this.consultarEmpresas();
-		this.consultarPaises();
+		this.consultarCombos();
 	}
 	
 	get modelo()

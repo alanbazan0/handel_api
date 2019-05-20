@@ -195,7 +195,7 @@ class EstadosVista extends CatalogoVista
 		this.modeloEdicion = valor;
 		$('#nombreInput').val(this.modeloEdicion.nombre);
 		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
-		this.consultarPaises();
+		this.consultarCombos();
 	}
 	
 	get modelo()

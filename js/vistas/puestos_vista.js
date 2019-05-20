@@ -76,8 +76,13 @@ class PuestosVista extends CatalogoVista
 	{
 		super.agregar();
 		//$('#nombreInput').focus();
-		this.consultarEmpresas();
 		
+		
+	}
+	
+	consultarCombos()
+	{
+		this.consultarEmpresas();
 	}
 	
 	editar(id)
@@ -101,7 +106,7 @@ class PuestosVista extends CatalogoVista
 		this.modeloEdicion = valor;
 		$('#nombreInput').val(this.modeloEdicion.nombre);
 		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
-		this.consultarEmpresas();
+		this.consultarCombos();
 	}
 	
 	get modelo()

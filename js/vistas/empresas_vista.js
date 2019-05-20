@@ -167,6 +167,11 @@ class EmpresasVista extends CatalogoVista
 	{
 		super.agregar();
 		
+		
+	}
+	
+	consultarCombos()
+	{
 		this.consultarTiposEmpresa();
 		this.consultarPaises();
 		this.consultarCorporativos();
@@ -248,9 +253,7 @@ class EmpresasVista extends CatalogoVista
 		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
 		$('#logoImage').attr('src', HANDEL_API + "/php/logos_empresas/" + this.modeloEdicion.icono);
 		$('#logoImage').show();
-		this.consultarTiposEmpresa();
-		this.consultarPaises();
-		this.consultarCorporativos();
+		this.consultarCombos();
 	}
 	
 	get modelo()

@@ -229,7 +229,8 @@ class CatalogoVista extends Vista
 					if(_this.presentador!=null)
 						_this.presentador.consultarPorLlaves();
 				}
-				_this.consultarCombos();
+				else
+					_this.consultarCombos();
 			});
 		
 			

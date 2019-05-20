@@ -186,6 +186,11 @@ class UsuariosVista extends CatalogoVista
 		super.agregar();
 		//$('#nombreUsuarioInput').focus();
 		
+		
+	}
+	
+	consultarCombos()
+	{
 		this.consultarTiposUsuario();
 		this.consultarEmpresas();
 	}
@@ -216,8 +221,7 @@ class UsuariosVista extends CatalogoVista
 			$("#permiso10y7Radio").prop('checked', true);
 		else
 			$("#permiso10y7Radio").prop('checked', false);
-		this.consultarTiposUsuario();
-		this.consultarEmpresas();
+		this.consultarCombos();
 	}
 	
 	get modelo()

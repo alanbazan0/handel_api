@@ -182,7 +182,7 @@ class CertificacionesVista extends CatalogoVista
 		this.modeloEdicion = valor;
 		$('#nombreInput').val(this.modeloEdicion.nombre);
 		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
-		//this.consultarEmpresas();
+		
 	}
 	
 	get modelo()
