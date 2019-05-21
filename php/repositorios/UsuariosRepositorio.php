@@ -35,6 +35,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
    
     public function insertar(Usuario $modelo)
     {            
+       
         $resultado =  $this->calcularId("id","usuarios");
         if($modelo->supervisor1Id=="")
             $modelo->supervisor1Id=null;
@@ -43,11 +44,13 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         if($modelo->supervisor3Id=="")
             $modelo->supervisor3Id=null;
         
-       
+            
             
         if($resultado->mensajeError=="")
         {
             $id = $resultado->valor;
+            
+           
             
             if($modelo->tipoUsuarioId==\TipoUsuario::INSPECTOR)
             {
@@ -100,7 +103,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                     {
                         $resultado->codigoError = $this->conexion->errno;
                         if($resultado->codigoError==1062)
-                            $resultado->mensajeError =" Ya existe un usuario " . $modelo->nombreUsuario . ", intente con otro nombre.";
+                            $resultado->mensajeError ="Ya existe un usuario " . $modelo->nombreUsuario . ", intente con otro nombre.";
                             
                         else
                             $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;      

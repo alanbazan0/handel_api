@@ -252,7 +252,7 @@ class UsuariosVista extends CatalogoVista
 	 
 	generarContrasena(longitud)
 	{
-	  var caracteres = "abcdefghijkmnpqrtuvwxyzABCDEFGHIJKLMNPQRTUVWXYZ0123456789!$%&/*+-";
+	  var caracteres = "abcdefghijkmnpqrtuvwxyzABCDEFGHIJKLMNPQRTUVWXYZ0123456789";
 	  var contraseña = "";
 	  for (var i=0; i<longitud; i++) contraseña += caracteres.charAt(Math.floor(Math.random()*caracteres.length));
 	  	return contraseña;

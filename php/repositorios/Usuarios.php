@@ -51,9 +51,12 @@ try
         switch ($accion)
         {           
             case 'insertar':
+               
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Usuario());            
+                $modelo = $mapper->map($json, new Usuario());     
+                
+             
                 $resultado = $repositorio->insertar($modelo);     
                 if($resultado->mensajeError=="")
                 {
