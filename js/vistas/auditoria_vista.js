@@ -291,6 +291,8 @@ class AuditoriaVista extends Vista
 		//$('#fechaProgramadaInput').val(this.modeloEdicion.fechaProgramada);
 		//$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
 		
+		 $(document).attr("title", this.modeloEdicion.nombre);
+
 		$('#titulo').html(this.modeloEdicion.nombre);
 		//this.presentador.consultarCategorias();
 		
@@ -340,6 +342,24 @@ class AuditoriaVista extends Vista
 			this.presentador.consultarValores();
 	}
 	
+	mostrarFinalizacion()
+	{
+		 swal({
+	            title: "Auditoria terminada",
+	            text: "",
+	            html: true,
+	            type: "success",
+	            showCancelButton: true,
+	            confirmButtonColor: "#ae3e9e",
+	            confirmButtonText: "Salir de auditoria",
+	            cancelButtonText  : "No salir",
+	            closeOnConfirm: true
+	        },
+	        function(){
+	        	window.close();
+	        });
+	}
+	
 	mostrarAnterior()
 	{
 		var indice = this.listaPreguntas.atras();
@@ -353,6 +373,14 @@ class AuditoriaVista extends Vista
 		this.funcion = "atras";
 		this.guardar();
 		
+		
+	}
+	
+
+	finalizar()
+	{
+		this.funcion = "finalizar";
+		this.guardar();
 		
 	}
 	

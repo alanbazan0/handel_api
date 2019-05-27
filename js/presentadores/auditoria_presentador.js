@@ -30,10 +30,12 @@ class AuditoriaPresentador extends CatalogoPresentador
 			this.vista.modo = Modo.CAMBIO;
 			this.vista.modeloEdicion= resultado.valor;
 			this.vista.mostrarReferencia();
-			if(this.vista.funcion="siguente")
+			if(this.vista.funcion=="siguente")
 				this.vista.mostrarSiguiente();
-			else
+			else if(this.vista.funcion=="atras")
 				this.vista.mostrarAnterior();
+			else if(this.vista.funcion=="finalizar")
+				this.vista.mostrarFinalizacion();
 			this.vista.mostrarMensaje("Guardado"," Referencia: " + this.vista.modeloEdicion.referencia) ;
 		 }
 		 else
@@ -61,8 +63,11 @@ class AuditoriaPresentador extends CatalogoPresentador
 			this.vista.mostrarReferencia();
 			if(this.vista.funcion=="siguente")
 				this.vista.mostrarSiguiente();
-			else
+			else if(this.vista.funcion=="atras")
 				this.vista.mostrarAnterior();
+			else if(this.vista.funcion=="finalizar")
+				this.vista.mostrarFinalizacion();
+				
 			this.vista.mostrarMensaje("Actualización"," Referencia: " + this.vista.modeloEdicion.referencia) ;
 		 }
 		 else
@@ -79,7 +84,7 @@ class AuditoriaPresentador extends CatalogoPresentador
 		 this.vista.mostrarIndicador();	
 		 var repositorio = new AuditoriasRepositorio();
 		 var llaves ={plantillaId: this.vista.modeloEdicion.plantillaId,
-				 	auditoriaId: this.vista.modeloEdicion.auditoriaId,
+				 	auditoriaId: this.vista.modeloEdicion.id,
 				 	seccionId: this.vista.seccionId
 		 			};
 		 repositorio.consultarValoresSeccion(this,this.consultarValoresResultado,llaves);
