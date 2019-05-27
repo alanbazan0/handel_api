@@ -452,54 +452,54 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         return $resultado;
     }
     
-    private function insertarSecciones($plantillaId,$secciones)
-    {
+//     private function insertarSecciones($plantillaId,$secciones)
+//     {
         
-        $resultado = new Resultado();
+//         $resultado = new Resultado();
       
         
-        for ($i = 0; $i <  count($secciones); $i++)
-        {
-            $seccion= $secciones[$i];
+//         for ($i = 0; $i <  count($secciones); $i++)
+//         {
+//             $seccion= $secciones[$i];
           
-            $consulta = "INSERT INTO secciones(plantilla_id, id, texto ) " .
-                "VALUE(?, ?, ?)";
-            if($sentencia = $this->conexion->prepare($consulta))
-            {
+//             $consulta = "INSERT INTO secciones(plantilla_id, id, texto ) " .
+//                 "VALUE(?, ?, ?)";
+//             if($sentencia = $this->conexion->prepare($consulta))
+//             {
               
-                if($sentencia->bind_param("iis",$plantillaId,$seccion->id, $seccion->texto))
-                {
-                    if($sentencia->execute())
-                    {
-                        $resultado->valor =$seccion->id;
-                        $sentencia->close();
+//                 if($sentencia->bind_param("iis",$plantillaId,$seccion->id, $seccion->texto))
+//                 {
+//                     if($sentencia->execute())
+//                     {
+//                         $resultado->valor =$seccion->id;
+//                         $sentencia->close();
                         
-                    }
-                    else
-                    {
-                        $resultado->codigoError = $this->conexion->errno;
-                        $resultado->mensajeError = "Falló la ejecución insertarSecciones(" . $this->conexion->errno . ") " . $this->conexion->error;
-                        break;
-                    }
+//                     }
+//                     else
+//                     {
+//                         $resultado->codigoError = $this->conexion->errno;
+//                         $resultado->mensajeError = "Falló la ejecución insertarSecciones(" . $this->conexion->errno . ") " . $this->conexion->error;
+//                         break;
+//                     }
                     
-                }
-                else
-                {
-                    $resultado->mensajeError = "Falló el enlace de parámetros";
-                    break;
-                }
-            }
-            else
-            {
-                $resultado->codigoError = $this->conexion->errno;
-                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-                break;
-            }
-        }
+//                 }
+//                 else
+//                 {
+//                     $resultado->mensajeError = "Falló el enlace de parámetros";
+//                     break;
+//                 }
+//             }
+//             else
+//             {
+//                 $resultado->codigoError = $this->conexion->errno;
+//                 $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+//                 break;
+//             }
+//         }
         
         
-        return $resultado;
-    }
+//         return $resultado;
+//     }
     
     private function insertarPreguntas($auditoriaId,$plantillaId,$seccionId,$preguntas)
     {
@@ -596,217 +596,250 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         return $resultado;
     }
     
-    private function insertarRespuestas($plantillaId,$secciones)
+    private function eliminarRespuestas($auditoriaId,$plantillaId,$seccionId)
     {
         $resultado = new Resultado();
-        
-        for ($i = 0; $i <  count($secciones); $i++)
+        $consulta ="DELETE FROM auditoria_respuestas WHERE auditoria_id = ? AND plantilla_id = ? AND seccion_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
         {
-            $seccion = $secciones[$i];
-            
-            for ($j = 0; $j < count($seccion->preguntas); $j++)
+            if($sentencia->bind_param("iii",$auditoriaId,$plantillaId,$seccionId))
             {
-                $pregunta = $seccion->preguntas[$j];
-                
-                for ($k = 0; $k< count($pregunta->respuestas_si); $k++)
+                if($sentencia->execute())
                 {
-                    $respuesta = $pregunta->respuestas_si[$k];
+                    $sentencia->close();
                     
-                    $consulta = "INSERT INTO respuestas_si(plantilla_id, seccion_id, pregunta_id, id, texto, peso, hallazgo, recomendacion) " .
-                        "VALUE(?, ?, ?, ?, ?, ?, ?, ?)";
-                    if($sentencia = $this->conexion->prepare($consulta))
-                    {
-                        if($sentencia->bind_param("iiiisiss",$plantillaId,$seccion->id, $pregunta->id,$respuesta->id, $respuesta->texto,$respuesta->peso,$respuesta->hallazgo,$respuesta->recomendacion))
-                        {
-                            if($sentencia->execute())
-                            {
-                                $sentencia->close();
-                            }
-                            else
-                            {
-                                $resultado->codigoError = $this->conexion->errno;
-                                $resultado->mensajeError = "Falló la ejecución insertarRespuestasSi(" . $this->conexion->errno . ") " . $this->conexion->error;
-                                break;
-                            }
-                            
-                        }
-                        else
-                        {
-                            $resultado->mensajeError = "Falló el enlace de parámetros";
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        $resultado->codigoError = $this->conexion->errno;
-                        $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-                        break;
-                    }
                 }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = "Falló la ejecución eliminarRespuestas(" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
             }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros eliminarRespuestas";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
         }
         return $resultado;
     }
     
-    private function insertarRespuestasNo($plantillaId,$secciones)
+    private function insertarRespuestas($auditoriaId,$plantillaId,$seccionId,$preguntas)
     {
         $resultado = new Resultado();
         
-        for ($i = 0; $i <  count($secciones); $i++)
-        {
-            $seccion = $secciones[$i];
+      
             
-            for ($j = 0; $j < count($seccion->preguntas); $j++)
+        for ($j = 0; $j < count($preguntas); $j++)
+        {
+            $pregunta = $preguntas[$j];
+            
+            for ($k = 0; $k< count($pregunta->respuestas); $k++)
             {
-                $pregunta = $seccion->preguntas[$j];
+                $respuesta = $pregunta->respuestas[$k];
                 
-                for ($k = 0; $k< count($pregunta->respuestas_no); $k++)
+                if($respuesta->responsable=="")
+                    $respuesta->responsable = null;
+                
+                $consulta = "INSERT INTO auditoria_respuestas(auditoria_id, plantilla_id, seccion_id, pregunta_id, respuesta_id, valor, responsable_id) " .
+                    "VALUE(?, ?, ?, ?, ?, ?, ?)";
+                if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    $respuesta = $pregunta->respuestas_no[$k];
-                    
-                    $consulta = "INSERT INTO respuestas_no(plantilla_id, seccion_id, pregunta_id, id, texto, peso, hallazgo, recomendacion) " .
-                        "VALUE(?, ?, ?, ?, ?, ?, ?, ?)";
-                    if($sentencia = $this->conexion->prepare($consulta))
+                    if($sentencia->bind_param("iiiiisi", $auditoriaId, $plantillaId, $seccionId,$pregunta->id, $respuesta->id, $respuesta->valor, $respuesta->responsable ))
                     {
-                        if($sentencia->bind_param("iiiisiss",$plantillaId,$seccion->id, $pregunta->id,$respuesta->id, $respuesta->texto,$respuesta->peso,$respuesta->hallazgo,$respuesta->recomendacion))
+                        if($sentencia->execute())
                         {
-                            if($sentencia->execute())
-                            {
-                                $sentencia->close();
-                            }
-                            else
-                            {
-                                $resultado->codigoError = $this->conexion->errno;
-                                $resultado->mensajeError = "Falló la ejecución insertarRespuestasNo(" . $this->conexion->errno . ") " . $this->conexion->error;
-                                break;
-                            }
-                            
-                        }
-                        else
-                        {
-                            $resultado->mensajeError = "Falló el enlace de parámetros";
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        $resultado->codigoError = $this->conexion->errno;
-                        $resultado->mensajeError = "Falló la preparación: insertarRespuestasNo(" . $this->conexion->errno . ") " . $this->conexion->error;
-                        break;
-                    }
-                }
-            }
-            
-        }
-        return $resultado;
-    }
-    
-    private function insertarRespuestasSiCategorias($plantillaId,$secciones)
-    {
-        $resultado = new Resultado();
-        
-        for ($i = 0; $i <  count($secciones); $i++)
-        {
-            $seccion = $secciones[$i];
-            for ($j = 0; $j < count($seccion->preguntas); $j++)
-            {
-                $pregunta = $seccion->preguntas[$j];
-                for ($k = 0; $k< count($pregunta->respuestas_si); $k++)
-                {
-                    $respuesta = $pregunta->respuestas_si[$k];
-                    for ($l = 0; $l< count($respuesta->categorias); $l++)
-                    {
-                        $categoria = $respuesta->categorias[$l];
-                        
-                        $consulta = "INSERT INTO respuestas_si_categorias(plantilla_id, seccion_id, pregunta_id, respuesta_si_id, id, categoria_id) " .
-                            "VALUE(?, ?, ?, ?, ?, ?)";
-                        if($sentencia = $this->conexion->prepare($consulta))
-                        {
-                            if($sentencia->bind_param("iiiiii",$plantillaId,$seccion->id, $pregunta->id,$respuesta->id, $categoria->id, $categoria->categoriaId))
-                            {
-                                if($sentencia->execute())
-                                {
-                                    $sentencia->close();
-                                }
-                                else
-                                {
-                                    $resultado->codigoError = $this->conexion->errno;
-                                    $resultado->mensajeError = "Falló la ejecución insertarRespuestasSiCategorias(" . $this->conexion->errno . ") " . $this->conexion->error;
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                $resultado->mensajeError = "Falló el enlace de parámetros";
-                                break;
-                            }
+                            $sentencia->close();
                         }
                         else
                         {
                             $resultado->codigoError = $this->conexion->errno;
-                            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                            $resultado->mensajeError = "Falló la ejecución insertarRespuestas(" . $this->conexion->errno . ") " . $this->conexion->error;
                             break;
                         }
+                        
                     }
+                    else
+                    {
+                        $resultado->mensajeError = "Falló el enlace de parámetros insertarRespuestas";
+                        break;
+                    }
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = "Falló la preparación insertarRespuestas: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    break;
                 }
             }
         }
+            
+        
         return $resultado;
     }
     
-    private function insertarRespuestasNoCategorias($plantillaId,$secciones)
-    {
-        $resultado = new Resultado();
+//     private function insertarRespuestasNo($plantillaId,$secciones)
+//     {
+//         $resultado = new Resultado();
         
-        for ($i = 0; $i <  count($secciones); $i++)
-        {
-            $seccion = $secciones[$i];
-            for ($j = 0; $j < count($seccion->preguntas); $j++)
-            {
-                $pregunta = $seccion->preguntas[$j];
-                for ($k = 0; $k< count($pregunta->respuestas_no); $k++)
-                {
-                    $respuesta = $pregunta->respuestas_no[$k];
-                    for ($l = 0; $l< count($respuesta->categorias); $l++)
-                    {
-                        $categoria = $respuesta->categorias[$l];
+//         for ($i = 0; $i <  count($secciones); $i++)
+//         {
+//             $seccion = $secciones[$i];
+            
+//             for ($j = 0; $j < count($seccion->preguntas); $j++)
+//             {
+//                 $pregunta = $seccion->preguntas[$j];
+                
+//                 for ($k = 0; $k< count($pregunta->respuestas_no); $k++)
+//                 {
+//                     $respuesta = $pregunta->respuestas_no[$k];
+                    
+//                     $consulta = "INSERT INTO respuestas_no(plantilla_id, seccion_id, pregunta_id, id, texto, peso, hallazgo, recomendacion) " .
+//                         "VALUE(?, ?, ?, ?, ?, ?, ?, ?)";
+//                     if($sentencia = $this->conexion->prepare($consulta))
+//                     {
+//                         if($sentencia->bind_param("iiiisiss",$plantillaId,$seccion->id, $pregunta->id,$respuesta->id, $respuesta->texto,$respuesta->peso,$respuesta->hallazgo,$respuesta->recomendacion))
+//                         {
+//                             if($sentencia->execute())
+//                             {
+//                                 $sentencia->close();
+//                             }
+//                             else
+//                             {
+//                                 $resultado->codigoError = $this->conexion->errno;
+//                                 $resultado->mensajeError = "Falló la ejecución insertarRespuestasNo(" . $this->conexion->errno . ") " . $this->conexion->error;
+//                                 break;
+//                             }
+                            
+//                         }
+//                         else
+//                         {
+//                             $resultado->mensajeError = "Falló el enlace de parámetros";
+//                             break;
+//                         }
+//                     }
+//                     else
+//                     {
+//                         $resultado->codigoError = $this->conexion->errno;
+//                         $resultado->mensajeError = "Falló la preparación: insertarRespuestasNo(" . $this->conexion->errno . ") " . $this->conexion->error;
+//                         break;
+//                     }
+//                 }
+//             }
+            
+//         }
+//         return $resultado;
+//     }
+    
+//     private function insertarRespuestasSiCategorias($plantillaId,$secciones)
+//     {
+//         $resultado = new Resultado();
+        
+//         for ($i = 0; $i <  count($secciones); $i++)
+//         {
+//             $seccion = $secciones[$i];
+//             for ($j = 0; $j < count($seccion->preguntas); $j++)
+//             {
+//                 $pregunta = $seccion->preguntas[$j];
+//                 for ($k = 0; $k< count($pregunta->respuestas_si); $k++)
+//                 {
+//                     $respuesta = $pregunta->respuestas_si[$k];
+//                     for ($l = 0; $l< count($respuesta->categorias); $l++)
+//                     {
+//                         $categoria = $respuesta->categorias[$l];
                         
-                        $consulta = "INSERT INTO respuestas_no_categorias(plantilla_id, seccion_id, pregunta_id, respuesta_no_id, id, categoria_id) " .
-                            "VALUE(?, ?, ?, ?, ?, ?)";
-                        if($sentencia = $this->conexion->prepare($consulta))
-                        {
-                            if($sentencia->bind_param("iiiiii",$plantillaId,$seccion->id, $pregunta->id,$respuesta->id, $categoria->id, $categoria->categoriaId))
-                            {
-                                if($sentencia->execute())
-                                {
-                                    $sentencia->close();
-                                }
-                                else
-                                {
-                                    $resultado->codigoError = $this->conexion->errno;
-                                    $resultado->mensajeError = "Falló la ejecución: insertarRespuestasNoCategorias(" . $this->conexion->errno . ") " . $this->conexion->error;
-                                    break;
-                                }
-                            }
-                            else
-                            {
-                                $resultado->mensajeError = "Falló el enlace de parámetros";
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            $resultado->codigoError = $this->conexion->errno;
-                            $resultado->mensajeError = "Falló la preparación: insertarRespuestasNoCategorias(" . $this->conexion->errno . ") " . $this->conexion->error;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return $resultado;
-    }
+//                         $consulta = "INSERT INTO respuestas_si_categorias(plantilla_id, seccion_id, pregunta_id, respuesta_si_id, id, categoria_id) " .
+//                             "VALUE(?, ?, ?, ?, ?, ?)";
+//                         if($sentencia = $this->conexion->prepare($consulta))
+//                         {
+//                             if($sentencia->bind_param("iiiiii",$plantillaId,$seccion->id, $pregunta->id,$respuesta->id, $categoria->id, $categoria->categoriaId))
+//                             {
+//                                 if($sentencia->execute())
+//                                 {
+//                                     $sentencia->close();
+//                                 }
+//                                 else
+//                                 {
+//                                     $resultado->codigoError = $this->conexion->errno;
+//                                     $resultado->mensajeError = "Falló la ejecución insertarRespuestasSiCategorias(" . $this->conexion->errno . ") " . $this->conexion->error;
+//                                     break;
+//                                 }
+//                             }
+//                             else
+//                             {
+//                                 $resultado->mensajeError = "Falló el enlace de parámetros";
+//                                 break;
+//                             }
+//                         }
+//                         else
+//                         {
+//                             $resultado->codigoError = $this->conexion->errno;
+//                             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+//                             break;
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//         return $resultado;
+//     }
+    
+//     private function insertarRespuestasNoCategorias($plantillaId,$secciones)
+//     {
+//         $resultado = new Resultado();
+        
+//         for ($i = 0; $i <  count($secciones); $i++)
+//         {
+//             $seccion = $secciones[$i];
+//             for ($j = 0; $j < count($seccion->preguntas); $j++)
+//             {
+//                 $pregunta = $seccion->preguntas[$j];
+//                 for ($k = 0; $k< count($pregunta->respuestas_no); $k++)
+//                 {
+//                     $respuesta = $pregunta->respuestas_no[$k];
+//                     for ($l = 0; $l< count($respuesta->categorias); $l++)
+//                     {
+//                         $categoria = $respuesta->categorias[$l];
+                        
+//                         $consulta = "INSERT INTO respuestas_no_categorias(plantilla_id, seccion_id, pregunta_id, respuesta_no_id, id, categoria_id) " .
+//                             "VALUE(?, ?, ?, ?, ?, ?)";
+//                         if($sentencia = $this->conexion->prepare($consulta))
+//                         {
+//                             if($sentencia->bind_param("iiiiii",$plantillaId,$seccion->id, $pregunta->id,$respuesta->id, $categoria->id, $categoria->categoriaId))
+//                             {
+//                                 if($sentencia->execute())
+//                                 {
+//                                     $sentencia->close();
+//                                 }
+//                                 else
+//                                 {
+//                                     $resultado->codigoError = $this->conexion->errno;
+//                                     $resultado->mensajeError = "Falló la ejecución: insertarRespuestasNoCategorias(" . $this->conexion->errno . ") " . $this->conexion->error;
+//                                     break;
+//                                 }
+//                             }
+//                             else
+//                             {
+//                                 $resultado->mensajeError = "Falló el enlace de parámetros";
+//                                 break;
+//                             }
+//                         }
+//                         else
+//                         {
+//                             $resultado->codigoError = $this->conexion->errno;
+//                             $resultado->mensajeError = "Falló la preparación: insertarRespuestasNoCategorias(" . $this->conexion->errno . ") " . $this->conexion->error;
+//                             break;
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+//         return $resultado;
+//     }
     
     
     public function actualizar(Auditoria $modelo)
@@ -874,18 +907,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     public function insertarDatosAuditoria($modelo)
     {
         $resultado =  $this->insertarPreguntas($modelo->id,$modelo->plantillaId, $modelo->seccionId,$modelo->preguntas);
-        
-        
         if($resultado->mensajeError=="")
         {
-            //$this->conexion->commit();
-//             $resultado =  $this->insertarRespuestas($modelo->id,$modelo->secciones);
-//             if($resultado->mensajeError=="")
-//             {
-//                 $this->conexion->commit();
-//             }
-//             else
-//                 $this->conexion->rollback();
+            $resultado =  $this->eliminarRespuestas($modelo->id,$modelo->plantillaId, $modelo->seccionId);
+            if($resultado->mensajeError=="")
+                $resultado =  $this->insertarRespuestas($modelo->id,$modelo->plantillaId, $modelo->seccionId,$modelo->preguntas);
         }
        
        return $resultado;
@@ -1081,20 +1107,20 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                         
                         $sentencia->close();
                        
-//                         for($i=0; $i < count($preguntas);$i++)
-//                         {
-//                             $pregunta = $preguntas[$i];
-//                             $resultadoRespuestas = $this->consultarRespuestasSi($plantillaId,$seccionId,$pregunta->id);
-//                             if($resultadoRespuestas->mensajeError=="")
-//                             {
-//                                 $pregunta->respuestas_si = $resultadoRespuestas->valor;
-//                             }
-//                             else
-//                             {
-//                                 $resultado->mensajeError = $resultadoRespuestas->mensajeError;
-//                                 break;
-//                             }
-//                         }
+                        for($i=0; $i < count($preguntas);$i++)
+                        {
+                            $pregunta = $preguntas[$i];
+                            $resultadoRespuestas = $this->consultarRespuestas($auditoriaId,$plantillaId,$seccionId,$pregunta->preguntaId);
+                            if($resultadoRespuestas->mensajeError=="")
+                            {
+                                $pregunta->respuestas = $resultadoRespuestas->valor;
+                            }
+                            else
+                            {
+                                $resultado->mensajeError = $resultadoRespuestas->mensajeError;
+                                break;
+                            }
+                        }
                         
                     }
                     else
@@ -1229,6 +1255,51 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
       return $resultado;
+    }
+    
+    private function consultarRespuestas($auditoriaId,$plantillaId,$seccionId,$preguntaId)
+    {
+        
+        $resultado = new Resultado();
+        $respuestas = array();
+        $consulta = "SELECT respuesta_id, valor, responsable_id " .
+            "FROM auditoria_respuestas " .
+            " WHERE auditoria_id = ? AND plantilla_id  = ? AND seccion_id= ? AND pregunta_id = ? ";
+            "ORDER BY respuesta_id";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("iiii",$auditoriaId,$plantillaId,$seccionId,$preguntaId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($respuestaId, $valor, $responsable))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $respuesta= (object) [
+                                'id' =>  $respuestaId,
+                                'valor' => $valor,
+                                'responsable' => $responsable
+                            ];
+                            array_push($respuestas,$respuesta);
+                        }
+                        $resultado->valor = $respuestas;
+                        $sentencia->close();
+                        
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
     }
     
     private function consultarRespuestasSiCategorias($plantillaId,$seccionId,$preguntaId,$respuestaId)

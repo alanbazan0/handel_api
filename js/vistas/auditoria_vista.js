@@ -435,6 +435,7 @@ class AuditoriaVista extends Vista
 		{
 			var pregunta = modeloDatos.preguntas[i];
 			this.listaPreguntas.setValor(pregunta.seccionId, pregunta.preguntaId, pregunta.valor);
+			this.listaPreguntas.setValoresRespuestas(pregunta.seccionId, pregunta.preguntaId, pregunta.respuestas);
 		}
 	}
 	
