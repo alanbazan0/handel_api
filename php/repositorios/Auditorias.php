@@ -59,6 +59,10 @@ try
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->consultarValoresSeccion($llaves);
                 break;     
+            case 'consultarValoresSecciones':
+                $llaves = json_decode(REQUEST('llaves'));
+                $resultado = $repositorio->consultarValoresSecciones($llaves);
+                break;     
             case 'eliminar':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);

@@ -1,5 +1,6 @@
 <?php
 use php\clases\AdministradorConexion;
+use php\clases\AdministradorArchivos;
 use php\clases\JsonMapper;
 use php\modelos\Plantilla;
 use php\repositorios\PlantillasRepositorio;
@@ -12,6 +13,7 @@ ini_set('display_errors', 1);
 include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
+include '../clases/AdministradorArchivos.php';
 include '../repositorios/PlantillasRepositorio.php';
 
 
@@ -38,13 +40,33 @@ try
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
                 $modelo = $mapper->map($json, new Plantilla());                   
-                $resultado = $repositorio->insertar($modelo);                
+                $resultado = $repositorio->insertar($modelo);         
+                if($resultado->mensajeError=="")
+                {
+                    $id =  $resultado->valor;
+                    $adminstradorArchivos = new AdministradorArchivos();
+                    $archivo = FILES("file");
+                    $carpeta = "iconos_plantillas";
+                    $nombreArchivo = "plantilla".$modelo->id.".png";
+                    $resultado=$adminstradorArchivos->subir($carpeta,$archivo,$nombreArchivo);
+                    $resultado->valor = $id;
+                }
             break;
             case 'actualizar':
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
                 $modelo = $mapper->map($json, new Plantilla());
                 $resultado = $repositorio->actualizar($modelo) ;
+                if($resultado->mensajeError=="")
+                {
+                    $id =  $resultado->valor;
+                    $adminstradorArchivos = new AdministradorArchivos();
+                    $archivo = FILES("file");
+                    $carpeta = "iconos_plantillas";
+                    $nombreArchivo = "plantilla".$modelo->id.".png";
+                    $resultado=$adminstradorArchivos->subir($carpeta,$archivo,$nombreArchivo);
+                    $resultado->valor = $id;
+                }
             break;
             case 'consultar':
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
@@ -57,6 +79,13 @@ try
             case 'eliminar':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);
+                if($resultado->mensajeError=="")
+                {
+                    $adminstradorArchivos = new AdministradorArchivos();
+                    $carpeta = "iconos_plantillas";
+                    $nombreArchivo = "plantilla".$llaves->id.".png";
+                    $resultado=$adminstradorArchivos->eliminar($carpeta,$nombreArchivo);
+                }
             break;
             default:
                 $resultado->mensajeError = "Acción no válida";

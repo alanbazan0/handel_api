@@ -2,21 +2,119 @@
 use php\clases\AdministradorConexion;
 use php\repositorios\AuditoriasRepositorio;
 use php\modelos\Resultado;
+use php\repositorios\EmpresasRepositorio;
 
 
 require('../vendor/fpdf181/fpdf.php');
 include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/AuditoriasRepositorio.php';
+include '../repositorios/EmpresasRepositorio.php';
+
+
+class VariableStream
+{
+    private $varname;
+    private $position;
+    
+    function stream_open($path, $mode, $options, &$opened_path)
+    {
+        $url = parse_url($path);
+        $this->varname = $url['host'];
+        if(!isset($GLOBALS[$this->varname]))
+        {
+            trigger_error('Global variable '.$this->varname.' does not exist', E_USER_WARNING);
+            return false;
+        }
+        $this->position = 0;
+        return true;
+    }
+    
+    function stream_read($count)
+    {
+        $ret = substr($GLOBALS[$this->varname], $this->position, $count);
+        $this->position += strlen($ret);
+        return $ret;
+    }
+    
+    function stream_eof()
+    {
+        return $this->position >= strlen($GLOBALS[$this->varname]);
+    }
+    
+    function stream_tell()
+    {
+        return $this->position;
+    }
+    
+    function stream_seek($offset, $whence)
+    {
+        if($whence==SEEK_SET)
+        {
+            $this->position = $offset;
+            return true;
+        }
+        return false;
+    }
+    
+    function stream_stat()
+    {
+        return array();
+    }
+}
+
 class PDF extends FPDF
 {
     private $font = "Helvetica";
     private $modelo;
+    private $empresa;
+    private $secciones;
     
-    function setModelo($modelo)
+    function __construct($orientation='P', $unit='mm', $format='A4')
+    {
+        parent::__construct($orientation, $unit, $format);
+        // Register var stream protocol
+        stream_wrapper_register('var', 'VariableStream');
+    }
+    
+    
+    function MemImage($data, $x=null, $y=null, $w=0, $h=0, $link='')
+    {
+        // Display the image contained in $data
+        $v = 'img'.md5($data);
+        $GLOBALS[$v] = $data;
+        $a = getimagesize('var://'.$v);
+        if(!$a)
+            $this->Error('Invalid image data');
+            $type = substr(strstr($a['mime'],'/'),1);
+            $this->Image('var://'.$v, $x, $y, $w, $h, $type, $link);
+            unset($GLOBALS[$v]);
+    }
+    
+    function GDImage($im, $x=null, $y=null, $w=0, $h=0, $link='')
+    {
+        // Display the GD image associated with $im
+        ob_start();
+        imagepng($im);
+        $data = ob_get_clean();
+        $this->MemImage($data, $x, $y, $w, $h, $link);
+    }
+    
+    public function setEmpresa($empresa)
+    {
+        $this->empresa = $empresa;
+    }
+    
+    public function setModelo($modelo)
     {
         $this->modelo = $modelo;
     }
+    
+    public function setSecciones($secciones)
+    {
+        $this->secciones = $secciones;
+    }
+    
     
     function Cell($w, $h=0, $txt='', $border=0, $ln=0, $align='', $fill=false, $link='')
     {
@@ -251,32 +349,107 @@ class PDF extends FPDF
         $borde = 'B';
         $w1 = 85;
         $w2 = 85;
-        
-        //Titulo datos generales
-//         $this->SetTextColor(63,103,151);
-//         $this->SetDrawColor(118, 159, 209);
-//         $this->SetLeftMargin(20);
-//         $this->SetFont($this->font, 'I', 10);
-//         $this->Cell(170, 10,$this->texto("I. Datos generales"), $borde, 0, 'L');
+
         $this->imprimirTituloHoja("I. Datos generales");
         
-        //Numero de registro
+     
         $this->Ln();
-        $this->Ln();
-        $this->SetDrawColor(130, 130, 130);
-        $this->SetLeftMargin(20);
-        $this->SetTextColor(0, 0, 0);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell($w1, 10,$this->texto("Referencia:"), $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell($w2, 10, $this->texto($this->modelo->referencia), $borde, 0, 'L');
-        //Empresa
+        
+        //Compañia
         $this->Ln();
         $this->SetTextColor(0, 0, 0);
         $this->SetFont($this->font, 'B', 10);
         $this->Cell($w1, 10,$this->texto("Compañia:"), $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
-        $this->Cell($w2, 10, $this->texto($this->modelo->empresaNombre), $borde, 0, 'L');
+        $this->Cell($w2, 10, $this->texto($this->empresa!=null?$this->empresa->nombre:"-"), $borde, 0, 'L');
+        
+        $paisNombre ="NO ASIGNADO";
+        $estadoNombre ="NO ASIGNADO";
+        $ciudadNombre ="NO ASIGNADO";
+        if($this->empresa!=null)
+        {
+            if($this->empresa->pais!=null)
+                $paisNombre = $this->empresa->pais;
+            if($this->empresa->estado!=null)
+                $estadoNombre = $this->empresa->estado;
+            if($this->empresa->ciudad!=null)
+                $ciudadNombre = $this->empresa->ciudad;
+        }
+        
+        //Pais
+        $this->Ln();
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell($w1, 10,$this->texto("País:"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($w2, 10, $this->texto($paisNombre), $borde, 0, 'L');
+        
+        //Estado
+        $this->Ln();
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell($w1, 10,$this->texto("Estado"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($w2, 10, $this->texto($estadoNombre), $borde, 0, 'L');
+        
+        //Ciudad
+        $this->Ln();
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell($w1, 10,$this->texto("Ciudad"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($w2, 10, $this->texto($ciudadNombre), $borde, 0, 'L');
+        
+        //campos de primera página
+       if(count($this->secciones)>0)
+       {
+           $seccion = $this->secciones[0];
+            for($i = 0; $i < count($seccion->preguntas); $i++)
+            {
+                 $pregunta = $seccion->preguntas[$i];
+                 if($pregunta->tipo=="e")
+                 {
+                     $this->Ln();
+                     $this->SetTextColor(0, 0, 0);
+                     $this->SetFillColor(242, 242, 242);
+                     $this->SetFont($this->font, 'B', 10);
+                     $this->Cell(170, 10,$this->texto($pregunta->texto), $borde, 0, 'L',1);
+                    
+                 }
+                 else if($pregunta->tipo=="m")
+                 {
+                     $this->Ln();
+                     $this->SetTextColor(0, 0, 0);
+                     $this->SetFont($this->font, 'B', 10);
+                     $this->Cell($w1, 10,$this->texto($pregunta->texto), $borde, 0, 'L');
+                     $this->SetFont($this->font, '', 10);
+                     $this->Cell($w2, 10, $this->texto($pregunta->valor), $borde, 0, 'L');
+                     
+                     list($lat, $lng) = explode(",", $pregunta->valor);
+                     $lat =   str_replace('lat:','',$lat);
+                     $lng =   str_replace('lng:','',$lng);
+                     
+                     $imagen = "http://maps.googleapis.com/maps/api/staticmap?zoom=13&size=400x200&maptype=roadmap&markers=color:red|label:Ubicación|$lat,$lng&key=AIzaSyDkJzWNXPN2NUF2xD_OaAuVOqbJRx8dlQ4";
+                     $logo = file_get_contents($imagen);
+                     
+                     
+                     $this->setY($this->GetY() + 15);
+                     
+                     $this->MemImage($logo, 50, null);
+                 }
+                 else
+                 {
+                     $this->Ln();
+                     $this->SetTextColor(0, 0, 0);
+                     $this->SetFont($this->font, 'B', 10);
+                     $this->Cell($w1, 10,$this->texto($pregunta->texto), $borde, 0, 'L');
+                     $this->SetFont($this->font, '', 10);
+                     $this->Cell($w2, 10, $this->texto($pregunta->valor), $borde, 0, 'L');
+                 }
+            }
+       }
+        
+        
     }
     
     function metodologia()
@@ -544,6 +717,22 @@ class PDF extends FPDF
         $this->SetFont($this->font, '', 10);
         $this->Cell($w2, 10, $this->texto($puntuacion  . "%"), $borde, 0, 'L');
         
+       
+        $this->Ln();
+        $this->SetLeftMargin(30);
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(45, 10,$this->texto("Evaluación de riesgo"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 9);
+        $this->Cell(35, 10, $this->texto("0-70 Alto"), $borde, 0, 'C');
+        $this->Cell(35, 10, $this->texto("71-80 Medio"), $borde, 0, 'C');
+        $this->Cell(35, 10, $this->texto("81-100 Bajo"), $borde, 0, 'C');
+      
+        $w = 5;
+        $y = 217.5;
+        $this->Image("../imagenes/circulo_rojo.png",78,$y,$w,0);
+        $this->Image("../imagenes/circulo_amarillo.png",110,$y,$w,0);
+        $this->Image("../imagenes/circulo_verde.png",146,$y,$w,0);
+       
         
         $this->SetDrawColor(118, 159, 209);
         $y = 240;
@@ -614,13 +803,43 @@ try
         
         $resultado = $repositorio->consultarPorLlaves($llaves);
         
+      
+        
         if($resultado->mensajeError=="")
         {
+            $auditoria = $resultado->valor;
+            $empresa = null;
+            if($auditoria->empresaId!="")
+            {
+                $repositorio = new EmpresasRepositorio($conexion);
+                $llaves= (object) [
+                    'id' =>  $auditoria->empresaId
+                ];
+                $resultado = $repositorio->consultarPorLlaves($llaves);
+                if($resultado->mensajeError=="")
+                    $empresa = $resultado->valor;
+            }
+            
+            $llaves= (object) [
+                'auditoriaId' =>  $auditoria->id,
+                'plantillaId' =>  $auditoria->plantillaId
+            ];
+            $secciones = array();
+            $repositorio = new AuditoriasRepositorio($conexion);
+            $resultado = $repositorio->consultarValoresSecciones($llaves);
+            if($resultado->mensajeError=="")
+            {
+                $secciones = $resultado->valor;
+            }
+            
+            
              $pdf = new PDF();
-             $pdf->setModelo($resultado->valor);
+             $pdf->setEmpresa($empresa);
+             $pdf->setModelo($auditoria);
+             $pdf->setSecciones($secciones);
              $pdf->AliasNbPages();
              $pdf->generar();
-            $pdf->imprimir();
+             $pdf->imprimir();
         }
         else
             echo $resultado->mensajeError;

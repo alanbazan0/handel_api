@@ -32,5 +32,17 @@ class Inspeccion
     public $puntos;
     public $tipoInspeccionId;
     public $entradaSalida;
+    public $destino;
+    public $numeroOrden;
+    public $piezas;
+    public $bultos;
+    public $peso;
+    public $otrasMercancias;
+    public $turnoInicio;
+    public $turnoFin;
+    public $manifiesto;
+    public $inspectorTermina;
+    public $selloColocado;
+    
 }
 

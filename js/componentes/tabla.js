@@ -13,6 +13,7 @@ class Tabla
 		this._contenidoAdicional = null;
 		this._anchoContenidoAdicional = 200;
 		this._alto =  $("body").height() - 350 ;
+		this._registrosPagina = 50;
 	}
 	
 	set alto(alto)
@@ -134,6 +135,7 @@ class Tabla
 			  "drawCallback": function( settings ) {
 				  $(".paginate_button").attr("href","#");
 			    },
+			    "pageLength": this._registrosPagina,
 			    "info":true,
 		        "searching":true,
 				"destroy":true,

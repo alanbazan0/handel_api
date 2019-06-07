@@ -19,7 +19,7 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = " SELECT P.id, IFNULL(P.nombre,''), IFNULL(P.descripcion,''), IFNULL(P.ultimo_uso,'')ultimo_uso, IFNULL(DATE_FORMAT(P.fecha_programada,'%d/%m/%Y'),'')fecha_programada, P.fecha_alta, P.fecha_modificacion, IFNULL(P.estatus,0) " .
+        $this->consultaBase = " SELECT P.id, IFNULL(P.nombre,''), IFNULL(P.descripcion,''), IFNULL(DATE_FORMAT(P.ultimo_uso,'%d/%m/%Y %H:%i:%s'),'SIN USAR')ultimo_uso, IFNULL(DATE_FORMAT(P.fecha_programada,'%d/%m/%Y'),'')fecha_programada, IFNULL(DATE_FORMAT(P.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(P.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, IFNULL(P.estatus,0) " .
             " FROM plantillas P";
            
     }
@@ -1303,10 +1303,14 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
     
     private function crearRegistro($id, $nombre, $descripcion, $ultimo_uso, $fecha_programada, $fechaAlta, $fechaModificacion, $estatus)
     {
-        $archivoIcono = '../../php/iconos/icono'.$id.'.png';
+//         $archivoIcono = '../../php/iconos/icono'.$id.'.png';
+//         $icono = 'default.png';
+//         if(file_exists($archivoIcono))
+//             $icono = 'plantilla'.$id.'.png';
+        $archivoIcono = '../../php/iconos_plantillas/plantilla'.$id.'.png';
         $icono = 'default.png';
         if(file_exists($archivoIcono))
-            $icono = 'icono'.$id.'.png';
+            $icono = 'plantilla'.$id.'.png';
         
         $registro= (object) [
             'id' =>  $id,               

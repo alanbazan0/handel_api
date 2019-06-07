@@ -161,8 +161,9 @@ class PlantillasVista extends CatalogoVista
 	
 	renderIcono(renglon, campoBase)
 	{    
+		var fecha = new Date();
+		var icono = HANDEL_API + "/php/iconos_plantillas/" + renglon.icono+"?"+fecha.getTime();
 		var contenido = "";
-		var icono ="php/iconos/" + renglon.icono;
 		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
 	    return contenido;
 	}
@@ -198,6 +199,7 @@ class PlantillasVista extends CatalogoVista
 		$('#nombreInput').focus();
 		this.inicializarValidacionesFormulario();
 		this.presentador.consultarCategorias();
+		$('#logoImage').attr("src",HANDEL_API + "/php/iconos_plantillas/default.png");
 	}
 	
 //	btnAlta_onClick()
@@ -384,6 +386,7 @@ class PlantillasVista extends CatalogoVista
 		$('#descripcionInput').val(this.modeloEdicion.descripcion);
 		$('#fechaProgramadaInput').val(this.modeloEdicion.fechaProgramada);
 		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
+		$('#logoImage').attr('src', HANDEL_API + "/php/iconos_plantillas/" + this.modeloEdicion.icono);
 		
 		this.presentador.consultarCategorias();
 	}
@@ -620,6 +623,19 @@ class PlantillasVista extends CatalogoVista
 		this.listaRespuestas.respuestas = this.preguntaEdicion.respuestas_no;
 	}
 	
+	guardar()
+	{		
+		if(this.seccionEdicion!=null)
+			this.seccionEdicion.preguntas = this.listaPreguntas.preguntas;
+		if(this.presentador!=null)
+		{
+			if(this.modo==Modo.ALTA)
+				this.presentador.insertar();
+			else
+				this.presentador.actualizar();
+		}
+	}
+	
 	guardarRespuestas()
 	{
 		if(this.preguntaEdicion!=null)
@@ -680,6 +696,30 @@ class PlantillasVista extends CatalogoVista
 		$('#ventanaSeccionesContenedor').fadeOut( this.velocidadAnimacion );
 	}
 	
+	cambiarLogo(input)
+	{
+		if (input.files && input.files[0]) 
+		{
+            var reader = new FileReader();
+
+            reader.onload = function (e)
+            {
+                $('#logoImage').attr('src', e.target.result);
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+	}
+	
+	get logo()
+	{
+		var contenedorArchivos = $("#file") ;
+		if(contenedorArchivos.length>0)
+		{
+			if(contenedorArchivos[0].files.length>0)
+				return contenedorArchivos[0].files[0];
+		}
+		return null;
+	}
 	
 }
 var vista = new PlantillasVista(this);

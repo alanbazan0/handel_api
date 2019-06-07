@@ -31,6 +31,42 @@ class PDF extends FPDF
         $this->Cell(30, 8,"Hoja ". $this->PageNo().' de {nb}', $borde, 0, 'C');
     }
     
+    function Header()
+    {
+        $empresaId = $this->inspeccion->empresaId;
+        $folio = strtoupper($this->calcularFolio());
+        $area = strtoupper($this->inspeccion->areaNombre);
+        $fecha= $this->inspeccion->fechaInspeccion;
+        
+        $this->SetLineWidth(1);
+        $this->SetDrawColor(102,102,255);
+        $y = 20;
+        $this->Line(10, $y, 210-10, $y);
+        
+        $folio = strtoupper($this->calcularFolio());
+        
+        $logo = "../logos_empresas/logo$empresaId.png";
+        $this->Image($logo,8,5,20,0,'','');
+        
+        $this->SetY(12);
+        $this->SetX(40);
+        
+        $borde = 0;
+        $altoLinea = 7;
+        $this->SetLeftMargin(20);
+        $this->SetFont($this->font,'I',10);
+        $this->SetTextColor(130,130,130);
+        $this->Cell(160, $altoLinea, $this->texto("Folio :  " . $folio), $borde, 0, 'R');
+        $this->SetFont($this->font,'B',13);
+        $this->SetTextColor(63,103,151);
+        //$this->Cell(20, $altoLinea, $this->texto(" " .  $this->PageNo()), $borde, 0, 'L');
+        
+//         $this->SetLineWidth(0.5 );
+//         $this->SetDrawColor(118, 159, 209);
+//         $x = 180;
+//         $this->Line($x, 13, $x, 18);
+    }
+    
     private function calcularFolio()
     {
         $folio ="";
@@ -76,8 +112,11 @@ class PDF extends FPDF
             $this->imprimirInspeccionContenedor();
         }
         $this->AddPage();
+        $this->imprimirInformacionEmbarque();
+        $this->AddPage();
         $this->imprimirFotos();
-                        
+        $this->AddPage();
+        $this->imprimirFotosHallazgos();
                         
     }
     
@@ -104,11 +143,11 @@ class PDF extends FPDF
         $area = strtoupper($this->inspeccion->areaNombre);
         $fecha= $this->inspeccion->fechaInspeccion;
         
-        $logo = "../logos_empresas/logo$empresaId.png";
-        if (file_exists($logo))
-            $this->Image($logo,10,12,40,0,'','http://www.fpdf.org');
-            else
-                $this->Image("default.png",10,12,40,0,'','http://www.fpdf.org');
+//         $logo = "../logos_empresas/logo$empresaId.png";
+//         if (file_exists($logo))
+//             $this->Image($logo,10,12,40,0,'','http://www.fpdf.org');
+//             else
+//                 $this->Image("default.png",10,12,40,0,'','http://www.fpdf.org');
         $this->SetLeftMargin(45);
         $this->SetFontSize(11);
         
@@ -209,7 +248,7 @@ class PDF extends FPDF
         $this->Cell(0,8,$this->texto("INFORMACIÓN DE TRANSPORTE"),$borde,2,'C',1);
         
         $this->SetDrawColor(0,0,0);
-        $y = 80;
+        $y = 82;
         $this->Line(10, $y, 210-10, $y);
         
         $this->SetLeftMargin(20);
@@ -228,7 +267,7 @@ class PDF extends FPDF
         
         $this->Cell(0,8,$this->texto("Vehículo "),$borde,1,'C');
         $this->SetDrawColor(191,191,191);
-        $y = 93;
+        $y = 95;
         $this->Line(10, $y, 210-10, $y);
         
         
@@ -306,7 +345,7 @@ class PDF extends FPDF
         $this->Cell(28.33, 8, $this->texto($profundidad), $borde, 0, 'L');
         
         $this->SetDrawColor(0,0,0);
-        $y = 142;
+        $y = 144;
         $this->Line(10, $y, 210-10, $y);
         
         $this->Ln();
@@ -550,6 +589,69 @@ class PDF extends FPDF
                     
     }
     
+    function imprimirInformacionEmbarque()
+    {
+        
+        $borde = 0;
+        $this->SetLeftMargin(10);
+        $this->SetFont($this->font, 'B', 13);
+        $this->Ln();
+        $this->Ln();
+        $this->SetFillColor(242, 242, 242);
+        $this->Cell(0,8,$this->texto("INFORMACIÓN DE EMBARQUE"),$borde,2,'C',1);
+        
+        $ancho1 = 5;
+        $ancho2 = 60;
+        $ancho3 = 70;
+        
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($ancho1, 8, "1.", $borde, 0, 'R' );
+        $this->Cell($ancho2, 8, "Apertura de embarque en turno:", $borde, 0, 'L' );
+        $this->Cell($ancho3, 8, $this->texto($this->inspeccion->turnoInicio), $borde, 0, 'L' );
+        $this->Ln();
+        $this->Cell($ancho1, 8, "2.", $borde, 0, 'R' );
+        $this->Cell($ancho2, 8, "Destino:", $borde, 0, 'L' );
+        $this->Cell($ancho3, 8, $this->texto($this->inspeccion->destino), $borde, 0, 'L' );
+        $this->Ln();
+        $this->Cell($ancho1, 8, "3.", $borde, 0, 'R' );
+        $this->Cell($ancho2, 8, $this->texto("Número de orden:"), $borde, 0, 'L' );
+        $this->Cell($ancho3, 8, $this->texto($this->inspeccion->numeroOrden), $borde, 0, 'L' );
+        $this->Ln();
+        $this->Cell($ancho1, 8, "4.", $borde, 0, 'R' );
+        $this->Cell($ancho2, 8, $this->texto("Piezas:"), $borde, 0, 'L' );
+        $this->Cell($ancho3, 8, $this->texto($this->inspeccion->piezas), $borde, 0, 'L' );
+        $this->Ln();
+        $this->Cell($ancho1, 8, "5.", $borde, 0, 'R' );
+        $this->Cell($ancho2, 8, $this->texto("Bultos:"), $borde, 0, 'L' );
+        $this->Cell($ancho3, 8, $this->texto($this->inspeccion->bultos), $borde, 0, 'L' );
+        $this->Ln();
+        $this->Cell($ancho1, 8, "6.", $borde, 0, 'R' );
+        $this->Cell($ancho2, 8, $this->texto("Peso:"), $borde, 0, 'L' );
+        $this->Cell($ancho3, 8, $this->texto($this->inspeccion->peso), $borde, 0, 'L' );
+        $this->Ln();
+        $this->Cell($ancho1, 8, "7.", $borde, 0, 'R' );
+        $this->Cell($ancho2, 8, $this->texto("Otras mercancias:"), $borde, 0, 'L' );
+        $this->Cell($ancho3, 8, $this->texto($this->inspeccion->otrasMercancias), $borde, 0, 'L' );
+        $this->Ln();
+        $this->Cell($ancho1, 8, "8.", $borde, 0, 'R' );
+        $this->Cell($ancho2, 8, $this->texto("Manifiesto:"), $borde, 0, 'L' );
+        $this->Cell($ancho3, 8, $this->texto($this->inspeccion->manifiesto), $borde, 0, 'L' );
+        $this->Ln();
+        $this->Cell($ancho1, 8, "9.", $borde, 0, 'R' );
+        $this->Cell($ancho2, 8, $this->texto("Sello colocado:"), $borde, 0, 'L' );
+        $this->Cell($ancho3, 8, $this->texto($this->inspeccion->selloColocado), $borde, 0, 'L' );
+        $this->Ln();
+        $this->Cell($ancho1, 8, "10.", $borde, 0, 'R' );
+        $this->Cell($ancho2, 8, $this->texto("Inspector de cierre de embarque:"), $borde, 0, 'L' );
+        $this->Cell($ancho3, 8, $this->texto($this->inspeccion->inspectorTerminaNombre), $borde, 0, 'L' );
+        $this->Ln();
+        $this->Cell($ancho1, 8, "11.", $borde, 0, 'R' );
+        $this->Cell($ancho2, 8, $this->texto("Cierre de embarque en turno:"), $borde, 0, 'L' );
+        $this->Cell($ancho3, 8, $this->texto($this->inspeccion->turnoFin), $borde, 0, 'L' );
+        
+       
+    }
+    
     function imprimirInspeccionTractor()
     {
         $borde = 0;
@@ -686,7 +788,7 @@ class PDF extends FPDF
         $separacionX =  5;
         $separacionY = 20;
         
-        $yFotos = $separacionY;
+        $yFotos = $separacionY + 15;
         
         for($i = 0 ; $i < count($seccionesFotos); $i++)
         {
@@ -721,6 +823,75 @@ class PDF extends FPDF
             }
         }
         
+        
+        
+    }
+    
+    function agregarFoto($inspeccionId, $nombreArchivo ,$titulo,&$fotos)
+    {
+        $archivo = "../fotos_inspecciones/".$inspeccionId ."_" . $nombreArchivo.".jpg";
+        if (file_exists($archivo))
+        {
+            $foto= (object) [
+                'titulo' => $titulo,
+                'archivo' => $archivo
+            ];
+            array_push($fotos,$foto);
+        }
+    }
+    
+    function imprimirFotosHallazgos()
+    {
+        $fotos = array();
+        $this->agregarFoto($this->inspeccion->id,"sello","SELLO",$fotos);
+        $this->agregarFoto($this->inspeccion->id,"sellocaja","SELLO CAJA",$fotos);
+        $this->agregarFoto($this->inspeccion->id,"placatractor","PLACA TRACTOR",$fotos);
+        $this->agregarFoto($this->inspeccion->id,"placacontenedor","PLACA CONTENEDOR",$fotos);
+        $this->agregarFoto($this->inspeccion->id,"licchofer","LICENCIA CHOFER",$fotos);
+        
+        $this->agregarFoto($this->inspeccion->id,"cajavacia","CAJA VACIA",$fotos);
+        $this->agregarFoto($this->inspeccion->id,"cajafinal","CAJA FINAL",$fotos);
+        $this->agregarFoto($this->inspeccion->id,"cajacerrada","CAJA CERRADA",$fotos);
+        
+        $this->agregarFoto($this->inspeccion->id,"firma_chofer","FIRMA CHOFER",$fotos);
+        $this->agregarFoto($this->inspeccion->id,"firma_inspector","FIRMA INSPECTOR",$fotos);
+        
+        //var_dump($fotos);
+        
+        
+        $borde = 0;
+        
+        $anchoFoto = 50;
+        $altoFoto = $anchoFoto * 40 / 30;
+        $separacionX =  5;
+        $separacionY = 20;
+        
+        $yFotos = $separacionY + 15;
+        
+        $xFoto = 25;
+        
+       
+        
+      
+        for($i = 0 ; $i < count($fotos); $i++)
+        {
+            $foto = $fotos[$i];
+             $this->SetXY($xFoto, $yFotos - $separacionY);
+             $this->SetLeftMargin(10);
+             $this->SetFont($this->font, 'B', 13);
+             $this->Ln();
+             $this->SetXY($xFoto, $yFotos - $separacionY +10);
+             $this->SetFillColor(242, 242, 242);
+             $this->Cell($anchoFoto,8,$this->texto($foto->titulo),$borde,2,'C');
+             $this->correctImageOrientation($foto->archivo);
+             $this->Image($foto->archivo,$xFoto,$yFotos,$anchoFoto,$altoFoto);
+             $xFoto+=$separacionX + $anchoFoto;
+             if(($i+1)%3==0)
+             {
+                 $xFoto = 25;
+                 $yFotos+=$altoFoto +15;
+             }
+        }
         
         
     }

@@ -7,7 +7,7 @@ use php\modelos\Resultado;
 
 include "../interfaces/IEmpresasRepositorio.php";
 include "../modelos/Empresa.php";
-include "RepositorioBase.php";
+require_once("RepositorioBase.php");
 include "../clases/TipoUsuario.php";
 require_once("../clases/Resultado.php");
 

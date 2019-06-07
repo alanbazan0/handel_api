@@ -135,8 +135,9 @@ class AuditoriasVista extends CatalogoVista
 	
 	renderIcono(renglon, type, set)
 	{    
+		var fecha = new Date();
+		var icono = HANDEL_API + "/php/iconos_plantillas/" + renglon.icono+"?"+fecha.getTime();
 		var contenido = "";
-		var icono ="php/iconos/" + renglon.icono;
 		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
 	    return contenido;
 	}
@@ -534,6 +535,7 @@ class AuditoriasVista extends CatalogoVista
 		}
 		$('#ventanaSeccionesContenedor').fadeOut( this.velocidadAnimacion );
 	}
+	
 	
 	
 }

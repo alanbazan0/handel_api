@@ -4,6 +4,29 @@ use php\modelos\Resultado;
 
 class AdministradorArchivos
 {
+    public function crearBase64($base64, $carpeta, $nombreArchivo)
+    {
+        $resultado = new Resultado();
+       //echo $base64;
+        $foto = base64_decode($base64);
+        
+        list($type, $data) = explode(';', $base64);
+        list(, $data)      = explode(',', $base64);
+        $data = base64_decode($data);
+        
+        
+        
+        $file = fopen("../".$carpeta."/" .$nombreArchivo, 'wb');
+        fwrite($file, $data);
+        fclose($file);
+        
+        $filetext = fopen("../".$carpeta."/base64.t", 'wb');
+        fwrite($filetext, $base64);
+        fclose($filetext);
+        
+        
+        return $resultado;
+    }
     
     public function subir($carpeta,$archivo,$nombreArchivo)
     {

@@ -9,6 +9,31 @@ class Vista
 	{
 		
 	}
+	salir()
+	{
+		var _this = this;
+		swal({
+	            title: "\u00bfEst\u00E1 seguro de salir?",
+	            text: "Se perderan los cambios no guardados !!",
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Si, Salir!!",
+	            cancelButtonText: "Cancelar",
+	            closeOnConfirm: false,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	 setTimeout(function(){
+	            		window.close();
+	 	            }, 1000);
+	            }
+	        });
+	}
 	
 	set usuario(usuario)
 	{

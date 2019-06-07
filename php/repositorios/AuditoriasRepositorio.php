@@ -5,11 +5,13 @@ use php\interfaces\IAuditoriasRepositorio;
 use php\modelos\Auditoria;
 use php\modelos\Resultado;
 use php\clases\AdministradorConexion;
+use php\clases\AdministradorArchivos;
 
 include "../interfaces/IAuditoriasRepositorio.php";
 include "../modelos/Auditoria.php";
 include "RepositorioBase.php";
 require_once("../clases/Resultado.php");
+require_once('../clases/AdministradorArchivos.php');
 require_once('../clases/AdministradorConexion.php');
 
 class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasRepositorio
@@ -64,6 +66,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     {
         $resultado = new Resultado();
         $consulta =  "SELECT COUNT(*) id FROM auditoria_preguntas WHERE auditoria_id=? AND plantilla_id = ? AND seccion_id = ? AND pregunta_id = ?";
+        
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -125,11 +128,15 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                             $resultado = $this->insertarDatosAuditoria($modelo);
                             if($resultado->mensajeError=="")
                             {
+                                $resultado = $this->actualizarUltimoUso($modelo->plantillaId);
                               
-                                $resultado = $this->consultarEncabezado($modelo->id);
                                 if($resultado->mensajeError=="")
                                 {
-                                    $this->conexion->commit();
+                                    $resultado = $this->consultarEncabezado($modelo->id);
+                                    if($resultado->mensajeError=="")
+                                    {
+                                        $this->conexion->commit();
+                                    }
                                    
                                 }
                                 else
@@ -504,6 +511,8 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     private function insertarPreguntas($auditoriaId,$plantillaId,$seccionId,$preguntas)
     {
         $resultado = new Resultado();
+        
+        $administradorArchivos = new AdministradorArchivos();
        
         for ($i = 0; $i <  count($preguntas); $i++)
         {
@@ -513,6 +522,15 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             $consulta = "UPDATE auditoria_preguntas " .
                         "SET valor = ? ". 
                         "WHERE auditoria_id=? AND plantilla_id = ? AND seccion_id = ? AND pregunta_id = ?";
+            
+//             if(substr( $pregunta->valor, 0, 10 ) === "data:image")
+//             {
+//                 $carpeta = "fotos_auditorias";
+//                 $nombreArchivo = "foto_".$auditoriaId."_".$pregunta->id.".jpg";
+//                 $administradorArchivos->crearBase64($pregunta->valor,$carpeta,$nombreArchivo);
+//             }
+            
+            
             if($sentencia = $this->conexion->prepare($consulta))
             {
                 if($sentencia->bind_param("siiii",$pregunta->valor,$auditoriaId,$plantillaId,$seccionId, $pregunta->id))
@@ -523,15 +541,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                         //$count = $sentencia->affected_rows;
                         $sentencia->close();
                         
-                        $resultado = $this->numeroRegistros($auditoriaId,$plantillaId,$seccionId, $pregunta->id);
+                        $resultado = $this->numeroRegistros($plantillaId,$auditoriaId,$seccionId, $pregunta->id);
                         if($resultado->mensajeError=="")
                         {
                             $count = $resultado->valor;
-                            
-//                             $con = "UPDATE auditoria_preguntas " .
-//                                 "SET valor = '$pregunta->valor' ".
-//                                 "WHERE auditoria_id=$auditoriaId AND plantilla_id = $plantillaId AND seccion_id = $seccionId AND pregunta_id = $pregunta->id";
-//                             echo "\n".$con . " -- affected: $count";
+
                             
                             if($count==0)
                             {
@@ -840,7 +854,35 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
 //         }
 //         return $resultado;
 //     }
-    
+
+    public function actualizarUltimoUso($plantillaId)
+    {
+        $resultado = new Resultado();
+        
+            
+        $consulta = " UPDATE plantillas " .
+            "SET ultimo_uso = NOW() " .
+            "WHERE id = ? ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("i", $plantillaId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución actualizar(" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+       return $resultado;
+    }
+        
     
     public function actualizar(Auditoria $modelo)
     {
@@ -880,11 +922,14 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                     $resultado = $this->insertarDatosAuditoria($modelo);
                     if($resultado->mensajeError=="")
                     {
-                        
-                        $resultado = $this->consultarEncabezado($modelo->id);
+                        $resultado = $this->actualizarUltimoUso($modelo->plantillaId);
                         if($resultado->mensajeError=="")
                         {
-                            $this->conexion->commit();
+                            $resultado = $this->consultarEncabezado($modelo->id);
+                            if($resultado->mensajeError=="")
+                            {
+                                $this->conexion->commit();
+                            }
                             
                         }
                         else
@@ -906,10 +951,10 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     
     public function insertarDatosAuditoria($modelo)
     {
-        $resultado =  $this->insertarPreguntas($modelo->id,$modelo->plantillaId, $modelo->seccionId,$modelo->preguntas);
+        $resultado =  $this->eliminarRespuestas($modelo->id,$modelo->plantillaId, $modelo->seccionId);
         if($resultado->mensajeError=="")
         {
-            $resultado =  $this->eliminarRespuestas($modelo->id,$modelo->plantillaId, $modelo->seccionId);
+            $resultado =  $this->insertarPreguntas($modelo->id,$modelo->plantillaId, $modelo->seccionId,$modelo->preguntas);
             if($resultado->mensajeError=="")
                 $resultado =  $this->insertarRespuestas($modelo->id,$modelo->plantillaId, $modelo->seccionId,$modelo->preguntas);
         }
@@ -1026,6 +1071,66 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         return $resultado;
     }
     
+    public function consultarValoresSecciones($llaves)
+    {
+        
+        $resultado = new Resultado();
+        
+        $secciones = array();
+        $consulta = "SELECT id, RTRIM(texto) texto " .
+            "FROM secciones " .
+            " WHERE plantilla_id  = ? ".
+            "ORDER BY id";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$llaves->plantillaId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $texto))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $seccion= (object) [
+                                'id' =>  $id,
+                                'texto' => $texto
+                            ];
+                            array_push($secciones,$seccion);
+                        }
+                        $resultado->valor = $secciones;
+                        
+                        $sentencia->close();
+                        
+                        for($i=0; $i < count($secciones);$i++)
+                        {
+                            $seccion = $secciones[$i];
+                            $resultadoPreguntas = $this->consultarPreguntasCompletas($llaves->plantillaId, $llaves->auditoriaId, $seccion->id);
+                            if($resultadoPreguntas->mensajeError=="")
+                            {
+                                $seccion->preguntas = $resultadoPreguntas->valor;
+                            }
+                            else
+                            {
+                                $resultado->mensajeError = $resultadoPreguntas->mensajeError;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;  
+    }   
+    
     public function consultarPorLlaves($llaves)
     {
         $resultado = new Resultado();
@@ -1075,6 +1180,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
        return $resultado;
     }
     
+   
  
     private function consultarPreguntas($plantillaId,$auditoriaId,$seccionId)
     {
@@ -1136,6 +1242,76 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
         
         return $resultado;
+    }
+    
+    private function consultarPreguntasCompletas($plantillaId,$auditoriaId,$seccionId)
+    {
+        
+        $resultado = new Resultado();
+        $preguntas = array();
+        $consulta =      $consulta = "SELECT A.seccion_id, pregunta_id, RTRIM(texto) texto, peso, RTRIM(tipo) tipo, RTRIM(hallazgo) hallazgo, RTRIM(recomendacion)recomendacion, RTRIM(practicas)practicas, RTRIM(observaciones)observaciones, RTRIM(valor) valor  " .
+            "FROM auditoria_preguntas A " .
+            "  INNER JOIN preguntas P ON A.plantilla_id = P.plantilla_id AND A.seccion_id = P.seccion_id AND A.pregunta_id = P.id ".
+            " WHERE A.plantilla_id  = ? AND A.auditoria_id = ? AND A.seccion_id = ? ";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            
+            if($sentencia->bind_param("iii",$plantillaId,$auditoriaId, $seccionId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($seccionId, $preguntaId, $texto, $peso, $tipo , $hallazgo, $recomendacion, $practicas, $observaciones, $valor))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            
+                            $pregunta= (object) [
+                                'seccionId' =>  $seccionId,
+                                'preguntaId' => $preguntaId,
+                                'texto' => $texto,
+                                'peso' => $peso,
+                                'tipo' => $tipo,
+                                'hallazgo' => $hallazgo,
+                                'recomendacion' => $recomendacion,
+                                'practicas' => $practicas,
+                                'observciones' => $observaciones,
+                                'valor' => $valor
+                            ];
+                            array_push($preguntas,$pregunta);
+                        }
+                        $resultado->valor = $preguntas;
+                        
+                        $sentencia->close();
+                        
+                        for($i=0; $i < count($preguntas);$i++)
+                        {
+                            $pregunta = $preguntas[$i];
+                            $resultadoRespuestas = $this->consultarRespuestas($auditoriaId,$plantillaId,$seccionId,$pregunta->preguntaId);
+                            if($resultadoRespuestas->mensajeError=="")
+                            {
+                                $pregunta->respuestas = $resultadoRespuestas->valor;
+                            }
+                            else
+                            {
+                                $resultado->mensajeError = $resultadoRespuestas->mensajeError;
+                                break;
+                            }
+                        }
+                        
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
     }
     
     private function consultarSecciones($plantillaId)
@@ -1494,10 +1670,14 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     
     private function crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa)
     {
-        $archivoIcono = '../../php/iconos/icono'.$plantillaId.'.png';
+//         $archivoIcono = '../../php/iconos/icono'.$plantillaId.'.png';
+//         $icono = 'default.png';
+//         if(file_exists($archivoIcono))
+//             $icono = 'icono'.$plantillaId.'.png';
+        $archivoIcono = '../../php/iconos_plantillas/plantilla'.$id.'.png';
         $icono = 'default.png';
         if(file_exists($archivoIcono))
-            $icono = 'icono'.$plantillaId.'.png';
+            $icono = 'plantilla'.$id.'.png';
         
         $fecha = substr($fechaEjecucion,0,10);
         $fecha = str_replace( '/', '.', $fecha );

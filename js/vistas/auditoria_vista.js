@@ -88,147 +88,10 @@ class AuditoriaVista extends Vista
 				 };
 		
 				 $.datepicker.setDefaults($.datepicker.regional['es']);
-//				
-//				$(function () {
-//					$("#fechaProgramadaInput").datepicker();
-//					});
+
 	}
 	
-//	crearColumnasGrid()
-//	{
-//		this.grid._columnas = [
-//			{longitud:50, 	titulo:"",   	alias:"icono", alineacion:"D", itemRender:this.renderIcono},
-//			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
-//			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I" }, 		
-//			{longitud:300, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I" }, 	
-//			{longitud:250, 	titulo:"Último uso",   alias:"ultimoUso", alineacion:"I" },
-//			{longitud:250, 	titulo:"Fecha programada",   alias:"fechaProgramada", alineacion:"I" },
-//			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
-//			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
-//			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRender:this.renderEstatus}
-//		]
-//		
-//		this.grid._origen="vista";
-//		this.grid.manejadorEventos=this.manejadorEventos;
-//		this.grid._colorSeleccion = COLOR_SELECCION;
-//		this.grid._ajustarAltura = true;
-//		this.grid._colorRenglon1 = COLOR_RENGLON1;	
-//		this.grid._colorRenglon2 = COLOR_RENGLON2;	
-//		this.grid._colorEncabezado1 = COLOR_ENCABEZADO1;
-//		this.grid._colorEncabezado2 = COLOR_ENCABEZADO2;
-//		this.grid._colorLetraEncabezado = COLOR_LETRA_ENCABEZADO;
-//		this.grid._colorLetraCuerpo = COLOR_LETRA_CUERPO;
-//		this.grid._regExtra=REGISTROS_EXTRA;
-//		this.grid._bordesRedondeados = true;
-//		this.grid._eliminarLineaVerticales=false;
-//		//this.grid._presentacionGranTotal = "SI";
-//		this.grid.render();		
-//	}
-//	
-//	renderIcono(renglon, campoBase)
-//	{    
-//		var contenido = "";
-//		var icono ="php/iconos/" + renglon.icono;
-//		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
-//	    return contenido;
-//	}
 
-//	btnBaja_onClick()
-//	{ 
-//		if(this.grid._selectedItem!=null)
-//		{
-//			var confirmacion = confirm("¿Esta seguro que desea eliminar el registro?")
-//		    if (confirmacion)
-//		    {
-//		    		this.presentador.eliminar();
-//		    }	
-//		}
-//		else
-//			this.mostrarMensaje("Acción no válida","Seleccione un registro para eliminar.");
-//	}
-//	
-//	btnAlta_onClick()
-//	{
-//		this.modo = "ALTA";
-//		this.ocultarIndicador();
-//		this.limpiarFormulario();	
-//		this.mostrarFormulario();
-//		$('#nombreInput').focus();
-//		this.presentador.consultarCategorias();
-//	
-//		
-//	}
-//
-//	btnCambio_onClick()
-//	{
-//		if(this.grid._selectedItem!=null)
-//		{			
-//			this.modo = "CAMBIO";
-//			this.limpiarFormulario();	
-//			this.mostrarFormulario();
-//			$('#nombreInput').focus();				
-//			this.presentador.consultarPorLlaves();
-//			
-//		}
-//		else
-//			this.mostrarMensaje("Acción no válida","Seleccione un registro para modificar.");
-//				
-//	}
-//	
-//	btnEjecutar_onClick()
-//	{
-//		if(this.grid._selectedItem!=null)
-//		{
-//			var submitForm = getNewSubmitForm("auditoria.php");
-//			createNewFormElement(submitForm, "plantillaId", this.grid._selectedItem.id);
-//			submitForm.target= "auditoria" + Math.floor(Math.random()*10000);
-//			submitForm.submit();
-//		}
-//	}
-//	
-//	btnConsulta_onClick()
-//	{	
-//		this.presentador.consultar();
-//	}	
-	
-//	btnGuardarFormulario_onClick()
-//	{		
-//		if(this.seccionEdicion!=null)
-//			this.seccionEdicion.preguntas = this.listaPreguntas.preguntas;
-//		 if(this.datosValidos())
-//		 {
-//			if(this.modo=='ALTA')
-//				this.presentador.insertar();
-//			else
-//				this.presentador.actualizar();
-//		 }		
-//		
-//	}
-//	
-//	btnSalir_onClick()
-//	{
-//		var confirmacion = confirm("¿Esta seguro que desea salir?")
-//	    if (confirmacion)
-//	    	{
-//		    	
-//	    	}
-//	}
-	
-//	btnSalirFormulario_onClick()
-//	{	
-//		this.confirmar("¿Esta seguro que desea salir?",this,this.cerrarVentana,null);
-////		var confirmacion = confirm("¿Esta seguro que desea salir?")
-////	    if (confirmacion)
-////    	{
-////	    	this.cerrarVentana();
-////    	}
-//	}	
-//	
-//	cerrarVentana(cerrar)
-//	{
-//		this.ventana.close();
-//	}
-	
 	set categorias(valor)
 	{
 		this._categorias = valor;
@@ -312,7 +175,7 @@ class AuditoriaVista extends Vista
 		if(this._modo==Modo.CAMBIO)
 		{
 			this.modeloEdicion.plantillaId = this.modeloEdicion.id;
-			this.modeloEdicion.auditoriaId = this.auditoriaId;
+			this.modeloEdicion.id = this.auditoriaId;
 			this.modeloEdicion.seccionId = this.seccionId;
 			this.presentador.consultarValores();
 		}
@@ -430,13 +293,16 @@ class AuditoriaVista extends Vista
 	set modeloDatos(modeloDatos)
 	{
 		$("#referenciaDiv").show();
-		$("#referenciaLabel").html("REFERENCIA: " +modeloDatos.referencia);
+		$("#referenciaLabel").html(modeloDatos.referencia);
 		for(var i=0; i < modeloDatos.preguntas.length; i++)
 		{
 			var pregunta = modeloDatos.preguntas[i];
 			this.listaPreguntas.setValor(pregunta.seccionId, pregunta.preguntaId, pregunta.valor);
 			this.listaPreguntas.setValoresRespuestas(pregunta.seccionId, pregunta.preguntaId, pregunta.respuestas);
 		}
+		
+		this.listaPreguntas.empresaId = modeloDatos.empresaId;
+		
 	}
 	
 	get preguntas()
@@ -473,8 +339,11 @@ class AuditoriaVista extends Vista
 			for(var i=0;  i  < componentesPreguntas.length;i++ )
 			{
 				var componente = componentesPreguntas[i];
-				var pregunta ={ id: componente.pregunta.id, valor:  componente.valor, respuestas: componente.respuestas}; ;
-				preguntas.push(pregunta);
+				if(componente.pregunta.tipo!="cat")
+				{
+					var pregunta ={ id: componente.pregunta.id, valor:  componente.valor, respuestas: componente.respuestas}; ;
+					preguntas.push(pregunta);
+				}
 			}
 			
 		}
@@ -554,76 +423,6 @@ class AuditoriaVista extends Vista
 		return false;
 	}
 
-//	limpiarFormulario()
-//	{
-//		$('#nombreInput').val("");
-//		$('#descripcionInput').val("");
-//		$('#fechaProgramadaInput').val("");
-//		$('#listaPreguntas').html("");
-//		$("#tituloSeccionDiv").hide();
-//		$("#botonesSuperiores").hide();
-//		$("#botonesAgregarDiv").hide();
-//		$("#guardarButton").hide();
-//		$("#ayudaPreguntas").hide();
-//	}
-	
-//	agregarSeccion()
-//	{
-//		this.listaSecciones.agregarSeccion("");
-//	}
-//	
-//	agregarPregunta()
-//	{
-//		this.listaPreguntas.agregarPregunta();
-//	}
-//	
-//	agregarTexto()
-//	{
-//		this.listaPreguntas.agregarTexto();
-//	}
-//	
-//	agregarFecha()
-//	{
-//		this.listaPreguntas.agregarFecha();
-//	}
-//	
-//	agregarEncabezado()
-//	{
-//		this.listaPreguntas.agregarEncabezado();
-//	}
-//	
-//	agregarMapa()
-//	{
-//		this.listaPreguntas.agregarMapa();
-//	}
-//	
-//	agregarRespuesta()
-//	{
-//		this.listaRespuestas.agregarRespuesta();
-//	}
-//	
-//	eliminarSeccion(event, seccionId)
-//	{
-//		if(this.listaSecciones.secciones.length>1)
-//		{
-//			//this.listaSecciones.eliminarSeccion(seccionId);
-//			this.confirmar("¿Desea eliminar esta sección?",this.listaSecciones,this.listaSecciones.eliminarSeccion,seccionId);
-//		}
-//		else
-//			this.mostrarMensaje("Error","Es necesario contar al menos con una sección. ");		
-//	}
-//	
-//	eliminarPregunta(event, preguntaId)
-//	{
-//		this.confirmar("¿Desea eliminar esta pregunta?",this.listaPreguntas,this.listaPreguntas.eliminarPregunta,preguntaId);
-//		//this.listaPreguntas.eliminarPregunta(preguntaId);
-//	}
-//	
-//	eliminarRespuesta(event, respuestaId)
-//	{
-//		this.confirmar("¿Desea eliminar esta respuesta?",this.listaRespuestas,this.listaRespuestas.eliminarRespuesta,respuestaId);
-//		//this.listaRespuestas.eliminarRespuesta(respuestaId);
-//	}
 	
 	confirmar(textoDialogo,contexto,funcion,parametro)
 	{
