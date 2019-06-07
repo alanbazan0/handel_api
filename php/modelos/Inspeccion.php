@@ -43,6 +43,7 @@ class Inspeccion
     public $manifiesto;
     public $inspectorTermina;
     public $selloColocado;
+    public $fotos;
     
 }
 

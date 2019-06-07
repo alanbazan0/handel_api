@@ -389,7 +389,7 @@ class PDF extends FPDF
         $this->Cell(0,8,$this->texto("INFORMACIÓN DE TRANSPORTE"),$borde,2,'C',1);
         
         $this->SetDrawColor(0,0,0);
-        $y = 80;
+        $y = 82;
         $this->Line(10, $y, 210-10, $y);
         
         $this->SetLeftMargin(20);
@@ -408,7 +408,7 @@ class PDF extends FPDF
         
         $this->Cell(0,8,$this->texto("Vehículo "),$borde,1,'C');
         $this->SetDrawColor(191,191,191);
-        $y = 93;
+        $y = 97;
         $this->Line(10, $y, 210-10, $y);
         
         
@@ -467,7 +467,7 @@ class PDF extends FPDF
         $this->Cell(28.33, 8, $this->texto($profundidad), $borde, 0, 'L');
         
         $this->SetDrawColor(0,0,0);
-        $y = 126;
+        $y = 128;
         $this->Line(10, $y, 210-10, $y);
         
         $this->Ln();

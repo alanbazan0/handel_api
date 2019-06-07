@@ -111,6 +111,22 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             }
         }
         
+        if(isset($inspeccion->fotos))
+        {
+            for ($j = 0; $j < count($inspeccion->fotos); $j++)
+            {
+                $fotoBase64 = $inspeccion->fotos[$j]->base64;
+                $nombre = $inspeccion->fotos[$j]->nombre;
+                $foto = base64_decode($fotoBase64);
+                
+                $id = $inspeccion->id . "_" .$nombre.".jpg";
+                
+                $file = fopen('../fotos_inspecciones/' .$id, 'wb');
+                fwrite($file, $foto);
+                fclose($file);
+            }
+        }
+        
         return $resultado;
     }
     
