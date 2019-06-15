@@ -418,6 +418,11 @@ class PDF extends FPDF
                  }
                  else if($pregunta->tipo=="m")
                  {
+                     $altoFoto = 50;
+                     if(!$this->cabeComponente($altoFoto+10))
+                     {
+                         $this->AddPage();
+                     }
                      $this->Ln();
                      $this->SetTextColor(0, 0, 0);
                      $this->SetFont($this->font, 'B', 10);
@@ -433,9 +438,35 @@ class PDF extends FPDF
                      $logo = file_get_contents($imagen);
                      
                      
-                     $this->setY($this->GetY() + 15);
+                     $this->setY($this->GetY() + 15,$altoFoto,null);
                      
                      $this->MemImage($logo, 50, null);
+                 }
+                 else if($pregunta->tipo=="ft")
+                 {
+                  
+                     $altoFoto = 50;
+                     
+                     if(!$this->cabeComponente($altoFoto+10))
+                     {
+                        $this->AddPage();
+                     }
+                     $this->Ln();
+                     $this->SetTextColor(0, 0, 0);
+                     $this->SetFont($this->font, 'B', 10);
+                     $this->Cell($w1, 10,$this->texto($pregunta->texto), $borde, 0, 'L');
+                     $this->SetFont($this->font, '', 10);
+                     $this->Cell($w2, 10, "", $borde, 0, 'L');
+                     
+                     $dataPieces = explode(',',$pregunta->valor);
+                     $encodedImg = $dataPieces[1];
+                     $decodedImg = base64_decode($encodedImg);
+                     if( $decodedImg!==false )
+                     {
+                         $x = (210/2) - ($altoFoto/2);
+                         $this->SetY($this->GetY()+15);
+                         $this->MemImage($decodedImg, $x, null, $altoFoto,$altoFoto);
+                     }
                  }
                  else
                  {
@@ -450,6 +481,20 @@ class PDF extends FPDF
        }
         
         
+    }
+    
+    function cabeComponente($alto)
+    {
+        $y = $this->GetY();
+        $margen = 30;
+        $maxY = $this->GetPageHeight() - $margen;
+        
+        //echo $maxY;
+        
+        if($y+$alto < $maxY)
+            return true;
+        else 
+            return false;
     }
     
     function metodologia()

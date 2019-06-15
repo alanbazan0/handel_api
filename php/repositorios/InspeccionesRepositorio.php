@@ -103,7 +103,12 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
                         $numeroFoto = $j + 1;
                         $id = $inspeccion->id . "_" .$punto->id  . "_" . $numeroFoto .".jpg"; 
                         
-                        $file = fopen('../fotos_inspecciones/' .$id, 'wb');
+                        $archivo = '../fotos_inspecciones/'.$id;
+                        
+                        if(file_exists($archivo))
+                            unlink($archivo);
+                        
+                        $file = fopen($archivo, 'wb');
                         fwrite($file, $foto);
                         fclose($file);
                     }
