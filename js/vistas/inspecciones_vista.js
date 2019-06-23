@@ -10,7 +10,19 @@ class InspeccionesVista extends CatalogoVista
 	
 	inicializar()
 	{
-		super.inicializar();
+		this.inicializarFechas();
+		
+		var _this = this;
+		$("#consultarButton").click(function(){
+			_this.consultar();
+		});
+		
+		$("#agregarButton").click(function(){
+			_this.agregar();
+		});
+		
+		
+		this.crearColumnasGrid();		
 		this.crearFechas();
 		this.consultarEmpresasCriterio();
 	}
@@ -309,19 +321,10 @@ class InspeccionesVista extends CatalogoVista
 		this.presentador.consultarAreasCriterio();
 	}
 	
-//	set sedes(registros)
-//	{		
-//		this.cargarOpciones('#sedeSelect', registros, this.modo, this.modeloEdicion, 'sedeId',"");
-//	}
 
 	set sedesCriterio(registros)
 	{		
 		this.cargarOpciones('#sedeSelectCriterio', registros);
-//		if(this.consultoGrid==false)
-//		{
-//			this.consultar();
-//			this.consultoGrid=true;
-//		}
 	}
 	
 	set areasCriterio(registros)

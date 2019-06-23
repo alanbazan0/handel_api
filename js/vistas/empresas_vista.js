@@ -12,8 +12,8 @@ class EmpresasVista extends CatalogoVista
 	crearColumnasGrid()
 	{
 		this.tabla.columnas = [
-			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogo},
 			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
+			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogo},
 			{longitud:200, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I" }, 
 			{longitud:200, 	titulo:"Teléfono",   alias:"telefono", alineacion:"I" }, 	
 			{longitud:200, 	titulo:"Tipo de empresa",   alias:"tipoEmpresa", alineacion:"I" }, 

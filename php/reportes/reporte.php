@@ -34,6 +34,7 @@ class PDF extends FPDF
     function Header()
     {
         $empresaId = $this->inspeccion->empresaId;
+        $empresaNombre = $this->inspeccion->empresaNombre;
         $folio = strtoupper($this->calcularFolio());
         $area = strtoupper($this->inspeccion->areaNombre);
         $fecha= $this->inspeccion->fechaInspeccion;
@@ -46,7 +47,14 @@ class PDF extends FPDF
         $folio = strtoupper($this->calcularFolio());
         
         $logo = "../logos_empresas/logo$empresaId.png";
-        $this->Image($logo,8,5,20,0,'','');
+        if (file_exists($logo))
+            $this->Image($logo,8,5,20,0,'','');
+        else 
+        {
+            $this->SetX(10);
+            $this->SetFont($this->font,'I',10);
+            $this->Cell(160, 8, $this->texto($empresaNombre), 0, 0, 'L');
+        }
         
         $this->SetY(12);
         $this->SetX(40);
@@ -108,7 +116,7 @@ class PDF extends FPDF
              $this->imprimirInspeccionTractor();
         if(count($this->inspeccion->puntos2)>0)
         {
-            $this->AddPage();
+            //$this->AddPage();
             $this->imprimirInspeccionContenedor();
         }
         if($this->inspeccion->tipoInspeccionId==7)
@@ -118,7 +126,7 @@ class PDF extends FPDF
         }
         $this->AddPage();
         $this->imprimirFotos();
-        $this->AddPage();
+       
         $this->imprimirFotosHallazgos();
                         
     }
@@ -704,7 +712,7 @@ class PDF extends FPDF
             
             $this->Cell($anchoColumna2, 8, $resultado, $borde, 0, 'C');
             $this->SetFont($this->font, '', 9);
-            $this->Cell($anchoColumna3, 8, $observaciones, $borde, 0, 'L');
+            $this->Cell($anchoColumna3, 8, $this->texto($observaciones), $borde, 0, 'L');
         }
         
         $this->SetDrawColor(0,0,0);
@@ -822,7 +830,7 @@ class PDF extends FPDF
             $yFotos = $yFotos + $separacionY + $altoFoto;
             if(($i+1) % 3 ==0 && $i<count($seccionesFotos)-1)
             {
-                $yFotos = $separacionY;
+                $yFotos = $separacionY + 15;
                 $this->AddPage();
             }
         }
@@ -846,6 +854,8 @@ class PDF extends FPDF
     
     function imprimirFotosHallazgos()
     {
+      
+        
         $fotos = array();
         $this->agregarFoto($this->inspeccion->id,"sello","SELLO",$fotos);
         $this->agregarFoto($this->inspeccion->id,"sellocaja","SELLO CAJA",$fotos);
@@ -857,45 +867,50 @@ class PDF extends FPDF
         $this->agregarFoto($this->inspeccion->id,"cajafinal","CAJA FINAL",$fotos);
         $this->agregarFoto($this->inspeccion->id,"cajacerrada","CAJA CERRADA",$fotos);
         
-      
-        
-        //var_dump($fotos);
-        
-        
-        $borde = 0;
-        
-        $anchoFoto = 50;
-        $altoFoto = $anchoFoto * 40 / 30;
-        $separacionX =  5;
-        $separacionY = 20;
-        
-        $yFotos = $separacionY + 15;
-        
-        $xFoto = 25;
-        
-       
-        
-      
-        for($i = 0 ; $i < count($fotos); $i++)
+        if(count($fotos)>0)
         {
-            $foto = $fotos[$i];
-             $this->SetXY($xFoto, $yFotos - $separacionY);
-             $this->SetLeftMargin(10);
-             $this->SetFont($this->font, 'B', 13);
-             $this->Ln();
-             $this->SetXY($xFoto, $yFotos - $separacionY +10);
-             $this->SetFillColor(242, 242, 242);
-             $this->Cell($anchoFoto,8,$this->texto($foto->titulo),$borde,2,'C');
-             $this->correctImageOrientation($foto->archivo);
-             $this->Image($foto->archivo,$xFoto,$yFotos,$anchoFoto,$altoFoto);
-             $xFoto+=$separacionX + $anchoFoto;
-             if(($i+1)%3==0)
-             {
-                 $xFoto = 25;
-                 $yFotos+=$altoFoto +15;
-             }
+            $this->AddPage();
+          
+            
+            //var_dump($fotos);
+            
+            
+            $borde = 0;
+            
+            $anchoFoto = 50;
+            $altoFoto = $anchoFoto * 40 / 30;
+            $separacionX =  5;
+            $separacionY = 20;
+            
+            $yFotos = $separacionY + 15;
+            
+            $xFoto = 25;
+            
+           
+            
+          
+            for($i = 0 ; $i < count($fotos); $i++)
+            {
+                $foto = $fotos[$i];
+                 $this->SetXY($xFoto, $yFotos - $separacionY);
+                 $this->SetLeftMargin(10);
+                 $this->SetFont($this->font, 'B', 13);
+                 $this->Ln();
+                 $this->SetXY($xFoto, $yFotos - $separacionY +10);
+                 $this->SetFillColor(242, 242, 242);
+                 $this->Cell($anchoFoto,8,$this->texto($foto->titulo),$borde,2,'C');
+                 $this->correctImageOrientation($foto->archivo);
+                 $this->Image($foto->archivo,$xFoto,$yFotos,$anchoFoto,$altoFoto);
+                 $xFoto+=$separacionX + $anchoFoto;
+                 if(($i+1)%3==0)
+                 {
+                     $xFoto = 25;
+                     $yFotos+=$altoFoto +15;
+                 }
+            }
         }
         
+       
         $borde = 0;
         
         $anchoFoto = 60;
@@ -912,46 +927,49 @@ class PDF extends FPDF
         $fotos = array();
         $this->agregarFoto($this->inspeccion->id,"firma_chofer","FIRMA CHOFER",$fotos);
         $this->agregarFoto($this->inspeccion->id,"firma_inspector","FIRMA INSPECTOR",$fotos);
-        
-        for($i = 0 ; $i < count($fotos); $i++)
+        if(count($fotos)>0)
         {
-//             $foto = $fotos[$i];
-//             $this->SetXY($xFoto, $yFotos - $separacionY);
-//             $this->SetLeftMargin(10);
-//             $this->SetFont($this->font, 'B', 13);
-//             $this->Ln();
-//             $this->SetXY($xFoto, $yFotos - $separacionY +10);
-//             $this->SetFillColor(242, 242, 242);
-//             $this->Cell($anchoFoto,8,$this->texto($foto->titulo),$borde,2,'C');
-//             $this->correctImageOrientation($foto->archivo);
-//             $this->Image($foto->archivo,$xFoto,$yFotos,$anchoFoto,$altoFoto);
-//             $xFoto+=$separacionX + $anchoFoto;
-//             if(($i+1)%3==0)
-//             {
-//                 $xFoto = 25;
-//                 $yFotos+=$altoFoto +15;
-//             }
-            $foto = $fotos[$i];
-            $this->SetXY($xFoto, $yFotos - $separacionY);
-            $this->SetLeftMargin(10);
-            $this->SetFont($this->font, 'B', 13);
-            $this->Ln();
-            $this->SetXY($xFoto, $yFotos - $separacionY +$altoFoto + 20);
-            $this->SetFillColor(242, 242, 242);
-            $this->Cell($anchoFoto,8,$this->texto($foto->titulo),$borde,2,'C');
-            $this->correctImageOrientation($foto->archivo);
-            $this->Image($foto->archivo,$xFoto,$yFotos,$anchoFoto,$altoFoto);
-            
-            $this->SetLineWidth(0.5);
-            $this->SetDrawColor(0,0,0);
-            $y = $altoFoto + 30;
-            $this->Line($xFoto, $y, $xFoto + $anchoFoto, $y);
-            
-            $xFoto+=$separacionX + $anchoFoto;
-            if(($i+1)%3==0)
+                
+            for($i = 0 ; $i < count($fotos); $i++)
             {
-                $xFoto = 25;
-                $yFotos+=$altoFoto +15;
+    //             $foto = $fotos[$i];
+    //             $this->SetXY($xFoto, $yFotos - $separacionY);
+    //             $this->SetLeftMargin(10);
+    //             $this->SetFont($this->font, 'B', 13);
+    //             $this->Ln();
+    //             $this->SetXY($xFoto, $yFotos - $separacionY +10);
+    //             $this->SetFillColor(242, 242, 242);
+    //             $this->Cell($anchoFoto,8,$this->texto($foto->titulo),$borde,2,'C');
+    //             $this->correctImageOrientation($foto->archivo);
+    //             $this->Image($foto->archivo,$xFoto,$yFotos,$anchoFoto,$altoFoto);
+    //             $xFoto+=$separacionX + $anchoFoto;
+    //             if(($i+1)%3==0)
+    //             {
+    //                 $xFoto = 25;
+    //                 $yFotos+=$altoFoto +15;
+    //             }
+                $foto = $fotos[$i];
+                $this->SetXY($xFoto, $yFotos - $separacionY);
+                $this->SetLeftMargin(10);
+                $this->SetFont($this->font, 'B', 13);
+                $this->Ln();
+                $this->SetXY($xFoto, $yFotos - $separacionY +$altoFoto + 20);
+                $this->SetFillColor(242, 242, 242);
+                $this->Cell($anchoFoto,8,$this->texto($foto->titulo),$borde,2,'C');
+                $this->correctImageOrientation($foto->archivo);
+                $this->Image($foto->archivo,$xFoto,$yFotos,$anchoFoto,$altoFoto);
+                
+                $this->SetLineWidth(0.5);
+                $this->SetDrawColor(0,0,0);
+                $y = $altoFoto + 30;
+                $this->Line($xFoto, $y, $xFoto + $anchoFoto, $y);
+                
+                $xFoto+=$separacionX + $anchoFoto;
+                if(($i+1)%3==0)
+                {
+                    $xFoto = 25;
+                    $yFotos+=$altoFoto +15;
+                }
             }
         }
         

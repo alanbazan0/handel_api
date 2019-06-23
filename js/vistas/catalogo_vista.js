@@ -13,6 +13,24 @@ class CatalogoVista extends Vista
 	
 	inicializar()
 	{
+		this.inicializarFechas();
+				
+		var _this = this;
+		$("#consultarButton").click(function(){
+			_this.consultar();
+		});
+		
+		$("#agregarButton").click(function(){
+			_this.agregar();
+		});
+		
+		
+		this.crearColumnasGrid();		
+		this.presentador.consultar();
+	}
+	
+	inicializarFechas()
+	{
 		$.datepicker.regional['es'] = {
 				 closeText: 'Cerrar',
 				 prevText: '< Ant',
@@ -32,19 +50,6 @@ class CatalogoVista extends Vista
 				 };
 		
 		$.datepicker.setDefaults($.datepicker.regional['es']);
-				
-		var _this = this;
-		$("#consultarButton").click(function(){
-			_this.consultar();
-		});
-		
-		$("#agregarButton").click(function(){
-			_this.agregar();
-		});
-		
-		
-		this.crearColumnasGrid();		
-		this.presentador.consultar();
 	}
 	
 	editar()

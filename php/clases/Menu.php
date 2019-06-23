@@ -104,7 +104,7 @@ class Menu
         $opciones.=$this->renderizarOpcion("Areas","areas.php","fa fa-puzzle-piece");
         $opciones.=$this->renderizarOpcion("Usuarios","usuarios.php","fa fa-users");
         $opciones.=$this->renderizarOpcion("Justificaciones","justificaciones.php","fa fa-flag-o");
-        $opciones.=$this->renderizarOpcion("Asociados","asociados.php","fa fa-male");
+       // $opciones.=$this->renderizarOpcion("Asociados","asociados.php","fa fa-male");
         $opciones.=$this->renderizarOpcion("Certificaciones","certificaciones.php","fa fa-certificate");
         $opciones.="</ul>";
         $opciones.="</li>";
@@ -123,7 +123,7 @@ class Menu
         $indicadores.=$this->renderizarIndicador("Areas", "areas", "areas.php", "#7842fa", "fa fa-puzzle-piece");
         $indicadores.=$this->renderizarIndicador("Usuarios", "usuarios", "usuarios.php", " #ff8300", "fa fa-users");
         $indicadores.=$this->renderizarIndicador("Justificaciones", "justificaciones", "justificaciones.php", "#DB7093", "fa fa-flag-o");
-        $indicadores.=$this->renderizarIndicador("Asociados", "asociados", "asociados.php", "#9ACD32", "fa fa-male");
+        //$indicadores.=$this->renderizarIndicador("Asociados", "asociados", "asociados.php", "#9ACD32", "fa fa-male");
         $indicadores.=$this->renderizarIndicador("Certificaciones", "certificaciones", "certificaciones.php", "#8FBC8F", "fa fa-certificate");
         $indicadores.=$this->renderizarIndicador("Procedimientos", "procedimientos", "procedimientosb.php", "#6495ED", "fa fa-file-text-o");
         $indicadores.=$this->renderizarIndicador("Evidencias", "evidencias", "evidencias.php", "#DEB887", "fa fa-upload");

@@ -723,10 +723,9 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'sede_id','valor'=>$usuario->sedeId]);
          
         }
-        else if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR_CORPORATIVO)
+        else if($usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
         {
-            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
-            
+            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
         }
         $where = $this->where($filtros);
         
