@@ -125,7 +125,8 @@ class Menu
         $indicadores.=$this->renderizarIndicador("Justificaciones", "justificaciones", "justificaciones.php", "#DB7093", "fa fa-flag-o");
         //$indicadores.=$this->renderizarIndicador("Asociados", "asociados", "asociados.php", "#9ACD32", "fa fa-male");
         $indicadores.=$this->renderizarIndicador("Certificaciones", "certificaciones", "certificaciones.php", "#8FBC8F", "fa fa-certificate");
-        $indicadores.=$this->renderizarIndicador("Procedimientos", "procedimientos", "procedimientosb.php", "#6495ED", "fa fa-file-text-o");
+        $indicadores.=$this->renderizarIndicador("Procedimientos", "procedimientos", "procedimientos.php", "#6495ED", "fa fa-file-text-o");
+        $indicadores.=$this->renderizarIndicador("Usuarios Procedimientos", "usuariosProcedimientos", "procedimientosb.php", "#6495ED", "fa fa-file-text-o");
         $indicadores.=$this->renderizarIndicador("Evidencias", "evidencias", "evidencias.php", "#DEB887", "fa fa-upload");
         return $indicadores;
     }

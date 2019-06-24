@@ -25,7 +25,8 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
                                 "(SELECT COUNT(*) FROM justificaciones) as justificaciones,".
                                 "(SELECT COUNT(*) FROM certificaciones) as certificaciones,".
                                 "(SELECT COUNT(*) FROM inspecciones) as inspecciones,".
-                                "(SELECT COUNT(*) FROM procedimientos) as procedimientos";
+                                "(SELECT COUNT(*) FROM procedimientos) as procedimientos," .
+                                "(SELECT COUNT(*) FROM usuarios_procedimientos) as usuariosProcedimientos";;
                               
         
         
@@ -52,7 +53,8 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
                  "0 as justificaciones,".
                  "0 as certificaciones,".
                  "(SELECT COUNT(*) FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id WHERE S.empresa_id = ?) as inspecciones,".
-                 "0 as procedimientos";
+                 "0 as procedimientos,".
+                 "0 as usuariosProcedimientos";
              
              array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->empresaId]);
              array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->empresaId]);
@@ -69,7 +71,8 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
                  "0 as justificaciones,".
                  "0 as certificaciones,".
                  "(SELECT COUNT(*) FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id WHERE S.empresa_id = ? and S.id = ?) as inspecciones,".
-                 "0 as procedimientos";
+                 "0 as procedimientos,".
+                 "0 as usuariosProcedimientos";
              
              array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->empresaId]);
              array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->empresaId]);
@@ -83,11 +86,11 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($usuarios, $empresas, $tiposEmpresa, $sedes, $puestos, $areas, $justificaciones, $certificaciones, $inspecciones, $procedimientos ))
+                    if ($sentencia->bind_result($usuarios, $empresas, $tiposEmpresa, $sedes, $puestos, $areas, $justificaciones, $certificaciones, $inspecciones, $procedimientos, $usuariosProcedimientos ))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($usuarios, $empresas,$tiposEmpresa, $sedes, $puestos, $areas, $justificaciones, $certificaciones, $inspecciones, $procedimientos);
+                            $registro = $this->crearRegistro($usuarios, $empresas,$tiposEmpresa, $sedes, $puestos, $areas, $justificaciones, $certificaciones, $inspecciones, $procedimientos,$usuariosProcedimientos );
                             //array_push($registros,$registro);
                         }
                         $resultado->valor = $registro;
@@ -109,7 +112,7 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
     }
     
     
-    private function crearRegistro($usuarios, $empresas, $tiposEmpresa, $sedes, $puestos, $areas, $justificaciones, $certificaciones, $inspecciones,$procedimientos)
+    private function crearRegistro($usuarios, $empresas, $tiposEmpresa, $sedes, $puestos, $areas, $justificaciones, $certificaciones, $inspecciones,$procedimientos,$usuariosProcedimientos)
     {
         $registro= (object) [
             'usuarios' =>  $usuarios,
@@ -121,7 +124,8 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
             'justificaciones' => $justificaciones,
             'certificaciones' => $certificaciones,
             'inspecciones' => $inspecciones,
-            'procedimientos' => $procedimientos
+            'procedimientos' => $procedimientos,
+            'usuariosProcedimientos' => $usuariosProcedimientos
         ];
         return $registro;
     }
