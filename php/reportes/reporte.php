@@ -241,6 +241,8 @@ class PDF extends FPDF
         $alto = $this->inspeccion->alto;
         $ancho = $this->inspeccion->ancho;
         $profundidad = $this->inspeccion->profundidad;
+        $placasTractor =  $this->inspeccion->placasTractor;
+        $placasCaja =  $this->inspeccion->placasCaja;
         
         if($alto=="")
             $alto = "-";
@@ -296,11 +298,11 @@ class PDF extends FPDF
         $this->SetFont($this->font, 'B', 10);
         $this->Cell(30, 8, "Placas Tractor:", $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto("580AT4"), $borde, 0, 'L');
+        $this->Cell(55, 8, $this->texto($placasTractor), $borde, 0, 'L');
         $this->SetFont($this->font, 'B', 10);
         $this->Cell(30, 8, "Placas Caja:", $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto("P425905"), $borde, 0, 'L');
+        $this->Cell(55, 8, $this->texto($placasCaja), $borde, 0, 'L');
         
         $this->Ln();
         $this->SetFont($this->font, 'B', 10);
