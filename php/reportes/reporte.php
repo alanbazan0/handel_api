@@ -793,6 +793,14 @@ class PDF extends FPDF
                 array_push($seccionesFotos,$seccion);
         }
         
+        for($i = 0 ; $i < count($this->inspeccion->puntos2); $i++)
+        {
+            $punto = $this->inspeccion->puntos2[$i];;
+            $seccion = $this->crearSeccionFotos($this->inspeccion->id,$punto);
+            if(count($seccion->fotos)>0)
+                array_push($seccionesFotos,$seccion);
+        }
+        
         $borde = 0;
         
         
