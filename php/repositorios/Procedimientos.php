@@ -48,6 +48,11 @@ try
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 $resultado = $repositorio->consultar($criteriosSeleccion);
             break;
+            case 'consultarPorEmpresaSede':
+                $empresaId = REQUEST('empresaId');
+                $sedeId = REQUEST('sedeId');
+                $resultado = $repositorio->consultarPorEmpresaSede($empresaId,$sedeId);
+            break;
             case 'consultarPorLlaves':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->consultarPorLlaves($llaves);

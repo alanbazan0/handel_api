@@ -116,14 +116,14 @@ class UsuariosProcedimientosVista extends CatalogoVista
 	set modelo(valor)
 	{		
 		this.modeloEdicion = valor;
-		$('#nombreInput').val(this.modeloEdicion.nombre);
-		$('#codigoInput').val(this.modeloEdicion.codigo);
-		$('#descripcionInput').val(this.modeloEdicion.descripcion);
-		$('#rutaArchivoInput').val(this.modeloEdicion.rutaArchivo);
-		if(this.modeloEdicion.estatus==1)
-			$("#estatusRadio").prop('checked', true);
-		else
-			$("#estatusRadio").prop('checked', false);
+//		$('#nombreInput').val(this.modeloEdicion.nombre);
+//		$('#codigoInput').val(this.modeloEdicion.codigo);
+//		$('#descripcionInput').val(this.modeloEdicion.descripcion);
+//		$('#rutaArchivoInput').val(this.modeloEdicion.rutaArchivo);
+//		if(this.modeloEdicion.estatus==1)
+//			$("#estatusRadio").prop('checked', true);
+//		else
+//			$("#estatusRadio").prop('checked', false);
 		this.consultarCombos();
 	}
 	
@@ -133,36 +133,15 @@ class UsuariosProcedimientosVista extends CatalogoVista
 		 {		
 			 empresaId:$('#empresaIdSelect').val(),
 			 sedeId:$('#sedeIdSelect').val(),
-			 codigo:$('#codigoInput').val(),
-			 nombre:$('#nombreInput').val(),
-			 descripcion:$('#descripcionInput').val(),
-			 rutaArchivo:$('#rutaArchivoInput').val(),
-			 estatus:$('#estatusRadio').is(':checked')?1:0
+			 usuarioId:$('#usuarioIdSelect').val(),
+			 procedimientoId:$('#procedimientoIdSelect').val()
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
 		 return modelo;
 	 }
 	 
-	datosValidos()
-	{
-		var nombre = $("#nombreInput"),
-	        empresa = $("#empresaSelect"),
-	        sede = $("#sedeSelect");
-        
-        var allFields = $( [] ).add(nombre).add(empresa).add(sede);
-        var tips = $( ".validateTips" );
-		tips.text("");
-		
-		var valid = true;
-		allFields.removeClass("ui-state-error");
-		
-	    valid = valid && this.validaciones.checkValue( nombre, "nombre", tips );
-	    valid = valid && this.validaciones.checkValue( empresa, "empresa",tips );
-	    valid = valid && this.validaciones.checkValue( sede, "sede",tips );
-	    
-		return valid;
-	}	
+
 
 	limpiarFormulario()
 	{
@@ -175,6 +154,8 @@ class UsuariosProcedimientosVista extends CatalogoVista
 	{
 		this.cargandoOpciones("#empresaIdSelect");
 		this.cargandoOpciones("#sedeIdSelect");
+		this.cargandoOpciones("#usuarioIdSelect");
+		this.cargandoOpciones("#procedimientoIdSelect");
 		this.presentador.consultarEmpresas();
 	}
 	
@@ -250,7 +231,7 @@ class UsuariosProcedimientosVista extends CatalogoVista
 	
 	set usuarios(registros)
 	{		
-		this.cargarOpciones('#usuarioIdSelect', registros, this.modo, this.modeloEdicion, 'usuarioId',"");
+		this.cargarOpciones('#usuarioIdSelect', registros, this.modo, this.modeloEdicion, 'usuarioId',"","nombreCompleto");
 	}
 	
 	set procedimientos(registros)

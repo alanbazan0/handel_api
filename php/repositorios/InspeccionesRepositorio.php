@@ -547,11 +547,13 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
         }
         else 
         {
-            if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR) //SUPERVISOR
+            if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR) 
+                $filtro = "";
+            else if($usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
+                $filtro = " AND S.empresa_id = $usuario->empresaId";
+            else if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR) 
                 $filtro = " AND S.empresa_id = $usuario->empresaId  AND sede_id = $usuario->sedeId";
-            else
-                    if($usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR) //COORDINADOR
-                        $filtro = " AND S.empresa_id = $usuario->empresaId";
+            
         }
            
             
@@ -724,6 +726,10 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
          
         }
         else if($usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
+        {
+            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
+        }
+        else if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR)
         {
             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
         }

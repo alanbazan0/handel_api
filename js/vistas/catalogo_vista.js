@@ -292,7 +292,7 @@ class CatalogoVista extends Vista
 
 	}
 	
-	cargarOpciones(select, registros, modo, modeloEdicion, campo, texto)
+	cargarOpciones(select, registros, modo, modeloEdicion, campo, texto, campoNombre)
 	{
 		$(select).empty();
 		if(texto!=null)
@@ -304,7 +304,11 @@ class CatalogoVista extends Vista
 		}
 		$.each(registros, function(i, p) 
 		{
-		    $(select).append($('<option></option>').val(p.id).html(p.nombre));
+			var nombre = p.nombre;
+			if(campoNombre!=undefined)
+				nombre = p[campoNombre];
+			
+		    $(select).append($('<option></option>').val(p.id).html(nombre));
 		});
 		if(modo==Modo.CAMBIO && modeloEdicion!=null)
 		{

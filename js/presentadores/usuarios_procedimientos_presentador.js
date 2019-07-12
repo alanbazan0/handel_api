@@ -72,7 +72,8 @@ class UsuariosProcedimientosPresentador extends CatalogoPresentador
 	 {
 		if(resultado.mensajeError=="")
 		{
-			this.vista.sedes = resultado.valor;				
+			this.vista.sedes = resultado.valor;		
+			this.vista.cambiarSede();
 		}
 		else
 			this.vista.mostrarMensaje("Error",resultado.mensajeError);
@@ -81,8 +82,8 @@ class UsuariosProcedimientosPresentador extends CatalogoPresentador
 	 
 	 consultarUsuarios()	
 	 {
-		 var repositorio = new SedesRepositorio(this);		
-		 repositorio.consultarPorEmpresa(this,this.consultarUsuariosResultado,this.vista.modelo.empresaId);
+		 var repositorio = new UsuariosRepositorio(this);		
+		 repositorio.consultarPorEmpresaSede(this,this.consultarUsuariosResultado,this.vista.modelo.empresaId,this.vista.modelo.sedeId);
 	 }
 	 
 	 consultarUsuariosResultado(resultado)
@@ -98,8 +99,8 @@ class UsuariosProcedimientosPresentador extends CatalogoPresentador
 	 
 	 consultarProcedimientos()	
 	 {
-		 var repositorio = new SedesRepositorio(this);		
-		 repositorio.consultarPorEmpresa(this,this.consultarProcedimientosResultado,this.vista.modelo.empresaId);
+		 var repositorio = new ProcedimientosRepositorio(this);		
+		 repositorio.consultarPorEmpresaSede(this,this.consultarProcedimientosResultado,this.vista.modelo.empresaId,this.vista.modelo.sedeId);
 	 }
 	 
 	 consultarProcedimientosResultado(resultado)

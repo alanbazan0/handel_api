@@ -80,6 +80,11 @@ try
                 $usuarioId = REQUEST('usuarioId');
                 $resultado = $repositorio->consultarSupervisoresPorEmpresa($empresaId,$usuarioId);              
             break;
+            case 'consultarPorEmpresaSede':
+                $empresaId = REQUEST('empresaId');
+                $sedeId = REQUEST('sedeId');
+                $resultado = $repositorio->consultarPorEmpresaSede($empresaId,$sedeId);
+            break;
             case 'consultarPorLlaves':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->consultarPorLlaves($llaves);

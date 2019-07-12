@@ -31,13 +31,13 @@ header('Access-Control-Allow-Credentials: true');
                   </div>
                     <div class='form-group'>
                       <div>
-                          <label class='control-label mb-1'>Usuario id</label>
+                          <label class='control-label mb-1'>Usuario</label>
                           <select id='usuarioIdSelect' name='usuarioIdSelect' class='form-control'></select>
                       </div>
                   </div>
                     <div class='form-group'>
                       <div>
-                          <label class='control-label mb-1'>Procedimiento id</label>
+                          <label class='control-label mb-1'>Procedimiento</label>
                           <select id='procedimientoIdSelect' name='procedimientoIdSelect'  class='form-control'></select>
                       </div>
                   </div>
