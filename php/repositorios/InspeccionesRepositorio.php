@@ -18,6 +18,7 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
     protected $consultaBase;
     public function __construct($conexion)
     {
+        
         $this->conexion = $conexion;
         $this->consultaBase = " SELECT I.id, E.id empresaId, E.nombre empresaNombre, I.id sedeId, S.nombre sedeNombre, usuario_id usuarioId, US.nombre usuarioNombre, inspector_id inspectorId, CONCAT(INS.nombre,' ', INS.apellido) inspectorNombre, IFNULL(DATE_FORMAT(fecha_inspeccion ,'%d/%m/%Y %H:%i:%s'),'')fechaInspeccion, I.area_id, A.nombre, numero_caja numeroCaja, E.nombre_corto, S.nombre_corto, A.tipo_area_id, TA.nombre, IFNULL(DATE_FORMAT(fecha_finalizacion ,'%d/%m/%Y %H:%i:%s'),'')fechaFinalizacion, transportista, chofer, numero_tractor, placas_tractor, placas_caja, color_tractor, color_caja, numero_contenedor, tipo_caja, sello, sello_viajero, alto,  ancho, profundidad,  entrada_salida, TI.id, TI.descripcion,destino, numero_orden,piezas, bultos, peso, otras_mercancias, turno_inicio, turno_fin, fecha_subida, manifiesto, inspector_termina, CONCAT(INST.nombre,' ', INST.apellido) , sello_colocado " .
             " FROM inspecciones I " .
@@ -545,8 +546,7 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
                     $filtro .= " AND I.area_id = $criteriosSeleccion->areaId";
             }
         }
-        else 
-        {
+        else       {
             if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR) 
                 $filtro = "";
             else if($usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)

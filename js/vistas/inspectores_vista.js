@@ -3,14 +3,24 @@ class UsuariosVista extends CatalogoVista
 	constructor(ventana)
 	{	
 		super(ventana);
-		this.presentador = new UsuariosPresentador(this);
-		this._urlFormulario = "html/formularios/usuarios.php";
+		this.presentador = new InspectoresPresentador(this);
+		this._urlFormulario = "html/formularios/inspectores.php";
 		
 	}
 
 	inicializar()
 	{
-		super.inicializar();
+		var _this = this;
+		$("#consultarButton").click(function(){
+			_this.consultar();
+		});
+		
+		$("#agregarButton").click(function(){
+			_this.agregar();
+		});
+		
+		
+		this.crearColumnasGrid();		
 		this.consultarEmpresasCriterio();
 	}
 	
@@ -36,10 +46,8 @@ class UsuariosVista extends CatalogoVista
 			{longitud:200, 	titulo:"Ultimo acceso",   alias:"ultimoAcceso", alineacion:"I" },			
 			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
 			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
-			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus},
-			{longitud:100, 	titulo:"SAHA",   alias:"permisoSAHA", alineacion:"D", itemRenderer:this.renderPermisoSAHA},
-			{longitud:100, 	titulo:"SIVAH",   alias:"permisoSIVAH", alineacion:"D", itemRenderer:this.renderPermisoSIVAH},
-			{longitud:100, 	titulo:"10 Y 7",   alias:"permiso10y7", alineacion:"D", itemRenderer:this.renderPermiso10y7}
+			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
+
 	
 		]
 		
@@ -68,8 +76,7 @@ class UsuariosVista extends CatalogoVista
                 jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
             },
             rules: {
-            	 "tipoUsuarioSelect": {required: !0},
-                "nombreUsuarioInput": {required: !0},
+            	
                 "contrasenaInput": {required: !0},
                 "nombreInput": {required: !0},
                 "apellidoInput": {required: !0},
@@ -80,8 +87,7 @@ class UsuariosVista extends CatalogoVista
                
             },
             messages: {
-            	 "tipoUsuarioSelect": "Por favor seleccione un tipo de usuario",
-            	 "nombreUsuarioInput": "Por favor ingrese un nombre de usuario",
+            	
             	 "contrasenaInput": "Por favor ingrese una contraseña",
                 "nombreInput": "Por favor ingrese un nombre",
                 "apellidoInput": "Por favor ingrese un apellido",
@@ -98,50 +104,50 @@ class UsuariosVista extends CatalogoVista
         });
 	}
 	
-	inicializarValidacionesFormularioInspector()
-	{
-		var _this = this;
-		jQuery("#formulario").validate({
-            ignore: [],
-            errorClass: "invalid-feedback animated fadeInDown",
-            errorElement: "div",
-            errorPlacement: function(e, a) {
-                jQuery(a).parents(".form-group > div").append(e)
-            },
-            highlight: function(e) {
-                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
-            },
-            success: function(e) {
-                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
-            },
-            rules: {
-            	 "tipoUsuarioSelect": {required: !0},
-                "contrasenaInput": {required: !0},
-                "nombreInput": {required: !0},
-                "apellidoInput": {required: !0},
-                "empresaSelect": {required: !0},
-                "sedeSelect": {required: !0},
-                "puestoSelect": {required: !0},
-                "areaSelect": {required: !0}
-               
-            },
-            messages: {
-            	 "tipoUsuarioSelect": "Por favor seleccione un tipo de usuario",
-            	 "contrasenaInput": "Por favor ingrese una contraseña",
-                "nombreInput": "Por favor ingrese un nombre",
-                "apellidoInput": "Por favor ingrese un apellido",
-                "empresaSelect": "Por favor seleccione una empresa",
-                "sedeSelect": "Por favor seleccione una sede",
-                "puestoSelect": "Por favor seleccione un puesto",
-                "areaSelect": "Por favor seleccione un área"
-                	
-                
-            },
-            submitHandler:function (form) {
-            	 _this.guardar();
-            }
-        });
-	}
+//	inicializarValidacionesFormularioInspector()
+//	{
+//		var _this = this;
+//		jQuery("#formulario").validate({
+//            ignore: [],
+//            errorClass: "invalid-feedback animated fadeInDown",
+//            errorElement: "div",
+//            errorPlacement: function(e, a) {
+//                jQuery(a).parents(".form-group > div").append(e)
+//            },
+//            highlight: function(e) {
+//                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+//            },
+//            success: function(e) {
+//                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+//            },
+//            rules: {
+//            	
+//                "contrasenaInput": {required: !0},
+//                "nombreInput": {required: !0},
+//                "apellidoInput": {required: !0},
+//                "empresaSelect": {required: !0},
+//                "sedeSelect": {required: !0},
+//                "puestoSelect": {required: !0},
+//                "areaSelect": {required: !0}
+//               
+//            },
+//            messages: {
+//            	
+//            	 "contrasenaInput": "Por favor ingrese una contraseña",
+//                "nombreInput": "Por favor ingrese un nombre",
+//                "apellidoInput": "Por favor ingrese un apellido",
+//                "empresaSelect": "Por favor seleccione una empresa",
+//                "sedeSelect": "Por favor seleccione una sede",
+//                "puestoSelect": "Por favor seleccione un puesto",
+//                "areaSelect": "Por favor seleccione un área"
+//                	
+//                
+//            },
+//            submitHandler:function (form) {
+//            	 _this.guardar();
+//            }
+//        });
+//	}
 
 	renderLogo(renglon, type, set)
 	{    
@@ -193,7 +199,17 @@ class UsuariosVista extends CatalogoVista
 	consultarCombos()
 	{
 		
-		this.consultarTiposUsuario();
+		//this.consultarTiposUsuario();
+//		var validator = $("#formulario").validate();
+//		validator.destroy();
+		
+		$('#nombreUsuarioDiv').hide();
+		if($('#contrasenaInput').val()=="")
+		{
+			var contrasena = this.generarContrasenaNumerica(4);
+			$('#contrasenaInput').val(contrasena);
+		}
+		//this.inicializarValidacionesFormularioInspector();
 		this.consultarEmpresas();
 	}
 	
@@ -211,18 +227,18 @@ class UsuariosVista extends CatalogoVista
 		$('#nombreInput').val(this.modeloEdicion.nombre);
 		$('#apellidoInput').val(this.modeloEdicion.apellido);
 		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
-		if(this.modeloEdicion.permisoSAHA)
-			$("#permisoSAHARadio").prop('checked', true);
-		else
-			$("#permisoSAHARadio").prop('checked', false);
-		if(this.modeloEdicion.permisoSIVAH)
-			$("#permisoSIVAHRadio").prop('checked', true);
-		else
-			$("#permisoSIVAHRadio").prop('checked', false);
-		if(this.modeloEdicion.permiso10y7)
-			$("#permiso10y7Radio").prop('checked', true);
-		else
-			$("#permiso10y7Radio").prop('checked', false);
+//		if(this.modeloEdicion.permisoSAHA)
+//			$("#permisoSAHARadio").prop('checked', true);
+//		else
+//			$("#permisoSAHARadio").prop('checked', false);
+//		if(this.modeloEdicion.permisoSIVAH)
+//			$("#permisoSIVAHRadio").prop('checked', true);
+//		else
+//			$("#permisoSIVAHRadio").prop('checked', false);
+//		if(this.modeloEdicion.permiso10y7)
+//			$("#permiso10y7Radio").prop('checked', true);
+//		else
+//			$("#permiso10y7Radio").prop('checked', false);
 		this.consultarCombos();
 	}
 	
@@ -241,11 +257,11 @@ class UsuariosVista extends CatalogoVista
 			 supervisor1Id:$('#supervisor1Select').val(),
 			 supervisor2Id:$('#supervisor2Select').val(),
 			 supervisor3Id:$('#supervisor3Select').val(),
-			 tipoUsuarioId:$('#tipoUsuarioSelect').val(),
+			 tipoUsuarioId: TipoUsuario.INSPECTOR,
 			 estatus:$('#estatusRadio').is(':checked')?1:0,
-			 permisoSAHA:$('#permisoSAHARadio').is(':checked')?1:0,
-			 permisoSIVAH:$('#permisoSIVAHRadio').is(':checked')?1:0,
-		 	 permiso10y7:$('#permiso10y7Radio').is(':checked')?1:0
+			 permisoSAHA:0,
+			 permisoSIVAH:0,
+		 	 permiso10y7:1
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
@@ -360,38 +376,38 @@ class UsuariosVista extends CatalogoVista
 		
 	}
 	
-	cambiarTipoUsuario()
-	{
-		var tipo = $('#tipoUsuarioSelect').val();
-		
-		var validator = $("#formulario").validate();
-		validator.destroy();
-		
-		if(tipo==TipoUsuario.INSPECTOR)
-		{
-			$('#nombreUsuarioDiv').hide();
-			if($('#contrasenaInput').val()=="")
-			{
-				var contrasena = this.generarContrasenaNumerica(4);
-				$('#contrasenaInput').val(contrasena);
-			}
-			this.inicializarValidacionesFormularioInspector();
-		}
-		else
-		{
-			$('#nombreUsuarioDiv').show();
-			if($('#contrasenaInput').val()=="")
-			{
-				var contrasena = this.generarContrasena(10);
-				$('#contrasenaInput').val(contrasena);
-			}
-			this.inicializarValidacionesFormulario();
-		}
-		var ayudaTipoUsuario = this.getAyudaTipoUsuario(tipo);
-		$("#tipoUsuarioSelect").attr("data-original-title",ayudaTipoUsuario);
-		$('[data-toggle="tooltip"]').tooltip("hide");
-	}
-	
+//	cambiarTipoUsuario()
+//	{
+//		var tipo = $('#tipoUsuarioSelect').val();
+//		
+//		var validator = $("#formulario").validate();
+//		validator.destroy();
+//		
+//		if(tipo==TipoUsuario.INSPECTOR)
+//		{
+//			$('#nombreUsuarioDiv').hide();
+//			if($('#contrasenaInput').val()=="")
+//			{
+//				var contrasena = this.generarContrasenaNumerica(4);
+//				$('#contrasenaInput').val(contrasena);
+//			}
+//			this.inicializarValidacionesFormularioInspector();
+//		}
+//		else
+//		{
+//			$('#nombreUsuarioDiv').show();
+//			if($('#contrasenaInput').val()=="")
+//			{
+//				var contrasena = this.generarContrasena(10);
+//				$('#contrasenaInput').val(contrasena);
+//			}
+//			this.inicializarValidacionesFormulario();
+//		}
+//		var ayudaTipoUsuario = this.getAyudaTipoUsuario(tipo);
+//		$("#tipoUsuarioSelect").attr("data-original-title",ayudaTipoUsuario);
+//		$('[data-toggle="tooltip"]').tooltip("hide");
+//	}
+//	
 	clearValidation(formElement){
 		 //Internal $.validator is exposed through $(form).validate()
 		 var validator = $(formElement).validate();
@@ -491,7 +507,8 @@ class UsuariosVista extends CatalogoVista
 		 var criteriosSeleccion = 
 		 {				    
 			empresaId: $('#empresaSelectCriterio').val(),
-			nombre:$('#nombreInputCriterio').val()
+			nombre:$('#nombreInputCriterio').val(),
+			tipoUsuarioId: TipoUsuario.INSPECTOR
 		 }
 		 return criteriosSeleccion;
 	}	
