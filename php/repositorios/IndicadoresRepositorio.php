@@ -28,7 +28,7 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
                                 "(SELECT COUNT(*) FROM inspecciones) as inspecciones,".
                                 "(SELECT COUNT(*) FROM procedimientos) as procedimientos," .
                                 "(SELECT COUNT(*) FROM usuarios_procedimientos) as usuariosProcedimientos,".
-                                "(SELECT COUNT(*) FROM usuarios tipo_usuario_id=$inspectorId) as inspectores";
+                                "(SELECT COUNT(*) FROM usuarios where  tipo_usuario_id=$inspectorId) as inspectores";
                               
         
         
@@ -67,6 +67,7 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
          }
          else
          {
+             
              $consulta = " SELECT (SELECT COUNT(*) FROM usuarios WHERE empresa_id = ?) as usuarios, ".
                  "0 as empresas, ".
                  "0 as tiposEmpresa, ".
@@ -75,12 +76,14 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
                  "0 as areas,".
                  "0 as justificaciones,".
                  "0 as certificaciones,".
-                 "(SELECT COUNT(*) FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id WHERE S.empresa_id = ? and S.id = ?) as inspecciones,".
+                 "(SELECT COUNT(*) FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id WHERE S.empresa_id = ? and I.sede_id = ?) as inspecciones,".
                  "0 as procedimientos,".
-                 "0 as usuariosProcedimientos,";
-                "(SELECT COUNT(*) FROM usuarios WHERE empresa_id = ? AND tipo_usuario_id=$inspectorId) as inspectores";
+                 "0 as usuariosProcedimientos,".
+                 "(SELECT COUNT(*) FROM usuarios WHERE empresa_id = ? AND sede_id = ? AND tipo_usuario_id=$inspectorId) as inspectores";
              
              array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->empresaId]);
+             array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->empresaId]);
+             array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->sedeId]);
              array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->empresaId]);
              array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->sedeId]);
              

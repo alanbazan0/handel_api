@@ -36,7 +36,7 @@ class GraficaInspeccionesEmpresaVista extends CatalogoVista
 			categoryAxis.renderer.minGridDistance = 30;
 			categoryAxis.renderer.labels.template.horizontalCenter = "right";
 			categoryAxis.renderer.labels.template.verticalCenter = "middle";
-			categoryAxis.renderer.labels.template.rotation = 0;
+			categoryAxis.renderer.labels.template.rotation = 270;
 			categoryAxis.tooltip.disabled = true;
 			categoryAxis.renderer.minHeight = 110;
 

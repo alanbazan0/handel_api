@@ -116,7 +116,7 @@ class PDF extends FPDF
              $this->imprimirInspeccionTractor();
         if(count($this->inspeccion->puntos2)>0)
         {
-            //$this->AddPage();
+            $this->AddPage();
             $this->imprimirInspeccionContenedor();
         }
         if($this->inspeccion->tipoInspeccionId==7)
@@ -124,7 +124,7 @@ class PDF extends FPDF
             $this->AddPage();
             $this->imprimirInformacionEmbarque();
         }
-        $this->AddPage();
+     
         $this->imprimirFotos();
        
         $this->imprimirFotosHallazgos();
@@ -725,6 +725,8 @@ class PDF extends FPDF
     
     function imprimirInspeccionContenedor()
     {
+        
+        
         $borde = 0;
         $anchoColumna1 = 48;
         $anchoColumna2 = 30;
@@ -784,6 +786,8 @@ class PDF extends FPDF
     
     function imprimirFotos()
     {
+      
+        
         $seccionesFotos = array();
         for($i = 0 ; $i < count($this->inspeccion->puntos1); $i++)
         {
@@ -800,6 +804,9 @@ class PDF extends FPDF
             if(count($seccion->fotos)>0)
                 array_push($seccionesFotos,$seccion);
         }
+        
+        if(count($seccionesFotos)>0)
+            $this->AddPage();
         
         $borde = 0;
         
