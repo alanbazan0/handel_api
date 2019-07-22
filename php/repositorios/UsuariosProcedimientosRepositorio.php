@@ -29,10 +29,10 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
         if($resultado->mensajeError=='')
         {
             $id = $resultado->valor;
-            $consulta = "INSERT INTO usuarios_procedimientos(id, usuario_id, procedimiento_id, fecha_alta, fecha_cancelacion, estatus)VALUES(?, ?, ?, ?, ?, ?)";
+            $consulta = "INSERT INTO usuarios_procedimientos(id, usuario_id, procedimiento_id, fecha_alta, estatus)VALUES(?, ?, ?, NOW(), 1)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param('iiissi', $id, $modelo->usuarioId, $modelo->procedimientoId, $modelo->fechaAlta, $modelo->fechaCancelacion, $modelo->estatus))
+                if($sentencia->bind_param('iii', $id, $modelo->usuarioId, $modelo->procedimientoId))
                 {
                     if(!$sentencia->execute())
                         $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
@@ -98,7 +98,7 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
                 }
                 $where = $this->where($filtros);
         }
-        $consulta = $this->consultaBase . $where;
+        $consulta = $this->consultaBase . $where . " order by U.fecha_alta desc";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($this->bind_param($sentencia, $filtros))

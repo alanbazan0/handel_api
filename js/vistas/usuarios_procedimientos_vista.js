@@ -24,9 +24,61 @@ class UsuariosProcedimientosVista extends CatalogoVista
 			
 		]
 		
-		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Cancelar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
 		this.tabla.registros = [];		
+	}
+	
+	inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave)
+	{
+		var _this = this;
+		$(tbody).on("click", "button.eliminar", function()
+		{
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+		    _this._registroSeleccionado  = table.row( tr ).data();
+			
+			
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				
+				if(_this._registroSeleccionado.estatus==1)
+					_this.cancelar();
+				else
+					_this.mostrarMensajeAdvertencia("","Este procedimiento ya se encuentra cancelado. Fecha  " +_this._registroSeleccionado.fechaCancelacion );
+			}
+		});
+	}
+	
+	cancelar()
+	{ 
+		var _this = this;
+		swal({
+	            title: "¿\u00bfEst\u00E1 seguro de cancelar?",
+	            text: "¡¡Se cancelar\u00e1 este procedimiento !!",
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Si, cancelar!!",
+	            cancelButtonText: "No",
+	            closeOnConfirm: false,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	 setTimeout(function(){
+	            		 _this.presentador.cancelar();
+	 	            }, 1000);
+	            }
+	        });
 	}
 	
 	rendeFechaCancelacion(renglon, type, set)
