@@ -72,6 +72,45 @@ class RepositorioBase
         return $texto;
     }
     
+    public function and($filtros)
+    {
+        $texto = "";
+        if($filtros)
+        {
+            $count = count($filtros);
+            if($count>0)
+            {
+                $texto = " AND ";
+                for($i = 0; $i < $count; $i++)
+                {
+                    $filtro = $filtros[$i];
+                    $tabla="";
+                    if(isset($filtro->tabla))
+                        $tabla = $filtro->tabla . ".";
+                        if($this->esCadena($filtro->tipoDato))
+                        {
+                            $texto .= trim($tabla) . trim($filtro->campo) . " LIKE CONCAT('%',?,'%') ";
+                        }
+                        else if($this->esFecha($filtro->tipoDato))
+                        {
+                            if(isset($filtro->operador))
+                                $texto .= trim($tabla) . trim($filtro->campo) . " " . $filtro->operador . " ? ";
+                                else
+                                    $texto .= trim($tabla) . trim($filtro->campo) . " = ? ";
+                        }
+                        else
+                        {
+                            $texto .= trim($tabla) . trim($filtro->campo) . " = ? ";
+                        }
+                        if($i < count($filtros) - 1)
+                            $texto .= " AND ";
+                            
+                }
+            }
+        }
+        return $texto;
+    }
+    
     public function bind_param($sentencia, $filtros)
     {
         $bind = false;

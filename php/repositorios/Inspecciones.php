@@ -137,6 +137,26 @@ try
                     $resultado = $repositorio->consultarInspeccionesInspector($usuario,$criteriosSeleccion);
                 }
             break;
+            case 'consultarTipoIncidentes':
+                session_start();
+                $usuario = null;
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                if(isset($_SESSION['usuario']))
+                {
+                    $usuario = $_SESSION['usuario'];
+                    $resultado = $repositorio->consultarTipoIncidentes($usuario,$criteriosSeleccion);
+                }
+            break;
+            case 'consultarTiempoPromedioInspeccionInspector':
+                session_start();
+                $usuario = null;
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                if(isset($_SESSION['usuario']))
+                {
+                    $usuario = $_SESSION['usuario'];
+                    $resultado = $repositorio->consultarTiempoPromedioInspeccionInspector($usuario,$criteriosSeleccion);
+                }
+                break;
             case 'consultarAnos':
                 $resultado = $repositorio->consultarAnos();
                 break;

@@ -1,39 +1,16 @@
-class GraficaInspeccionesHoraVista extends CatalogoVista
+class GraficaTiempoPromedioInspeccionInspectorVista extends CatalogoVista
 {		
 	constructor(ventana)
 	{	
 		super(ventana);
-		this.presentador = new GraficaInspeccionesHoraPresentador(this);
+		this.presentador = new GraficaTiempoPromedioInspeccionInspectorPresentador(this);
 		this.consulto = false;
 		
 	}
 	
 	inicializar()
 	{
-		$.datepicker.regional['es'] = {
-				 closeText: 'Cerrar',
-				 prevText: '< Ant',
-				 nextText: 'Sig >',
-				 currentText: 'Hoy',
-				 monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-				 monthNamesShort: ['Ene','Feb','Mar','Abr', 'May','Jun','Jul','Ago','Sep', 'Oct','Nov','Dic'],
-				 dayNames: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-				 dayNamesShort: ['Dom','Lun','Mar','Mié','Juv','Vie','Sáb'],
-				 dayNamesMin: ['Do','Lu','Ma','Mi','Ju','Vi','Sá'],
-				 weekHeader: 'Sm',
-				 dateFormat: 'dd/mm/yy',
-				 firstDay: 1,
-				 isRTL: false,
-				 showMonthAfterYear: false,
-				 yearSuffix: ''
-				 };
-		
-		$.datepicker.setDefaults($.datepicker.regional['es']);
-		
-		var _this = this;
-		$("#consultarButton").click(function(){
-			_this.consultar();
-		});
+		super.inicializar();
 		this.crearFechas();
 		this.consultarEmpresasCriterio();
 	}
@@ -59,11 +36,13 @@ class GraficaInspeccionesHoraVista extends CatalogoVista
 			categoryAxis.renderer.minGridDistance = 30;
 			categoryAxis.renderer.labels.template.horizontalCenter = "right";
 			categoryAxis.renderer.labels.template.verticalCenter = "middle";
-			categoryAxis.renderer.labels.template.rotation = 0;
+			categoryAxis.renderer.labels.template.rotation = 270;
 			categoryAxis.tooltip.disabled = true;
 			categoryAxis.renderer.minHeight = 110;
 
-			var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+			var valueAxis = chart.yAxes.push(new am4charts.DurationAxis());
+			valueAxis.baseUnit = "second";
+			valueAxis.title.text = "Duration";
 			valueAxis.renderer.minWidth = 50;
 
 			// Create series
@@ -71,7 +50,8 @@ class GraficaInspeccionesHoraVista extends CatalogoVista
 			series.sequencedInterpolation = true;
 			series.dataFields.valueY = "valor";
 			series.dataFields.categoryX = "nombre";
-			series.tooltipText = "[{categoryX}: bold]{valueY}[/]";
+			//series.tooltipText = "[{categoryX}: bold]{valueY}[/]";
+			series.columns.template.tooltipText = "{categoryX}: {valueY.formatDuration()}";
 			series.columns.template.strokeWidth = 0;
 
 			series.tooltip.pointerOrientation = "vertical";
@@ -108,7 +88,7 @@ class GraficaInspeccionesHoraVista extends CatalogoVista
 		            afterShow.apply((inst.input ? inst.input[0] : null));  // trigger custom callback
 		    }
 		    
-		    $( "#fechaInputCriterio" ).datepicker({ 
+		    $( "#fechaInicialInputCriterio" ).datepicker({ 
 		      afterShow : function(inst) 
 		      {
 		    		var div = $("#ui-datepicker-div");
@@ -118,13 +98,24 @@ class GraficaInspeccionesHoraVista extends CatalogoVista
 		      },
 		    });
 		    
+		    $( "#fechaFinalInputCriterio" ).datepicker({ 
+			      afterShow : function(inst) 
+			      {
+			    		var div = $("#ui-datepicker-div");
+			    		var a = div.find("a");
+			    		if(a!=null)
+				    	  a.attr("href","#");
+			      },
+			    });
 		});
 	 
 		var hoy = new Date();
+		var manana = new Date();
+		manana.setDate(hoy.getDate() + 1);
 		
-		var dd = hoy.getDate();
-		var mm = hoy.getMonth()+1; 
-		var yyyy = hoy.getFullYear();
+		var dd = manana.getDate();
+		var mm = manana.getMonth()+1; 
+		var yyyy = manana.getFullYear();
 		
 		if(dd<10) 
 		{
@@ -138,7 +129,7 @@ class GraficaInspeccionesHoraVista extends CatalogoVista
 		
 		var fecha =  dd+'/'+mm+'/'+yyyy;
 		
-		//$("#fechaInputCriterio").val(fecha);
+		$("#fechaFinalInputCriterio").val(fecha);
 				
 	}
 
@@ -149,8 +140,8 @@ class GraficaInspeccionesHoraVista extends CatalogoVista
 			empresaId: $('#empresaSelectCriterio').val(),
 			sedeId: $('#sedeSelectCriterio').val(),
 			areaId: $('#areaSelectCriterio').val(),
-			fecha: this.getFecha($('#fechaInputCriterio').val())
-			//fechaFinal: this.getFecha($('#fechaFinalInputCriterio').val()),
+			fechaInicial: this.getFecha($('#fechaInicialInputCriterio').val()),
+			fechaFinal: this.getFecha($('#fechaFinalInputCriterio').val()),
 		 }
 		 return criteriosSeleccion;
 	}		
@@ -208,7 +199,7 @@ class GraficaInspeccionesHoraVista extends CatalogoVista
 	}
 	
 }
-var vista = new GraficaInspeccionesHoraVista(this);
+var vista = new GraficaTiempoPromedioInspeccionInspectorVista(this);
 $(document).ready(function() 
 {
 	vista.inicializar();

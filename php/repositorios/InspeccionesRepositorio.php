@@ -981,6 +981,167 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
                 return $resultado;
     }
     
+    public function consultarTiempoPromedioInspeccionInspector($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $filtros = array();
+        $where="";
+        
+        if($criteriosSeleccion!=null)
+        {
+            if(isset($criteriosSeleccion->empresaId))
+            {
+                if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+            }
+            if(isset($criteriosSeleccion->sedeId))
+            {
+                if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+            }
+            if(isset($criteriosSeleccion->areaId))
+            {
+                if($criteriosSeleccion->areaId!="" && $criteriosSeleccion->areaId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'area_id','valor'=>$criteriosSeleccion->areaId]);
+            }
+            if(isset($criteriosSeleccion->fechaInicial))
+            {
+                if($criteriosSeleccion->fechaInicial!="" && $criteriosSeleccion->fechaInicial!=null)
+                    array_push($filtros,(object)['tipoDato'=>'date','operador'=>'>=','tabla'=>'I','campo'=>'fecha_inspeccion','valor'=>$criteriosSeleccion->fechaInicial]);
+            }
+            if(isset($criteriosSeleccion->fechaFinal))
+            {
+                if($criteriosSeleccion->fechaFinal!="" && $criteriosSeleccion->fechaFinal!=null)
+                    array_push($filtros,(object)['tipoDato'=>'date','operador'=>'<=','tabla'=>'I','campo'=>'fecha_inspeccion','valor'=>$criteriosSeleccion->fechaFinal]);
+            }
+            $where = $this->where($filtros);
+        }
+        
+        $consulta = "SELECT U.id, CONCAT(U.nombre,' ', U.apellido)  nombre, ".
+                    "ROUND(SUM(TIMESTAMPDIFF(SECOND, I.fecha_inicio, I.fecha_finalizacion)) / count(I.id)) valor ".
+                    "FROM inspecciones I ".
+                    "INNER JOIN sedes S ON S.id = I.sede_id ".
+                    "INNER JOIN usuarios U ON U.id = I.inspector_id ".
+                    "INNER JOIN empresas E ON E.id = S.empresa_id ".
+                    $where . 
+                    " GROUP BY U.id, U.nombre ".
+                    "ORDER BY U.nombre ";
+                        
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($this->bind_param($sentencia, $filtros))
+                {
+                    if($sentencia->execute())
+                    {
+                        if ($sentencia->bind_result($id, $nombre,$valor))
+                        {
+                            while($row = $sentencia->fetch())
+                            {
+                                $registro= (object) [
+                                    'id' =>  $id,
+                                    'nombre' => $nombre,
+                                    'valor' => $valor
+                                ];
+                                array_push($registros,$registro);
+                            }
+                            $resultado->valor = $registros;
+                        }
+                        else
+                            $resultado->mensajeError = "Falló el enlace del resultado";
+                    }
+                    else
+                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = "Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                return $resultado;
+    }
+    
+    public function consultarTipoIncidentes($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $filtros = array();
+        $and="";
+        
+        if($criteriosSeleccion!=null)
+        {
+            if(isset($criteriosSeleccion->empresaId))
+            {
+                if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+            }
+            if(isset($criteriosSeleccion->sedeId))
+            {
+                if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+            }
+            if(isset($criteriosSeleccion->areaId))
+            {
+                if($criteriosSeleccion->areaId!="" && $criteriosSeleccion->areaId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'area_id','valor'=>$criteriosSeleccion->areaId]);
+            }
+            if(isset($criteriosSeleccion->fechaInicial))
+            {
+                if($criteriosSeleccion->fechaInicial!="" && $criteriosSeleccion->fechaInicial!=null)
+                    array_push($filtros,(object)['tipoDato'=>'date','operador'=>'>=','tabla'=>'I','campo'=>'fecha_inspeccion','valor'=>$criteriosSeleccion->fechaInicial]);
+            }
+            if(isset($criteriosSeleccion->fechaFinal))
+            {
+                if($criteriosSeleccion->fechaFinal!="" && $criteriosSeleccion->fechaFinal!=null)
+                    array_push($filtros,(object)['tipoDato'=>'date','operador'=>'<=','tabla'=>'I','campo'=>'fecha_inspeccion','valor'=>$criteriosSeleccion->fechaFinal]);
+            }
+            $and = $this->and($filtros);
+        }
+        
+        $consulta = "SELECT PI.id, PI.descripcion, COUNT(*) as valor " .
+                   "FROM inspecciones_puntos IP " .
+                    "   INNER JOIN puntos_inspeccion PI ON IP.punto_inspeccion_id = PI.id " .
+                    "   INNER JOIN inspecciones I ON IP.inspeccion_id = I.id " .
+                    "   INNER JOIN sedes S ON S.id = I.sede_id ".
+                    "   INNER JOIN empresas E ON E.id = S.empresa_id ".
+                    "WHERE resultado = 'N' " . $and . " ".
+                    "GROUP BY PI.id, PI.descripcion";
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($this->bind_param($sentencia, $filtros))
+                {
+                    if($sentencia->execute())
+                    {
+                        if ($sentencia->bind_result($id, $nombre,$valor))
+                        {
+                            while($row = $sentencia->fetch())
+                            {
+                                $registro= (object) [
+                                    'id' =>  $id,
+                                    'nombre' => $nombre,
+                                    'valor' => $valor
+                                ];
+                                array_push($registros,$registro);
+                            }
+                            $resultado->valor = $registros;
+                        }
+                        else
+                            $resultado->mensajeError = "Falló el enlace del resultado";
+                    }
+                    else
+                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = "Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                return $resultado;
+    }
+    
     
     private function consultarPuntos1($inspeccionId)
     {

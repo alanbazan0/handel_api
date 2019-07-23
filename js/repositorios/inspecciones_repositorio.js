@@ -187,5 +187,51 @@ class InspeccionesRepositorio extends Repositorio
 	   });
 	}
 	
+	consultarTipoIncidentes(contexto,funcion,criteriosSeleccion)
+	{		
+		var criteriosSeleccionString = JSON.stringify(criteriosSeleccion);
+		var url = HANDEL_API + "/" + this.servicio;
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarTipoIncidentes", criteriosSeleccion : criteriosSeleccionString},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       }
+	   });
+	}
+	
+	consultarTiempoPromedioInspeccionInspector(contexto,funcion,criteriosSeleccion)
+	{		
+		var criteriosSeleccionString = JSON.stringify(criteriosSeleccion);
+		var url = HANDEL_API + "/" + this.servicio;
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarTiempoPromedioInspeccionInspector", criteriosSeleccion : criteriosSeleccionString},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       }
+	   });
+	}
+	
 	
 }
