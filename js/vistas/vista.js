@@ -197,7 +197,7 @@ class Vista
 	    });
 	}
 	
-	mostrarMensajeAdvertencia(mensaje,titulo)
+	mostrarMensajeAdvertencia(titulo,mensaje)
 	{
 		 toastr.warning(mensaje,titulo,{
 		        "positionClass": "toast-bottom-right",

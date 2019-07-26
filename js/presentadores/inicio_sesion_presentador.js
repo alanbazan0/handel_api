@@ -9,7 +9,7 @@ class InicioSesionPresentador
 	 {
 		 this.vista.mostrarIndicador();
 		 var repositorio = new UsuariosRepositorio(this);		
-		 repositorio.iniciarSesion(this,this.iniciarSesionResultado,this.vista.nombreUsuario,this.vista.contrasena);
+		 repositorio.iniciarSesion(this,this.iniciarSesionResultado,this.vista.nombreUsuario,this.vista.contrasena, this.vista.aplicacionId);
 	 }
 	 
 	 iniciarSesionResultado(resultado)

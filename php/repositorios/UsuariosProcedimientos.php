@@ -56,6 +56,10 @@ try
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);
             break;
+            case 'consultarProcedimientosPendientesMesActual':
+                $usuarioId = REQUEST('usuarioId');
+                $resultado = $repositorio->consultarProcedimientesPendientesMesActual($usuarioId);
+            break;
             default:
                 $resultado->mensajeError = 'Acción no válida';
             break;

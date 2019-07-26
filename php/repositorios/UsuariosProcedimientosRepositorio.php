@@ -7,7 +7,7 @@ use php\modelos\Resultado;
 
 include '../interfaces/IUsuariosProcedimientosRepositorio.php';
 include '../modelos/UsuarioProcedimiento.php';
-include 'RepositorioBase.php';
+require_once('RepositorioBase.php');
 require_once('../clases/Resultado.php');
 
 class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsuariosProcedimientosRepositorio
@@ -127,6 +127,86 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
             $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
         return $resultado;
     }
+    
+    public function existeUsuarioProcedimientoEnMesActual($usuarioProcedimientoId)
+    {
+        $resultado = new Resultado();
+        $resultado->valor = false;
+        
+        $consulta = "SELECT count(*) 
+                FROM evidencias E 
+                WHERE usuario_procedimiento_id= ?
+                	AND MONTH(fecha) = MONTH(NOW())";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$usuarioProcedimientoId))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($count))
+                    {
+                        if($sentencia->fetch())
+                        {
+                           if($count>0)
+                               $resultado->valor = true;
+                        }
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        return $resultado;
+    }
+    
+    public function consultarProcedimientesPendientesMesActual($usuarioId)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+       
+        $consulta = "SELECT UP.id, nombre 
+                    FROM usuarios_procedimientos UP
+                    	INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
+                    WHERE usuario_id = ? AND UP.estatus = 1 
+                    	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(fecha) = MONTH(NOW()))";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$usuarioId))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id, $nombre))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $procedimiento= (object) [
+                                'id' =>  $id,
+                                'nombre' =>  $nombre
+                            ];
+                            array_push($registros,$procedimiento);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
+    }
+    
 
     public function consultarPorLlaves($llaves)
     {
