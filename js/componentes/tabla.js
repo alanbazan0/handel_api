@@ -52,6 +52,11 @@ class Tabla
 		this.renderizar();
 	}
 	
+	get registros()
+	{
+		return this._registros;
+	}
+	
 	renderizar()
 	{
 //		$(this._id).html("");	
@@ -173,7 +178,11 @@ class Tabla
 				 },
 			   
 			  } );
-	
+		
+		$('a[data-toggle="tab"]').on('shown.bs.tab', function(e){
+			   $($.fn.dataTable.tables(true)).DataTable()
+			      .columns.adjust();
+			});
 //		$('#'+this._id+"Table").on( 'page.dt', function () 
 //		{
 //			$(".paginate_button").attr("href","#");

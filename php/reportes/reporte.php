@@ -384,6 +384,7 @@ class PDF extends FPDF
         $alto = $this->inspeccion->alto;
         $ancho = $this->inspeccion->ancho;
         $profundidad = $this->inspeccion->profundidad;
+        $selloColocado = $this->inspeccion->selloColocado;
         
         if($alto=="")
             $alto = "-";
@@ -443,13 +444,13 @@ class PDF extends FPDF
         $this->SetFont($this->font, 'B', 10);
         $this->Cell(30, 8, "Sello colocado:", $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto(""), $borde, 0, 'L');
+        $this->Cell(55, 8, $this->texto($selloColocado), $borde, 0, 'L');
         
         $this->Ln();
         $this->SetFont($this->font, 'B', 10);
         $this->Cell(30, 8, "Sello retirado:", $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto(""), $borde, 0, 'L');
+        $this->Cell(55, 8, $this->texto($this->inspeccion->sello), $borde, 0, 'L');
         $this->SetFont($this->font, 'B', 10);
         $this->Cell(30, 8, $this->texto("Inspección aleatoria:"), $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
