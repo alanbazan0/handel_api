@@ -129,7 +129,7 @@ try
                                 $historialAccesoRepositorio->insertar($nombreUsuario,$ip);
                             }
                             else
-                            {
+                            {   
                                 $resultado->valor = null;
                                 $resultado->mensajeError="El acceso a la plataforma en linea esta restringido a usuarios autorizados, si necesita ingresar para realizar cambios por favor solicite los cambios con su supervisor autorizado.";
                                 unset($_SESSION['usuario']);

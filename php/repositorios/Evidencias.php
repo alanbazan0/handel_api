@@ -63,18 +63,20 @@ try
                             
                             $resultado=$adminstradorArchivos->subir($carpeta,$archivo,$nombreArchivo);
                             
-                            if($resultado->mensajeError=="")
-                            {
-                                $adminstradorCorreo = new AdministradorCorreo();
+//                             if($resultado->mensajeError=="")
+//                             {
+//                                 $adminstradorCorreo = new AdministradorCorreo();
                                 
-                                $nombreArchivoSubido = "";
-                                if($archivo!=null)
-                                    $nombreArchivoSubido = $archivo["name"];
+//                                 $nombreArchivoSubido = "";
+//                                 if($archivo!=null)
+//                                     $nombreArchivoSubido = $archivo["name"];
                                     
-                                $resultado = $adminstradorCorreo->enviarNotificacionEvidenciaRecibida($modelo->nombreUsuario, $modelo->nombreCompleto, $modelo->nombreProcedimiento,$nombreArchivoSubido);
+//                                 $resultado = $adminstradorCorreo->enviarNotificacionEvidenciaRecibida($modelo->nombreUsuario, $modelo->nombreCompleto, $modelo->nombreProcedimiento,$nombreArchivoSubido);
                                 
-                                $resultado->valor = $modelo->usuarioProcedimientoId;
-                            }
+//                                 $resultado->valor = $modelo->usuarioProcedimientoId;
+//                             }
+                            
+                            $resultado->valor = $modelo->usuarioProcedimientoId;
                         }
                         
                     }
@@ -106,6 +108,10 @@ try
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);
             break;
+            case 'consultarEvidenciasCumplidasMesActual':
+                $usuarioId = REQUEST('usuarioId');
+                $resultado = $repositorio->consultarEvidenciasCumplidasMesActual($usuarioId);
+                break;
             default:
                 $resultado->mensajeError = 'Acción no válida';
             break;

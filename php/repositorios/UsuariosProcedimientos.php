@@ -60,10 +60,7 @@ try
                 $usuarioId = REQUEST('usuarioId');
                 $resultado = $repositorio->consultarProcedimientesPendientesMesActual($usuarioId);
             break;
-            case 'consultarProcedimientosCumplidosMesActual':
-                $usuarioId = REQUEST('usuarioId');
-                $resultado = $repositorio->consultarProcedimientosCumplidosMesActual($usuarioId);
-            break;
+           
             default:
                 $resultado->mensajeError = 'Acción no válida';
             break;

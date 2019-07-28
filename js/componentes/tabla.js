@@ -14,6 +14,7 @@ class Tabla
 		this._anchoContenidoAdicional = 200;
 		this._alto =  $("body").height() - 350 ;
 		this._registrosPagina = 50;
+		this._textoTablaVacia = "Ning&uacute;n dato disponible en esta tabla";
 	}
 	
 	set alto(alto)
@@ -130,6 +131,11 @@ class Tabla
 		return $('#'+this._id+"Table");	
 	}
 	
+	set textoTablaVacia(textoTablaVacia)
+	{
+		this._textoTablaVacia = textoTablaVacia;
+	}
+	
 	renderizarRegistros()
 	{
 	
@@ -156,7 +162,7 @@ class Tabla
 					"sProcessing":     "Procesando...",
 					"sLengthMenu":     "Mostrar _MENU_ registros",
 					"sZeroRecords":    "No se encontraron resultados",
-					"sEmptyTable":     "Ning&uacute;n dato disponible en esta tabla",
+					"sEmptyTable":     this._textoTablaVacia,
 					"sInfo":           "Del _START_ al _END_ de  _TOTAL_ registros",
 					"sInfoEmpty":      "Del 0 al 0 de 0 registros",
 					"sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
