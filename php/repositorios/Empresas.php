@@ -49,9 +49,9 @@ try
                     $id =  $resultado->valor;
                     $adminstradorArchivos = new AdministradorArchivos();
                     $archivo = FILES("file");
-                    $carpeta = "../logos_empresas/";
+                    $carpeta = "logos_empresas";
                     $nombreArchivo = "logo".$modelo->id.".png";
-                    $resultado=$adminstradorArchivos->subir($carpeta,$archivo,$nombreArchivo);
+                    $resultado=$adminstradorArchivos->subirImagen($carpeta,$archivo,$nombreArchivo);
                     $resultado->valor = $id;
                 }
             break;
@@ -68,7 +68,7 @@ try
                    // $carpeta = "../logos_empresas/";
                     $carpeta = "logos_empresas";
                     $nombreArchivo = "logo".$modelo->id.".png";
-                    $resultado=$adminstradorArchivos->subir($carpeta,$archivo,$nombreArchivo);
+                    $resultado=$adminstradorArchivos->subirImagen($carpeta,$archivo,$nombreArchivo);
                 }
             break;
             case 'consultarPorLlaves':

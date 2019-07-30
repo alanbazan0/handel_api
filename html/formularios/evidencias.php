@@ -57,7 +57,7 @@
 						</div>
 						<div class='row'>
 							<div class="col-sm-12 text-center">
-                            	<img id="evidenciaImage" src="php/fotos_evidencias/default.png" alt="Evidencia" class="img-responsive img-thumbnail w-25" style='width:50%' onclick="$('#file').trigger('click')"  />
+                            	<img id="evidenciaImage" src="images/tipos_archivo/vacio.png" alt="Evidencia" class="img-responsive img-thumbnail w-25" style='width:50%' onclick="vista.vistaPrevia(this)"  />
                       	 	</div>
 						</div>
 						

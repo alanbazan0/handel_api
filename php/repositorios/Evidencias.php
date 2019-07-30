@@ -44,50 +44,58 @@ try
                 $mapper = new JsonMapper();
                 $modelo = $mapper->map($json, new Evidencia());
                 
-                $usuariosProcedimientosRepositorio = new UsuariosProcedimientosRepositorio($conexion);
-                $resultado =  $usuariosProcedimientosRepositorio->existeUsuarioProcedimientoEnMesActual($modelo->usuarioProcedimientoId);
-                if($resultado->mensajeError=="")
+                $dia = date('d');
+                $diaLimite = 31;
+                if($dia<=$diaLimite)
                 {
-                    if(!$resultado->valor)
+                
+                    $usuariosProcedimientosRepositorio = new UsuariosProcedimientosRepositorio($conexion);
+                    $resultado =  $usuariosProcedimientosRepositorio->existeUsuarioProcedimientoEnMesActual($modelo->usuarioProcedimientoId);
+                    if($resultado->mensajeError=="")
                     {
-                        $archivo = FILES("file");
-                        
-                        $resultado = $repositorio->insertar($modelo);
-                        if($resultado->mensajeError=="")
+                        if(!$resultado->valor)
                         {
-                            $id =  $resultado->valor;
-                            $adminstradorArchivos = new AdministradorArchivos();
+                            $archivo = FILES("file");
+                            $nombreArchivoSubido = $archivo["name"];
+                            $nombreArchivoSubido = str_replace(" ","_",$nombreArchivoSubido); 
                             
-                            $carpeta = "../fotos_evidencias/";
-                            $nombreArchivo = "evidencia".$modelo->id.".png";
-                            
-                            $resultado=$adminstradorArchivos->subir($carpeta,$archivo,$nombreArchivo);
-                            
-//                             if($resultado->mensajeError=="")
-//                             {
-//                                 $adminstradorCorreo = new AdministradorCorreo();
-                                
-//                                 $nombreArchivoSubido = "";
-//                                 if($archivo!=null)
-//                                     $nombreArchivoSubido = $archivo["name"];
+                            $conexion->autocommit(FALSE);
+                            $resultado = $repositorio->insertar($modelo,$nombreArchivoSubido);
+                            if($resultado->mensajeError=="")
+                            {
+                                $id =  $resultado->valor;
+                                if($archivo!=null)
+                                {
+                                    $adminstradorArchivos = new AdministradorArchivos();
                                     
-//                                 $resultado = $adminstradorCorreo->enviarNotificacionEvidenciaRecibida($modelo->nombreUsuario, $modelo->nombreCompleto, $modelo->nombreProcedimiento,$nombreArchivoSubido);
-                                
-//                                 $resultado->valor = $modelo->usuarioProcedimientoId;
-//                             }
+                                    $carpeta = "archivos_evidencias";
+                                    // $nombreArchivo = "evidencia".$modelo->id."_" .$nombreArchivoSubido;
+                                    $nombreArchivo = "evidencia".$id."_" .$nombreArchivoSubido;
+                                    
+                                    $resultado=$adminstradorArchivos->subirArchivo($carpeta,$archivo,$nombreArchivo);
+                                    if($resultado->valor==$nombreArchivo)
+                                        $conexion->commit();
+                                    else
+                                        $conexion->rollback();
+                                }
+                                else
+                                    $conexion->commit();
+                                $resultado->valor = $modelo->usuarioProcedimientoId;
+                            }
                             
-                            $resultado->valor = $modelo->usuarioProcedimientoId;
                         }
-                        
-                    }
-                    else 
-                    {
-                        $resultado->mensajeError="Esta evidencia ya fue subida antes, no se permite subir evidencias repetidas. Id: " . $modelo->usuarioProcedimientoId ;
-                        $resultado->valor = $modelo->usuarioProcedimientoId;
-                        $resultado->codigoError = 3;
+                        else 
+                        {
+                            $resultado->mensajeError="Esta evidencia ya fue subida antes, no se permite subir evidencias repetidas. Id: " . $modelo->usuarioProcedimientoId ;
+                            $resultado->valor = $modelo->usuarioProcedimientoId;
+                            $resultado->codigoError = 3;
+                        }
                     }
                 }
-                
+                else
+                {
+                    $resultado->mensajeError="La fecha límite para subir evidencias es el día ".$diaLimite." de cada mes.";
+                }
                 
             break;
             case 'actualizar':
@@ -111,6 +119,10 @@ try
             case 'consultarEvidenciasCumplidasMesActual':
                 $usuarioId = REQUEST('usuarioId');
                 $resultado = $repositorio->consultarEvidenciasCumplidasMesActual($usuarioId);
+            break;
+            case 'consultarEvidenciasJustificacionMesActual':
+                $usuarioId = REQUEST('usuarioId');
+                $resultado = $repositorio->consultarEvidenciasJustificacionMesActual($usuarioId);
                 break;
             default:
                 $resultado->mensajeError = 'Acción no válida';

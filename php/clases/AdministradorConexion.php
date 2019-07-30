@@ -30,6 +30,7 @@ class AdministradorConexion
         return null;
     }
     
+  
     public function cerrar($connection)
     {
         if($connection)

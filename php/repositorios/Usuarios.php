@@ -182,7 +182,7 @@ try
                     $archivo = FILES("file");
                     $carpeta = "fotos";
                     $nombreArchivo = "usuario".$usuario->id.".jpg";
-                    $resultado=$adminstradorArchivos->subir($carpeta,$archivo,$nombreArchivo);
+                    $resultado=$adminstradorArchivos->subirImagen($carpeta,$archivo,$nombreArchivo);
                     if($resultado->mensajeError=="")
                     {
                         $usuario->fotoPerfil =  "php/fotos/usuario". $usuario->id .".jpg";

@@ -48,7 +48,7 @@ try
                     $archivo = FILES("file");
                     $carpeta = "iconos_plantillas";
                     $nombreArchivo = "plantilla".$modelo->id.".png";
-                    $resultado=$adminstradorArchivos->subir($carpeta,$archivo,$nombreArchivo);
+                    $resultado=$adminstradorArchivos->subirImagen($carpeta,$archivo,$nombreArchivo);
                     $resultado->valor = $id;
                 }
             break;
@@ -64,7 +64,7 @@ try
                     $archivo = FILES("file");
                     $carpeta = "iconos_plantillas";
                     $nombreArchivo = "plantilla".$modelo->id.".png";
-                    $resultado=$adminstradorArchivos->subir($carpeta,$archivo,$nombreArchivo);
+                    $resultado=$adminstradorArchivos->subirImagen($carpeta,$archivo,$nombreArchivo);
                     $resultado->valor = $id;
                 }
             break;
