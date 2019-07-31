@@ -46,11 +46,11 @@
 						<label class="control-label mb-1">Se realizó la actividad</label> <label
 							class="switch switch-3d switch-success mr-3"> <input
 							id="realizoActividadCheck" name="estatus" type="checkbox" onchange='vista.cambiarRealizoActividad()'
-							class="switch-input" checked="true"> <span
+							class="switch-input" > <span
 							class="switch-label"></span> <span class="switch-handle"></span>
 						</label>
 					</div>
-					<div class="form-group" id='contenedorEvidenciaImage'>
+					<div class="form-group" id='contenedorEvidenciaImage' style='display:none'>
 						<div class='row text-center m-2'>
 							<button id="borrarArchivoEvidenciaButton"  type="button" style='display:none' class="btn btn-danger"><i class="fa fa-unlink"></i> Borrar</button>
 							<button id="adjuntarArchivoEvidenciaButton" type="button" onclick="$('#file').trigger('click')" class="btn btn-success"><i class="fa fa-paperclip"></i> Adjuntar</button>
@@ -68,7 +68,7 @@
 					<div class="form-group">
 						<div>
 							<label for="justificacionSelect" class="control-label mb-1">No se adjunto por</label> 
-							<select name="justificacionSelect" id="justificacionSelect" class="form-control" disabled></select>
+							<select name="justificacionSelect" id="justificacionSelect" class="form-control"></select>
 						</div>
 					</div>
 					

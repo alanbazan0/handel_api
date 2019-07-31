@@ -11,4 +11,6 @@ class Evidencia
   public $nombreUsuario;
   public $nombreCompleto;
   public $nombreProcedimiento;
+  public $cambioArchivo;
+  public $nombreArchivo;
 }

@@ -17,9 +17,10 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = "SELECT UP.id, usuario_id,CONCAT(U.nombre,' ',U.apellido) usuarioNombre, procedimiento_id, P.nombre, IFNULL(DATE_FORMAT(UP.fecha_alta,'%d/%m/%Y'),'')fecha_alta, IFNULL(DATE_FORMAT(UP.fecha_cancelacion,'%d/%m/%Y'),'')fecha_cancelacion, UP.estatus FROM usuarios_procedimientos UP
-                                INNER JOIN usuarios U ON U.id = UP.usuario_id
-                                INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
+        $this->consultaBase = "SELECT UP.id, usuario_id,CONCAT(U.nombre,' ',U.apellido) usuarioNombre, procedimiento_id, P.nombre, IFNULL(DATE_FORMAT(UP.fecha_alta,'%d/%m/%Y'),'')fecha_alta, IFNULL(DATE_FORMAT(UP.fecha_cancelacion,'%d/%m/%Y'),'')fecha_cancelacion, UP.estatus, limitar_justificaciones, limite_justificaciones 
+                                FROM usuarios_procedimientos UP
+                                    INNER JOIN usuarios U ON U.id = UP.usuario_id
+                                    INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
                                 ";
     }
 
@@ -29,10 +30,10 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
         if($resultado->mensajeError=='')
         {
             $id = $resultado->valor;
-            $consulta = "INSERT INTO usuarios_procedimientos(id, usuario_id, procedimiento_id, fecha_alta, estatus)VALUES(?, ?, ?, NOW(), 1)";
+            $consulta = "INSERT INTO usuarios_procedimientos(id, usuario_id, procedimiento_id, fecha_alta, estatus, limitar_justificaciones, limite_justificaciones)VALUES(?, ?, ?, NOW(), 1, ?, ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param('iii', $id, $modelo->usuarioId, $modelo->procedimientoId))
+                if($sentencia->bind_param('iiiii', $id, $modelo->usuarioId, $modelo->procedimientoId,$modelo->limitarJustificaciones, $modelo->limiteJustificaciones))
                 {
                     if(!$sentencia->execute())
                         $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
@@ -105,11 +106,11 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus))
+                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones ))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus);
+                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones );
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -136,7 +137,7 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
         $consulta = "SELECT count(*) 
                 FROM evidencias E 
                 WHERE usuario_procedimiento_id= ?
-                	AND MONTH(fecha) = MONTH(NOW())";
+                	AND MONTH(fecha_alta) = MONTH(NOW())";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param("i",$usuarioProcedimientoId))
@@ -174,7 +175,7 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
                     FROM usuarios_procedimientos UP
                     	INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
                     WHERE usuario_id = ? AND UP.estatus = 1 
-                    	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(fecha) = MONTH(NOW()))
+                    	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = MONTH(NOW()))
                     ORDER BY codigo";
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -216,18 +217,18 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
     {
         $resultado = new Resultado();
         $consulta = $this->consultaBase .
-        ' WHERE id  = ?';
+        ' WHERE UP.id  = ?';
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param('i',$llaves->id))
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus))
+                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones ))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus);
+                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones );
                             $resultado->valor = $registro;
                         }
                         else
@@ -276,7 +277,7 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
         return $resultado;
     }
 
-    private function crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus)
+    private function crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones )
     {
         $registro= (object) 
         [
@@ -287,7 +288,9 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
             'procedimientoNombre' => $procedimientoNombre,
             'fechaAlta' => $fechaAlta,
             'fechaCancelacion' => $fechaCancelacion,
-            'estatus' => $estatus
+            'estatus' => $estatus,
+            'limitarJustificaciones' => $limitarJustificaciones,
+            'limiteJustificaciones' => $limiteJustificaciones
         ];
         return $registro;
     }

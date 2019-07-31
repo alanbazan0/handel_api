@@ -64,8 +64,12 @@ class Tabla
 //		var html="";
 		this.renderizarTabla();
 		this.renderizarRegistros();
-//		$(this._id).html(html);
-		//$('[data-toggle="tooltip"]').tooltip();
+
+
+		$('[data-toggle="tooltip"]').tooltip({
+		    trigger : 'hover',
+		    container: 'body'
+		});
 		
 		$(".paginate_button").attr("href","#");
 		

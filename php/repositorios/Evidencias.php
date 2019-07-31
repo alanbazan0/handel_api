@@ -30,6 +30,9 @@ header('Access-Control-Allow-Credentials: true');
 $administrador_conexion = new AdministradorConexion();
 $resultado = new Resultado();
 $conexion=null;
+//$diaLimite = 27;
+//PRUEBAS 31
+$diaLimite = 31;
 try
 {
     $conexion = $administrador_conexion->abrir();
@@ -43,66 +46,13 @@ try
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
                 $modelo = $mapper->map($json, new Evidencia());
-                
-                $dia = date('d');
-                $diaLimite = 31;
-                if($dia<=$diaLimite)
-                {
-                
-                    $usuariosProcedimientosRepositorio = new UsuariosProcedimientosRepositorio($conexion);
-                    $resultado =  $usuariosProcedimientosRepositorio->existeUsuarioProcedimientoEnMesActual($modelo->usuarioProcedimientoId);
-                    if($resultado->mensajeError=="")
-                    {
-                        if(!$resultado->valor)
-                        {
-                            $archivo = FILES("file");
-                            $nombreArchivoSubido = $archivo["name"];
-                            $nombreArchivoSubido = str_replace(" ","_",$nombreArchivoSubido); 
-                            
-                            $conexion->autocommit(FALSE);
-                            $resultado = $repositorio->insertar($modelo,$nombreArchivoSubido);
-                            if($resultado->mensajeError=="")
-                            {
-                                $id =  $resultado->valor;
-                                if($archivo!=null)
-                                {
-                                    $adminstradorArchivos = new AdministradorArchivos();
-                                    
-                                    $carpeta = "archivos_evidencias";
-                                    // $nombreArchivo = "evidencia".$modelo->id."_" .$nombreArchivoSubido;
-                                    $nombreArchivo = "evidencia".$id."_" .$nombreArchivoSubido;
-                                    
-                                    $resultado=$adminstradorArchivos->subirArchivo($carpeta,$archivo,$nombreArchivo);
-                                    if($resultado->valor==$nombreArchivo)
-                                        $conexion->commit();
-                                    else
-                                        $conexion->rollback();
-                                }
-                                else
-                                    $conexion->commit();
-                                $resultado->valor = $modelo->usuarioProcedimientoId;
-                            }
-                            
-                        }
-                        else 
-                        {
-                            $resultado->mensajeError="Esta evidencia ya fue subida antes, no se permite subir evidencias repetidas. Id: " . $modelo->usuarioProcedimientoId ;
-                            $resultado->valor = $modelo->usuarioProcedimientoId;
-                            $resultado->codigoError = 3;
-                        }
-                    }
-                }
-                else
-                {
-                    $resultado->mensajeError="La fecha límite para subir evidencias es el día ".$diaLimite." de cada mes.";
-                }
-                
+                $resultado = insertar($modelo,$conexion,$repositorio,$diaLimite);
             break;
             case 'actualizar':
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
                 $modelo = $mapper->map($json, new Evidencia());
-                $resultado = $repositorio->actualizar($modelo) ;
+                $resultado = actualizar($modelo,$conexion,$repositorio,$diaLimite);
             break;
             case 'consultar':
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
@@ -145,4 +95,220 @@ finally
             echo $json;
     }
     $administrador_conexion->cerrar($conexion);
+}
+
+
+function insertar($modelo,$conexion,$repositorio,$diaLimite)
+{
+    $resultado = new Resultado();
+    $dia = date('d');
+
+    if($dia<=$diaLimite)
+    {
+        
+        $usuariosProcedimientosRepositorio = new UsuariosProcedimientosRepositorio($conexion);
+        $resultado =  $usuariosProcedimientosRepositorio->existeUsuarioProcedimientoEnMesActual($modelo->usuarioProcedimientoId);
+        if($resultado->mensajeError=="")
+        {
+            if(!$resultado->valor)
+            {
+                if($modelo->justificacionId!=null)
+                {
+                    $llaves= (object) [
+                        'id' =>  $modelo->usuarioProcedimientoId
+                    ];
+                    
+                    $resultado = $usuariosProcedimientosRepositorio->consultarPorLlaves($llaves);
+                    if($resultado->mensajeError=="")
+                    {
+                        $procedimiento = $resultado->valor;
+                        if($procedimiento->limitarJustificaciones==1)
+                        {
+                            $resultado  = $repositorio->numeroEvidenciasJustificadasAnoActual($modelo->usuarioProcedimientoId);
+                            if($resultado->mensajeError=="")
+                            {
+                                $numeroEvidenciasJustificadasAno = $resultado->valor;
+                                if($numeroEvidenciasJustificadasAno  >= $procedimiento->limiteJustificaciones)
+                                {
+                                    $resultado->mensajeError = "No se puede justificar porque se excedió el número máximo de justificaciones por año de esta evidencia." .
+                                                                "Ésta evidencia solo se puede justificar " .$procedimiento->limiteJustificaciones. " veces el este año";
+                                    return $resultado;
+                                }
+                            
+                            }
+                            else 
+                                return $resultado;
+                        }
+                        
+                    }
+                    else 
+                        return $resultado;
+                }
+                
+                $archivo = FILES("file");
+                
+                if($modelo->justificacionId==null && $archivo==null)
+                {
+                    $resultado->mensajeError = "Si se realizó la actividad es necesario proporcionar un archivo para la evidencia.";
+                    return $resultado;
+                }
+                
+                $nombreArchivoSubido="";
+                if($archivo!=null)
+                {
+                    $nombreArchivoSubido = $archivo["name"];
+                    $nombreArchivoSubido = str_replace(" ","_",$nombreArchivoSubido);
+                }
+                
+                
+                    
+                
+                $conexion->autocommit(FALSE);
+                $resultado = $repositorio->insertar($modelo,$nombreArchivoSubido);
+                if($resultado->mensajeError=="")
+                {
+                    $id =  $resultado->valor;
+                    if($archivo!=null)
+                    {
+                        $adminstradorArchivos = new AdministradorArchivos();
+                        
+                        $carpeta = "archivos_evidencias";
+                        $nombreArchivo = "evidencia".$id."_" .$nombreArchivoSubido;
+                        
+                        $resultado=$adminstradorArchivos->subirArchivo($carpeta,$archivo,$nombreArchivo);
+                        if($resultado->valor==$nombreArchivo)
+                            $conexion->commit();
+                            else
+                                $conexion->rollback();
+                    }
+                    else
+                        $conexion->commit();
+                        $resultado->valor = $modelo->usuarioProcedimientoId;
+                }
+                
+            }
+            else
+            {
+                $resultado->mensajeError="Esta evidencia ya fue subida antes, no se permite subir evidencias repetidas. Id: " . $modelo->usuarioProcedimientoId ;
+                $resultado->valor = $modelo->usuarioProcedimientoId;
+                $resultado->codigoError = 3;
+            }
+        }
+    }
+    else
+    {
+        $resultado->mensajeError="La fecha límite para subir evidencias es el día ".$diaLimite." de cada mes.";
+    }
+    return $resultado;
+}
+
+
+function actualizar($modelo,$conexion,$repositorio,$diaLimite)
+{
+    $resultado = new Resultado();
+    $dia = date('d');
+    
+    if($dia<=$diaLimite)
+    {
+        
+        $usuariosProcedimientosRepositorio = new UsuariosProcedimientosRepositorio($conexion);
+       
+        if($modelo->justificacionId!=null)
+        {
+            $llaves= (object) [
+                'id' =>  $modelo->usuarioProcedimientoId
+            ];
+            
+            $resultado = $usuariosProcedimientosRepositorio->consultarPorLlaves($llaves);
+            if($resultado->mensajeError=="")
+            {
+                $procedimiento = $resultado->valor;
+                if($procedimiento->limitarJustificaciones==1)
+                {
+                    $resultado  = $repositorio->numeroEvidenciasJustificadasAnoActual($modelo->usuarioProcedimientoId);
+                    if($resultado->mensajeError=="")
+                    {
+                        $numeroEvidenciasJustificadasAno = $resultado->valor;
+                        if($numeroEvidenciasJustificadasAno  >= $procedimiento->limiteJustificaciones)
+                        {
+                            $resultado->mensajeError = "No se puede justificar porque se excedió el número máximo de justificaciones por año de esta evidencia." .
+                                "Ésta evidencia solo se puede justificar " .$procedimiento->limiteJustificaciones. " veces el este año";
+                            return $resultado;
+                        }
+                        
+                    }
+                    else
+                        return $resultado;
+                }
+                
+            }
+            else
+                return $resultado;
+        }
+        
+        $archivo = FILES("file");
+        
+        
+        if($archivo==null)
+        {
+            if($modelo->realizoActividad==1)
+            {
+                if($modelo->cambioArchivo)
+                {
+                    $resultado->mensajeError = "Si se realizó la actividad es necesario proporcionar un archivo para la evidencia.";
+                    return $resultado;
+                }
+            }
+        }
+//         if($modelo->realizoActividad==1 && $archivo==null)
+//         {
+//             if($modelo->cambioArchivo)
+//             {
+//                 $resultado->mensajeError = "Si se realizó la actividad es necesario proporcionar un archivo para la evidencia.";
+//                 return $resultado;
+//             }
+//         }
+        
+        $nombreArchivoSubido="";
+        if($archivo!=null)
+        {
+            $nombreArchivoSubido = $archivo["name"];
+            $nombreArchivoSubido = str_replace(" ","_",$nombreArchivoSubido);
+        }
+        else
+        {
+            if(!$modelo->cambioArchivo)
+                $nombreArchivoSubido = $modelo->nombreArchivo;
+        }
+        
+        $conexion->autocommit(FALSE);
+        $resultado = $repositorio->actualizar($modelo,$nombreArchivoSubido);
+        if($resultado->mensajeError=="")
+        {
+            $id =  $resultado->valor;
+            if($archivo!=null)
+            {
+                $adminstradorArchivos = new AdministradorArchivos();
+                
+                $carpeta = "archivos_evidencias";
+                $nombreArchivo = "evidencia".$modelo->id."_" .$nombreArchivoSubido;
+                
+                $resultado=$adminstradorArchivos->subirArchivo($carpeta,$archivo,$nombreArchivo);
+                if($resultado->valor==$nombreArchivo)
+                    $conexion->commit();
+                else
+                    $conexion->rollback();
+            }
+            else
+                $conexion->commit();
+           $resultado->valor = $modelo->usuarioProcedimientoId;
+        }
+                
+            
+    }
+    else
+    {
+        $resultado->mensajeError="La fecha límite para subir evidencias es el día ".$diaLimite." de cada mes.";
+    }
+    return $resultado;
 }

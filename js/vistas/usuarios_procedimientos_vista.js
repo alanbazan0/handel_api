@@ -10,7 +10,19 @@ class UsuariosProcedimientosVista extends CatalogoVista
 	inicializar()
 	{
 		super.inicializar();
+		
+		
 		this.consultarEmpresasCriterio();
+	}
+	
+	cambiarLimitarJustificaciones()
+	{
+		var limitar = $('#limitarJustificacionesSwitch').is(':checked')?1:0;
+		if(limitar)
+			$("#limiteJustificacionesGroup").fadeIn();
+		else
+			$("#limiteJustificacionesGroup").fadeOut();
+			
 	}
 	
 	crearColumnasGrid()
@@ -20,7 +32,8 @@ class UsuariosProcedimientosVista extends CatalogoVista
 			{longitud:200, 	titulo:"Procedimiento",   alias:"procedimientoNombre", alineacion:"I"}, 
 			{longitud:200, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I",  },		
 			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus},
-			{longitud:200, 	titulo:"Fecha de cancelación",   alias:"fechaCancelacion", alineacion:"I",itemRenderer:this.rendeFechaCancelacion }	
+			{longitud:200, 	titulo:"Fecha de cancelación",   alias:"fechaCancelacion", alineacion:"I",itemRenderer:this.renderFechaCancelacion },
+			{longitud:200, 	titulo:"Limite de justificaciones",   alias:"limiteJusiticaciones", alineacion:"C",itemRenderer:this.renderLimiteJustificaciones }	
 			
 		]
 		
@@ -81,7 +94,17 @@ class UsuariosProcedimientosVista extends CatalogoVista
 	        });
 	}
 	
-	rendeFechaCancelacion(renglon, type, set)
+	renderLimiteJustificaciones(renglon, type, set)
+	{    
+		var contenido = "";
+		if(renglon.limitarJustificaciones==1)
+			contenido += renglon.limiteJustificaciones;
+		else
+			contenido += "";
+	    return contenido;
+	}
+	
+	renderFechaCancelacion(renglon, type, set)
 	{    
 		var contenido = "";
 		if(renglon.estatus==1)
@@ -186,7 +209,9 @@ class UsuariosProcedimientosVista extends CatalogoVista
 			 empresaId:$('#empresaIdSelect').val(),
 			 sedeId:$('#sedeIdSelect').val(),
 			 usuarioId:$('#usuarioIdSelect').val(),
-			 procedimientoId:$('#procedimientoIdSelect').val()
+			 procedimientoId:$('#procedimientoIdSelect').val(),
+			 limitarJustificaciones:$('#limitarJustificacionesSwitch').is(':checked')?1:0,
+			 limiteJustificaciones : $('#limiteJustificacionesSelect').val()
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;

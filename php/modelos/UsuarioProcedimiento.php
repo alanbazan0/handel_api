@@ -9,4 +9,6 @@ class UsuarioProcedimiento
   public $fechaAlta;
   public $fechaCancelacion;
   public $estatus;
+  public $limitarJustificaciones;
+  public $limiteJustificaciones;
 }
