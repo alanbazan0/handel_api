@@ -1,8 +1,8 @@
 <?php
 use php\clases\AdministradorConexion;
 use php\clases\JsonMapper;
-use php\modelos\UsuarioProcedimiento;
-use php\repositorios\UsuariosProcedimientosRepositorio;
+use php\modelos\Frase;
+use php\repositorios\FrasesRepositorio;
 use php\modelos\Resultado;
 
 error_reporting(E_ALL);
@@ -11,7 +11,7 @@ ini_set('display_errors', 1);
 include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
-include '../repositorios/UsuariosProcedimientosRepositorio.php';
+include '../repositorios/FrasesRepositorio.php';
 
 $origin = "*";
 if(isset($_SERVER['HTTP_ORIGIN']))
@@ -29,19 +29,19 @@ try
     if($conexion)
     {
         $accion = REQUEST('accion');
-        $repositorio = new UsuariosProcedimientosRepositorio($conexion);
+        $repositorio = new FrasesRepositorio($conexion);
         switch($accion)
         {
             case 'insertar':
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new UsuarioProcedimiento());
+                $modelo = $mapper->map($json, new Frase());
                 $resultado = $repositorio->insertar($modelo);
             break;
             case 'actualizar':
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new UsuarioProcedimiento());
+                $modelo = $mapper->map($json, new Frase());
                 $resultado = $repositorio->actualizar($modelo) ;
             break;
             case 'consultar':
@@ -56,15 +56,6 @@ try
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);
             break;
-            case 'consultarProcedimientosPendientesMesActual':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarProcedimientosPendientesMesActual($usuario,$criteriosSeleccion);
-            break;
-           
             default:
                 $resultado->mensajeError = 'Acción no válida';
             break;

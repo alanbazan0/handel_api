@@ -3,7 +3,6 @@ namespace php\repositorios;
 
 use php\modelos\Resultado;
 
-include "../modelos/Proyecto.php";
 include "../repositorios/RepositorioBase.php";
 require_once("../clases/Resultado.php");
 

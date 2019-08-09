@@ -13,6 +13,8 @@ class CatalogoVista extends Vista
 	
 	inicializar()
 	{
+		this.actualizarSesion();
+		
 		this.inicializarFechas();
 				
 		var _this = this;
@@ -27,6 +29,27 @@ class CatalogoVista extends Vista
 		
 		this.crearColumnasGrid();		
 		this.presentador.consultar();
+	}
+	
+	actualizarSesion()
+	{
+		var _this = this;
+		var time = 600000; // 10 mins
+		//var time = 10000; 
+		 setTimeout(
+		        function ()
+		        {
+		        $.ajax({
+		           url:  HANDEL_API  + '/php/actualizar_sesion.php',
+		           cache: false,
+		           complete: function (respuesta) 
+		           {
+		        	   _this.actualizarSesion();
+		           }
+		        });
+		    },
+		    time
+		);
 	}
 	
 	inicializarFechas()

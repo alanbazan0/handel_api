@@ -28,7 +28,8 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
                                 "(SELECT COUNT(*) FROM inspecciones) as inspecciones,".
                                 "(SELECT COUNT(*) FROM procedimientos) as procedimientos," .
                                 "(SELECT COUNT(*) FROM usuarios_procedimientos) as usuariosProcedimientos,".
-                                "(SELECT COUNT(*) FROM usuarios where  tipo_usuario_id=$inspectorId) as inspectores";
+                                "(SELECT COUNT(*) FROM usuarios where  tipo_usuario_id=$inspectorId) as inspectores," .
+                                "(SELECT COUNT(*) FROM evidencias) as evidencias";
                               
         
         
@@ -79,7 +80,8 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
                  "(SELECT COUNT(*) FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id WHERE S.empresa_id = ? and I.sede_id = ?) as inspecciones,".
                  "0 as procedimientos,".
                  "0 as usuariosProcedimientos,".
-                 "(SELECT COUNT(*) FROM usuarios WHERE empresa_id = ? AND sede_id = ? AND tipo_usuario_id=$inspectorId) as inspectores";
+                 "(SELECT COUNT(*) FROM usuarios WHERE empresa_id = ? AND sede_id = ? AND tipo_usuario_id=$inspectorId) as inspectores,".
+                 "(SELECT COUNT(*) FROM evidencias) as evidencias";
              
              array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->empresaId]);
              array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->empresaId]);
@@ -95,11 +97,11 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($usuarios, $empresas, $tiposEmpresa, $sedes, $puestos, $areas, $justificaciones, $certificaciones, $inspecciones, $procedimientos, $usuariosProcedimientos, $inspectores ))
+                    if ($sentencia->bind_result($usuarios, $empresas, $tiposEmpresa, $sedes, $puestos, $areas, $justificaciones, $certificaciones, $inspecciones, $procedimientos, $usuariosProcedimientos, $inspectores, $evidencias ))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($usuarios, $empresas,$tiposEmpresa, $sedes, $puestos, $areas, $justificaciones, $certificaciones, $inspecciones, $procedimientos,$usuariosProcedimientos,$inspectores );
+                            $registro = $this->crearRegistro($usuarios, $empresas,$tiposEmpresa, $sedes, $puestos, $areas, $justificaciones, $certificaciones, $inspecciones, $procedimientos,$usuariosProcedimientos,$inspectores, $evidencias );
                             //array_push($registros,$registro);
                         }
                         $resultado->valor = $registro;
@@ -121,7 +123,7 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
     }
     
     
-    private function crearRegistro($usuarios, $empresas, $tiposEmpresa, $sedes, $puestos, $areas, $justificaciones, $certificaciones, $inspecciones,$procedimientos,$usuariosProcedimientos,$inspectores)
+    private function crearRegistro($usuarios, $empresas, $tiposEmpresa, $sedes, $puestos, $areas, $justificaciones, $certificaciones, $inspecciones,$procedimientos,$usuariosProcedimientos,$inspectores,$evidencias)
     {
         $registro= (object) [
             'usuarios' =>  $usuarios,
@@ -135,7 +137,8 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
             'inspecciones' => $inspecciones,
             'procedimientos' => $procedimientos,
             'usuariosProcedimientos' => $usuariosProcedimientos,
-            'inspectores' => $inspectores
+            'inspectores' => $inspectores,
+            'evidencias' => $evidencias
         ];
         return $registro;
     }

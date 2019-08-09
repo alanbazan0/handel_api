@@ -8,6 +8,7 @@ use php\modelos\Resultado;
 include '../interfaces/IEvidenciasRepositorio.php';
 include '../modelos/Evidencia.php';
 include 'RepositorioBase.php';
+//require_once("../clases/TipoUsuario.php");
 require_once('../clases/Resultado.php');
 
 class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasRepositorio
@@ -18,9 +19,12 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
     {
         $this->conexion = $conexion;
         $this->consultaBase = "SELECT E.id, usuario_procedimiento_id, realizo_actividad, justificacion_id, comentarios, IFNULL(DATE_FORMAT(E.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha, P.nombre, nombre_archivo, P.codigo, J.nombre,
-                                (SELECT count(C.id) FROM evidencias_comentarios C WHERE C.evidencia_id = E.id) numeroComentarios   
+                                (SELECT count(C.id) FROM evidencias_comentarios C WHERE C.evidencia_id = E.id) numeroComentarios, U.nombre, U.apellido, S.id, S.nombre, EM.id, EM.nombre, U.id, validada, comentarios_validacion   
                                FROM evidencias E
                             		INNER JOIN  usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
+                                    INNER JOIN usuarios U ON U.id = UP.usuario_id
+                                    LEFT JOIN sedes S ON S.id = U.sede_id
+                                    LEFT JOIN empresas EM ON EM.id = S.empresa_id
                             		INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
                                     LEFT JOIN justificaciones J ON J.id = E.justificacion_id
                                 ";
@@ -87,31 +91,42 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             return $resultado;
     }
     
-    public function consultarEvidenciasCumplidasMesActual($usuarioId)
+    public function consultarEvidenciasCumplidasMesActual($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
+        
         $registros = array();
         
+        $filtros = array();
+        $and="";
+        if($criteriosSeleccion!=null)
+        {
+        }
+        if($usuario!=null)
+        {
+            if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR || $usuario->tipoUsuarioId == \TipoUsuario::USUARIO)
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','valor'=>$usuario->id]);
+        }
+        
+        $and = $this->and($filtros);
+        
+        //UP.usuario_id = ? AND 
+        
         $consulta =  $this->consultaBase .
-        " WHERE UP.usuario_id = ? AND MONTH(E.fecha_alta) = MONTH(NOW())" .
+        " WHERE MONTH(E.fecha_alta) = MONTH(NOW())" . $and ." " .
         "ORDER BY codigo";
-//         $consulta = "SELECT E.id, usuario_procedimiento_id, codigo, P.nombre, IFNULL(DATE_FORMAT(fecha ,'%d/%m/%Y %H:%i:%s'),'')fecha, justificacion_id
-//             FROM evidencias E
-//             		INNER JOIN  usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
-//             		INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
-//             WHERE UP.usuario_id = ? AND MONTH(fecha) = MONTH(NOW())
-//             ORDER BY codigo";
+
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("i",$usuarioId))
+            if($this->bind_param($sentencia, $filtros))
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios))
+                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion))
                     {
                         while($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios);
+                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -130,21 +145,36 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             return $resultado;
     }
     
-    public function consultarEvidenciasJustificacionMesActual($usuarioId)
+    public function consultarEvidenciasJustificacionMesActual($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
         $registros = array();
+        
+        $filtros = array();
+        $and="";
+        if($criteriosSeleccion!=null)
+        {
+        }
+        if($usuario!=null)
+        {
+            if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR || $usuario->tipoUsuarioId == \TipoUsuario::USUARIO)
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','valor'=>$usuario->id]);
+        }
+        
+        $and = $this->and($filtros);
+        
         
         $consulta = "SELECT justificacion_id, J.nombre, count(justificacion_id) valor
             FROM evidencias E
             		INNER JOIN  usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
             		INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
                     INNER JOIN justificaciones J ON J.id = E.justificacion_id
-            WHERE UP.usuario_id = ? AND MONTH(E.fecha_alta) = MONTH(NOW())
-            GROUP BY justificacion_id, J.nombre";
+                    INNER JOIN usuarios U ON U.id = UP.usuario_id
+            WHERE MONTH(E.fecha_alta) = MONTH(NOW()) ". $and . " ".
+            "GROUP BY justificacion_id, J.nombre";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("i",$usuarioId))
+            if($this->bind_param($sentencia, $filtros))
             {
                 if($sentencia->execute())
                 {
@@ -174,6 +204,8 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
+    
+   
     
     
 
@@ -208,6 +240,36 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
         return $resultado;
     }
+    
+    public function validarEvidencia(Evidencia $modelo)
+    {
+        if($modelo->justificacionId=="")
+            $modelo->justificacionId=null;
+            $resultado = new Resultado();
+            $consulta = "UPDATE evidencias
+                     SET
+                         validada = ?,
+                         comentarios_validacion = ?,
+                         fecha_modificacion = NOW()
+                     WHERE id = ?";
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($sentencia->bind_param('isi',$modelo->validada, $modelo->comentariosValidacion,$modelo->id))
+                {
+                    if($sentencia->execute())
+                    {
+                        $resultado->valor=$modelo->id;
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = 'Falló el enlace de parámetros';
+            }
+            else
+                $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                return $resultado;
+    }
 
     public function consultar($criteriosSeleccion)
     {
@@ -226,11 +288,11 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios))
+                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios);
+                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -260,11 +322,11 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios))
+                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios);
+                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion);
                             $resultado->valor = $registro;
                         }
                         else
@@ -313,7 +375,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         return $resultado;
     }
 
-    private function crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios)
+    private function crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion)
     {
         $registro= (object) 
         [
@@ -327,8 +389,28 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             'nombre' => $nombre,
             'nombreArchivo' => $nombreArchivo,
             'codigo' => $codigo,
-            'numeroComentarios' => $numeroComentarios
+            'numeroComentarios' => $numeroComentarios,
+            'usuarioNombre' => $usuarioNombre,
+            'usuarioApellido' => $usuarioApellido,
+            'sedeId' => $sedeId,
+            'sedeNombre' => $sedeNombre,
+            'empresaId' => $empresaId,
+            'empresaNombre' => $empresaNombre,
+            'usuarioId' => $usuarioId,
+            'validada' => $validada,
+            'comentariosValidacion' => $comentariosValidacion
+            
         ];
+        
+        $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
+        $registro->fotoPerfil =  "../fotos/usuario". $registro->usuarioId .".jpg";
+        if(file_exists($registro->fotoPerfil))
+            $registro->fotoPerfil =  "php/fotos/usuario". $registro->usuarioId .".jpg";
+        else
+            $registro->fotoPerfil =  "php/fotos/default.jpg";
+        
+        
+        
         return $registro;
     }
 }

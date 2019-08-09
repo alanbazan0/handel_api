@@ -54,6 +54,12 @@ try
                 $modelo = $mapper->map($json, new Evidencia());
                 $resultado = actualizar($modelo,$conexion,$repositorio,$diaLimite);
             break;
+            case 'validarEvidencia':
+                $json = json_decode(REQUEST('modelo'));
+                $mapper = new JsonMapper();
+                $modelo = $mapper->map($json, new Evidencia());
+                $resultado = $repositorio->validarEvidencia($modelo);
+                break;
             case 'consultar':
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 $resultado = $repositorio->consultar($criteriosSeleccion);
@@ -67,13 +73,25 @@ try
                 $resultado = $repositorio->eliminar($llaves);
             break;
             case 'consultarEvidenciasCumplidasMesActual':
-                $usuarioId = REQUEST('usuarioId');
-                $resultado = $repositorio->consultarEvidenciasCumplidasMesActual($usuarioId);
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarEvidenciasCumplidasMesActual($usuario,$criteriosSeleccion);
             break;
             case 'consultarEvidenciasJustificacionMesActual':
-                $usuarioId = REQUEST('usuarioId');
-                $resultado = $repositorio->consultarEvidenciasJustificacionMesActual($usuarioId);
-                break;
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarEvidenciasJustificacionMesActual($usuario,$criteriosSeleccion);
+            break;
+            case 'consultarComentariosEvidencia':
+                $evidenciaId = REQUEST('evidenciaId');
+                $resultado = $repositorio->consultarComentariosEvidencia($evidenciaId);
+            break;
             default:
                 $resultado->mensajeError = 'Acción no válida';
             break;

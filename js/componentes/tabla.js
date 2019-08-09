@@ -71,6 +71,10 @@ class Tabla
 		    container: 'body'
 		});
 		
+		$('[rel="tooltip"]').on('click', function () {
+		    $(this).tooltip('hide');
+		})
+		
 		$(".paginate_button").attr("href","#");
 		
 	}
@@ -151,6 +155,10 @@ class Tabla
 				  $(".paginate_button").attr("href","#");
 			    },
 			    "pageLength": this._registrosPagina,
+			    "fnInitComplete":function()
+			    {
+//	                $('.dataTables_scrollBody').slimscroll();
+	            },
 			    "info":true,
 		        "searching":true,
 				"destroy":true,

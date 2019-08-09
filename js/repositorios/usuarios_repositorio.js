@@ -35,12 +35,37 @@ class UsuariosRepositorio extends Repositorio
 	
 	}
 	
-	iniciarSesionResultado(resultado)
-	{
-		var datos = JSON.parse(resultado);
-		this.functionRetorno.call(this.contexto,JSON.parse(resultado));
-	}	
+	consultarPermisos(contexto,funcion, nombreUsuario, contrasena)
+	{		
+		
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+             url: url,
+             type: 'POST',
+             data: {accion : "consultarPermisos", nombreUsuario : nombreUsuario, contrasena : contrasena },
+             success: function( data, textStatus, jQxhr )
+             {
+                 funcion.call(contexto,data);
+             },
+             error: function( jqXhr, textStatus, errorThrown )
+             {
+            	 funcion.call(contexto,{ mensajeError : textStatus});
+             },
+             fail: function( jqXhr, textStatus, errorThrown )
+             {
+            	 funcion.call(contexto,{ mensajeError : textStatus});
+             }
+         });
+		
 	
+	}
+	
+//	iniciarSesionResultado(resultado)
+//	{
+//		var datos = JSON.parse(resultado);
+//		this.functionRetorno.call(this.contexto,JSON.parse(resultado));
+//	}	
+//	
 	cerrarSesion(contexto,funcion)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;

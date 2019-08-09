@@ -93,6 +93,23 @@ try
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 $resultado = $repositorio->consultar($criteriosSeleccion);               
             break;
+            case 'consultarPermisos':
+                $nombreUsuario = REQUEST('nombreUsuario');
+                $contrasena = REQUEST('contrasena');
+                $resultado = $repositorio->consultarUsuario($nombreUsuario,$contrasena);
+                $permisos = [];
+                if($resultado->valor!=null)
+                {
+                    $usuario = $resultado->valor;
+                    if($usuario->permisoSAHA==1)
+                        array_push($permisos,(object)['id'=>'SAHA','nombre'=>'SAHA','imagen'=>'images/logoSAHA.png']);
+                    if($usuario->permisoSIVAH==1)
+                        array_push($permisos,(object)['id'=>'SIVAH','nombre'=>'SIVAH','imagen'=>'images/logoSIVAH.png']);
+                    if($usuario->permiso10y7==1)
+                        array_push($permisos,(object)['id'=>'10y7','nombre'=>'10y7','imagen'=>'images/logo10y7.png']);
+                }
+                $resultado->valor = $permisos;
+            break;
             case 'iniciarSesion':
                 session_start();
                 $nombreUsuario = REQUEST('nombreUsuario');
