@@ -223,16 +223,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         
         $registros = array();
         
-        $filtros = array();
-        $and="";
-        if($criteriosSeleccion!=null)
-        {
-        }
-        if($usuario!=null)
-        {
-            if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR || $usuario->tipoUsuarioId == \TipoUsuario::USUARIO)
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','valor'=>$usuario->id]);
-        }
+        $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion);
         
         $and = $this->and($filtros);
         
@@ -359,6 +350,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             case \TipoUsuario::SUPERVISOR:
                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','valor'=>$usuario->empresaId]);
                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'sede_id','valor'=>$usuario->sedeId]);
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'area_id','valor'=>$usuario->areaId]);
             break;
             case \TipoUsuario::COORDINADOR:
                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','valor'=>$usuario->empresaId]);
@@ -372,16 +364,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         $resultado = new Resultado();
         $registros = array();
         
-        $filtros = array();
-        $and="";
-        if($criteriosSeleccion!=null)
-        {
-        }
-        if($usuario!=null)
-        {
-            if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR || $usuario->tipoUsuarioId == \TipoUsuario::USUARIO)
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','valor'=>$usuario->id]);
-        }
+        $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion);
         
         $and = $this->and($filtros);
         

@@ -18,7 +18,7 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = "SELECT UP.id, usuario_id,CONCAT(U.nombre,' ',U.apellido) usuarioNombre, procedimiento_id, P.nombre, IFNULL(DATE_FORMAT(UP.fecha_alta,'%d/%m/%Y'),'')fecha_alta, IFNULL(DATE_FORMAT(UP.fecha_cancelacion,'%d/%m/%Y'),'')fecha_cancelacion, UP.estatus, limitar_justificaciones, limite_justificaciones 
+        $this->consultaBase = "SELECT UP.id, usuario_id,CONCAT(U.nombre,' ',U.apellido) usuarioNombre, procedimiento_id, P.nombre, IFNULL(DATE_FORMAT(UP.fecha_alta,'%d/%m/%Y'),'')fecha_alta, IFNULL(DATE_FORMAT(UP.fecha_cancelacion,'%d/%m/%Y'),'')fecha_cancelacion, UP.estatus, limitar_justificaciones, limite_justificaciones, codigo, U.apellido 
                                 FROM usuarios_procedimientos UP
                                     LEFT JOIN usuarios U ON U.id = UP.usuario_id
                                     LEFT JOIN procedimientos P ON P.id = UP.procedimiento_id
@@ -107,11 +107,11 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones ))
+                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones,$codigo,$usuarioApellido ))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones );
+                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones,$codigo,$usuarioApellido );
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -167,47 +167,77 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
         return $resultado;
     }
     
+    private function getFiltrosUsuario($usuario,$criteriosSeleccion)
+    {
+        $filtros = array();
+        switch ($usuario->tipoUsuarioId)
+        {
+            case \TipoUsuario::USUARIO:
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','valor'=>$usuario->id]);
+                break;
+            case \TipoUsuario::SUPERVISOR:
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','valor'=>$usuario->empresaId]);
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'sede_id','valor'=>$usuario->sedeId]);
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'area_id','valor'=>$usuario->areaId]);
+                break;
+            case \TipoUsuario::COORDINADOR:
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','valor'=>$usuario->empresaId]);
+                break;
+        }
+        return $filtros;
+    }
+    
     public function consultarProcedimientosPendientesMesActual($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
         $registros = array();
         
-        $filtros = array();
-        $and="";
-        if($criteriosSeleccion!=null)
-        {
-        }
-        if($usuario!=null)
-        {
-            if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR || $usuario->tipoUsuarioId == \TipoUsuario::USUARIO)
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','valor'=>$usuario->id]);
-        }
+        $filtros  = $this->getFiltrosUsuario($usuario, $criteriosSeleccion);
+        
+//         $filtros = array();
+//         $and="";
+//         if($criteriosSeleccion!=null)
+//         {
+//         }
+//         if($usuario!=null)
+//         {
+//             if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR || $usuario->tipoUsuarioId == \TipoUsuario::USUARIO)
+//                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','valor'=>$usuario->id]);
+//         }
         
         $and = $this->and($filtros);
        
-        $consulta = "SELECT UP.id, codigo, P.nombre
-                    FROM usuarios_procedimientos UP
-                    	INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
-                        INNER JOIN usuarios U ON U.id = UP.usuario_id
-                    WHERE UP.estatus = 1 
+//         $consulta = "SELECT UP.id, codigo, P.nombre
+//                     FROM usuarios_procedimientos UP
+//                     	INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
+//                         INNER JOIN usuarios U ON U.id = UP.usuario_id
+//                     WHERE UP.estatus = 1 
+//                     	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) ) " . $and . " " .
+//                     "ORDER BY codigo";
+
+        $consulta = $this->consultaBase .
+                   " WHERE UP.estatus = 1
                     	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) ) " . $and . " " .
-                    "ORDER BY codigo";
+                    	"ORDER BY codigo";
+        
+        
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($this->bind_param($sentencia, $filtros))
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $codigo,$nombre))
+                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones,$codigo,$usuarioApellido ))
                     {
                         while($sentencia->fetch())
                         {
-                            $procedimiento= (object) [
-                                'id' =>  $id,
-                                'codigo' =>  $codigo,
-                                'nombre' =>  $nombre
-                            ];
-                            array_push($registros,$procedimiento);
+//                             $procedimiento= (object) [
+//                                 'id' =>  $id,
+//                                 'codigo' =>  $codigo,
+//                                 'nombre' =>  $nombre
+//                             ];
+                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones,$codigo,$usuarioApellido );
+                            array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
                     }
@@ -239,11 +269,11 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones ))
+                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones,$codigo,$usuarioApellido ))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones );
+                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones,$codigo,$usuarioApellido );
                             $resultado->valor = $registro;
                         }
                         else
@@ -292,21 +322,30 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
         return $resultado;
     }
 
-    private function crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones )
+    private function crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$limitarJustificaciones,$limiteJustificaciones, $codigo, $usuarioApellido )
     {
         $registro= (object) 
         [
             'id' => $id,
             'usuarioId' => $usuarioId,
             'usuarioNombre' => $usuarioNombre,
-            'procedimientoId' => $procedimientoId,
-            'procedimientoNombre' => $procedimientoNombre,
+            'usuarioApellido' => $usuarioApellido,
+            'id' => $procedimientoId,
+            'nombre' => $procedimientoNombre,
+            'codigo' => $codigo,
             'fechaAlta' => $fechaAlta,
             'fechaCancelacion' => $fechaCancelacion,
             'estatus' => $estatus,
             'limitarJustificaciones' => $limitarJustificaciones,
             'limiteJustificaciones' => $limiteJustificaciones
         ];
+        
+        $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
+        $registro->fotoPerfil =  "../fotos/usuario". $registro->usuarioId .".jpg";
+        if(file_exists($registro->fotoPerfil))
+            $registro->fotoPerfil =  "php/fotos/usuario". $registro->usuarioId .".jpg";
+        else
+            $registro->fotoPerfil =  "php/fotos/default.jpg";
         return $registro;
     }
 }

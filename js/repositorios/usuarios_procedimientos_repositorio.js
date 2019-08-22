@@ -19,11 +19,11 @@ class UsuariosProcedimientosRepositorio extends Repositorio
 	       },
 	       error: function( jqXhr, textStatus, errorThrown )
 	       {
-	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	      	 funcion.call(contexto,{ mensajeError : errorThrown});
 	       },
 	       fail: function( jqXhr, textStatus, errorThrown )
 	       {
-	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	      	 funcion.call(contexto,{ mensajeError : errorThrown});
 	       }
 	   });
 	}
