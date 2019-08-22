@@ -593,9 +593,19 @@ class PlantillasVista extends CatalogoVista
 			this.listaPreguntas.preguntas = seccion.preguntas;
 		else
 			this.listaPreguntas.preguntas = [];
+		
+		this._seccionIdSeleccionada = seccion;
 	}
 	
+	get seccionIdSeleccionada()
+	{
+		return this._seccionIdSeleccionada.id;
+	}
 	
+	get plantillaId()
+	{
+		return this._llaves.id; 
+	}
 	
 	cancelarRespuestas()
 	{
@@ -611,6 +621,8 @@ class PlantillasVista extends CatalogoVista
 		this.preguntaEdicion = this.listaPreguntas.getPregunta(preguntaId);
 		this.listaRespuestas.categorias = this._categorias;
 		this.listaRespuestas.respuestas = this.preguntaEdicion.respuestas_si;
+		
+		this._preguntaIdSeleccionada = preguntaId;
 	}
 	
 	editarRespuestasNo(preguntaId)
@@ -621,6 +633,13 @@ class PlantillasVista extends CatalogoVista
 		this.preguntaEdicion = this.listaPreguntas.getPregunta(preguntaId);
 		this.listaRespuestas.categorias = this._categorias;
 		this.listaRespuestas.respuestas = this.preguntaEdicion.respuestas_no;
+		
+		this._preguntaIdSeleccionada = preguntaId;
+	}
+	
+	get preguntaIdSeleccionada()
+	{
+		return this._preguntaIdSeleccionada;
 	}
 	
 	guardar()
@@ -636,6 +655,11 @@ class PlantillasVista extends CatalogoVista
 		}
 	}
 	
+	cerrarRespuestas()
+	{
+		$('#ventanaRespuestasContenedor').fadeOut(this.velocidadAnimacion);
+	}
+	
 	guardarRespuestas()
 	{
 		if(this.preguntaEdicion!=null)
@@ -645,17 +669,28 @@ class PlantillasVista extends CatalogoVista
 			{
 				this.preguntaEdicion.respuestas_si = this.listaRespuestas.respuestas;
 				var peso = this.listaPreguntas.getPeso(this.preguntaEdicion.id);
-				if(peso==0)
-				{
+				//if(peso==0)
+				//{
 					this.listaPreguntas.setPeso(this.preguntaEdicion.id,this.preguntaEdicion.respuestas_si.length+1);
-				}
+				//}
+				if(this.modo==Modo.CAMBIO)
+					this.presentador.guardarRespuestasSi();
 			}
 			else
+			{
 				this.preguntaEdicion.respuestas_no = this.listaRespuestas.respuestas;
+				if(this.modo==Modo.CAMBIO)
+					this.presentador.guardarRespuestasNo();
+			}
 		}
 			
 			
 		$('#ventanaRespuestasContenedor').fadeOut(this.velocidadAnimacion);
+	}
+	
+	get respuestas()
+	{
+		return this.listaRespuestas.respuestas;
 	}
 	
 	editar(id)
@@ -666,6 +701,7 @@ class PlantillasVista extends CatalogoVista
 		$('#nombreInput').focus();				
 		this.inicializarValidacionesFormulario();
 		this.presentador.consultarPorLlaves();
+		//this._plantillaId =id;
 	}
 	
 	editarSecciones()

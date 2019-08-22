@@ -5,24 +5,43 @@ class PlantillasPresentador extends CatalogoPresentador
 		 super(vista, new PlantillasRepositorio());
 	 }
 	 
-//	 consultar()
-//	 {
-//		 this.vista.mostrarIndicador();
-//		 var repositorio = new PlantillasRepositorio(this);		
-//		 repositorio.consultar(this,this.consultarResultado,this.vista.criteriosSeleccion);
-//	 }
-//	 
-//	 consultarResultado(resultado)
-//	 {
-//		this.vista.ocultarIndicador();	
-//		if(resultado.mensajeError=="")
-//			this.vista.datos = resultado.valor;
-//		else
-//			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-//		
-//	 }
-//	 
+	 guardarRespuestasSi()
+	 {
+		 this.vista.mostrarIndicador();
+		 var repositorio = new PlantillasRepositorio(this);		
+		 repositorio.guardarRespuestasSi(this,this.guardarRespuestasSiResultado,this.vista.plantillaId,this.vista.seccionIdSeleccionada,this.vista.preguntaIdSeleccionada,this.vista.respuestas);
+	 }
 	 
+	 guardarRespuestasSiResultado(resultado)
+	 {
+		this.vista.ocultarIndicador();	
+		if(resultado.mensajeError=="")
+		{
+			this.vista.mostrarMensaje("Notificación","Guardado.")
+		}
+		else
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		
+	 }
+	 
+	 guardarRespuestasNo()
+	 {
+		 this.vista.mostrarIndicador();
+		 var repositorio = new PlantillasRepositorio(this);		
+		 repositorio.guardarRespuestasNo(this,this.guardarRespuestasNoResultado,this.vista.plantillaId,this.vista.seccionIdSeleccionada,this.vista.preguntaIdSeleccionada,this.vista.respuestas);
+	 }
+	 
+	 guardarRespuestasNoResultado(resultado)
+	 {
+		this.vista.ocultarIndicador();	
+		if(resultado.mensajeError=="")
+		{
+			this.vista.mostrarMensaje("Notificación","Guardado.")
+		}
+		else
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		
+	 }
 	 
 	 consultarCategorias()
 	 {

@@ -93,6 +93,10 @@ try
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 $resultado = $repositorio->consultar($criteriosSeleccion);               
             break;
+            case 'consultarAdministradores':
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarAdministradores($criteriosSeleccion);
+            break;
             case 'consultarPermisos':
                 $nombreUsuario = REQUEST('nombreUsuario');
                 $contrasena = REQUEST('contrasena');

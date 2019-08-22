@@ -45,8 +45,20 @@ try
                 $resultado = $repositorio->actualizar($modelo) ;
             break;
             case 'consultar':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultar($criteriosSeleccion);
+                $resultado = $repositorio->consultar($criteriosSeleccion,$usuario);
+            break;
+            case 'marcarComoLeido':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $mensajeId = REQUEST('mensajeId');
+                $resultado = $repositorio->marcarComoLeido($mensajeId,$usuario);
             break;
             case 'consultarPorLlaves':
                 $llaves = json_decode(REQUEST('llaves'));
@@ -55,6 +67,13 @@ try
             case 'eliminar':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);
+            break;
+            case 'consultarNumeroMensajesNoLeidos':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $resultado = $repositorio->consultarNumeroMensajesNoLeidos($usuario);
             break;
             default:
                 $resultado->mensajeError = 'Acción no válida';

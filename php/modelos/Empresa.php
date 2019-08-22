@@ -14,5 +14,6 @@ class Empresa
     public $estadoId;
     public $ciudadId;
     public $corporativoId;
+    public $administradorId;
 }
 

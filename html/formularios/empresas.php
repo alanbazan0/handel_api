@@ -75,6 +75,12 @@
                       	 	<select name="corporativoSelect" id="corporativoSelect" class="form-control"></select>
                       	 </div> 
                       </div>   
+                       <div class="form-group">   
+                      	<div>
+                      	 	<label for="administradorSelect" class="control-label mb-1">Resposable de validación de evidencias (SAHA)</label>
+                      	 	<select name="administradorSelect" id="administradorSelect" class="form-control"></select>
+                      	 </div> 
+                      </div>  
                       <div class="form-group">
                       		<label class="control-label mb-1">Activo</label>
                      		<label class="switch switch-3d switch-success mr-3">

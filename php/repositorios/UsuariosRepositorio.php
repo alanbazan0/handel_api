@@ -325,6 +325,76 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         return $resultado;     
     }   
     
+    public function consultarAdministradores()
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $filtros = array();
+        $where="";
+//         if($criteriosSeleccion!=null)
+//         {
+//             if(isset($criteriosSeleccion->nombre))
+//                 array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'U','campo'=>'nombre','valor'=>$criteriosSeleccion->nombre]);
+//             if(isset($criteriosSeleccion->apellido))
+//                 array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'U','campo'=>'apellido','valor'=>$criteriosSeleccion->apellido]);
+//                 if(isset($criteriosSeleccion->empresaId))
+//                 {
+//                     if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
+//                         array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+//                 }
+//                 if(isset($criteriosSeleccion->sedeId))
+//                 {
+//                     if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
+//                         array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+//                 }
+//                 if(isset($criteriosSeleccion->tipoUsuarioId))
+//                 {
+//                     if($criteriosSeleccion->tipoUsuarioId!="" && $criteriosSeleccion->tipoUsuarioId!=null)
+//                         array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'tipo_usuario_id','valor'=>$criteriosSeleccion->tipoUsuarioId]);
+//                 }
+//                 $where = $this->where($filtros);
+//         }
+
+        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'tipo_usuario_id','valor'=> \TipoUsuario::ADMINISTRADOR]);
+        $where = $this->where($filtros);
+        
+        $consulta =  $this->consultaBase .
+        $where .
+        " ORDER BY U.nombre";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            //if($sentencia->bind_param("ss",$criteriosSeleccion->nombre,$criteriosSeleccion->apellido))
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7)  )
+                    {
+                        while($row = $sentencia->fetch())
+                        {
+                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7);
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado.";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            
+            return $resultado;
+    }   
+    
     
     public function consultarSupervisoresPorEmpresa($empresaId,$usuarioId)
     {

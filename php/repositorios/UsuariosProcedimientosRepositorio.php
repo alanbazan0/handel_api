@@ -190,7 +190,7 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
                     	INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
                         INNER JOIN usuarios U ON U.id = UP.usuario_id
                     WHERE UP.estatus = 1 
-                    	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = MONTH(NOW())) " . $and . " " .
+                    	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) ) " . $and . " " .
                     "ORDER BY codigo";
         if($sentencia = $this->conexion->prepare($consulta))
         {

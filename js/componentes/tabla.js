@@ -15,6 +15,12 @@ class Tabla
 		this._alto =  $("body").height() - 350 ;
 		this._registrosPagina = 50;
 		this._textoTablaVacia = "Ning&uacute;n dato disponible en esta tabla";
+		this._ocultarEncabezados = false;
+	}
+	
+	set ocultarEncabezados(ocultarEncabezados)
+	{
+		this._ocultarEncabezados = ocultarEncabezados;
 	}
 	
 	set alto(alto)
@@ -114,7 +120,12 @@ class Tabla
 				alineacion ="dt-body-center";
 			else if(columna.alineacion=="D")
 				alineacion ="dt-body-right";
-			var columnaDataTable = {orderable: false, targets : i, className : alineacion};
+			
+			var clase = "";
+			if(columna.clase!=null)
+				clase = columna.clase;
+			
+			var columnaDataTable = {orderable: false, targets : i, className : alineacion + " "+ clase};
 			
 			if(columna.longitud!=undefined)
 				columnaDataTable.width = columna.longitud +"px";
@@ -146,13 +157,21 @@ class Tabla
 	
 	renderizarRegistros()
 	{
-	
+		var _this = this;
 		
 		
 		$('#'+this._id+"Table").DataTable( {
+				stateSave: true,
 			  data: this._registros,
 			  "drawCallback": function( settings ) {
 				  $(".paginate_button").attr("href","#");
+				  
+				  if(_this._ocultarEncabezados)
+				  {
+					  $(".dataTable thead").hide();
+				  }
+					  
+				  
 			    },
 			    "pageLength": this._registrosPagina,
 			    "fnInitComplete":function()

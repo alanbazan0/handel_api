@@ -27,8 +27,9 @@ class CatalogoVista extends Vista
 		});
 		
 		
+		
 		this.crearColumnasGrid();		
-		this.presentador.consultar();
+		this.consultar();
 	}
 	
 	actualizarSesion()
@@ -160,12 +161,34 @@ class CatalogoVista extends Vista
 	
 	consultar()
 	{	
+		
+		this.consultarNumeroMensajesNoLeidos();
+		
 		if(this.presentador!=null)
 		{
 			$("#tablaTabla_processing").show();
 			this.presentador.consultar();
 		}
 	}	
+	
+	consultarNumeroMensajesNoLeidos()
+	{
+		if($("#mensajesLi").length>0)
+		{
+			this.presentador.consultarNumeroMensajesNoLeidos();
+		}
+	}
+	
+	set numeroMensajesNoLeidos(numeroMensajesNoLeidos)
+	{
+		if(numeroMensajesNoLeidos>0)
+		{
+			var html = "<small id='mensajesSmall' class='label pull-right bg-yellow'>"+numeroMensajesNoLeidos+"</small>";
+			$("#mensajesNotificacionSpan").html(html)
+		}
+		else
+			$("#mensajesNotificacionSpan").html("");
+	}
 	
 	crearColumnasGrid()
 	{

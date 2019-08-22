@@ -24,11 +24,11 @@ class UsuariosRepositorio extends Repositorio
              },
              error: function( jqXhr, textStatus, errorThrown )
              {
-            	 funcion.call(contexto,{ mensajeError : textStatus});
+            	 funcion.call(contexto,{ mensajeError : errorThrown});
              },
              fail: function( jqXhr, textStatus, errorThrown )
              {
-            	 funcion.call(contexto,{ mensajeError : textStatus});
+            	 funcion.call(contexto,{ mensajeError : errorThrown});
              }
          });
 		
@@ -49,23 +49,17 @@ class UsuariosRepositorio extends Repositorio
              },
              error: function( jqXhr, textStatus, errorThrown )
              {
-            	 funcion.call(contexto,{ mensajeError : textStatus});
+            	 funcion.call(contexto,{ mensajeError : errorThrown});
              },
              fail: function( jqXhr, textStatus, errorThrown )
              {
-            	 funcion.call(contexto,{ mensajeError : textStatus});
+            	 funcion.call(contexto,{ mensajeError : errorThrown});
              }
          });
 		
 	
 	}
 	
-//	iniciarSesionResultado(resultado)
-//	{
-//		var datos = JSON.parse(resultado);
-//		this.functionRetorno.call(this.contexto,JSON.parse(resultado));
-//	}	
-//	
 	cerrarSesion(contexto,funcion)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;
@@ -79,11 +73,11 @@ class UsuariosRepositorio extends Repositorio
             },
             error: function( jqXhr, textStatus, errorThrown )
             {
-           	 funcion.call(contexto,{ mensajeError : textStatus});
+           	 funcion.call(contexto,{ mensajeError : errorThrown});
             },
             fail: function( jqXhr, textStatus, errorThrown )
             {
-           	 funcion.call(contexto,{ mensajeError : textStatus});
+           	 funcion.call(contexto,{ mensajeError : errorThrown});
             }
         });
 	}
@@ -101,11 +95,11 @@ class UsuariosRepositorio extends Repositorio
            },
            error: function( jqXhr, textStatus, errorThrown )
            {
-          	 funcion.call(contexto,{ mensajeError : textStatus});
+          	 funcion.call(contexto,{ mensajeError : errorThrown});
            },
            fail: function( jqXhr, textStatus, errorThrown )
            {
-          	 funcion.call(contexto,{ mensajeError : textStatus});
+          	 funcion.call(contexto,{ mensajeError : errorThrown});
            }
        });
 	}
@@ -123,11 +117,11 @@ class UsuariosRepositorio extends Repositorio
            },
            error: function( jqXhr, textStatus, errorThrown )
            {
-          	 funcion.call(contexto,{ mensajeError : textStatus});
+          	 funcion.call(contexto,{ mensajeError : errorThrown});
            },
            fail: function( jqXhr, textStatus, errorThrown )
            {
-          	 funcion.call(contexto,{ mensajeError : textStatus});
+          	 funcion.call(contexto,{ mensajeError : errorThrown});
            }
        });
 	}
@@ -153,13 +147,34 @@ class UsuariosRepositorio extends Repositorio
              },
              error: function( jqXhr, textStatus, errorThrown )
              {
-            	 funcion.call(contexto,{ mensajeError : textStatus});
+            	 funcion.call(contexto,{ mensajeError : errorThrown});
              },
              fail: function( jqXhr, textStatus, errorThrown )
              {
-            	 funcion.call(contexto,{ mensajeError : textStatus});
+            	 funcion.call(contexto,{ mensajeError : errorThrown});
              }
          });
-		
+	}
+	
+	consultarAdministradores(contexto,funcion)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+           url: url,
+           type: 'POST',
+           data: {accion : "consultarAdministradores" },
+           success: function( data, textStatus, jQxhr )
+           {
+               funcion.call(contexto,data);
+           },
+           error: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : errorThrown});
+           },
+           fail: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : errorThrown});
+           }
+       });
 	}
 }

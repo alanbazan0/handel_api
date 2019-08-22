@@ -87,6 +87,24 @@ try
                     $resultado=$adminstradorArchivos->eliminar($carpeta,$nombreArchivo);
                 }
             break;
+            case 'guardarRespuestasSi':
+                $plantillaId = REQUEST('plantillaId');
+                $seccionId = REQUEST('seccionId');
+                $preguntaId = REQUEST('preguntaId');
+                $json = json_decode(REQUEST('respuestas'));
+                $mapper = new JsonMapper();
+                $respuestas = $mapper->mapArray($json, array());
+                $resultado = $repositorio->guardarRespuestasSi($plantillaId,$seccionId,$preguntaId,$respuestas);
+            break;
+            case 'guardarRespuestasNo':
+                $plantillaId = REQUEST('plantillaId');
+                $seccionId = REQUEST('seccionId');
+                $preguntaId = REQUEST('preguntaId');
+                $json = json_decode(REQUEST('respuestas'));
+                $mapper = new JsonMapper();
+                $respuestas = $mapper->mapArray($json, array());
+                $resultado = $repositorio->guardarRespuestasNo($plantillaId,$seccionId,$preguntaId,$respuestas);
+                break;
             default:
                 $resultado->mensajeError = "Acción no válida";
             break;

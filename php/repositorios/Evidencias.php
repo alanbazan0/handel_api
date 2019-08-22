@@ -92,6 +92,18 @@ try
                 $evidenciaId = REQUEST('evidenciaId');
                 $resultado = $repositorio->consultarComentariosEvidencia($evidenciaId);
             break;
+            case 'consultarEvidenciasMesActual':
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarEvidenciasMesActual($criteriosSeleccion);
+            break;
+            case 'consultarPorcentajesEvidenciasMesActual':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarPorcentajesEvidenciasMesActual($usuario,$criteriosSeleccion);
+            break;
             default:
                 $resultado->mensajeError = 'Acción no válida';
             break;

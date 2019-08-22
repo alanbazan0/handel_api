@@ -223,4 +223,20 @@ class EmpresasPresentador extends CatalogoPresentador
 			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 	 }
 	 
+	 consultarAdministradores()	
+	 {
+		 var repositorio = new UsuariosRepositorio(this);		
+		 repositorio.consultarAdministradores(this,this.consultarAdministradoresResultado);
+	 }
+	 
+	 consultarAdministradoresResultado(resultado)
+	 {
+		if(resultado.mensajeError=="")
+		{
+			this.vista.administradores = resultado.valor;		
+		}
+		else
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+	 }
+	 
 }
