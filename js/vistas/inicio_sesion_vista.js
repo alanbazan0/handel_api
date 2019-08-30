@@ -19,6 +19,11 @@ class InicioSesionVista extends Vista
 		return $("body").attr("data-aplicacionId");
 	}
 	
+	get aplicacionVersion()
+	{
+		return $("body").attr("data-aplicacionVersion");
+	}
+	
 	inicializarValidacionesCuenta()
 	{
         jQuery("#inicioSesionForm").validate({

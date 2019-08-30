@@ -7,7 +7,9 @@ class Vista
 	
 	inicializar()
 	{
-		
+		$("body").data("_this",this);
+		if($("#enviarMensajeLink").length>0)
+			$("#enviarMensajeLink").click(this.enviarMensajeLinkClick)
 	}
 	salir()
 	{
@@ -286,5 +288,145 @@ class Vista
 			    }
 			});
 		}
-	
+	 
+	 
+		mostrarEnviarMensaje()
+		{
+			if($("#modalAlta").length ==0)
+			{
+				var url = HANDEL_API + "/html/modales/enviar_mensaje.php";
+				this.mostrarIndicador();
+				var _this = this;
+				$.post(url,{}, function(html) 
+				{
+					_this.ocultarIndicador();
+					$("body").append(html);
+					//$("#mensajeInput").wysihtml5();
+					$('#mensajeInput').wysihtml5({
+						  toolbar: {
+						    "font-styles": true, // Font styling, e.g. h1, h2, etc.
+						    "emphasis": true, // Italics, bold, etc.
+						    "lists": true, // (Un)ordered lists, e.g. Bullets, Numbers.
+						    "html": false, // Button which allows you to edit the generated HTML.
+						    "link": false, // Button to insert a link.
+						    "image": false, // Button to insert an image.
+						    "color": false, // Button to change color of font
+						    "blockquote": true, // Blockquote
+						    "size": "sm" // options are xs, sm, lg
+						  }
+						});
+					$("#modalAlta").on("hidden.bs.modal", function () {
+						$("#modalAlta").remove();
+					});
+					
+					$("#modalAlta").on("show.bs.modal", function () 
+					{
+						_this.inicializarValidacionesMensaje();
+						$("#guardarButton").click(function () 
+						{
+							 $("#formulario").submit();
+//							var comentario = $("#mensajeInput").val().trim();
+//							if(comentario!="")
+//								_this.enviarMensaje();
+						});
+						$("#mensajeInput").keypress(function(event){
+						    var keycode = (event.keyCode ? event.keyCode : event.which);
+						    if(keycode == '13')
+						    {
+						    	 $("#formulario").submit();
+//						    	var comentario = $("#mensajeInput").val().trim();
+//								if(comentario!="")
+//									_this.enviarMensaje();
+						    }
+						});
+						
+//						$("#").click(function () 
+//						{
+//							 $("#formulario").submit();
+//						});
+						
+					});
+				
+					
+				
+					
+				
+					
+					$("#modalAlta").modal({backdrop: 'static', keyboard: false});
+				});
+			}
+			else
+			{
+				$("#modalAlta").modal({backdrop: 'static', keyboard: false});
+			}
+		}
+		
+		inicializarValidacionesMensaje()
+		{
+			var _this = this;
+			jQuery("#formulario").validate({
+	            ignore: [],
+	            errorClass: "invalid-feedback animated fadeInDown",
+	            errorElement: "div",
+	            errorPlacement: function(e, a) {
+	                jQuery(a).parents(".form-group > div").append(e)
+	            },
+	            highlight: function(e) {
+	                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+	            },
+	            success: function(e) {
+	                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+	            },
+	            rules: {
+	                "asuntoInput": {
+	                    required: !0
+	                },
+	                "mensajeInput": {
+	                    required: !0
+	                }
+	            },
+	            messages: {
+	                "asuntoInput": "Por favor ingrese un asunto",
+	                "mensajeInput": "Por favor ingrese un mensaje"
+	               
+	                	
+	                
+	            },
+	            submitHandler:function (form) {
+	            	 _this.enviarMensaje();
+	            }
+	        });
+		}
+		
+		
+		enviarMensajeLinkClick(event)
+		{
+			var _this = $("body").data("_this");
+			_this.mostrarEnviarMensaje();
+		}
+		
+		enviarMensaje()
+		{
+			
+			this.presentador.enviarMensaje();
+			$("#mensajeInput").val("");
+		}
+		
+		get modeloMensaje()
+		{
+			var modelo =
+			{
+				
+				asunto: $("#asuntoInput").val(),
+				mensaje: $("#mensajeInput").val()
+			};
+			return modelo;
+		}
+		
+		mensajeEnviado()
+		{
+			$("#modalAlta").modal('hide');
+			this.mostrarMensaje("","El mensaje fue enviado.")
+		}
+		
 }

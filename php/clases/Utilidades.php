@@ -25,6 +25,22 @@ function GET_IP()
     return "";
 }
 
+function GET_REFERER()
+{
+    if (isset($_SERVER['HTTP_REFERER']))
+        return $_SERVER['HTTP_REFERER'];
+        
+        return "";
+}
+
+function GET_USER_AGENT()
+{
+    if (isset($_SERVER['HTTP_USER_AGENT']))
+        return $_SERVER['HTTP_USER_AGENT'];
+        
+        return "";
+}
+
 function FILES($name)
 {
     if (isset($_FILES[$name]))

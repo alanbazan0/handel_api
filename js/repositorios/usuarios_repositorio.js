@@ -10,21 +10,24 @@ class UsuariosRepositorio extends Repositorio
 			});
 	}
 	
-	iniciarSesion(contexto,funcion, nombreUsuario, contrasena, aplicacionId)
+	iniciarSesion(contexto,funcion, nombreUsuario, contrasena, aplicacionId,aplicacionVersion)
 	{		
 		
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
              url: url,
              type: 'POST',
-             data: {accion : "iniciarSesion", nombreUsuario : nombreUsuario, contrasena : contrasena, aplicacionId: aplicacionId },
+             data: {accion : "iniciarSesion", nombreUsuario : nombreUsuario, contrasena : contrasena, aplicacionId: aplicacionId,aplicacionVersion: aplicacionVersion },
              success: function( data, textStatus, jQxhr )
              {
                  funcion.call(contexto,data);
              },
              error: function( jqXhr, textStatus, errorThrown )
              {
-            	 funcion.call(contexto,{ mensajeError : errorThrown});
+            	 if(textStatus=="parsererror")
+            		 funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+            	 else
+            		 funcion.call(contexto,{ mensajeError : errorThrown});
              },
              fail: function( jqXhr, textStatus, errorThrown )
              {

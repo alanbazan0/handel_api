@@ -793,7 +793,7 @@ function generarCamposFormulario($campos)
             $html.="\n                          <label class='control-label mb-1'>$titulo</label>";
             
             if($campo->llave=="MUL")
-                $html.="\n                          <select id='".$nombreComponente."Select' name='".$nombreComponente."Select' type='text' class='form-control'></select>";
+                $html.="\n                          <select id='".$nombreComponente."Select' name='".$nombreComponente."Select' class='form-control'></select>";
             else 
                 $html.="\n                          <input  id='".$nombreComponente."Input' name='".$nombreComponente."Input' type='text' class='form-control'>";
                 

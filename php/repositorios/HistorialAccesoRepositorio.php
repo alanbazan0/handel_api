@@ -16,19 +16,23 @@ class HistorialAccesoRepositorio extends RepositorioBase implements IHistorialAc
         $this->conexion = $conexion;
     } 
  
-    public function insertar($nombreUsuario,$ip)
+    public function insertar($nombreUsuario,$aplicacionId,$aplicacionVersion)
     {        
+        $ip = GET_IP();
+        $referer = GET_REFERER();
+        $userAgent = GET_USER_AGENT();
+        
         $resultado =  $this->calcularId("id","historial_acceso");
         
         if($resultado->mensajeError=="")
         {
             $id = $resultado->valor;           
             ;
-            $consulta = "INSERT INTO historial_acceso(id, nombre_usuario, ip, fecha) " .
-                        "VALUE(?, ?, ?, NOW())";
+            $consulta = "INSERT INTO historial_acceso(id, nombre_usuario, ip, referer, user_agent, fecha, aplicacion_id, aplicacion_version) " .
+                        "VALUE(?, ?, ?, ?, ?, NOW(),?, ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if( $sentencia->bind_param("iss", $id, $nombreUsuario,$ip))
+                if( $sentencia->bind_param("issssss", $id,$nombreUsuario,$ip,$referer,$userAgent,$aplicacionId,$aplicacionVersion))
                 {
                     if(!$sentencia->execute())                
                         $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;                       

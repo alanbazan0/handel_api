@@ -18,21 +18,21 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
     {
         $this->conexion = $conexion;
         $this->consultaBase = "SELECT M.id, mensaje, IFNULL(DATE_FORMAT(fecha,'%m/%d/%Y %H:%i:%s'),'') as fecha, usuario_id, U.nombre as usuarioNombre, U.apellido,
-                                EXISTS(SELECT mensaje_id FROM mensajes_leidos ML WHERE ML.mensaje_id = M.id AND usuario_id = ?) leido
+                                EXISTS(SELECT mensaje_id FROM mensajes_leidos ML WHERE ML.mensaje_id = M.id AND usuario_id = ?) leido, IFNULL(asunto,'')
                             FROM mensajes M
                                 INNER JOIN usuarios U ON U.id = M.usuario_id ";
     }
 
-    public function insertar(Mensaje $modelo)
+    public function insertar(Mensaje $modelo,$usuario)
     {
         $resultado = $this->calcularId('id','mensajes');
         if($resultado->mensajeError=='')
         {
             $id = $resultado->valor;
-            $consulta = "INSERT INTO mensajes(id, mensaje, usuario_id,fecha)VALUES(?, ?, ?,NOW())";
+            $consulta = "INSERT INTO mensajes(id, mensaje, usuario_id,fecha,asunto)VALUES(?, ?, ?,NOW(),?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param('isi', $id, $modelo->mensaje,$modelo->usuarioId))
+                if($sentencia->bind_param('isis', $id, $modelo->mensaje,$usuario->id,$modelo->asunto))
                 {
                     if(!$sentencia->execute())
                         $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
@@ -52,11 +52,12 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
         $consulta = "UPDATE mensajes
                      SET 
                          mensaje = ?,
-                         fecha = ?
+                         fecha = ?,
+                         asunto = ?
                      WHERE id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param('ssi',$modelo->mensaje, $modelo->fecha ,$modelo->id ))
+            if($sentencia->bind_param('sssi',$modelo->mensaje, $modelo->fecha ,$modelo->asunto,$modelo->id ))
             {
                 if($sentencia->execute())
                 {
@@ -132,13 +133,13 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
         $resultado = new Resultado();
         $consulta = "SELECT COUNT(*)
                     FROM appshand_saha.mensajes
-                    WHERE id NOT IN(SELECT mensaje_id FROM mensajes_leidos WHERE usuario_id = ?) ";
+                    WHERE id NOT IN(SELECT mensaje_id FROM mensajes_leidos WHERE usuario_id = ?) and usuario_id != ?";
         
         $resultado->valor = 0;
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("i", $usuario->id))
+            if($sentencia->bind_param("ii", $usuario->id, $usuario->id))
             {
                 if($sentencia->execute())
                 {
@@ -170,11 +171,11 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
         $resultado = new Resultado();
         $registros = array();
         $filtros = array();
-        $where='';
-        if($criteriosSeleccion!=null)
-        {
-            $where = $this->where($filtros);
-        }
+        $where= "";  //' and usuario_id != ?';
+//         if($criteriosSeleccion!=null)
+//         {
+//             $where = $this->where($filtros);
+//         }
         $consulta = $this->consultaBase . $where . ' ORDER BY fecha DESC';
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -182,11 +183,11 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $mensaje, $fecha,$usuarioId, $usuarioNombre, $usuarioApellido,$leido))
+                    if($sentencia->bind_result($id, $mensaje, $fecha,$usuarioId, $usuarioNombre, $usuarioApellido,$leido,$asunto))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $mensaje, $fecha,$usuarioId, $usuarioNombre, $usuarioApellido,$leido);
+                            $registro = $this->crearRegistro($id, $mensaje, $fecha,$usuarioId, $usuarioNombre, $usuarioApellido,$leido,$asunto);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -216,11 +217,11 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $mensaje, $fecha,$usuarioId, $usuarioNombre, $usuarioApellido,$leido))
+                    if($sentencia->bind_result($id, $mensaje, $fecha,$usuarioId, $usuarioNombre, $usuarioApellido,$leido,$asunto))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $mensaje, $fecha,$usuarioId, $usuarioNombre, $usuarioApellido,$leido);
+                            $registro = $this->crearRegistro($id, $mensaje, $fecha,$usuarioId, $usuarioNombre, $usuarioApellido,$leido,$asunto);
                             $resultado->valor = $registro;
                         }
                         else
@@ -269,7 +270,7 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
         return $resultado;
     }
 
-    private function crearRegistro($id, $mensaje, $fecha, $usuarioId, $usuarioNombre, $usuarioApellido,$leido)
+    private function crearRegistro($id, $mensaje, $fecha, $usuarioId, $usuarioNombre, $usuarioApellido,$leido,$asunto)
     {
         $registro= (object) 
         [
@@ -279,7 +280,8 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
             'usuarioId' => $usuarioId,
             'usuarioNombre' => $usuarioNombre,
             'usuarioApellido' => $usuarioApellido,
-            'leido' => $leido
+            'leido' => $leido,
+            'asunto' => $asunto
         ];
         
         $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;

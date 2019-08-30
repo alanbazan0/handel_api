@@ -4,6 +4,6 @@ namespace php\interfaces;
 
 interface IHistorialAccesoRepositorio
 {
-    public function insertar($nombreUsuario,$ip);
+    public function insertar($nombreUsuario,$aplicacionId,$aplicacionVersion);
 }
 

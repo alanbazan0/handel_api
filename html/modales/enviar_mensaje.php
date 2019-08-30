@@ -16,29 +16,36 @@
 				</button>
 			</div>
 			<div class="modal-body">
-				
-				<div class="box-body chat" id="chatbox">
-					
-				</div>
-				<div class='form-group'>
-            		<h5>Este mensaje se enviará a todos los usuarios</h5>		
-            	</div>
+			<form id="formulario" action="#"  method="post">
+				<div class="form-group">
+					<div>
+                		<input id="asuntoInput" name="asuntoInput" class="form-control" placeholder="Asunto:">
+                	</div>
+              	</div>
+				 <div class="form-group">
+					 <div>
+                        <textarea id="mensajeInput" name='mensajeInput' class="form-control" style="height: 300px" spellcheck="false">
+                        </textarea>
+                        </div>
+             	 </div>
+			
             	<!-- /.chat -->
-            	<div class="box-footer">
-                	  <div class="input-group">
-                	  	<div>
-                			<input id="mensajeInput" class="form-control" placeholder="Ingrese un mensaje...">
-                		</div>
+<!--             	<div class="box-footer"> -->
+<!--                 	  <div class="input-group"> -->
+<!--                 	  	<div> -->
+<!--                 			<input id="mensajeInput" class="form-control" placeholder="Ingrese un mensaje..."> -->
+<!--                 		</div> -->
                 	
-                		<div class="input-group-btn">
-                		  <button id="enviarButton" type="button" class="btn btn-success"><i class="fa fa-send"></i></button>
-                		</div>
-            	 	 </div>
-            	</div>
-				
+<!--                 		<div class="input-group-btn"> -->
+<!--                 		  <button id="enviarButton" type="button" class="btn btn-success"><i class="fa fa-send"></i></button> -->
+<!--                 		</div> -->
+<!--             	 	 </div> -->
+<!--             	</div> -->
+				</form>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+				 <button  id="guardarButton" type="button" class="btn btn-primary"><i class="fa fa-send"></i> Enviar</button>
 <!-- 				<button id="guardarButton" type="submit" class="btn btn-primary" >Guardar</button> -->
 			</div>
 		</div>

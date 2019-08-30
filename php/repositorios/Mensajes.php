@@ -33,10 +33,15 @@ try
         switch($accion)
         {
             case 'insertar':
+                
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
                 $modelo = $mapper->map($json, new Mensaje());
-                $resultado = $repositorio->insertar($modelo);
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $resultado = $repositorio->insertar($modelo,$usuario);
             break;
             case 'actualizar':
                 $json = json_decode(REQUEST('modelo'));

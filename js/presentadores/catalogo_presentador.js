@@ -133,4 +133,31 @@ class CatalogoPresentador
 				 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar el registro. " + resultado.mensajeError);
 		 }
 	 }
+	 
+	 enviarMensaje()
+	 {
+		 this.vista.guardando = true;
+		 this.vista.mostrarIndicador();
+		 var repositorio = new MensajesRepositorio(this);		
+		 repositorio.insertar(this,this.enviarMensajeResultado,this.vista.modeloMensaje);
+	 }
+	
+	 
+	 enviarMensajeResultado(resultado)
+	 {
+		this.vista.ocultarIndicador();	
+		if(resultado.mensajeError=="")
+		{
+			this.vista.mensajeEnviado();
+		}
+		else
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		
+		 setTimeout(function()
+		{
+			 this.vista.guardando = false;
+         }, 2000);
+		
+	 }
+	 
 }

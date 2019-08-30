@@ -33,8 +33,21 @@ class MensajesVista extends CatalogoVista
 		    _this.mensajeSeleccionado  = table.row( tr ).data();
 			if (_this.mensajeSeleccionado != undefined)
 			{
-				//_this.modo = Modo.ALTA;
-				//procedimiento.usuarioProcedimientoId = procedimiento.id;
+				_this.mostrarModalMensaje();
+			
+			}
+		});
+		$(tbody).on("click", "button.leer", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+		    _this.mensajeSeleccionado  = table.row( tr ).data();
+			if (_this.mensajeSeleccionado != undefined)
+			{
 				_this.mostrarModalMensaje();
 			
 			}
@@ -63,13 +76,20 @@ class MensajesVista extends CatalogoVista
 				{
 					var fecha = new Date();
 					var foto = HANDEL_API + "/" + _this.mensajeSeleccionado.fotoPerfil+"?"+fecha.getTime();
+					
+					moment.locale('es') ;
+					
+					
+					var fecha = moment(_this.mensajeSeleccionado.fecha);
+					
 					var html="<div class='item'>" +
 					"<img src='"+foto+"' alt='user image' class='offline'> " +
 					"<p class='message'>" +
 					"  <a href='#' class='name'>" +
-					"	<small class='text-muted pull-right'><i class='fa fa-clock-o'></i> "+_this.mensajeSeleccionado.fecha +"</small>" + _this.mensajeSeleccionado.usuarioNombreCompleto +
-					"  </a>" + _this.mensajeSeleccionado.mensaje + 
-					"</p>" +
+					"	<small class='text-muted pull-right'><i class='fa fa-clock-o'></i> "+fecha.fromNow() +"</small>" + _this.mensajeSeleccionado.usuarioNombreCompleto +
+					"  </a> <label style='font-weight:bold'> " + _this.mensajeSeleccionado.asunto +"</label>"  +
+					"<br>" + _this.mensajeSeleccionado.mensaje +
+ 					"</p>" +
 				  "</div>";
 					$("#chatbox").html(html);
 					
@@ -122,14 +142,15 @@ class MensajesVista extends CatalogoVista
 		this.tabla._columnas = [
 //			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogo},
-			{longitud:200, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I",itemRenderer:this.renderNombre}, 
-			{longitud:200, 	titulo:"Mensaje",   alias:"mensaje", alineacion:"I",itemRenderer:this.renderMensaje}, 
+			{longitud:120, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I",itemRenderer:this.renderNombre}, 
+			{longitud:150, 	titulo:"Asunto",   alias:"asunto", alineacion:"I",itemRenderer:this.renderAsunto}, 
+			//{longitud:200, 	titulo:"Mensaje",   alias:"mensaje", alineacion:"I",itemRenderer:this.renderMensaje}, 
 			{longitud:200, 	titulo:"",   alias:"leido", alineacion:"I",itemRenderer:this.renderLeido}, 
 			{longitud:200, 	titulo:"Fecha",   alias:"fecha", alineacion:"I" ,itemRenderer:this.renderFecha}		
 			
 		]
 		
-//		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
+		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Ver'  type='button' class='leer btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-comments fa-lg'></span></button>";
 //									"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
 		this.tabla.registros = [];
@@ -172,6 +193,30 @@ class MensajesVista extends CatalogoVista
 			mensaje = renglon.mensaje.substring(0, maximo) + "...";
 		else
 			mensaje = renglon.mensaje;
+	
+		
+		var weight = "normal";
+		if(renglon.leido==0)
+			weight = "bold";
+		
+		var id = "mensajeSpan" + renglon.id;
+		var contenido = "";
+		contenido += "<span id='"+id+"' style='cursor:pointer;font-weight: "+weight+"' class='mensaje text-black'>"+mensaje+"</span>";
+	    return contenido;
+	}
+	
+	renderAsunto(renglon, type, set)
+	{   
+		var maximo = 100;
+		var mensaje = "";
+		if(renglon.asunto.length>maximo)
+			mensaje = renglon.asunto.substring(0, maximo) + "...";
+		else
+			mensaje = renglon.asunto;
+		
+		
+		if(mensaje=="")
+			mensaje = "(Sin asunto)";
 		
 		var weight = "normal";
 		if(renglon.leido==0)
@@ -367,6 +412,13 @@ class MensajesVista extends CatalogoVista
 //			this.consultoGrid=true;
 //		}
 //	}
+	
+	mensajeEnviado()
+	{
+		$("#modalAlta").modal('hide');
+		this.mostrarMensaje("","El mensaje fue enviado.")
+		this.consultar();
+	}
 
 	
 }
