@@ -32,7 +32,7 @@ $resultado = new Resultado();
 $conexion=null;
 //$diaLimite = 27;
 //PRUEBAS 31
-$diaLimite = 31;
+$diaLimite = 27;
 try
 {
     $conexion = $administrador_conexion->abrir();
@@ -104,9 +104,42 @@ try
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 $resultado = $repositorio->consultarPorcentajesEvidenciasMesActual($usuario,$criteriosSeleccion);
             break;
+            case 'consultarPorcentajesEmpresasMesActual':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarPorcentajesEmpresasMesActual($usuario,$criteriosSeleccion);
+            break;
+            case 'consultarPorcentajesAdministradoresMesActual':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarPorcentajesAdministradoresMesActual($usuario,$criteriosSeleccion);
+            break;
+            case 'consultarPorcentajesAreasMesActual':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarPorcentajesAreasMesActual($usuario,$criteriosSeleccion);
+            break;
+            case 'consultarPorcentajesUsuariosMesActual':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarPorcentajesUsuariosMesActual($usuario,$criteriosSeleccion);
+                break;
             default:
                 $resultado->mensajeError = 'Acción no válida';
             break;
+            
         }
     }
 }

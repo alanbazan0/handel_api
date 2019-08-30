@@ -339,6 +339,411 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         return $resultado;
     }
     
+    public function consultarPorcentajesEmpresasMesActual($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $filtros =  array();//$this->getFiltrosUsuario($usuario, $criteriosSeleccion);
+        
+//         $and = $this->and($filtros);
+        
+        
+        $consulta = "SELECT EM.id,EM.nombre , EM.nombre_corto,
+                    (
+                    	SELECT count(*) numero
+                    	FROM evidencias E1
+                    		INNER JOIN usuarios_procedimientos UP1 ON UP1.id = E1.usuario_procedimiento_id
+                    		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                            LEFT JOIN sedes S1 ON S1.id = U1.sede_id
+                    		LEFT JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                    	WHERE MONTH(E1.fecha_alta) = MONTH(E.fecha_alta)  AND YEAR(E1.fecha_alta) = YEAR(E.fecha_alta) AND justificacion_id IS NOT NULL AND EM1.id = EM.id
+                    ) justificadas,
+                    (
+                    	SELECT count(*) numero
+                    	FROM evidencias E1
+                    		INNER JOIN usuarios_procedimientos UP1 ON UP1.id = E1.usuario_procedimiento_id
+                    		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                            LEFT JOIN sedes S1 ON S1.id = U1.sede_id
+                    		LEFT JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                    	WHERE MONTH(E1.fecha_alta) = MONTH(E.fecha_alta)  AND YEAR(E1.fecha_alta) = YEAR(E.fecha_alta) AND justificacion_id IS NULL AND EM1.id = EM.id
+                    ) enviadas,
+                    (
+                    	SELECT count(*)
+                    	FROM usuarios_procedimientos UP1
+                    		INNER JOIN procedimientos P1 ON P1.id = UP1.procedimiento_id
+                    		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                    		LEFT JOIN sedes S1 ON S1.id = U1.sede_id
+                    		LEFT JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                    	WHERE UP1.estatus = 1 AND EM1.id = EM.id
+                    		AND UP1.id NOT IN(
+                    				SELECT usuario_procedimiento_id 
+                                    FROM evidencias E2 
+                    					INNER JOIN usuarios_procedimientos UP2 ON UP2.id = E2.usuario_procedimiento_id
+                    					INNER JOIN usuarios U2 ON U2.id = UP2.usuario_id
+                    					LEFT JOIN sedes S2 ON S2.id = U2.sede_id
+                    					LEFT JOIN empresas EM2 ON EM2.id = S2.empresa_id
+                                    WHERE MONTH(E2.fecha_alta) = MONTH(E.fecha_alta)  AND YEAR(E2.fecha_alta) = YEAR(E.fecha_alta) AND EM2.id = EM.id
+                                    ) 
+                    		
+                    )pendientes
+                    FROM evidencias E
+                    	INNER JOIN  usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
+                    	INNER JOIN usuarios U ON U.id = UP.usuario_id
+                    	LEFT JOIN sedes S ON S.id = U.sede_id
+                    	LEFT JOIN empresas EM ON EM.id = S.empresa_id
+                    WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW())
+                    GROUP BY EM.id, EM.nombre";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id, $nombre,$nombreCorto, $justificadas, $enviadas, $pendientes))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro= (object) [
+                                'id' =>  $id,
+                                'nombre' =>  $nombre,
+                                'nombreCorto' =>  $nombreCorto,
+                                'justificadas' =>  $justificadas,
+                                'enviadas' =>  $enviadas,
+                                'pendientes' =>  $pendientes
+                            ];
+                            
+                            $total = $registro->justificadas + $registro->enviadas + $registro->pendientes;
+                            $cumplimieto = $registro->justificadas + $registro->enviadas;
+
+                            $registro->cumplidas =$registro->justificadas + $registro->enviadas;
+                            $registro->porcentajeCumplimiento = $cumplimieto * 100 / $total;
+                            
+                            
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        return $resultado;
+    }
+    
+    public function consultarPorcentajesAreasMesActual($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $filtros =  array();//$this->getFiltrosUsuario($usuario, $criteriosSeleccion);
+        
+        //         $and = $this->and($filtros);
+        
+        
+        $consulta = "SELECT U.area_id,A.nombre,
+                    (
+                    	SELECT count(*) numero
+                    	FROM evidencias E1
+                    		INNER JOIN usuarios_procedimientos UP1 ON UP1.id = E1.usuario_procedimiento_id
+                    		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                    		INNER JOIN sedes S1 ON S1.id = U1.sede_id
+                    		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                    		INNER JOIN areas A1 ON A1.id = U1.area_id
+                    	WHERE MONTH(E1.fecha_alta) = MONTH(NOW())  AND YEAR(E1.fecha_alta) = YEAR(NOW()) AND justificacion_id IS NOT NULL AND EM1.id = EM.id AND A1.id = A.id
+                    ) justificadas,
+                    (
+                    	SELECT count(*) numero
+                    	FROM evidencias E1
+                    		INNER JOIN usuarios_procedimientos UP1 ON UP1.id = E1.usuario_procedimiento_id
+                    		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                    		INNER JOIN sedes S1 ON S1.id = U1.sede_id
+                    		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                    		INNER JOIN areas A1 ON A1.id = U1.area_id
+                    	WHERE MONTH(E1.fecha_alta) = MONTH(NOW())  AND YEAR(E1.fecha_alta) = YEAR(NOW()) AND justificacion_id IS NULL AND EM1.id = EM.id AND A1.id = A.id
+                    ) enviadas,
+                    (
+                    	SELECT count(*)
+                    	FROM usuarios_procedimientos UP1
+                    		INNER JOIN procedimientos P1 ON P1.id = UP1.procedimiento_id
+                    		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                    		INNER JOIN sedes S1 ON S1.id = U1.sede_id
+                    		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                            INNER JOIN areas A1 ON A1.id = U1.area_id
+                    	WHERE UP1.estatus = 1 AND EM1.id = EM.id AND A1.id = A.id
+                    		AND UP1.id NOT IN(
+                    				SELECT usuario_procedimiento_id
+                    				FROM evidencias E2
+                    					INNER JOIN usuarios_procedimientos UP2 ON UP2.id = E2.usuario_procedimiento_id
+                    					INNER JOIN usuarios U2 ON U2.id = UP2.usuario_id
+                    					INNER JOIN sedes S2 ON S2.id = U2.sede_id
+                    					INNER JOIN empresas EM2 ON EM2.id = S2.empresa_id
+                                        INNER JOIN areas A2 ON A2.id = U2.area_id
+                    				WHERE MONTH(E2.fecha_alta) = MONTH(NOW())  AND YEAR(E2.fecha_alta) = YEAR(NOW()) AND EM2.id = EM1.id AND A2.id = A1.id
+                    				)
+                    
+                    )pendientes
+                    FROM usuarios_procedimientos UP 
+                    	LEFT JOIN usuarios U ON U.id = UP.usuario_id
+                    	LEFT JOIN sedes S ON S.id = U.sede_id
+                    	LEFT JOIN empresas EM ON EM.id = S.empresa_id
+                        LEFT JOIN areas A ON A.id = U.area_id
+                    WHERE  EM.id = ?
+                    GROUP BY U.area_id, A.nombre";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param('i',$usuario->empresaId))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id, $nombre,$justificadas, $enviadas, $pendientes))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro= (object) [
+                                'id' =>  $id,
+                                'nombre' =>  $nombre,
+                                'justificadas' =>  $justificadas,
+                                'enviadas' =>  $enviadas,
+                                'pendientes' =>  $pendientes
+                            ];
+                            
+                            $total = $registro->justificadas + $registro->enviadas + $registro->pendientes;
+                            $cumplimieto = $registro->justificadas + $registro->enviadas;
+                            
+                            $registro->cumplidas =$registro->justificadas + $registro->enviadas;
+                            $registro->porcentajeCumplimiento = $cumplimieto * 100 / $total;
+                            
+                            
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
+    }
+    
+    public function consultarPorcentajesUsuariosMesActual($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $filtros =  array();//$this->getFiltrosUsuario($usuario, $criteriosSeleccion);
+        
+        //         $and = $this->and($filtros);
+        
+        
+        $consulta = "SELECT U.id,U.nombre, U.apellido,
+                    (
+                    	SELECT count(*) numero
+                    	FROM evidencias E1
+                    		INNER JOIN usuarios_procedimientos UP1 ON UP1.id = E1.usuario_procedimiento_id
+                    		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                    		INNER JOIN sedes S1 ON S1.id = U1.sede_id
+                    		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                    		INNER JOIN areas A1 ON A1.id = U1.area_id
+                    	WHERE MONTH(E1.fecha_alta) = MONTH(NOW())  AND YEAR(E1.fecha_alta) = YEAR(NOW()) AND justificacion_id IS NOT NULL AND EM1.id = EM.id AND A1.id = A.id AND U1.id = U.id
+                    ) justificadas,
+                    (
+                    	SELECT count(*) numero
+                    	FROM evidencias E1
+                    		INNER JOIN usuarios_procedimientos UP1 ON UP1.id = E1.usuario_procedimiento_id
+                    		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                    		INNER JOIN sedes S1 ON S1.id = U1.sede_id
+                    		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                    		INNER JOIN areas A1 ON A1.id = U1.area_id
+                    	WHERE MONTH(E1.fecha_alta) = MONTH(NOW())  AND YEAR(E1.fecha_alta) = YEAR(NOW()) AND justificacion_id IS NULL AND EM1.id = EM.id AND A1.id = A.id AND U1.id = U.id
+                    ) enviadas,
+                    (
+                    	SELECT count(*)
+                    	FROM usuarios_procedimientos UP1
+                    		INNER JOIN procedimientos P1 ON P1.id = UP1.procedimiento_id
+                    		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                    		INNER JOIN sedes S1 ON S1.id = U1.sede_id
+                    		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                    		INNER JOIN areas A1 ON A1.id = U1.area_id
+                    	WHERE UP1.estatus = 1 AND EM1.id = EM.id AND A1.id = A.id AND U1.id = U.id
+                    		AND UP1.id NOT IN(
+                    				SELECT usuario_procedimiento_id
+                    				FROM evidencias E2
+                    					INNER JOIN usuarios_procedimientos UP2 ON UP2.id = E2.usuario_procedimiento_id
+                    					INNER JOIN usuarios U2 ON U2.id = UP2.usuario_id
+                    					INNER JOIN sedes S2 ON S2.id = U2.sede_id
+                    					INNER JOIN empresas EM2 ON EM2.id = S2.empresa_id
+                    					INNER JOIN areas A2 ON A2.id = U2.area_id
+                    				WHERE MONTH(E2.fecha_alta) = MONTH(NOW())  AND YEAR(E2.fecha_alta) = YEAR(NOW()) AND EM2.id = EM1.id AND A2.id = A1.id AND U1.id = U.id
+                    				)
+                    
+                    )pendientes
+                    FROM usuarios_procedimientos UP
+                    	LEFT JOIN usuarios U ON U.id = UP.usuario_id
+                    	LEFT JOIN sedes S ON S.id = U.sede_id
+                    	LEFT JOIN empresas EM ON EM.id = S.empresa_id
+                    	LEFT JOIN areas A ON A.id = U.area_id
+                    WHERE  EM.id = ? AND A.id = ?
+                    GROUP BY U.id, U.nombre";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param('ii',$usuario->empresaId,$usuario->areaId))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id, $nombre, $apellido, $justificadas, $enviadas, $pendientes))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro= (object) [
+                                'id' =>  $id,
+                                'nombre' =>  $nombre,
+                                'apellido' =>  $apellido,
+                                'justificadas' =>  $justificadas,
+                                'enviadas' =>  $enviadas,
+                                'pendientes' =>  $pendientes
+                            ];
+                            
+                            $total = $registro->justificadas + $registro->enviadas + $registro->pendientes;
+                            $cumplimieto = $registro->justificadas + $registro->enviadas;
+                            
+                            $registro->cumplidas =$registro->justificadas + $registro->enviadas;
+                            $registro->porcentajeCumplimiento = $cumplimieto * 100 / $total;
+                            
+                            
+                            $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
+                            $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
+                            if(file_exists($registro->fotoPerfil))
+                                $registro->fotoPerfil =  "php/fotos/usuario". $registro->id .".jpg";
+                            else
+                                $registro->fotoPerfil =  "php/fotos/default.jpg";
+                            
+                            
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
+    }
+    
+    public function consultarPorcentajesAdministradoresMesActual($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $filtros =  array();//$this->getFiltrosUsuario($usuario, $criteriosSeleccion);
+        
+        //         $and = $this->and($filtros);
+        
+        
+        $consulta = "SELECT V.id, V.nombre, V.apellido,
+                 (
+                	SELECT count(*) numero
+                	FROM evidencias E1
+                		INNER JOIN usuarios_procedimientos UP1 ON UP1.id = E1.usuario_procedimiento_id
+                		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                		LEFT JOIN sedes S1 ON S1.id = U1.sede_id
+                		LEFT JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                		LEFT JOIN usuarios V1 ON V1.id = EM1.administrador_id
+                	WHERE MONTH(E1.fecha_alta) = MONTH(E.fecha_alta)  AND YEAR(E1.fecha_alta) = YEAR(E.fecha_alta) AND E1.validada=1 AND V1.id = V.id
+                ) validadas,
+                (		SELECT count(*) numero
+                	FROM evidencias E1
+                		INNER JOIN usuarios_procedimientos UP1 ON UP1.id = E1.usuario_procedimiento_id
+                		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                		LEFT JOIN sedes S1 ON S1.id = U1.sede_id
+                		LEFT JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                		LEFT JOIN usuarios V1 ON V1.id = EM1.administrador_id
+                	WHERE MONTH(E1.fecha_alta) = MONTH(E.fecha_alta)  AND YEAR(E1.fecha_alta) = YEAR(E.fecha_alta) AND E1.validada=0 AND V1.id = V.id
+                ) noValidadas 
+                FROM evidencias E
+                	INNER JOIN  usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
+                	INNER JOIN usuarios U ON U.id = UP.usuario_id
+                	LEFT JOIN sedes S ON S.id = U.sede_id
+                	LEFT JOIN empresas EM ON EM.id = S.empresa_id
+                	INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
+                	LEFT JOIN justificaciones J ON J.id = E.justificacion_id
+                	LEFT JOIN usuarios V ON V.id = EM.administrador_id
+                WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW())
+                GROUP BY V.id, V.nombre, V.apellido";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id, $nombre,$apellido, $validadas, $noValidadas))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro= (object) [
+                                'id' =>  $id,
+                                'nombre' =>  $nombre,
+                                'apellido' =>  $apellido,
+                                'validadas' =>  $validadas,
+                                'noValidadas' =>  $noValidadas
+                            ];
+                            
+                            $registro->total = $registro->validadas + $registro->noValidadas;
+                            $cumplimieto =$registro->validadas;
+                            
+                            $registro->porcentajeCumplimiento = $cumplimieto * 100 / $registro->total;
+                            
+                            $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
+                            $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
+                            if(file_exists($registro->fotoPerfil))
+                                $registro->fotoPerfil =  "php/fotos/usuario". $registro->id .".jpg";
+                            else
+                                $registro->fotoPerfil =  "php/fotos/default.jpg";
+                                    
+                            
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
+    }
+    
     private function getFiltrosUsuario($usuario,$criteriosSeleccion)
     {
         $filtros = array();
@@ -625,6 +1030,12 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             $registro->administradorFotoPerfil =  "php/fotos/usuario". $registro->administradorId .".jpg";
         else
             $registro->administradorFotoPerfil =  "php/fotos/default.jpg";
+        
+        $registro->empresaLogo =  "../logos_empresas/logo". $registro->empresaId .".png";
+        if(file_exists($registro->empresaLogo))
+            $registro->empresaLogo =  "php/logos_empresas/logo". $registro->empresaId .".png";
+        else
+            $registro->empresaLogo =  "php/logos_empresas/default.png";
         
         
         return $registro;

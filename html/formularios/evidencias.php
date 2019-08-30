@@ -70,7 +70,7 @@
                     		<canvas id="pdf-canvas" style='width:600px;' width="600"></canvas>
                     	</div>
                     	
-                    	<div id='botonesPDF' class='row text-center m-2'>
+                    	<div id='botonesPDF' class='row text-center m-2' style='display:none'>
 							<button id="pdf-prev"  type="button" class="btn btn-info"><i class="fa fa-arrow-left"></i> Anterior</button>
 							<button id="pdf-next" type="button" class="btn btn-info">Siguiente <i class="fa fa-arrow-right"></i></button>
 						</div>
