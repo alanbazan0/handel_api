@@ -44,6 +44,7 @@ class Inspeccion
     public $inspectorTermina;
     public $selloColocado;
     public $fotos;
-    
+    public $tieneImpresoSello;
+    public $cajaLibreObjetosOrganicos;
 }
 

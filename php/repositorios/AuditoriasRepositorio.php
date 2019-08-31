@@ -21,7 +21,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = " SELECT A.id, A.plantilla_id, P.nombre, IFNULL(DATE_FORMAT(A.fecha_ejecucion,'%d/%m/%Y %H:%i:%s'),'')fecha_ejecucion, A.empresa_id, E.nombre, IFNULL(E.nombre_corto,'')nombre_corto, A.contador_empresa " .
+        $this->consultaBase = " SELECT A.id, A.plantilla_id, P.nombre, IFNULL(DATE_FORMAT(A.fecha_ejecucion,'%d/%m/%Y %H:%i:%s'),'')fecha_ejecucion, A.empresa_id, E.nombre, IFNULL(E.nombre_corto,'')nombre_corto, A.contador_empresa,tipo_auditoria_id " .
             " FROM auditorias A " .
             " INNER JOIN plantillas P on A.plantilla_id = P.id  " .
             " LEFT JOIN empresas E on A.empresa_id = E.id ";
@@ -659,11 +659,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 if($respuesta->responsable=="")
                     $respuesta->responsable = null;
                 
-                $consulta = "INSERT INTO auditoria_respuestas(auditoria_id, plantilla_id, seccion_id, pregunta_id, respuesta_id, valor, responsable_id) " .
-                    "VALUE(?, ?, ?, ?, ?, ?, ?)";
+                $consulta = "INSERT INTO auditoria_respuestas(auditoria_id, plantilla_id, seccion_id, pregunta_id, respuesta_id, valor, responsable_id, reporte, notificacion) " .
+                    "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ? )";
                 if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    if($sentencia->bind_param("iiiiisi", $auditoriaId, $plantillaId, $seccionId,$pregunta->id, $respuesta->id, $respuesta->valor, $respuesta->responsable ))
+                    if($sentencia->bind_param("iiiiisiii", $auditoriaId, $plantillaId, $seccionId,$pregunta->id, $respuesta->id, $respuesta->valor, $respuesta->responsable,$respuesta->reporte,  $respuesta->notificacion ))
                     {
                         if($sentencia->execute())
                         {
@@ -905,14 +905,15 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         if($modelo->empresaId=="")
             $modelo->empresaId = null;
         
-        $consulta = " UPDATE auditorias " .
-            "SET empresa_id = ?, " . 
-             " fecha_ejecucion = NOW() " .
-            "WHERE id = ? ";
+        $consulta = " UPDATE auditorias 
+            SET empresa_id = ?, 
+                   tipo_auditoria_id = ?,   
+              fecha_ejecucion = NOW() 
+            WHERE id = ? ";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if( $sentencia->bind_param("ii", $modelo->empresaId,$modelo->id))
+            if( $sentencia->bind_param("isi", $modelo->empresaId,$modelo->tipoAuditoriaId,$modelo->id))
             {
                 if($sentencia->execute())
                 {
@@ -980,7 +981,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             $where = $this->where($filtros);
         }
         $consulta = $this->consultaBase .
-        $where;
+        $where . " order by fecha_ejecucion desc";
         
       
         
@@ -990,11 +991,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa);
+                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -1026,11 +1027,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId))
                     {
                         if($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa);
+                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId);
                             $resultado->valor = $registro;
                         }
                     }
@@ -1143,11 +1144,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId))
                     {
                         if($sentencia->fetch())
                         {
-                            $plantilla = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa);
+                            $plantilla = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId);
                            
                             
                             $resultado->valor = $plantilla;
@@ -1438,7 +1439,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         
         $resultado = new Resultado();
         $respuestas = array();
-        $consulta = "SELECT respuesta_id, valor, responsable_id " .
+        $consulta = "SELECT respuesta_id, valor, responsable_id, reporte, notificacion " .
             "FROM auditoria_respuestas " .
             " WHERE auditoria_id = ? AND plantilla_id  = ? AND seccion_id= ? AND pregunta_id = ? ";
             "ORDER BY respuesta_id";
@@ -1448,14 +1449,16 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($respuestaId, $valor, $responsable))
+                    if ($sentencia->bind_result($respuestaId, $valor, $responsable, $reporte, $notificacion))
                     {
                         while($sentencia->fetch())
                         {
                             $respuesta= (object) [
                                 'id' =>  $respuestaId,
                                 'valor' => $valor,
-                                'responsable' => $responsable
+                                'responsable' => $responsable,
+                                'reporte' => $reporte,
+                                'notificacion' => $notificacion
                             ];
                             array_push($respuestas,$respuesta);
                         }
@@ -1668,7 +1671,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             return $resultado;
     }
     
-    private function crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa)
+    private function crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa, $tipoAuditoriaId)
     {
 //         $archivoIcono = '../../php/iconos/icono'.$plantillaId.'.png';
 //         $icono = 'default.png';
@@ -1700,7 +1703,8 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             'empresaNombre' => $empresaNombre,   
             'empresaNombreCorto' => $empresaNombreCorto,   
             'contadorEmpresa' => $contadorEmpresa ,
-            'referencia' => $referencia
+            'referencia' => $referencia,
+            'tipoAuditoriaId' => $tipoAuditoriaId
             
         ];
         

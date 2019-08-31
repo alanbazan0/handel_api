@@ -277,17 +277,13 @@ class AuditoriaVista extends Vista
 	
 	get empresaId()
 	{
-		
-//		var preguntas = this.preguntas;
-//		if(preguntas.length>0)
-//		{
-//			var preguntaEmpresa = preguntas[0];
-//			if(preguntaEmpresa.tipo=="cat")
-//				return preguntaEmpresa.valor;
-//			
-//		}
 		return this.listaPreguntas.empresaId;
 		
+	}
+	
+	get tipoAuditoriaId()
+	{
+		return this.listaPreguntas.tipoAuditoriaId;
 	}
 	
 	set modeloDatos(modeloDatos)
@@ -302,6 +298,7 @@ class AuditoriaVista extends Vista
 		}
 		
 		this.listaPreguntas.empresaId = modeloDatos.empresaId;
+		this.listaPreguntas.tipoAuditoriaId = modeloDatos.tipoAuditoriaId;
 		
 	}
 	
@@ -360,6 +357,7 @@ class AuditoriaVista extends Vista
 		 var modelo = 
 		 {		
 			 empresaId: this.empresaId,		
+			 tipoAuditoriaId: this.tipoAuditoriaId,		
 			 seccionId:this.seccionId,	
 			 plantillaId:this.plantillaId,	
 			 preguntas: this.preguntasAuditoria
