@@ -1,35 +1,35 @@
 <?php
 namespace php\repositorios;
 
-use php\interfaces\IFrasesRepositorio;
-use php\modelos\Frase;
+use php\interfaces\IComentariosPredefinidosRepositorio;
+use php\modelos\ComentarioPredefinido;
 use php\modelos\Resultado;
 
-include '../interfaces/IFrasesRepositorio.php';
-include '../modelos/Frase.php';
+include '../interfaces/IComentariosPredefinidosRepositorio.php';
+include '../modelos/ComentarioPredefinido.php';
 include 'RepositorioBase.php';
 require_once('../clases/Resultado.php');
 
-class FrasesRepositorio extends RepositorioBase implements IFrasesRepositorio
+class ComentariosPredefinidosRepositorio extends RepositorioBase implements IComentariosPredefinidosRepositorio
 {
     protected $conexion;
     protected $consultaBase;
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = "SELECT id, texto, RTRIM(autor) as autor FROM frases F";
+        $this->consultaBase = "SELECT id, texto FROM comentarios_predefinidos C";
     }
 
-    public function insertar(Frase $modelo)
+    public function insertar(ComentarioPredefinido $modelo)
     {
-        $resultado = $this->calcularId('id','frases');
+        $resultado = $this->calcularId('id','comentarios_predefinidos');
         if($resultado->mensajeError=='')
         {
             $id = $resultado->valor;
-            $consulta = "INSERT INTO frases(id, texto, autor)VALUES(?, ?, ?)";
+            $consulta = "INSERT INTO comentarios_predefinidos(id, texto)VALUES(?, ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param('iss', $id, $modelo->texto, $modelo->autor))
+                if($sentencia->bind_param('is', $id, $modelo->texto))
                 {
                     if(!$sentencia->execute())
                         $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
@@ -43,17 +43,16 @@ class FrasesRepositorio extends RepositorioBase implements IFrasesRepositorio
         return $resultado;
     }
 
-    public function actualizar(Frase $modelo)
+    public function actualizar(ComentarioPredefinido $modelo)
     {
         $resultado = new Resultado();
-        $consulta = "UPDATE frases
+        $consulta = "UPDATE comentarios_predefinidos
                      SET 
-                         texto = ?,
-                         autor = ?
+                         texto = ?
                      WHERE id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param('ssi',$modelo->texto, $modelo->autor ,$modelo->id ))
+            if($sentencia->bind_param('si',$modelo->texto ,$modelo->id ))
             {
                 if($sentencia->execute())
                 {
@@ -79,8 +78,8 @@ class FrasesRepositorio extends RepositorioBase implements IFrasesRepositorio
         if($criteriosSeleccion!=null)
         {
             if(isset($criteriosSeleccion->texto))
-                array_push($filtros,(object)['tipoDato'=>'varchar','tabla' => 'F', 'campo'=>'texto','valor'=>$criteriosSeleccion->texto]);
-            $where = $this->where($filtros);
+                array_push($filtros,(object)['tipoDato'=>'varchar','tabla' => 'C', 'campo'=>'texto','valor'=>$criteriosSeleccion->texto]);
+                $where = $this->where($filtros);
         }
         $consulta = $this->consultaBase . $where;
         if($sentencia = $this->conexion->prepare($consulta))
@@ -89,11 +88,11 @@ class FrasesRepositorio extends RepositorioBase implements IFrasesRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $texto, $autor))
+                    if($sentencia->bind_result($id, $texto))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $texto, $autor);
+                            $registro = $this->crearRegistro($id, $texto);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -123,11 +122,11 @@ class FrasesRepositorio extends RepositorioBase implements IFrasesRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $texto, $autor))
+                    if($sentencia->bind_result($id, $texto))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $texto, $autor);
+                            $registro = $this->crearRegistro($id, $texto);
                             $resultado->valor = $registro;
                         }
                         else
@@ -150,7 +149,7 @@ class FrasesRepositorio extends RepositorioBase implements IFrasesRepositorio
     public function eliminar($llaves)
     {
         $resultado = new Resultado();
-        $consulta = "DELETE FROM frases WHERE id = ?";
+        $consulta = "DELETE FROM comentarios_predefinidos WHERE id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param('i',$llaves->id))
@@ -176,13 +175,12 @@ class FrasesRepositorio extends RepositorioBase implements IFrasesRepositorio
         return $resultado;
     }
 
-    private function crearRegistro($id, $texto, $autor)
+    private function crearRegistro($id, $texto)
     {
         $registro= (object) 
         [
             'id' => $id,
-            'texto' => $texto,
-            'autor' => $autor
+            'texto' => $texto
         ];
         return $registro;
     }

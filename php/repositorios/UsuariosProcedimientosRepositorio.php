@@ -154,16 +154,16 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
                         }
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = __FUNCTION__. ' Falló el enlace del resultado.';
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. ' Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. ' Falló el enlace de parámetros';
         }
         else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. ' Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
         return $resultado;
     }
     
@@ -277,16 +277,16 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
                             $resultado->valor = $registro;
                         }
                         else
-                            $resultado->mensajeError = 'No se encontró ningún resultado.';
+                            $resultado->mensajeError = "No se existe el procedimiento. Id = $llaves->id";
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado';
+                        $resultado->mensajeError = __FUNCTION__. ' Falló el enlace del resultado';
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. ' Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. ' Falló el enlace de parámetros';
         }
         else
             $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
@@ -330,7 +330,7 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
             'usuarioId' => $usuarioId,
             'usuarioNombre' => $usuarioNombre,
             'usuarioApellido' => $usuarioApellido,
-            'id' => $procedimientoId,
+            'procedimientoId' => $procedimientoId,
             'nombre' => $procedimientoNombre,
             'codigo' => $codigo,
             'fechaAlta' => $fechaAlta,

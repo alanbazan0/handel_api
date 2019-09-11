@@ -20,16 +20,16 @@ class RepositorioBase
                         $resultado->valor = $id;
                     }
                     else
-                        $resultado->mensajeError = "No se encontró ningún resultado";
+                        $resultado->mensajeError =  __FUNCTION__. " No se encontró ningún resultado";
                 }
                 else
-                    $resultado->mensajeError = "Falló el enlace del resultado";
+                    $resultado->mensajeError =  __FUNCTION__. " Falló el enlace del resultado";
             }
             else
-                $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                $resultado->mensajeError =  __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
         }
         else
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            $resultado->mensajeError =  __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
         return $resultado;
     }
     
