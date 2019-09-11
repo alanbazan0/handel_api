@@ -10,7 +10,7 @@ if(isset($_SERVER['HTTP_ORIGIN']))
 	<div class="modal-dialog modal-lg" role="document"> 
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="scrollmodalLabel">Evidencia</h5>
+				<h5 class="modal-title" id="scrollmodalLabel">Validación de evidencia</h5>
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
@@ -100,6 +100,7 @@ if(isset($_SERVER['HTTP_ORIGIN']))
 						</div>
 					</div>
 					
+					
 					<div class="form-group">
 						<div>
 							<label for="comentariosInput" class="control-label mb-1">Comentarios de usuario</label>
@@ -117,6 +118,9 @@ if(isset($_SERVER['HTTP_ORIGIN']))
 						</label>
 					</div>
 					
+					
+					<div id='comentariosPredefinidosDiv'>
+					</div>
 					
 					<div class="form-group">
 						<div>

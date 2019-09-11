@@ -24,7 +24,10 @@ class Repositorio
 	        },
 	        error: function( jqXhr, textStatus, errorThrown )
 	        {
-	       	 funcion.call(contexto,{ mensajeError : textStatus});
+	        	if(textStatus=="parsererror")
+        	   		funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+           		else
+           			funcion.call(contexto,{ mensajeError : textStatus});
 	        },
 	        fail: function( jqXhr, textStatus, errorThrown )
 	        {
@@ -54,7 +57,10 @@ class Repositorio
          },
          error: function( jqXhr, textStatus, errorThrown )
          {
-        	 funcion.call(contexto,{ mensajeError : textStatus});
+        	 if(textStatus=="parsererror")
+     	   		funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+        		else
+        			funcion.call(contexto,{ mensajeError : textStatus});
          },
          fail: function( jqXhr, textStatus, errorThrown )
          {
@@ -84,7 +90,10 @@ class Repositorio
             },
             error: function( jqXhr, textStatus, errorThrown )
             {
-           	 funcion.call(contexto,{ mensajeError : textStatus});
+            	if(textStatus=="parsererror")
+        	   		funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+           		else
+           			funcion.call(contexto,{ mensajeError : textStatus});
             },
             fail: function( jqXhr, textStatus, errorThrown )
             {
@@ -112,7 +121,10 @@ class Repositorio
            },
            error: function( jqXhr, textStatus, errorThrown )
            {
-          	 funcion.call(contexto,{ mensajeError : textStatus});
+        	   if(textStatus=="parsererror")
+       	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+          		else
+          			funcion.call(contexto,{ mensajeError : textStatus});
            },
            fail: function( jqXhr, textStatus, errorThrown )
            {
@@ -158,7 +170,10 @@ class Repositorio
           },
           error: function( jqXhr, textStatus, errorThrown )
           {
-         	 funcion.call(contexto,{ mensajeError : textStatus});
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
           },
           fail: function( jqXhr, textStatus, errorThrown )
           {

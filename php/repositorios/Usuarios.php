@@ -62,9 +62,17 @@ try
                 {
                     $administrador_correo = new AdministradorCorreo();
                     if($modelo->nombreUsuario!="" && $modelo->nombreUsuario!=null)
-                        $administrador_correo->enviarCorreoBienvenida($modelo);
+                        $resultado = $administrador_correo->enviarCorreoBienvenida($modelo);
                 }
             break;
+            case 'reenviarCorreo':
+                $json = json_decode(REQUEST('modelo'));
+                $mapper = new JsonMapper();
+                $modelo = $mapper->map($json, new Usuario()); 
+                $administrador_correo = new AdministradorCorreo();
+                if($modelo->nombreUsuario!="" && $modelo->nombreUsuario!=null)
+                    $resultado = $administrador_correo->enviarCorreoBienvenida($modelo);
+                break;
             case 'actualizar':
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();

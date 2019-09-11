@@ -44,6 +44,7 @@ class UsuariosVista extends CatalogoVista
 		]
 		
 		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
+										"<button data-toggle='tooltip' data-placemen='bottom' title='Reenviar correo de bienvenida'  type='button' class='reenviar btn-circle mr-0 botones-icon btn btn-sm float-left btn-success active'><span  data-toggle='tooltip' class='fa fa-envelope fa-lg'></span></button>" +
 										"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
 		this.tabla.registros = [];	
@@ -96,6 +97,32 @@ class UsuariosVista extends CatalogoVista
             	 _this.guardar();
             }
         });
+	}
+	
+	inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave)
+	{
+		var _this = this;
+		super.inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave);
+		$(tbody).on("click", "button.reenviar", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.reenviarCorreo();
+			}
+		});
+	}
+	
+	reenviarCorreo()
+	{
+		this.presentador.reenviarCorreo();
 	}
 	
 	inicializarValidacionesFormularioInspector()

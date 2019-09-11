@@ -32,6 +32,12 @@ class AdministradorCorreo
                 $accesos.= $this->contenido("10y7 te permite tener control de las inspecciones de seguridad y visualizar estadisticas generales de las mismas","https://10y7.apps-handel.com");
             }
             
+            $accesos.="<table>";
+            $accesos.="<tr>";
+            $accesos.="<td width='auto' valign='middle' align='left' bgcolor='#ffc000' style='text-align: center; font-weight: normal; padding: 6px; padding-left: 18px; padding-right: 18px; background-color: #ffc000; color: #3f3f3f; font-size: 13px; font-family: Arial, Helvetica, sans-serif; border-radius: 4px;'><a style='text-decoration: none; font-weight: normal; color: #3f3f3f; font-size: 13px; font-family: Arial, Helvetica, sans-serif;' target='_new' href='https://apps-handel.com'><strong>Ingresar</strong></a></td>";
+            $accesos.="</tr>";
+            $accesos.="</table>";
+            
             $mensaje=  str_replace("@accesos",$accesos,$mensaje);
             
             
@@ -70,9 +76,9 @@ class AdministradorCorreo
         $html.="</td>";
         $html.="</tr>";
         
-        $html.="<tr>";
-        $html.="<td width='auto' valign='middle' align='left' bgcolor='#ffc000' style='text-align: center; font-weight: normal; padding: 6px; padding-left: 18px; padding-right: 18px; background-color: #ffc000; color: #3f3f3f; font-size: 13px; font-family: Arial, Helvetica, sans-serif; border-radius: 4px;'><a style='text-decoration: none; font-weight: normal; color: #3f3f3f; font-size: 13px; font-family: Arial, Helvetica, sans-serif;' target='_new' href='$url'><strong>Ingresar</strong></a></td>";
-        $html.="</tr>";
+//         $html.="<tr>";
+//         $html.="<td width='auto' valign='middle' align='left' bgcolor='#ffc000' style='text-align: center; font-weight: normal; padding: 6px; padding-left: 18px; padding-right: 18px; background-color: #ffc000; color: #3f3f3f; font-size: 13px; font-family: Arial, Helvetica, sans-serif; border-radius: 4px;'><a style='text-decoration: none; font-weight: normal; color: #3f3f3f; font-size: 13px; font-family: Arial, Helvetica, sans-serif;' target='_new' href='$url'><strong>Ingresar</strong></a></td>";
+//         $html.="</tr>";
         return $html;
     }
     

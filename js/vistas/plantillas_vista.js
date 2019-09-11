@@ -619,6 +619,7 @@ class PlantillasVista extends CatalogoVista
 		$('#ventanaRespuestasContenedor').fadeIn( this.velocidadAnimacion );
 	
 		this.preguntaEdicion = this.listaPreguntas.getPregunta(preguntaId);
+		this.listaRespuestas.categoriasPregunta = this.preguntaEdicion.categorias;
 		this.listaRespuestas.categorias = this._categorias;
 		this.listaRespuestas.respuestas = this.preguntaEdicion.respuestas_si;
 		

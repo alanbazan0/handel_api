@@ -180,4 +180,30 @@ class UsuariosRepositorio extends Repositorio
            }
        });
 	}
+	
+	reenviarCorreo(contexto,funcion, modelo)
+	{		
+		var modeloString = JSON.stringify(modelo);
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+	        url: url,
+	        type: 'POST',
+	        data: {accion : "reenviarCorreo",modelo: modeloString},
+	        success: function( data, textStatus, jQxhr )
+	        {
+	            funcion.call(contexto,data);
+	        },
+	        error: function( jqXhr, textStatus, errorThrown )
+	        {
+	        	if(textStatus=="parsererror")
+        	   		funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+           		else
+           			funcion.call(contexto,{ mensajeError : textStatus});
+	        },
+	        fail: function( jqXhr, textStatus, errorThrown )
+	        {
+	       	 funcion.call(contexto,{ mensajeError : textStatus});
+	        }
+	    });
+	}
 }

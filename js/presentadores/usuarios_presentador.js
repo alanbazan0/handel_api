@@ -242,6 +242,22 @@ class UsuariosPresentador extends CatalogoPresentador
 		
 	 }
 	 
+	 reenviarCorreo()
+	 {
+		 this.vista.mostrarIndicador();
+		 var repositorio = new UsuariosRepositorio(this);		
+		 repositorio.reenviarCorreo(this,function(resultado)
+		 {
+			 this.vista.ocultarIndicador();	
+				if(resultado.mensajeError=="")
+					this.vista.mostrarMensaje("","El correo fue reenviado.");
+				else
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }, this.vista.modelo);
+	 }
+	 
+	 
+	 
 	
 	 
 }
