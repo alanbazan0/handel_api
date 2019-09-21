@@ -4,6 +4,8 @@ use php\clases\JsonMapper;
 use php\modelos\Mensaje;
 use php\repositorios\MensajesRepositorio;
 use php\modelos\Resultado;
+use php\repositorios\UsuariosRepositorio;
+use php\clases\AdministradorCorreo;
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -11,7 +13,9 @@ ini_set('display_errors', 1);
 include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
+include '../repositorios/UsuariosRepositorio.php';
 include '../repositorios/MensajesRepositorio.php';
+include '../clases/AdministradorCorreo.php';
 
 $origin = "*";
 if(isset($_SERVER['HTTP_ORIGIN']))
@@ -42,6 +46,18 @@ try
                 if(isset($_SESSION['usuario']))
                     $usuario = $_SESSION['usuario'];
                 $resultado = $repositorio->insertar($modelo,$usuario);
+                if($resultado->correcto())
+                {
+                    $modelo->id = $resultado->valor;
+                    $usuariosRepositorio = new UsuariosRepositorio($conexion);
+                    $resultado = $usuariosRepositorio->consultar($modelo);
+                    if($resultado->correcto())
+                    {
+                        $administrador_correo = new AdministradorCorreo();
+                        $resultado = $administrador_correo->enviarNotificacionMensaje($usuario,$resultado->valor,$modelo);
+                    }
+                }
+                
             break;
             case 'actualizar':
                 $json = json_decode(REQUEST('modelo'));

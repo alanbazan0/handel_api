@@ -160,4 +160,73 @@ class CatalogoPresentador
 		
 	 }
 	 
+	 consultarEmpresasMensaje()	
+	 {
+		 var repositorio = new EmpresasRepositorio(this);		
+		 repositorio.consultar(this,this.consultarEmpresasMensajeResultado,null,true);
+	 }
+	 
+	 consultarEmpresasMensajeResultado(resultado)
+	 {
+		if(resultado.mensajeError=="")
+		{
+			this.vista.empresasMensaje = resultado.valor;
+			this.vista.cambiarEmpresaMensaje();
+		}
+		else
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		
+	 }
+	 
+	 consultarSedesMensaje()	
+	 {
+		 var repositorio = new SedesRepositorio(this);		
+		 repositorio.consultarPorEmpresa(this,this.consultarSedesMensajeResultado,this.vista.criteriosSeleccionMensaje.empresaId,true);
+	 }
+	 
+	 consultarSedesMensajeResultado(resultado)
+	 {
+		if(resultado.mensajeError=="")
+		{
+			this.vista.sedesMensaje = resultado.valor;		
+			this.vista.cambiarSedeMensaje();
+		}
+		else
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+	 }
+	 
+	 consultarAreasMensaje()	
+	 {
+		 var repositorio = new AreasRepositorio(this);	
+		 repositorio.consultarPorEmpresaSede(this,this.consultarAreasMensajeResultado,this.vista.criteriosSeleccionMensaje.empresaId,this.vista.criteriosSeleccionMensaje.sedeId,true);
+	 }
+	 
+	 consultarAreasMensajeResultado(resultado)
+	 {
+		if(resultado.mensajeError=="")
+		{
+			this.vista.areasMensaje = resultado.valor;
+			this.vista.cambiarAreaMensaje();
+		}
+		else
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+	 }
+	 
+	 consultarUsuariosMensaje()	
+	 {
+		 var repositorio = new UsuariosRepositorio(this);	
+		 repositorio.consultarPorEmpresaSedeArea(this,this.consultarUsuariosMensajeResultado,this.vista.criteriosSeleccionMensaje.empresaId,this.vista.criteriosSeleccionMensaje.sedeId,this.vista.criteriosSeleccionMensaje.areaId,true);
+	 }
+	 
+	 consultarUsuariosMensajeResultado(resultado)
+	 {
+		if(resultado.mensajeError=="")
+		{
+			this.vista.usuariosMensaje = resultado.valor;
+		}
+		else
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+	 }
+	 
+	 
 }

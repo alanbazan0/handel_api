@@ -12,6 +12,16 @@ class Resultado
     public $mensajeError;
     public $valor;
     public $codigoError;
+    
+    public function error()
+    {
+        return $this->mensajeError!="";
+    }
+    
+    public function correcto()
+    {
+        return $this->mensajeError=="";
+    }
 }
   
 

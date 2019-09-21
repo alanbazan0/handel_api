@@ -42,6 +42,14 @@ class Vista
 		this._usuario = usuario;
 	}
 	
+	get usuario()
+	{
+		var json = $("body").attr("data-usuario");
+		var usuario = JSON.parse(json);
+		return usuario;
+		
+	}
+	
 	getFecha(fecha)
 	{
 		fecha = fecha.split('/').reverse().join('/');
@@ -292,6 +300,7 @@ class Vista
 	 
 		mostrarEnviarMensaje()
 		{
+			this._mensajeAreaId = "";
 			if($("#modalAlta").length ==0)
 			{
 				var url = HANDEL_API + "/html/modales/enviar_mensaje.php";
@@ -325,25 +334,17 @@ class Vista
 						$("#guardarButton").click(function () 
 						{
 							 $("#formulario").submit();
-//							var comentario = $("#mensajeInput").val().trim();
-//							if(comentario!="")
-//								_this.enviarMensaje();
 						});
 						$("#mensajeInput").keypress(function(event){
 						    var keycode = (event.keyCode ? event.keyCode : event.which);
 						    if(keycode == '13')
 						    {
 						    	 $("#formulario").submit();
-//						    	var comentario = $("#mensajeInput").val().trim();
-//								if(comentario!="")
-//									_this.enviarMensaje();
 						    }
 						});
 						
-//						$("#").click(function () 
-//						{
-//							 $("#formulario").submit();
-//						});
+						_this.consultarEmpresasMensaje();
+						
 						
 					});
 				
@@ -416,7 +417,10 @@ class Vista
 		{
 			var modelo =
 			{
-				
+				empresaId : $("#empresaSelectMensaje").val(),
+				sedeId : $("#sedeSelectMensaje").val(),
+				areaId : $("#areaSelectMensaje").val(),
+				usuarioId : $("#usuarioSelectMensaje").val(),
 				asunto: $("#asuntoInput").val(),
 				mensaje: $("#mensajeInput").val()
 			};
@@ -428,5 +432,110 @@ class Vista
 			$("#modalAlta").modal('hide');
 			this.mostrarMensaje("","El mensaje fue enviado.")
 		}
+		
+		consultarEmpresasMensaje()
+		{
+			this.cargandoOpciones("#empresaSelectMensaje");
+			this.cargandoOpciones("#sedeSelectMensaje");
+			this.cargandoOpciones("#areaeSelectMensaje");
+			this.cargandoOpciones("#usuarioSelect");
+			this.presentador.consultarEmpresasMensaje();
+		}
+		
+		set empresasMensaje(registros)
+		{		
+			this.cargarOpciones('#empresaSelectMensaje', registros);
+		}
+		
+		set sedesMensaje(registros)
+		{		
+			this.cargarOpciones('#sedeSelectMensaje', registros);
+		}
+		
+		set areasMensaje(registros)
+		{		
+			this.cargarOpciones('#areaSelectMensaje', registros);
+			if(this._mensajeAreaId=="")
+			{
+				if(this.usuario.tipoUsuarioId == TipoUsuario.SUPERVISOR)
+				{
+					this._mensajeAreaId = this.usuario.areaId;
+					$('#areaSelectMensaje').val(this._mensajeAreaId);
+				}
+			}
+		}
+		
+		set usuariosMensaje(registros)
+		{		
+			this.cargarOpciones('#usuarioSelectMensaje', registros, null, null, null, null,  "nombreCompleto");
+		}
+		
+		cambiarEmpresaMensaje()
+		{
+			this.cargandoOpciones("#sedeSelectMensaje");
+			this.cargandoOpciones("#areaSelectMensaje");
+			this.cargandoOpciones("#usuarioSelectMensaje");
+			this.consultarSedesMensaje();
+		}
+		
+		cambiarSedeMensaje()
+		{
+			this.cargandoOpciones("#areaSelectMensaje");
+			this.cargandoOpciones("#usuarioSelectMensaje");
+			this.consultarAreasMensaje();
+		}
+		
+		cambiarAreaMensaje()
+		{
+			this.cargandoOpciones("#usuarioSelectMensaje");
+			this.consultarUsuariosMensaje();
+		}
+		
+		
+		consultarSedesMensaje()
+		{
+			this.cargandoOpciones("#sedeSelectMensaje");
+			this.presentador.consultarSedesMensaje();
+		}
+		
+		consultarAreasMensaje()
+		{
+			this.cargandoOpciones("#areaSelectMensaje");
+			this.presentador.consultarAreasMensaje();
+		}
+		
+		consultarUsuariosMensaje()
+		{
+			this.cargandoOpciones("#usuariosSelectMensaje");
+			this.presentador.consultarUsuariosMensaje();
+		}
+		
+		get criteriosSeleccionMensaje()
+		{
+			 var criteriosSeleccion = 
+			 {				    
+				empresaId: $('#empresaSelectMensaje').val(),
+				sedeId: $('#sedeSelectMensaje').val(),
+				areaId: $('#areaSelectMensaje').val(),
+				usuarioId: $('#usuarioSelectMensaje').val()
+			 }
+			 return criteriosSeleccion;
+		}		
+		
+		buscarPorValor(arreglo, propiedad, valor)
+		{
+			var indice = -1;
+			for(var i=0; i< arreglo.length; i++)
+			{
+				var elemento = arreglo[i];
+				var valorElemento = elemento[propiedad];
+				if(valorElemento==valor)
+				{
+					return elemento;
+				}
+			}
+			return null;
+		}
+		
 		
 }

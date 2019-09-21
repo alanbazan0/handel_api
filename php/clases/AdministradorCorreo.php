@@ -150,7 +150,7 @@ class AdministradorCorreo
         
         
         $cabecera = "From: saha.noreply@handel-sce.com\r\n"; //Remitente
-        $cabecera .= "Bcc: contacto@gmail.com\r\n"; //Copia oculta
+      //  $cabecera .= "Bcc: contacto@gmail.com\r\n"; //Copia oculta
         $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";
         
         //$correo = "alanbazan@hotmail.com";
@@ -180,6 +180,68 @@ class AdministradorCorreo
 //         else
 //             $resultado->mensajeError="Se registró la evidencia, pero no se pudo enviar el correo electrónico.";
             
+        return $resultado;
+    }
+    
+    public function enviarNotificacionMensaje($usuario, $usuarios, $modeloMensaje)
+    {
+        $mensaje= file_get_contents('../plantillas_correo/plantilla.html');
+        
+        $mensaje=  str_replace("@asunto",$usuario->nombreCompleto . ": " . $modeloMensaje->asunto,$mensaje);
+        
+        $contenido = $modeloMensaje->mensaje;
+        $contenido.="<br>";
+        $contenido.="<table>";
+        $contenido.="<tr>";
+        $contenido.="<td width='auto' valign='middle' align='left' bgcolor='#ffc000' style='text-align: center; font-weight: normal; padding: 6px; padding-left: 18px; padding-right: 18px; background-color: #ffc000; color: #3f3f3f; font-size: 13px; font-family: Arial, Helvetica, sans-serif; border-radius: 4px;'><a style='text-decoration: none; font-weight: normal; color: #3f3f3f; font-size: 13px; font-family: Arial, Helvetica, sans-serif;' target='_new' href='https://saha.apps-handel.com/mensajes.php?mensajeId=$modeloMensaje->id'><strong>Ingresar</strong></a></td>";
+        $contenido.="</tr>";
+        $contenido.="</table>";
+        
+        $mensaje=  str_replace("@mensaje",$contenido,$mensaje);
+      
+        
+        return  $this->enviarCorreoUsuarios($usuarios,utf8_decode("SAHA: " . $usuario->nombreCompleto . ": " . $modeloMensaje->asunto), $mensaje);
+    }
+    
+    public function enviarCorreoUsuarios($usuarios, $asunto, $mensaje)
+    {
+        $resultado = new Resultado();
+        $cabecera = "From: noreply@apps-handel.com\r\n";
+       // $cabecera .= "Bcc: contacto@gmail.com\r\n"; 
+        $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";
+        
+        $correos="";
+        for ($i = 0; $i < count($usuarios); $i++) 
+        {
+            $usuario = $usuarios[$i];
+            $correos.= $usuario->nombreUsuario;
+            if($i <  count($usuarios) -1 )
+                $correos.=", ";
+        
+        }
+        
+        
+        
+        //$correos = "alanbazan@apps-handel.com, alanbazan@hotmail.com, alanbazan0@gmail.com";
+        
+        $errLevel = error_reporting(E_ALL ^ E_WARNING);
+        $resultadoMail = true;
+        $resultadoMail= mail($correos, $asunto, $mensaje, $cabecera);
+        error_reporting($errLevel);
+        
+        $error = error_get_last();
+        
+        if ( $error["type"] == E_WARNING)
+        {
+            $resultado->mensajeError="No se pudo enviar el correo electrónico." . htmlspecialchars_decode($error["message"]) ;
+            $resultado->codigoError = 3;
+        }
+        else if($resultadoMail)
+        {
+            $resultado->valor="OK";
+        }
+        
+        
         return $resultado;
     }
     

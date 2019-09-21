@@ -268,6 +268,28 @@ try
                     $resultado->mensajeError = "No se ha iniciado sesión";
                
             break;
+            case 'consultarPorEmpresaSedeArea':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $empresaId = REQUEST('empresaId');
+                $sedeId = REQUEST('sedeId');
+                $areaId = REQUEST('areaId');
+                $opcional = REQUEST('opcional');
+                $resultado = $repositorio->consultarPorEmpresaSedeArea($empresaId,$sedeId,$areaId,$opcional,$usuario);
+            break;
+//             case 'enviarNotificacion':
+//                 session_start();
+//                 $usuario = null;
+//                 if(isset($_SESSION['usuario']))
+//                     $usuario = $_SESSION['usuario'];
+//                     $empresaId = REQUEST('empresaId');
+//                     $sedeId = REQUEST('sedeId');
+//                     $areaId = REQUEST('areaId');
+//                     $opcional = REQUEST('opcional');
+//                     $resultado = $repositorio->consultarPorEmpresaSedeArea($empresaId,$sedeId,$areaId,$opcional,$usuario);
+//                     break;
             default:
                 $resultado->mensajeError = 'Acción no válida';
             break;

@@ -206,4 +206,26 @@ class UsuariosRepositorio extends Repositorio
 	        }
 	    });
 	}
+	
+	consultarPorEmpresaSedeArea(contexto,funcion, empresaId, sedeId, areaId, opcional)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+           url: url,
+           type: 'POST',
+           data: {accion : "consultarPorEmpresaSedeArea",empresaId : empresaId, sedeId: sedeId, areaId: areaId, opcional : opcional},
+           success: function( data, textStatus, jQxhr )
+           {
+               funcion.call(contexto,data);
+           },
+           error: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : textStatus});
+           },
+           fail: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : textStatus});
+           }
+       });
+	}
 }

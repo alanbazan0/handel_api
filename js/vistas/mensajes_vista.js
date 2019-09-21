@@ -7,15 +7,42 @@ class MensajesVista extends CatalogoVista
 		this.consultoGrid = false;
 		//this._tablaMensajes = new Mensajes("tabla");
 		
+		this._colores = [
+			"#cdd9c5",
+			"#e7d1c8",
+			"#d3e0e1",
+			"#dcdcd1",
+			"#ecede7",
+			"#9e927f",
+			"#bec3d9",
+			"#f3b885",
+			"#c8bec2",
+			"#a9e5e3",
+			"#b5bcc3",
+			"#c39297",
+			"#ffffff",
+			"#f8e9b2",
+			"#b8bdd2",
+			"#f7dfed",
+			"#d2cbc1",
+			"#dbdcde"];
+		
 	}
 	
 	inicializar()
 	{
+		$("body").data("_this",this);
 		this.tabla.ocultarEncabezados = true;
 		this.tabla.textoTablaVacia = "No hay mensajes";
 		super.inicializar();
+		
+		this._mensajeIdParametro = "";
 	
-		//this.consultarEmpresasCriterio();
+	}
+	
+	get mensajeId()
+	{
+		return $("body").attr("data-mensajeId");
 	}
 	
 
@@ -69,6 +96,7 @@ class MensajesVista extends CatalogoVista
 				_this.ocultarIndicador();
 				$("body").append(html);
 				$("#modalAlta").on("hidden.bs.modal", function () {
+					clearInterval(_this.cometariosIntervalId);
 					$("#modalAlta").remove();
 				});
 				
@@ -77,24 +105,42 @@ class MensajesVista extends CatalogoVista
 					var fecha = new Date();
 					var foto = HANDEL_API + "/" + _this.mensajeSeleccionado.fotoPerfil+"?"+fecha.getTime();
 					
+					
+					var fotoPerfil = HANDEL_API + "/" + _this.usuario.fotoPerfil+"?"+fecha.getTime();
+					$("#fotoPerfilComentarioImg").attr("src",fotoPerfil);
+					
 					moment.locale('es') ;
-					
-					
 					var fecha = moment(_this.mensajeSeleccionado.fecha);
 					
-					var html="<div class='item'>" +
-					"<img src='"+foto+"' alt='user image' class='offline'> " +
-					"<p class='message'>" +
-					"  <a href='#' class='name'>" +
-					"	<small class='text-muted pull-right'><i class='fa fa-clock-o'></i> "+fecha.fromNow() +"</small>" + _this.mensajeSeleccionado.usuarioNombreCompleto +
-					"  </a> <label style='font-weight:bold'> " + _this.mensajeSeleccionado.asunto +"</label>"  +
-					"<br>" + _this.mensajeSeleccionado.mensaje +
- 					"</p>" +
-				  "</div>";
-					$("#chatbox").html(html);
+					var html = "<img class='img-circle' src='"+foto+"' "+
+								"alt='User Image'> <span class='username'><a href='#'>" + _this.mensajeSeleccionado.usuarioNombreCompleto +"</a>" +
+								"</span>  <span class='description' style='font-size: 15px;font-weight:bold;color:#000000'> " + _this.mensajeSeleccionado.asunto +"</span><span class='description'>Publicado" +
+								"- " + fecha.fromNow() + "</span>";
+					$("#usuarioDiv").html(html);
+					$("#mensajeDiv").html(_this.mensajeSeleccionado.mensaje);
+					
 					
 					if(_this.mensajeSeleccionado.leido==0)
 						_this.marcarMensajeComoLeido();
+					
+					$("#enviarComentarioButton").click(function () 
+					{
+						var comentario = $("#comentarioInput").val().trim();
+						if(comentario!="")
+							_this.enviarComentario();
+					});
+					$("#comentarioInput").keypress(function(event){
+					    var keycode = (event.keyCode ? event.keyCode : event.which);
+					    if(keycode == '13')
+					    {
+					    	var comentario = $("#comentarioInput").val().trim();
+							if(comentario!="")
+								_this.enviarComentario();
+					    }
+					});
+					_this._comentarios = [];
+					_this.consultarComentarios();
+					_this.cometariosIntervalId = setInterval(_this.consultarComentariosAutomaticamente, 20000);
 					
 					
 				});
@@ -109,9 +155,83 @@ class MensajesVista extends CatalogoVista
 		}
 	}
 	
+	
+	consultarComentariosAutomaticamente()
+	{
+		var _this  = $("body").data("_this");
+		_this.consultarComentarios();
+	}
+	
+	consultarComentarios()
+	{
+		this.presentador.consultarComentarios();
+	}
+	
 	marcarMensajeComoLeido()
 	{
 		this.presentador.marcarMensajeComoLeido();
+	}
+	
+	set comentarios(comentarios)
+	{
+		var numero="";
+		if(comentarios.length==1)
+			numero = "1 comentario";
+		else
+			numero = comentarios.length+" comentarios";
+		$("#numeroComentariosSpan").html(numero);
+		if(comentarios.length> this._comentarios.length)
+		{
+			this._comentarios= comentarios;
+			
+			var usuariosColores = this.asignarColoresUsuarios();
+		
+			var html="";
+			for(var i=0; i< comentarios.length; i++)
+			{
+				var fecha = new Date();
+				var comentario = comentarios[i];
+				var foto = HANDEL_API + "/" + comentario.fotoPerfil+"?"+fecha.getTime();
+
+				var color = this.buscarPorValor(usuariosColores,"usuarioId",comentario.usuarioId);
+				
+				
+				moment.locale('es') ;
+				var fechaComentario = moment(comentario.fecha);
+				
+				html+="<div class='box-comment' data-usuarioId='"+comentario.usuarioId+"' style='background-color:"+color.color+";padding:5px;'>" +
+				"<img class='img-circle img-sm' src='"+foto+"' alt='User Image'>" +
+				"<div class='comment-text'>" +
+					"<span class='username'> "+comentario.usuarioNombreCompleto+" <span class='text-muted pull-right'>"+fechaComentario.fromNow()+"</span>" +
+					"</span>" + comentario.comentario +
+				"</div>" +
+				"</div>";
+				
+			}
+			$("#comentariosDiv").html(html);
+		}	
+	}
+	
+	asignarColoresUsuarios()
+	{
+		var usuariosColores = []; 
+		var indiceColor = 0;
+		for(var i=0; i < this._comentarios.length; i++)
+		{
+			var comentario = this._comentarios[i];
+			var usuarioId = comentario.usuarioId;
+			var usuario = this.buscarPorValor(usuariosColores,"usuarioId",usuarioId);
+			if(usuario==null)
+			{
+				var color = "#ffffff";
+				if(indiceColor < this._colores.length)
+					color = this._colores[indiceColor];
+				usuariosColores.push({usuarioId: usuarioId, color: color});
+				indiceColor++;
+			}
+				
+		}
+		return usuariosColores;
 	}
 	
 	marcarMensaje(mensajeId)
@@ -123,19 +243,6 @@ class MensajesVista extends CatalogoVista
 		this.mensajeSeleccionado.leido = 1;
 		this.consultarNumeroMensajesNoLeidos();
 	}
-	
-//	onLoad()
-//	{
-//		this.inicializarEliminar();
-//		this.crearColumnasGrid();
-//		this.consultarEmpresasCriterio();
-//	}
-//	
-//	set datos(datos)
-//	{
-//		this.tabla.registros = datos;	
-//		this.inicializarEventosTabla("#" + this.tabla._id+"Table tbody",this.tabla.datatable.DataTable());
-//	}
 	
 	crearColumnasGrid()
 	{
@@ -238,51 +345,7 @@ class MensajesVista extends CatalogoVista
 			contenido += "<center id='"+id+"'><span></span></center>";
 	    return contenido;
 	}
-	
-//	inicializarValidacionesFormulario()
-//	{
-//		var _this = this;
-//		jQuery("#formulario").validate({
-//            ignore: [],
-//            errorClass: "invalid-feedback animated fadeInDown",
-//            errorElement: "div",
-//            errorPlacement: function(e, a) {
-//                jQuery(a).parents(".form-group > div").append(e)
-//            },
-//            highlight: function(e) {
-//                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
-//            },
-//            success: function(e) {
-//                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
-//            },
-//            rules: {
-//            	 "empresaSelect": {required: !0},
-//                "sedeSelectInput": {required: !0},
-//                "tipoAreaSelect": {required: !0},
-//                "nombreInput": {required: !0}
-//               
-//            },
-//            messages: {
-//            	 "empresaSelect": "Por favor ingrese una empresa",
-//            	 "sedeSelect": "Por favor ingrese una sede",
-//            	 "tipoAreaSelect": "Por favor ingrese un tipo de area",
-//                "nombreInput": "Por favor ingrese un nombre"
-//                	
-//                
-//            },
-//            submitHandler:function (form) {
-//            	 _this.guardar();
-//            }
-//        });
-//	}
-//	
-//	agregar()
-//	{
-//		super.agregar();
-//		
-//		
-//	}
-	
+
 	consultarCombos()
 	{
 		 setTimeout(function (){
@@ -340,84 +403,43 @@ class MensajesVista extends CatalogoVista
 		this.cargandoOpciones('#empresaSelect');
 	}
 	
-//	consultarEmpresas()
-//	{
-//		this.cargandoOpciones("#empresaSelect");
-//		this.cargandoOpciones("#sedeSelect");
-//		this.presentador.consultarEmpresas();
-//	}
-//	
-//	consultarTiposArea()
-//	{
-//		this.cargandoOpciones("#tipoAreaSelect");
-//		this.presentador.consultarTiposArea();
-//	}
 
-//	set empresas(registros)
-//	{		
-//		this.cargarOpciones('#empresaSelect', registros, this.modo, this.modeloEdicion, 'empresaId',"");
-//	}
-//	
-//	set tiposArea(registros)
-//	{		
-//		this.cargarOpciones('#tipoAreaSelect', registros, this.modo, this.modeloEdicion, 'tipoAreaId',"");
-//	}
-//	
-//	consultarEmpresasCriterio()
-//	{
-//		this.cargandoOpciones("#empresaSelectCriterio");
-//		this.cargandoOpciones("#sedeSelectCriterio");
-//		this.presentador.consultarEmpresasCriterio();
-//	}
-	
-//	set empresasCriterio(registros)
-//	{		
-//		this.cargarOpciones('#empresaSelectCriterio', registros);
-//		//this.consultar();
-//	}
-//	
-//	cambiarEmpresaCriterio()
-//	{
-//		this.consultarSedesCriterio();
-//	}
-//	
-//	cambiarEmpresa()
-//	{
-//		this.cargandoOpciones("#sedeSelect");
-//		this.consultarSedes();
-//	}
-	
-//	consultarSedes()
-//	{
-//		this.presentador.consultarSedes();
-//	}
-//	
-//	set sedes(registros)
-//	{
-//		this.cargarOpciones('#sedeSelect', registros, this.modo, this.modeloEdicion, 'sedeId',"");
-//	}
-//	
-//	consultarSedesCriterio()
-//	{
-//		this.cargandoOpciones("#sedeSelectCriterio");
-//		this.presentador.consultarSedesCriterio();
-//	}
-//	
-//	set sedesCriterio(registros)
-//	{		
-//		this.cargarOpciones('#sedeSelectCriterio', registros);
-//		if(this.consultoGrid==false)
-//		{
-//			this.consultar();
-//			this.consultoGrid=true;
-//		}
-//	}
-	
 	mensajeEnviado()
 	{
 		$("#modalAlta").modal('hide');
 		this.mostrarMensaje("","El mensaje fue enviado.")
 		this.consultar();
+	}
+	
+	enviarComentario()
+	{
+		this.presentador.enviarComentario();
+		$("#comentarioInput").val("");
+	}
+	
+	get modeloComentario()
+	{
+		var modelo =
+		{
+			mensajeId: this.mensajeSeleccionado.id,
+			usuarioId: this.usuario.id,
+			comentario: $("#comentarioInput").val()
+		};
+		return modelo;
+	}
+	
+	set datos(datos)
+	{
+		super.datos = datos;
+		if(this._mensajeIdParametro=="")
+		{
+			this._mensajeIdParametro = this.mensajeId;
+			this.mensajeSeleccionado = this.buscarPorValor(datos,"id",this._mensajeIdParametro);
+			if (this.mensajeSeleccionado != undefined)
+			{
+				this.mostrarModalMensaje();
+			}
+		}
 	}
 
 	

@@ -7,8 +7,8 @@
     header('Access-Control-Allow-Credentials: true');
 ?>
 <div class="modal fade" id="modalAlta" tabindex="-1" role="dialog" aria-labelledby="scrollmodalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-lg" role="document"> 
-		<div class="modal-content">
+	<div class="modal-dialog modal-lg" role="document" style='width:80%'> 
+		<div class="modal-content" >
 			<div class="modal-header">
 				<h5 class="modal-title" id="scrollmodalLabel">Enviar mensaje</h5>
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -17,6 +17,31 @@
 			</div>
 			<div class="modal-body">
 			<form id="formulario" action="#"  method="post">
+				<div class="form-group col-sm-6">
+					<div>
+                  	 	<label for="empresaSelectMensaje" class="control-label">Empresa</label>
+                  	 	<select name="empresaSelectMensaje" id="empresaSelectMensaje" class="form-control" onchange="vista.cambiarEmpresaMensaje();"><option value="">Cargando...</option></select>
+                  	 </div> 
+              	</div>
+              	<div class="form-group col-sm-6">
+					<div>
+                  	 	<label for="sedeSelectMensaje" class="control-label">Sede</label>
+                  	 	<select name="sedeSelectMensaje" id="sedeSelectMensaje" class="form-control" onchange="vista.cambiarSedeMensaje();"><option value="">Cargando...</option></select>
+                  	 </div> 
+              	</div>
+              	<div class="form-group col-sm-6">
+					<div>
+                  	 	<label for="areaSelectMensaje" class="control-label mb-1">Area</label>
+                  	 	<select name="areaSelectMensaje" id="areaSelectMensaje" class="form-control" onchange="vista.cambiarAreaMensaje();"><option value="">Cargando...</option></select>
+                  	 </div> 
+              	</div>
+              	<div class="form-group col-sm-6">
+					<div>
+                  	 	<label for="usuarSelectMensaje" class="control-label mb-1">Usuario</label>
+                  	 	<select name="usuarSelectMensaje" id="usuarioSelectMensaje" class="form-control"><option value="">Cargando...</option></select>
+                  	 </div> 
+              	</div>
+              	
 				<div class="form-group">
 					<div>
                 		<input id="asuntoInput" name="asuntoInput" class="form-control" placeholder="Asunto:">
@@ -26,7 +51,7 @@
 					 <div>
                         <textarea id="mensajeInput" name='mensajeInput' class="form-control" style="height: 300px" spellcheck="false">
                         </textarea>
-                        </div>
+                    </div>
              	 </div>
 			
             	<!-- /.chat -->

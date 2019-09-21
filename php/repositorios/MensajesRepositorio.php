@@ -7,7 +7,7 @@ use php\modelos\Resultado;
 
 include '../interfaces/IMensajesRepositorio.php';
 include '../modelos/Mensaje.php';
-include 'RepositorioBase.php';
+require_once('RepositorioBase.php');
 require_once('../clases/Resultado.php');
 
 class MensajesRepositorio extends RepositorioBase implements IMensajesRepositorio
@@ -29,12 +29,24 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
         if($resultado->mensajeError=='')
         {
             $id = $resultado->valor;
-            $consulta = "INSERT INTO mensajes(id, mensaje, usuario_id,fecha,asunto)VALUES(?, ?, ?,NOW(),?)";
+            
+            if($modelo->empresaId=="")
+                $modelo->empresaId=null;
+            if($modelo->sedeId=="")
+                $modelo->sedeId=null;
+            if($modelo->areaId=="")
+                $modelo->areaId=null;
+            if($modelo->usuarioId=="")
+                $modelo->usuarioId=null;
+            
+            $consulta = "INSERT INTO mensajes(id, mensaje, usuario_id,fecha,asunto, compartir_empresa_id, compartir_sede_id, compartir_area_id, compartir_usuario_id)VALUES(?, ?, ?,NOW(),?,?,?,?,?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param('isis', $id, $modelo->mensaje,$usuario->id,$modelo->asunto))
+                if($sentencia->bind_param('isisiiii', $id, $modelo->mensaje,$usuario->id,$modelo->asunto,$modelo->empresaId,$modelo->sedeId,$modelo->areaId,$modelo->usuarioId))
                 {
-                    if(!$sentencia->execute())
+                    if($sentencia->execute())
+                        $resultado->valor = $id;
+                    else
                         $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 }
                 else
@@ -132,14 +144,18 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
     {
         $resultado = new Resultado();
         $consulta = "SELECT COUNT(*)
-                    FROM appshand_saha.mensajes
-                    WHERE id NOT IN(SELECT mensaje_id FROM mensajes_leidos WHERE usuario_id = ?) and usuario_id != ?";
+                    FROM mensajes
+                    WHERE id NOT IN(SELECT mensaje_id FROM mensajes_leidos WHERE usuario_id = ?) and usuario_id != ?
+                AND (compartir_empresa_id is null OR compartir_empresa_id = ?)
+            	AND (compartir_sede_id is null OR compartir_sede_id = ?)
+                AND (compartir_area_id is null OR compartir_area_id = ?)
+                AND (compartir_usuario_id is null OR compartir_usuario_id = ?)"; 
         
         $resultado->valor = 0;
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("ii", $usuario->id, $usuario->id))
+            if($sentencia->bind_param("iiiiii", $usuario->id, $usuario->id,$usuario->empresaId,$usuario->sedeId,$usuario->areaId,$usuario->id))
             {
                 if($sentencia->execute())
                 {
@@ -170,8 +186,14 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
     {
         $resultado = new Resultado();
         $registros = array();
-        $filtros = array();
-        $where= "";  //' and usuario_id != ?';
+        //$filtros = array();
+        $where= "WHERE (compartir_empresa_id is null OR compartir_empresa_id = ?)
+            	AND (compartir_sede_id is null OR compartir_sede_id = ?)
+                AND (compartir_area_id is null OR compartir_area_id = ?)
+                AND (compartir_usuario_id is null OR compartir_usuario_id = ?)"; 
+                    
+      
+        
 //         if($criteriosSeleccion!=null)
 //         {
 //             $where = $this->where($filtros);
@@ -179,7 +201,7 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
         $consulta = $this->consultaBase . $where . ' ORDER BY fecha DESC';
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param('i',$usuario->id))
+            if($sentencia->bind_param('iiiii',$usuario->id,$usuario->empresaId,$usuario->sedeId,$usuario->areaId,$usuario->id))
             {
                 if($sentencia->execute())
                 {

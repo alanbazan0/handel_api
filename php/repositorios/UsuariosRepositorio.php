@@ -281,10 +281,20 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
             }
+            if(isset($criteriosSeleccion->areaId))
+            {
+                if($criteriosSeleccion->areaId!="" && $criteriosSeleccion->areaId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'area_id','valor'=>$criteriosSeleccion->areaId]);
+            }
             if(isset($criteriosSeleccion->tipoUsuarioId))
             {
                 if($criteriosSeleccion->tipoUsuarioId!="" && $criteriosSeleccion->tipoUsuarioId!=null)
                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'tipo_usuario_id','valor'=>$criteriosSeleccion->tipoUsuarioId]);
+            }
+            if(isset($criteriosSeleccion->usuarioId))
+            {
+                if($criteriosSeleccion->usuarioId!="" && $criteriosSeleccion->usuarioId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'id','valor'=>$criteriosSeleccion->usuarioId]);
             }
             $where = $this->where($filtros);
         }
@@ -551,6 +561,54 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
        return $resultado;
     }
 
+    public function consultarPorEmpresaSedeArea($empresaId, $sedeId, $areaId, $opcional,$usuario)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = array();
+        $where="";
+        
+        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'E','campo'=>'id','valor'=>$empresaId]);
+        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'id','valor'=>$sedeId]);
+        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'A','campo'=>'id','valor'=>$areaId]);
+        $where = $this->where($filtros);
+        
+        $consulta = $this->consultaBase .
+        $where;
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $nombreUsuario,$contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro = $this->crearRegistro($id, $nombreUsuario,$contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7);
+                            array_push($registros,$registro);
+                        }
+                        if($opcional=="true")
+                        {
+                            $registro = $this->crearRegistro("", null,null, "Todos los usuarios", null,null, null, null, null, null, null, null, null, null, null, null, null,null, null,null, null,null, null, null, null,null, null,null, null, null);
+                            array_unshift($registros, $registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            return $resultado;
+    }
     
 }
 

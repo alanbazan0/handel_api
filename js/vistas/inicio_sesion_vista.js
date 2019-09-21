@@ -14,6 +14,11 @@ class InicioSesionVista extends Vista
 		this.inicializarValidacionesCuenta();
 	}
 	
+	get url()
+	{
+		return $("body").attr("data-url");
+	}
+	
 	get aplicacionId()
 	{
 		return $("body").attr("data-aplicacionId");
@@ -73,7 +78,11 @@ class InicioSesionVista extends Vista
 	
 	mostrarMenu(usuario)
 	{
-		var submitForm = this.getNewSubmitForm("panel.php");
+		var url = "panel.php"
+		if(this.url!="" && this.url!=undefined)
+			url = this.url;
+		
+		var submitForm = this.getNewSubmitForm(url);
 		this.createNewFormElement(submitForm, "usuario", JSON.stringify(usuario));	 
 	    submitForm.target= "_self";
 	    submitForm.submit();
