@@ -490,7 +490,6 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
     public function consultarPorLLaves($llaves)
     {
         $resultado = new Resultado();
-        $registros = array();
         
         $consulta =   $this->consultaBase .
         " WHERE U.id = ? ";
@@ -506,8 +505,48 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                         if($row = $sentencia->fetch())
                         {
                             $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7);
+                            $resultado->valor = $registro;
                         }
-                        $resultado->valor = $registro;
+                       
+                      
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado.";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            return $resultado;
+    }   
+    
+    public function consultarPorCorreoElectronico($correoElectronico)
+    {
+        $resultado = new Resultado();
+        
+        $consulta =   $this->consultaBase .
+        " WHERE U.nombre_usuario = ? ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("s",$correoElectronico))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7)  )
+                    {
+                        if($row = $sentencia->fetch())
+                        {
+                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7);
+                            $resultado->valor = $registro;
+                        }
+                        else
+                            $resultado->mensajeError ="No se encontró ninguna cuenta asociada a este correo electrónico";
+                      
                     }
                     else
                         $resultado->mensajeError = "Falló el enlace del resultado.";

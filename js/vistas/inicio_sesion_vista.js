@@ -10,8 +10,43 @@ class InicioSesionVista extends Vista
 	
 	inicializar()
 	{
-		
+		$("#olvideContrasenaLink").click(this.olvideContrasena);
 		this.inicializarValidacionesCuenta();
+	}
+	
+	olvideContrasena(event)
+	{
+		 swal({
+	            title: "Recuperar contrase\xF1a",
+	            text: "Ingrese su correo electr\xF3nico",
+	            type: "input",
+	            showCancelButton: true,
+	            closeOnConfirm: false,
+	            animation: "slide-from-top",
+	            cancelButtonText: "Cancelar",
+	            confirmButtonText: "Recuperar",
+	            showLoaderOnConfirm: true,
+	            inputPlaceholder: "ejemplo@apps-handel.com"
+	            	
+	        },
+	        function(inputValue){
+	            if (inputValue === false) return false;
+	            if (inputValue === "") {
+	                swal.showInputError("Es necesario ingresar el correo electr\xF3nico!");
+	                return false
+	            }
+	            vista.correoRecuperar = inputValue;
+	            setTimeout(function(){
+	            	vista.recuperarCuenta();
+	            }, 2000);
+	            
+
+	        });
+	}
+	
+	recuperarCuenta()
+	{
+		this.presentador.recuperarCuenta();
 	}
 	
 	get url()
@@ -120,15 +155,44 @@ class InicioSesionVista extends Vista
 		return $("#contrasenaInput").val();
 	}
 	
-//	mostrarIndicador()
-//	{
-//		$('#indicador').show();				
-//	}
-//	
-//	ocultarIndicador()
-//	{		
-//		$('#indicador').hide();
-//	}
+	mostrarRecuperacionCompletada()
+	{
+		swal({
+			  title: "Recuperaci\xF3n completada",
+			  text: "Revise su bandeja de entrada y siga las instrucciones para recuperar su cuenta. Si no lo recibe de inmediato, por favor espere o verifique que el correo no haya sido enviado a su carpeta de correo no deseado o SPAM.",
+			  type: "success",
+			  confirmButtonText: "Ok",
+			  timer: this._tiempoAlerta,
+			  closeOnConfirm: true
+			},
+			function(){
+			});
+	}
+	
+	mostrarRecuperacionIncorrecta(mensajeError)
+	{
+		swal({
+			  title: "No se pudo recuperar la cuenta",
+			  text: mensajeError,
+			  type: "error",
+			  confirmButtonText: "Ok",
+			  timer: this._tiempoAlerta,
+			  closeOnConfirm: true
+			},
+			function(){
+				
+			});
+	}
+	
+	set correoRecuperar(correoRecuperar)
+	{
+		this._correoRecuperar = correoRecuperar;
+	}
+	
+	get correoRecuperar()
+	{
+		return this. _correoRecuperar;
+	}
 }
 var vista = new InicioSesionVista();
 $(document).ready(function() 

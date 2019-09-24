@@ -120,6 +120,16 @@ class UsuariosVista extends CatalogoVista
 		});
 	}
 	
+//	get registroSeleccionado()
+//	{
+//		var usuario = {
+//				nombreUsuario =  this._registroSeleccionado.nombreUsuario,
+//				nombre =  this._registroSeleccionado.nombre,
+//				contrasena : this._registroSeleccionado.contrasena
+//		}
+//		return usuario;
+//	}
+	
 	reenviarCorreo()
 	{
 		this.presentador.reenviarCorreo();

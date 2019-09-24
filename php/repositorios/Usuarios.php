@@ -66,12 +66,26 @@ try
                 }
             break;
             case 'reenviarCorreo':
-                $json = json_decode(REQUEST('modelo'));
-                $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Usuario()); 
-                $administrador_correo = new AdministradorCorreo();
-                if($modelo->nombreUsuario!="" && $modelo->nombreUsuario!=null)
-                    $resultado = $administrador_correo->enviarCorreoBienvenida($modelo);
+                $llaves = json_decode(REQUEST('llaves'));
+                $resultado = $repositorio->consultarPorLlaves($llaves);
+                if($resultado->correcto())
+                {
+                    $usuario = $resultado->valor;
+                    $administrador_correo = new AdministradorCorreo();
+                    if($usuario->nombreUsuario!="" && $usuario->nombreUsuario!=null)
+                        $resultado = $administrador_correo->enviarCorreoBienvenida($usuario);
+                }
+            break;
+            case 'recuperar':
+                $correoElectronico = REQUEST('correoElectronico');
+                $resultado = $repositorio->consultarPorCorreoElectronico($correoElectronico);
+                if($resultado->correcto())
+                {
+                    $usuario = $resultado->valor;
+                    $administrador_correo = new AdministradorCorreo();
+                    if($usuario->nombreUsuario!="" && $usuario->nombreUsuario!=null)
+                        $resultado = $administrador_correo->enviarCorreoRecuperacion($usuario);
+                }
                 break;
             case 'actualizar':
                 $json = json_decode(REQUEST('modelo'));

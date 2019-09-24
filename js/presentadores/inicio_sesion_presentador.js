@@ -26,6 +26,22 @@ class InicioSesionPresentador
 			this.vista.mostrarMensajeError("Error",resultado);
 	 }
 	 
+	 recuperarCuenta()
+	{
+		 this.vista.mostrarIndicador();
+		var repositorio = new UsuariosRepositorio(this);
+		repositorio.recuperar(this,function(resultado)
+		{
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.mostrarRecuperacionCompletada();
+			else
+				this.vista.mostrarRecuperacionIncorrecta(resultado.mensajeError);
+		}, this.vista.correoRecuperar);
+	}
+		
+		
+	 
 	
 	
 	 

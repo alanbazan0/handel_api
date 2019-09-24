@@ -188,7 +188,7 @@ class UsuariosRepositorio extends Repositorio
 		 $.ajax({
 	        url: url,
 	        type: 'POST',
-	        data: {accion : "reenviarCorreo",modelo: modeloString},
+	        data: {accion : "reenviarCorreo",llaves: modeloString},
 	        success: function( data, textStatus, jQxhr )
 	        {
 	            funcion.call(contexto,data);
@@ -227,5 +227,30 @@ class UsuariosRepositorio extends Repositorio
           	 funcion.call(contexto,{ mensajeError : textStatus});
            }
        });
+	}
+	
+	recuperar(contexto,funcion, correoElectronico)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+	        url: url,
+	        type: 'POST',
+	        data: {accion : "recuperar",correoElectronico: correoElectronico},
+	        success: function( data, textStatus, jQxhr )
+	        {
+	            funcion.call(contexto,data);
+	        },
+	        error: function( jqXhr, textStatus, errorThrown )
+	        {
+	        	if(textStatus=="parsererror")
+        	   		funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+           		else
+           			funcion.call(contexto,{ mensajeError : textStatus});
+	        },
+	        fail: function( jqXhr, textStatus, errorThrown )
+	        {
+	       	 funcion.call(contexto,{ mensajeError : textStatus});
+	        }
+	    });
 	}
 }

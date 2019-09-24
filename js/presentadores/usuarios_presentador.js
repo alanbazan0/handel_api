@@ -253,7 +253,7 @@ class UsuariosPresentador extends CatalogoPresentador
 					this.vista.mostrarMensaje("","El correo fue reenviado.");
 				else
 					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-		 }, this.vista.modelo);
+		 }, this.vista.llaves);
 	 }
 	 
 	 
