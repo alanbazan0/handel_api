@@ -8,7 +8,7 @@ use php\modelos\Resultado;
 include '../interfaces/IUsuariosProcedimientosRepositorio.php';
 include '../modelos/UsuarioProcedimiento.php';
 require_once('RepositorioBase.php');
-include "../clases/TipoUsuario.php";
+require_once("../clases/TipoUsuario.php");
 require_once('../clases/Resultado.php');
 
 class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsuariosProcedimientosRepositorio

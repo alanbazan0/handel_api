@@ -7,8 +7,8 @@ use php\modelos\Resultado;
 
 include '../interfaces/IEvidenciasRepositorio.php';
 include '../modelos/Evidencia.php';
-include 'RepositorioBase.php';
-//require_once("../clases/TipoUsuario.php");
+require_once('RepositorioBase.php');
+require_once("../clases/TipoUsuario.php");
 require_once('../clases/Resultado.php');
 
 class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasRepositorio
@@ -96,7 +96,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
     {
         $resultado = new Resultado();
         $resultado->valor = 0;
-        $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion);
+        $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion,false);
         
         
         $consulta = "SELECT count(*) numero
@@ -138,7 +138,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
     {
         $resultado = new Resultado();
         $resultado->valor = 0;
-        $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion);
+        $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion,false);
         $consulta = "SELECT count(*) numero
                     FROM evidencias E
                         INNER JOIN usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
@@ -179,7 +179,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         $resultado = new Resultado();
         $resultado->valor = 0;
         $filtros = array();
-        $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion);
+        $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion,false);
         $consulta = "SELECT count(*)
                     FROM usuarios_procedimientos UP
                     	INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
@@ -223,7 +223,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         
         $registros = array();
         
-        $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion);
+        $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion,false);
         
         $and = $this->and($filtros);
         
@@ -339,15 +339,32 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         return $resultado;
     }
     
+    public function consultarPorcentajesEvidencias($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        
+        $justificadas = $this->numeroEvidenciasJustificadas($usuario,$criteriosSeleccion);
+        $enviadas =  $this->numeroEvidenciasEnviadas($usuario,$criteriosSeleccion);
+        $pendientes =  $this->numeroEvidenciasPendientes($usuario,$criteriosSeleccion);
+        
+        $porcentajes = array();
+        array_push($porcentajes,(object)['nombre'=>'Enviadas','valor'=>$enviadas->valor]);
+        array_push($porcentajes,(object)['nombre'=>'Pendientes','valor'=>$pendientes->valor]);
+        array_push($porcentajes,(object)['nombre'=>'Justificadas','valor'=>$justificadas->valor]);
+        
+        
+        $resultado->valor = $porcentajes;
+        
+        return $resultado;
+    }
+    
+    
     public function consultarPorcentajesEmpresasMesActual($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
         $registros = array();
         
-        $filtros =  array();//$this->getFiltrosUsuario($usuario, $criteriosSeleccion);
-        
-//         $and = $this->and($filtros);
-        
+        $filtros =  array();
         
         $consulta = "SELECT EM.id,EM.nombre , EM.nombre_corto,
                     (
@@ -444,10 +461,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         $resultado = new Resultado();
         $registros = array();
         
-        $filtros =  array();//$this->getFiltrosUsuario($usuario, $criteriosSeleccion);
-        
-        //         $and = $this->and($filtros);
-        
+        $filtros =  array();
         
         $consulta = "SELECT U.area_id,A.nombre,
                     (
@@ -547,10 +561,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         $resultado = new Resultado();
         $registros = array();
         
-        $filtros =  array();//$this->getFiltrosUsuario($usuario, $criteriosSeleccion);
-        
-        //         $and = $this->and($filtros);
-        
+        $filtros =  array();
         
         $consulta = "SELECT U.id,U.nombre, U.apellido,
                     (
@@ -659,10 +670,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         $resultado = new Resultado();
         $registros = array();
         
-        $filtros =  array();//$this->getFiltrosUsuario($usuario, $criteriosSeleccion);
-        
-        //         $and = $this->and($filtros);
-        
+        $filtros =  array();
         
         $consulta = "SELECT V.id, V.nombre, V.apellido,
                  (
@@ -744,7 +752,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             return $resultado;
     }
     
-    private function getFiltrosUsuario($usuario,$criteriosSeleccion)
+    private function getFiltrosUsuario($usuario,$criteriosSeleccion,$agregarCriteriosSeleccion)
     {
         $filtros = array();
         switch ($usuario->tipoUsuarioId)
@@ -761,6 +769,14 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','valor'=>$usuario->empresaId]);
             break;
         }
+        if($criteriosSeleccion!=null)
+        {
+            if(isset($criteriosSeleccion->ano))
+                array_push($filtros,(object)['tipoDato'=>'int','campo'=>'YEAR(E.fecha_alta)','valor'=>$criteriosSeleccion->ano]);
+            if(isset($criteriosSeleccion->mes))
+                array_push($filtros,(object)['tipoDato'=>'int','campo'=>'MONTH(E.fecha_alta)','valor'=>$criteriosSeleccion->mes]);
+        }
+        
         return $filtros;
     }
     
@@ -769,7 +785,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         $resultado = new Resultado();
         $registros = array();
         
-        $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion);
+        $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion,true);
         
         $and = $this->and($filtros);
         
@@ -1040,4 +1056,136 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         
         return $registro;
     }
+    
+    public function numeroEvidenciasJustificadas($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $resultado->valor = 0;
+        $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion,true);
+        
+       
+        
+        $consulta = "SELECT count(*) numero
+                    FROM evidencias E
+                        INNER JOIN usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
+                        INNER JOIN usuarios U ON U.id = UP.usuario_id
+                    WHERE justificacion_id IS NOT NULL
+                    ";
+        $consulta.=  $this->and($filtros);
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($count))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $resultado->valor =$count;
+                        }
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
+    }
+    
+    public function numeroEvidenciasEnviadas($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $resultado->valor = 0;
+        $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion,true);
+        $consulta = "SELECT count(*) numero
+                    FROM evidencias E
+                        INNER JOIN usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
+                        INNER JOIN usuarios U ON U.id = UP.usuario_id
+                    WHERE justificacion_id IS NULL
+                    ";
+        $consulta.=  $this->and($filtros);
+        
+      
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($count))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $resultado->valor =$count;
+                        }
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
+    }
+    
+    public function numeroEvidenciasPendientes($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $resultado->valor = 0;
+        $filtros = array();
+        $filtros = $this->getFiltrosUsuario($usuario, null,false);
+        
+        $consulta = "SELECT count(*)
+                    FROM usuarios_procedimientos UP
+                    	INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
+                        INNER JOIN usuarios U ON U.id = UP.usuario_id
+                    WHERE UP.estatus = 1
+                    	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano) ";
+        
+        $consulta.=  $this->and($filtros);
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($count))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $resultado->valor =$count;
+                        }
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
+    }
+    
 }

@@ -48,7 +48,7 @@ try
         
         $usuarios = array();
         array_push($usuarios,(object) ['nombreUsuario' => 'alanbazan@apps-handel.com','nombreCompleto' => 'Alan Bazán']);
-        array_push($usuarios,(object) ['nombreUsuario' => 'eduardo@handel-sce.com','nombreCompleto' => 'Eduardo']);
+       // array_push($usuarios,(object) ['nombreUsuario' => 'eduardo@handel-sce.com','nombreCompleto' => 'Eduardo']);
         
         $dia = REQUEST("dia");
         if($dia==null)
@@ -66,7 +66,7 @@ try
                 $asunto = " ¡El reporte del mes de SAHA está listo!";
                 $caricatura = "https://api.apps-handel.com/images/caricatura/Little_Business_Girl-78.png";
                 $texto = "Es el ultimo recordatorio del mes, este es para agradecerte el apoyo constante y adjuntar a este correo el reporte que muestra el estado de trabajo del mes de tu equipo; por favor toma unos minutos para retroalimentar a tu equipo de trabajo utilizando el sistema de mensajes de SAHA.";
-                $pie =  "<label style='font-weight:bold;color:#004D7F;'>¡Gracias por tu colaboracion!<label>";
+                $pie =  "<label style='font-weight:bold;color:#004D7F;'>¡Gracias por tu colaboración!<label>";
             break;
            
         }
