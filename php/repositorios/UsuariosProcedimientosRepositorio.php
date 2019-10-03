@@ -216,10 +216,11 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
 //                     "ORDER BY codigo";
 
         $consulta = $this->consultaBase .
-                   " WHERE UP.estatus = 1
+                   " WHERE UP.estatus = 1 AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5) 
                     	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) ) " . $and . " " .
-                    	"ORDER BY codigo";
+                    	"ORDER BY U.nombre, P.nombre";
         
+        //echo $consulta
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -340,7 +341,7 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
             'limiteJustificaciones' => $limiteJustificaciones
         ];
         
-        $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
+        $registro->usuarioNombreCompleto = $registro->usuarioNombre ;
         $registro->fotoPerfil =  "../fotos/usuario". $registro->usuarioId .".jpg";
         if(file_exists($registro->fotoPerfil))
             $registro->fotoPerfil =  "php/fotos/usuario". $registro->usuarioId .".jpg";

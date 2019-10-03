@@ -302,6 +302,8 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         $consulta =  $this->consultaBase .
                     $where .
                      " ORDER BY U.nombre";
+        
+     
 
         if($sentencia = $this->conexion->prepare($consulta))
         {

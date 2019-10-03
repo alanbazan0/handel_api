@@ -48,6 +48,11 @@ class Tabla
 		this._columnas = columnas;
 	}
 	
+	get columnas()
+	{
+		return this._columnas;
+	}
+	
 	set anchoContenidoAdicional(anchoContenidoAdicional)
 	{
 		this._anchoContenidoAdicional = anchoContenidoAdicional;

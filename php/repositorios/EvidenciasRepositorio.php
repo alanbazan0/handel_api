@@ -103,7 +103,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     FROM evidencias E
                         INNER JOIN usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
                         INNER JOIN usuarios U ON U.id = UP.usuario_id
-                    WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) AND justificacion_id IS NOT NULL 
+                    WHERE (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5) AND MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) AND justificacion_id IS NOT NULL 
                     ";
         $consulta.=  $this->and($filtros);
         
@@ -143,7 +143,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     FROM evidencias E
                         INNER JOIN usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
                         INNER JOIN usuarios U ON U.id = UP.usuario_id
-                    WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) AND justificacion_id IS NULL
+                    WHERE (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5)  AND MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) AND justificacion_id IS NULL
                     ";
         $consulta.=  $this->and($filtros);
         
@@ -184,7 +184,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     FROM usuarios_procedimientos UP
                     	INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
                         INNER JOIN usuarios U ON U.id = UP.usuario_id
-                    WHERE UP.estatus = 1
+                    WHERE UP.estatus = 1 AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5)  
                     	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) ) ";
       
         $consulta.=  $this->and($filtros);
@@ -341,6 +341,9 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
     
     public function consultarPorcentajesEvidencias($usuario,$criteriosSeleccion)
     {
+        
+      
+        
         $resultado = new Resultado();
         
         $justificadas = $this->numeroEvidenciasJustificadas($usuario,$criteriosSeleccion);
@@ -563,7 +566,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         
         $filtros =  array();
         
-        $consulta = "SELECT U.id,U.nombre, U.apellido,
+        $consulta = "SELECT U.id,U.nombre, U.apellido,U.tipo_usuario_id, U.empresa_id, U.sede_id, U.area_id,
                     (
                     	SELECT count(*) numero
                     	FROM evidencias E1
@@ -610,7 +613,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     	LEFT JOIN sedes S ON S.id = U.sede_id
                     	LEFT JOIN empresas EM ON EM.id = S.empresa_id
                     	LEFT JOIN areas A ON A.id = U.area_id
-                    WHERE  EM.id = ? AND A.id = ?
+                    WHERE  EM.id = ? AND A.id = ? AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5)
                     GROUP BY U.id, U.nombre";
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -619,7 +622,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $nombre, $apellido, $justificadas, $enviadas, $pendientes))
+                    if($sentencia->bind_result($id, $nombre, $apellido, $tipoUsuarioId, $empreasaId, $sedeId, $areaId, $justificadas, $enviadas, $pendientes))
                     {
                         while($sentencia->fetch())
                         {
@@ -627,6 +630,10 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                                 'id' =>  $id,
                                 'nombre' =>  $nombre,
                                 'apellido' =>  $apellido,
+                                'tipoUsuarioId' =>  $tipoUsuarioId,
+                                'empresaId' =>  $empreasaId,
+                                'sedeId' =>  $sedeId,
+                                'areaId' =>  $areaId,
                                 'justificadas' =>  $justificadas,
                                 'enviadas' =>  $enviadas,
                                 'pendientes' =>  $pendientes
@@ -648,6 +655,66 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                             
                             
                             array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
+    }
+    
+    public function consultarUsuariosConProcedimientosAsignados($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $filtros =  array();
+        
+        $consulta = "SELECT U.id,U.nombre, U.apellido, U.tipo_usuario_id
+                    FROM usuarios_procedimientos UP
+                    	LEFT JOIN usuarios U ON U.id = UP.usuario_id
+                    	LEFT JOIN sedes S ON S.id = U.sede_id
+                    	LEFT JOIN empresas EM ON EM.id = S.empresa_id
+                    	LEFT JOIN areas A ON A.id = U.area_id
+                    WHERE  EM.id = ? AND A.id = ? AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5)
+                    GROUP BY U.id, U.nombre";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param('ii',$usuario->empresaId,$usuario->areaId))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id, $nombre, $apellido, $tipoUsuarioId))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro= (object) [
+                                'id' =>  $id,
+                                'nombre' =>  $nombre,
+                                'apellido' =>  $apellido,
+                                'tipoUsuarioId' => $tipoUsuarioId
+                            ];
+                            
+                            
+                            $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
+                            $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
+                            if(file_exists($registro->fotoPerfil))
+                                $registro->fotoPerfil =  "php/fotos/usuario". $registro->id .".jpg";
+                            else
+                                $registro->fotoPerfil =  "php/fotos/default.jpg";
+                                
+                                    
+                                    array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
                     }
@@ -1155,7 +1222,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     FROM usuarios_procedimientos UP
                     	INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
                         INNER JOIN usuarios U ON U.id = UP.usuario_id
-                    WHERE UP.estatus = 1
+                    WHERE UP.estatus = 1  AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5)  
                     	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano) ";
         
         $consulta.=  $this->and($filtros);

@@ -41,68 +41,65 @@ try
         $repositorio = new UsuariosRepositorio($conexion);
         $usuarios = array();
         $resultado = $repositorio->consultar((object) ['tipoUsuarioId' =>  TipoUsuario::USUARIO]);
-        array_push($usuarios,$resultado->valor);
-//         $resultado = $repositorio->consultar((object) ['tipoUsuarioId' =>  TipoUsuario::SUPERVISOR]);
-//         array_push($usuarios,$resultado->valor);
-        
-        $resultado->valor = "";
+        if($resultado->correcto())
+            $usuarios = $resultado->valor;
+        else
+            mensajeLog("error", $resultado->mensajeError);
         
         $usuarios = array();
         array_push($usuarios,(object) ['id'=>261,'nombreUsuario' => 'alanbazan@apps-handel.com','nombre' => 'Alan', 'tipoUsuarioId' => TipoUsuario::USUARIO]);
-       // array_push($usuarios,(object) ['nombreUsuario' => 'eduardo@handel-sce.com','nombreCompleto' => 'Eduardo']);
+//         array_push($usuarios,(object) ['id'=>261,'nombreUsuario' => 'noemi@handel-sce.com','nombre' => 'Alan', 'tipoUsuarioId' => TipoUsuario::USUARIO]);
+//         array_push($usuarios,(object) ['id'=>261,'nombreUsuario' => 'eduardo@handel-sce.com','nombre' => 'Alan', 'tipoUsuarioId' => TipoUsuario::USUARIO]);
         
         $dia = REQUEST("dia");
         if($dia==null)
             $dia = date("j");
-//         $titulo ="¡Recordatorio de evidencias!";
-//         $texto ="";
-//         $asunto ="¡Recordatorio de evidencias!";
-//         $caricatura = "https://api.apps-handel.com/images/caricatura/Bonus_Shapes_and_Backgounds-05.png";
-//         $diaLimite = 27;
-        //$dia = 1;
         
-        
-     
-      
-        
-       $asunto = getAsunto($dia);
-        
-        $usuariosProcedimientosRepositorio = new UsuariosProcedimientosRepositorio($conexion);
-        $evidenciasRepositorio = new EvidenciasRepositorio($conexion);
-        
-        for ($i = 0; $i < count($usuarios); $i++)
-        {
-            $usuario = $usuarios[$i];
-          
-            $contenido = getContenido($usuariosProcedimientosRepositorio, $evidenciasRepositorio,$usuario, $dia);
             
-            $mensaje= file_get_contents('notificacion_usuario.html');
-            $mensaje=  str_replace("@nombre",$usuario->nombre,$mensaje);
-            $mensaje=  str_replace("@contenido",$contenido,$mensaje);
+       if($dia ==1 || $dia ==14  || $dia ==21 || $dia ==27 || $dia ==28)
+       {
+           $asunto = getAsunto($dia);
             
-//             $cabecera = "From:  SAHA <noreply@apps-handel.com>\r\n";
-//             $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";
+            $usuariosProcedimientosRepositorio = new UsuariosProcedimientosRepositorio($conexion);
+            $evidenciasRepositorio = new EvidenciasRepositorio($conexion);
             
-//             $errLevel = error_reporting(E_ALL ^ E_WARNING);
-//             $resultadoMail = true;
-//             $resultadoMail= mail($usuario->nombreUsuario, utf8_decode($asunto), $mensaje, $cabecera);
-//             error_reporting($errLevel);
-            
-//             $error = error_get_last();
-            
-//             if ( $error["type"] == E_WARNING)
-//             {
-//                 $resultado->mensajeError="No se pudo enviar el correo electrónico." . htmlspecialchars_decode($error["message"]) ;
-//                 $resultado->codigoError = 3;
-//                 file_put_contents('./log_'.date("j.n.Y").'.log',  $resultado->mensajeError , FILE_APPEND);
-//             }
-//             else if($resultadoMail)
-//             {
-//                 $resultado->valor="OK";
-//             }
-          
-            echo $mensaje;
-        }
+            for ($i = 0; $i < count($usuarios); $i++)
+            {
+                $usuario = $usuarios[$i];
+              
+                $contenido = getContenido($usuariosProcedimientosRepositorio, $evidenciasRepositorio,$usuario, $dia);
+                if($contenido!="")
+                {
+                
+                    $mensaje= file_get_contents('notificacion_usuario.html');
+                    $mensaje=  str_replace("@nombre",$usuario->nombre,$mensaje);
+                    $mensaje=  str_replace("@contenido",$contenido,$mensaje);
+                    
+                    $cabecera = "From:  SAHA <noreply@apps-handel.com>\r\n";
+                    $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";
+                    
+                    $errLevel = error_reporting(E_ALL ^ E_WARNING);
+                    $resultadoMail = true;
+                    $resultadoMail= mail($usuario->nombreUsuario, utf8_decode($asunto), $mensaje, $cabecera);
+                    error_reporting($errLevel);
+                    
+                    $error = error_get_last();
+                    
+                    if ( $error["type"] == E_WARNING)
+                    {
+                        $resultado->mensajeError="No se pudo enviar el correo electrónico." . htmlspecialchars_decode($error["message"]) ;
+                        $resultado->codigoError = 3;
+                        mensajeLog("error",$resultado->mensajeError);
+                    }
+                    else if($resultadoMail)
+                    {
+                        $resultado->valor="OK";
+                        mensajeLog("log_envio","[$i] Correo enviado a ".$usuario->nombreUsuario);
+                    }
+                }
+                //echo $mensaje;
+            }
+       }
     }
     
 }
@@ -285,7 +282,7 @@ function getContenido(UsuariosProcedimientosRepositorio $usuariosProcedimientosR
             }
             
             
-            $contenido = getTextoConLogo("¡Hola! SAHA se encuentra abierto desde este momento para recibir las evidencias del mes, es importante que tomes unos minutos para identiﬁcarlas, organizarlas y subirlas así evitando olvidar subirlas después.");
+            $contenido = getTextoConLogo("¡Hola! SAHA se encuentra abierto desde este momento para recibir las evidencias del mes, es importante que tomes unos minutos para identiﬁcarlas, organizarlas y subirlas así evitando olvidar enviarlas después.");
             
             $contenido.="<div style='text-align:center;width:100%'>
                         <div style='text-align:left; display: inline-block; width:90%'>";
@@ -361,7 +358,8 @@ function getContenido(UsuariosProcedimientosRepositorio $usuariosProcedimientosR
             }
             
             
-            $contenido .= getTextoConLogo("El tiempo pasa volando; trabajo, reuniones, reportes, es fácil olvidar algunas tareas durante el mes, que SAHA no sea una de ellas. Estamos en esa parte del mes que llega el recordatorio de 6 días, la fecha limite se acerca pero aun estas a tiempo de poder cumplir. ");
+            $contenido .= getTextoConLogo("El tiempo pasa volando; trabajo, reuniones, reportes, es fácil olvidar algunas tareas durante el mes, que SAHA no sea una de ellas. 
+Estamos en esa parte del mes que llega el recordatorio de 6 días, la fecha límite se acerca pero aún estás a tiempo de poder cumplir. ");
             
             $contenido.="<div style='text-align:center;width:100%'>
                         <div style='text-align:left; display: inline-block; width:90%'>";
@@ -401,7 +399,9 @@ function getContenido(UsuariosProcedimientosRepositorio $usuariosProcedimientosR
             }
             
             
-            $contenido .= getTextoConLogo("!Hola!, en SAHA queremos que cada mes estes al 100%, por ello queremos recordarte que es el último día para subir evidencias, luego de hoy el sistema no recibirá más evidencias, es importante que tomes unos minutos para veriﬁcar las evidencias enviadas y en caso de que aún te falten evidencias subirlas. Como siempre agradecemos tu compromiso para con este proyecto.");
+            $contenido .= getTextoConLogo("!Hola!, en SAHA queremos que cada mes estes al 100%, por ello queremos recordarte que es el último día para subir evidencias, 
+luego de hoy el sistema no recibirá más, es importante que tomes unos minutos para veriﬁcar las enviadas y en caso de que aún te falten, subirlas. 
+Como siempre agradecemos tu compromiso para con este proyecto.");
             
             $contenido.="<div style='text-align:center;width:100%'>
                         <div style='text-align:left; display: inline-block; width:90%'>";
@@ -409,7 +409,7 @@ function getContenido(UsuariosProcedimientosRepositorio $usuariosProcedimientosR
             $contenido.= "<br><br><label>Al día de hoy tu cumplimiento es $porcentajeCumplimiento%</label>";
             $contenido .= "<br><br>".getEvidenciasEnviadas($usuario,$evidenciasRepositorio);
             $contenido .= "<br>".getEvidenciasPendientes($usuario,$usuariosProcedimientosRepositorio);
-            $contenido .= "<br>".getCaricatura("https://api.apps-handel.com/images/caricatura/Little_Business_Girl-46.png");
+            $contenido .= "<br>".getCaricatura("https://api.apps-handel.com/images/caricatura/Little_Business_Girl-69.png");
             $contenido .= "<br>".getGracias();
             
             $contenido .= "</div>
