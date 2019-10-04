@@ -7,7 +7,7 @@
     header('Access-Control-Allow-Credentials: true');
 ?>
 <div class="modal fade" id="modalAlta" tabindex="-1" role="dialog" aria-labelledby="scrollmodalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-lg" role="document"> 
+	<div class="modal-dialog modal-lg" role="document" style='width:95%'> 
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title" id="scrollmodalLabel">Subir evidencia</h5>
@@ -57,7 +57,7 @@
 						</div>
 						<div class='row'>
 							<div class="col-sm-12 text-center">
-                            	<img id="evidenciaImage"  alt="Evidencia" class="img-responsive img-thumbnail w-25" style='width:50%' onclick="vista.vistaPrevia(this)"  />
+                            	<img id="evidenciaImage"  alt="Evidencia" class="img-responsive img-thumbnail w-100" style='width:100%' onclick="vista.vistaPrevia(this)"  />
                       	 	</div>
 						</div>
 						

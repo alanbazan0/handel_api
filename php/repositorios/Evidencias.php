@@ -136,6 +136,14 @@ try
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 $resultado = $repositorio->consultarPorcentajesUsuariosMesActual($usuario,$criteriosSeleccion);
                 break;
+            case 'consultarAnosMeses':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarAnosMeses($usuario,$criteriosSeleccion);
+            break;
             default:
                 $resultado->mensajeError = 'Acción no válida';
             break;

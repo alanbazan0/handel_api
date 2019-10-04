@@ -50,8 +50,15 @@
 								src="" alt="Alt Text">
 							<!-- .img-push is used to add margin to elements next to floating images -->
 							<div class="img-push">
-								<input  id="comentarioInput"  type="text" class="form-control input-sm"
-									placeholder="Ingrese un comentario">
+<!-- 								<input  id="comentarioInput"  type="text" class="form-control input-sm" -->
+<!-- 									placeholder="Ingrese un comentario"> -->
+                                     <div class="input-group">
+                                    			<input id="comentarioInput" class="form-control" placeholder="Ingrese un comentario...">
+                                    	
+                                    		<div class="input-group-btn">
+                                    		  <button id="enviarComentarioButton" type="button" class="btn btn-success"><i class="fa fa-send"></i></button>
+                                    		</div>
+                                	 	 </div>
 							</div>
 <!-- 						</form> -->
 					</div>

@@ -21,6 +21,8 @@ class PanelVista extends Vista
 //		this.inspeccionesEmpresa = [];
 //		this.inspeccionesSede = [];
 //		this.inspeccionesMes = [];
+		
+		
 	}
 	
 	consultar()

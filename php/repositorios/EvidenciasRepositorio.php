@@ -672,6 +672,80 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             return $resultado;
     }
     
+    public function consultarAnosMeses($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion,false);
+        
+        $consulta = "SELECT YEAR(E.fecha_alta) ano, MONTH(E.fecha_alta) mes
+                    FROM evidencias E
+                        INNER JOIN  usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
+                        INNER JOIN usuarios U ON U.id = UP.usuario_id
+                        LEFT JOIN sedes S ON S.id = U.sede_id
+                        LEFT JOIN empresas EM ON EM.id = S.empresa_id ";
+
+        $consulta .= $this->where($filtros);
+        
+        $consulta.=" GROUP BY ano, mes
+                    ORDER BY ano, mes";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($ano, $mes))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $mesNombre = $this->getNombreMes($mes);
+                            $registro= (object) [
+                                'ano' =>  $ano,
+                                'mes' =>  $mes,
+                                'mesNombre' =>  $mesNombre
+                            ];
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
+    }
+    
+    private function getNombreMes($mes)
+    {
+        $nombreMes="";
+        switch ($mes)
+        {
+            case 1: $nombreMes = "Enero"; break;
+            case 2: $nombreMes = "Febrero"; break;
+            case 3: $nombreMes = "Marzo"; break;
+            case 4: $nombreMes = "Abril"; break;
+            case 5: $nombreMes = "Mayo"; break;
+            case 6: $nombreMes = "Junio"; break;
+            case 7: $nombreMes = "Julio"; break;
+            case 8: $nombreMes = "Agosto"; break;
+            case 9: $nombreMes = "Septiembre"; break;
+            case 10: $nombreMes = "Octubre"; break;
+            case 11: $nombreMes = "Noviembre"; break;
+            case 12: $nombreMes = "Diciembre"; break;
+         }
+         return $nombreMes;
+    }
+    
     public function consultarUsuariosConProcedimientosAsignados($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();

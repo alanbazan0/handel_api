@@ -7,7 +7,7 @@ if(isset($_SERVER['HTTP_ORIGIN']))
     header('Access-Control-Allow-Credentials: true');
     ?>
 <div class="modal fade" id="modalAlta" tabindex="-1" role="dialog" aria-labelledby="scrollmodalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-lg" role="document"> 
+	<div class="modal-dialog modal-lg" role="document" style='width:95%'> 
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title" id="scrollmodalLabel">Validación de evidencia</h5>
@@ -72,7 +72,7 @@ if(isset($_SERVER['HTTP_ORIGIN']))
 					<div class="form-group" id='contenedorEvidenciaImage' style='display:none'>
 						<div class='row'>
 							<div class="col-sm-12 text-center">
-                            	<img id="evidenciaImage" src="images/tipos_archivo/vacio.png" alt="Evidencia" class="img-responsive img-thumbnail w-25" style='width:50%' onclick="vista.vistaPrevia(this)"  />
+                            	<img id="evidenciaImage" src="images/tipos_archivo/vacio.png" alt="Evidencia" class="img-responsive img-thumbnail w-100" style='width:100%' onclick="vista.vistaPrevia(this)"  />
                       	 	</div>
 						</div>
 						
