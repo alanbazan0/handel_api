@@ -38,6 +38,16 @@ try
                 $modelo = $mapper->map($json, new Procedimiento());
                 $resultado = $repositorio->insertar($modelo);
             break;
+            case 'copiarProcedimientos':
+                $empresaIdOrigen = REQUEST('empresaIdOrigen');
+                $sedeIdOrigen = REQUEST('sedeIdOrigen');
+                $empresaIdDestino = REQUEST('empresaIdDestino');
+                $sedeIdDestino = REQUEST('sedeIdDestino');
+                $json = json_decode(REQUEST('procedimientos'));
+                $mapper = new JsonMapper();
+                $procedimientos = $mapper->mapArray($json, array());
+                $resultado = $repositorio->copiarProcedimientos($empresaIdOrigen, $sedeIdOrigen, $procedimientos, $empresaIdDestino,$sedeIdDestino);
+            break;
             case 'actualizar':
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();

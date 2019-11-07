@@ -712,6 +712,10 @@ class PDF extends FPDF
                 $resultado =  "N/A";
             }
             
+            if(substr( $observaciones, 0, 1 ) === ",")
+            {
+                $observaciones = substr($observaciones, 1);
+            }
             
             $this->Cell($anchoColumna2, 8, $resultado, $borde, 0, 'C');
             $this->SetFont($this->font, '', 9);
@@ -772,10 +776,14 @@ class PDF extends FPDF
                 $resultado =  "N/A";
             }
             
+            if(substr( $observaciones, 0, 1 ) === ",")
+            {
+                $observaciones = substr($observaciones, 1); 
+            }
             
             $this->Cell($anchoColumna2, 8, $resultado, $borde, 0, 'C');
             $this->SetFont($this->font, '', 9);
-            $this->Cell($anchoColumna3, 8, $observaciones, $borde, 0, 'L');
+            $this->MultiCell($anchoColumna3, 8, $this->texto($observaciones), $borde,  'L');
         }
         
         $this->SetDrawColor(0,0,0);

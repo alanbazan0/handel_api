@@ -91,6 +91,11 @@ class PuestosRepositorio extends RepositorioBase implements IPuestosRepositorio
                 if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'P','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
             }
+            if(isset($criteriosSeleccion->sedeId))
+            {
+                if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'P','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+            }
             $where = $this->where($filtros);
         }
         $consulta = $this->consultaBase .
@@ -184,7 +189,7 @@ class PuestosRepositorio extends RepositorioBase implements IPuestosRepositorio
         $registros = array();
         $consulta = $this->consultaBase .
         " WHERE P.empresa_id  = ?" .
-        "   AND P.sede_id = ?";
+        "   AND P.sede_id = ? order by P.nombre";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param("ii",$empresaId,$sedeId))

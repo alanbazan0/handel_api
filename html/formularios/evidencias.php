@@ -10,7 +10,7 @@
 	<div class="modal-dialog modal-lg" role="document" style='width:95%'> 
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="scrollmodalLabel">Subir evidencia</h5>
+				<h5 id='tituloModalAlta' class="modal-title" id="scrollmodalLabel">Subir evidencia</h5>
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
@@ -51,7 +51,7 @@
 						</label>
 					</div>
 					<div class="form-group" id='contenedorEvidenciaImage'>
-						<div class='row text-center m-2'>
+						<div id='botonesDiv' class='row text-center m-2'>
 							<button id="borrarArchivoEvidenciaButton"  type="button" style='display:none' class="btn btn-danger"><i class="fa fa-unlink"></i> Borrar</button>
 							<button id="adjuntarArchivoEvidenciaButton" type="button" onclick="$('#file').trigger('click')" class="btn btn-success"><i class="fa fa-paperclip"></i> Adjuntar</button>
 						</div>
@@ -94,7 +94,7 @@
 				</form>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
 				<button id="guardarButton" type="submit" class="btn btn-primary" ><i class='fa fa-upload'></i> Subir</button>
 			</div>
 		</div>

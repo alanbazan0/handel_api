@@ -415,11 +415,11 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         
         $consulta =   $this->consultaBase .
                       " WHERE U.empresa_id = ? " .
-                      " AND U.id != ? "  .
+                      " AND U.id != ?  "  .
                       "UNION " .
                       $this->consultaBase .
                       " WHERE U.empresa_id = (SELECT corporativo_id FROM empresas CORP WHERE CORP.id = ?) " .
-                      " AND U.id != ? ";
+                      " AND U.id != ? order by nombre";
  
         if($sentencia = $this->conexion->prepare($consulta))
         {

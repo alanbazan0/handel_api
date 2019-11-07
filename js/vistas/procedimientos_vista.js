@@ -9,8 +9,25 @@ class ProcedimientosVista extends CatalogoVista
 	
 	inicializar()
 	{
+		var _this = this;
 		super.inicializar();
 		this.consultarEmpresasCriterio();
+		
+		$("#copiarButton").click(function(){
+			_this.iniciarCopia();
+		});
+		
+	}
+	
+	iniciarCopia()
+	{
+		this._copiarProcedimientosModal = new CopiarProcedimientosAsistente();
+		this._copiarProcedimientosModal.mostrar(this, this.copiar);
+	}
+	
+	copiar()
+	{
+		
 	}
 	
 	crearColumnasGrid()

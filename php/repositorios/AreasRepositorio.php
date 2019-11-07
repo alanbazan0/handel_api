@@ -193,7 +193,7 @@ class AreasRepositorio extends RepositorioBase implements IAreasRepositorio
         $resultado = new Resultado();
         $registros = array();
         $consulta = $this->consultaBase .
-        " WHERE A.empresa_id  = ?";
+        " WHERE A.empresa_id  = ? order by A.nombre";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param("i",$empresaId))
@@ -246,7 +246,7 @@ class AreasRepositorio extends RepositorioBase implements IAreasRepositorio
         $where = $this->where($filtros);
         
         $consulta = $this->consultaBase .
-        $where;
+        $where . " order by A.nombre";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {

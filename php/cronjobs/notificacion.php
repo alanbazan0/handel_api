@@ -72,28 +72,28 @@ try
         if($debug)
         {
             
-//             for ($i = 0; $i < count($usuarios); $i++) 
-//             {
-//                 $usuario = $usuarios[$i];
-//                 $usuario->tipoUsuarioId = TipoUsuario::SUPERVISOR;
-//                 $usuario->id = 8;
-//                 $usuario->nombre ="Magaly";
-//                 $usuario->nombreUsuario =  "alanbazan@apps-handel.com";
-//             }
-            
-//             $usuarios = array_slice($usuarios,0,$numeroUsuarios);
-            
-            $usuarios = array();
-            $resultado = $usuariosRepositorio->consultarPorLLaves((object) ['id'=>8]);
-            if($resultado->correcto())
+            for ($i = 0; $i < count($usuarios); $i++) 
             {
-                $usuario = $resultado->valor;
-                $usuario->nombreUsuario = "alanbazan@apps-handel.com";
-                array_push($usuarios,$usuario);
-                
+                $usuario = $usuarios[$i];
+                //$usuario->tipoUsuarioId = TipoUsuario::SUPERVISOR;
+                //$usuario->id = 8;
+                //$usuario->nombre ="Magaly";
+                $usuario->nombreUsuario =  "alanbazan@apps-handel.com";
             }
-            else 
-                mensajeLog("error",$resultado->mensajeError);
+            
+            $usuarios = array_slice($usuarios,0,$numeroUsuarios);
+            
+//             $usuarios = array();
+//             $resultado = $usuariosRepositorio->consultarPorLLaves((object) ['id'=>8]);
+//             if($resultado->correcto())
+//             {
+//                 $usuario = $resultado->valor;
+//                 $usuario->nombreUsuario = "alanbazan@apps-handel.com";
+//                 array_push($usuarios,$usuario);
+                
+//             }
+//             else 
+//                 mensajeLog("error",$resultado->mensajeError);
             
 //             $resultado = $usuariosRepositorio->consultarPorLLaves((object) ['id'=>8]);
 //             if($resultado->correcto())

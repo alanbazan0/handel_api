@@ -45,6 +45,52 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
         }
         return $resultado;
     }
+    
+    public function copiarProcedimientos($empresaIdOrigen, $sedeIdOrigen, $procedimientos, $empresaIdDetino, $sedeIdDestino)
+    {
+        $resultado = new Resultado();
+        
+        $this->conexion->autocommit(FALSE);
+        
+        for($i = 0; $i < count($procedimientos); $i++)
+        {
+            $procedimiento = $procedimientos[$i];
+            $resultado = $this->calcularId('id','procedimientos');
+            if($resultado->mensajeError=='')
+            {
+                $id = $resultado->valor;
+                $consulta = "INSERT INTO procedimientos(id, codigo, nombre, descripcion, ruta_archivo, empresa_id, sede_id, fecha_alta, fecha_modificacion, estatus)VALUES(?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), 1)";
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if($sentencia->bind_param('issssii', $id, $procedimiento->codigo, $procedimiento->nombre, $procedimiento->descripcion, $procedimiento->rutaArchivo, $empresaIdDetino, $sedeIdDestino))
+                    {
+                        if(!$sentencia->execute())
+                        {
+                            $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                            break;   
+                        }
+                    }
+                    else
+                    {
+                        $resultado->mensajeError = 'Falló el enlace de parámetros';
+                        break;
+                    }
+                        
+                }
+                else
+                {
+                    $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' .$this->conexion->error;
+                    break;
+                }
+                
+            }
+        }
+        
+        if($resultado->correcto())
+            $this->conexion->commit();
+        
+        return $resultado;
+    }
 
     public function actualizar(Procedimiento $modelo)
     {
@@ -81,6 +127,7 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
 
     public function consultar($criteriosSeleccion)
     {
+        ini_set('max_execution_time', 300);
         $resultado = new Resultado();
         $registros = array();
         $filtros = array();

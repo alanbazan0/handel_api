@@ -59,7 +59,8 @@ class IndicadoresRepositorio extends RepositorioBase implements IIndicadoresRepo
                  "(SELECT COUNT(*) FROM inspecciones I INNER JOIN sedes S ON S.id = I.sede_id WHERE S.empresa_id = ?) as inspecciones,".
                  "0 as procedimientos,".
                  "0 as usuariosProcedimientos,".
-                 "(SELECT COUNT(*) FROM usuarios WHERE empresa_id = ? AND tipo_usuario_id=$inspectorId) as inspectores";
+                 "(SELECT COUNT(*) FROM usuarios WHERE empresa_id = ? AND tipo_usuario_id=$inspectorId) as inspectores," .
+                 "(SELECT COUNT(*) FROM evidencias) as evidencias";
              
              array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->empresaId]);
              array_push($filtros,(object)['tipoDato'=>'int','valor'=> $usuario->empresaId]);

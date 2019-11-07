@@ -9,4 +9,10 @@ class Modo
 	{
 		return  "CAMBIO";
 	}
+	
+	static get CONSULTA()
+	{
+		return  "CONSULTA";
+	}
+	
 }

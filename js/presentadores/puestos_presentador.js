@@ -52,6 +52,7 @@ class PuestosPresentador extends CatalogoPresentador
 		if(resultado.mensajeError=="")
 		{
 			this.vista.empresasCriterio = resultado.valor;
+			this.vista.cambiarEmpresaCriterio();
 		}
 		else
 			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
@@ -156,6 +157,22 @@ class PuestosPresentador extends CatalogoPresentador
 		else
 			this.vista.mostrarMensaje("Error",resultado.mensajeError);
 		
+	 }
+	 
+	 consultarSedesCriterio()	
+	 {
+		 var repositorio = new SedesRepositorio(this);		
+		 repositorio.consultarPorEmpresa(this,this.consultarSedesCriterioResultado,this.vista.criteriosSeleccion.empresaId,true);
+	 }
+	 
+	 consultarSedesCriterioResultado(resultado)
+	 {
+		if(resultado.mensajeError=="")
+		{
+			this.vista.sedesCriterio = resultado.valor;				
+		}
+		else
+			this.vista.mostrarMensaje("Error",resultado.mensajeError);
 	 }
 	 
 }

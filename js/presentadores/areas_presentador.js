@@ -54,7 +54,7 @@ class AreasPresentador extends CatalogoPresentador
 		if(resultado.mensajeError=="")
 		{
 			this.vista.sedes = resultado.valor;
-			this.vista.cambiarSede();
+//			this.vista.cambiarSede();
 		}
 		else
 			this.vista.mostrarMensajeError("Error",resultado.mensajeError);

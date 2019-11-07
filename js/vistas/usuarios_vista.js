@@ -379,6 +379,8 @@ class UsuariosVista extends CatalogoVista
 	set empresas(registros)
 	{		
 		this.cargarOpciones('#empresaSelect', registros, this.modo, this.modeloEdicion, 'empresaId',"");
+		if(this.modo==Modo.ALTA)
+			$("#empresaSelect").val($("#empresaSelectCriterio").val());
 	}
 	
 	cambiarEmpresa()
@@ -479,6 +481,8 @@ class UsuariosVista extends CatalogoVista
 	set sedes(registros)
 	{
 		this.cargarOpciones('#sedeSelect', registros, this.modo, this.modeloEdicion, 'sedeId',"");
+		if(this.modo==Modo.ALTA)
+			$("#sedeSelect").val($("#sedeSelectCriterio").val());
 	}
 	
 	consultarAreas()
@@ -563,6 +567,27 @@ class UsuariosVista extends CatalogoVista
 		{
 			var id = modeloEdicion[campo];
 			$(select).val(id);
+		}
+	}
+	
+	cambiarEmpresaCriterio()
+	{
+		this.consultarSedesCriterio();
+	}
+	
+	consultarSedesCriterio()
+	{
+		this.cargandoOpciones("#sedeSelectCriterio");
+		this.presentador.consultarSedesCriterio();
+	}
+	
+	set sedesCriterio(registros)
+	{		
+		this.cargarOpciones('#sedeSelectCriterio', registros);
+		if(this.consultoGrid==false)
+		{
+			this.consultar();
+			this.consultoGrid=true;
 		}
 	}
 	

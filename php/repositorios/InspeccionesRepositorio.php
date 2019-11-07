@@ -253,7 +253,7 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             $where = $this->where($filtros);
         }
         $consulta = $this->consultaBase .
-        $where . " ORDER BY I.id desc";
+        $where . " ORDER BY I.fecha_inspeccion desc";
         
        //echo $consulta;
         
@@ -471,17 +471,22 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
     {
         $resultado = new Resultado();
         $registros = array();
+        
+        $filtros = $this->getFiltros($usuario, $criteriosSeleccion);
+        $where = $this->where($filtros);
+        
         $consulta = "SELECT E.id, E.nombre  nombre, count(I.id) valor " .
                     " FROM inspecciones I " .
                     "   INNER JOIN sedes S ON S.id = I.sede_id " .
                     "   INNER JOIN empresas E ON E.id = S.empresa_id " .
-                    "GROUP BY E.id, E.nombre "  .
+                    $where .
+                    " GROUP BY E.id, E.nombre "  .
                     "ORDER BY E.nombre";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-//             if($sentencia->bind_param("ii",$empresaId,$sedeId))
-            //{
+            if($this->bind_param($sentencia, $filtros))
+            {
                 if($sentencia->execute())
                 {
                     if ($sentencia->bind_result($id, $nombre,$valor))
@@ -502,9 +507,9 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
                 }
                 else
                     $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
-//             }
-//             else
-//                 $resultado->mensajeError = "Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
         }
         else
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
@@ -704,6 +709,59 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
         return $resultado;
     }
     
+    private function getFiltros($usuario,$criteriosSeleccion)
+    {
+        $filtros = array();
+        if($criteriosSeleccion!=null)
+        {
+            if(isset($criteriosSeleccion->empresaId))
+            {
+                if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+            }
+            if(isset($criteriosSeleccion->sedeId))
+            {
+                if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+            }
+            if(isset($criteriosSeleccion->areaId))
+            {
+                if($criteriosSeleccion->areaId!="" && $criteriosSeleccion->areaId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'area_id','valor'=>$criteriosSeleccion->areaId]);
+            }
+            if(isset($criteriosSeleccion->fechaInicial))
+            {
+                if($criteriosSeleccion->fechaInicial!="" && $criteriosSeleccion->fechaInicial!=null)
+                    array_push($filtros,(object)['tipoDato'=>'date','operador'=>'>=','tabla'=>'I','campo'=>'fecha_inspeccion','valor'=>$criteriosSeleccion->fechaInicial]);
+            }
+            if(isset($criteriosSeleccion->fechaFinal))
+            {
+                if($criteriosSeleccion->fechaFinal!="" && $criteriosSeleccion->fechaFinal!=null)
+                    array_push($filtros,(object)['tipoDato'=>'date','operador'=>'<=','tabla'=>'I','campo'=>'fecha_inspeccion','valor'=>$criteriosSeleccion->fechaFinal]);
+            }
+        }
+        else
+        {
+//             if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
+//             {
+//                 array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
+//                 array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'sede_id','valor'=>$usuario->sedeId]);
+                
+//             }
+            if($usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
+            {
+                array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
+            }
+            else if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR)
+            {
+                array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
+//                 array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'sede_id','valor'=>$usuario->sedeId]);
+//                 array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'area_id','valor'=>$usuario->areaId]);
+            }
+        }
+        return $filtros;
+    }
+    
     public function consultarInspeccionesSede($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
@@ -716,23 +774,7 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
 //                 if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR_CORPORATIVO)
 //                     $filtro = " AND empresa_id = $usuario->empresaId";
                 
-        $filtros = array();
-        $where="";
-
-        if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
-        {
-            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
-            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'sede_id','valor'=>$usuario->sedeId]);
-         
-        }
-        else if($usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
-        {
-            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
-        }
-        else if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR)
-        {
-            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
-        }
+        $filtros = $this->getFiltros($usuario, $criteriosSeleccion);
         $where = $this->where($filtros);
         
         $consulta = "SELECT S.id, S.nombre  nombre, count(I.id) valor " .
@@ -781,39 +823,8 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
         $resultado = new Resultado();
         $registros = array();
         
-        $filtros = array();
-        $where="";
-        
-        if($criteriosSeleccion!=null)
-        {
-            if(isset($criteriosSeleccion->empresaId))
-            {
-                if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
-            }
-            if(isset($criteriosSeleccion->sedeId))
-            {
-                if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
-            }
-            if(isset($criteriosSeleccion->areaId))
-            {
-                if($criteriosSeleccion->areaId!="" && $criteriosSeleccion->areaId!=null)
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'area_id','valor'=>$criteriosSeleccion->areaId]);
-            }
-            if(isset($criteriosSeleccion->fechaInicial))
-            {
-                if($criteriosSeleccion->fechaInicial!="" && $criteriosSeleccion->fechaInicial!=null)
-                    array_push($filtros,(object)['tipoDato'=>'date','operador'=>'>=','tabla'=>'I','campo'=>'fecha_inspeccion','valor'=>$criteriosSeleccion->fechaInicial]);
-            }
-            if(isset($criteriosSeleccion->fechaFinal))
-            {
-                if($criteriosSeleccion->fechaFinal!="" && $criteriosSeleccion->fechaFinal!=null)
-                    array_push($filtros,(object)['tipoDato'=>'date','operador'=>'<=','tabla'=>'I','campo'=>'fecha_inspeccion','valor'=>$criteriosSeleccion->fechaFinal]);
-            }
-            $where = $this->where($filtros);
-        }
-        //$where = $this->where($filtros);
+        $filtros = $this->getFiltros($usuario, $criteriosSeleccion);
+        $where = $this->where($filtros);
         
         $consulta = "SELECT A.id, A.nombre  nombre, count(I.id) valor " .
             " FROM inspecciones I " .
@@ -906,38 +917,8 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
         $registros = array();
         
         $filtros = array();
-        $where="";
-        
-        if($criteriosSeleccion!=null)
-        {
-            if(isset($criteriosSeleccion->empresaId))
-            {
-                if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
-            }
-            if(isset($criteriosSeleccion->sedeId))
-            {
-                if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
-            }
-            if(isset($criteriosSeleccion->areaId))
-            {
-                if($criteriosSeleccion->areaId!="" && $criteriosSeleccion->areaId!=null)
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'area_id','valor'=>$criteriosSeleccion->areaId]);
-            }
-            if(isset($criteriosSeleccion->fechaInicial))
-            {
-                if($criteriosSeleccion->fechaInicial!="" && $criteriosSeleccion->fechaInicial!=null)
-                    array_push($filtros,(object)['tipoDato'=>'date','operador'=>'>=','tabla'=>'I','campo'=>'fecha_inspeccion','valor'=>$criteriosSeleccion->fechaInicial]);
-            }
-            if(isset($criteriosSeleccion->fechaFinal))
-            {
-                if($criteriosSeleccion->fechaFinal!="" && $criteriosSeleccion->fechaFinal!=null)
-                    array_push($filtros,(object)['tipoDato'=>'date','operador'=>'<=','tabla'=>'I','campo'=>'fecha_inspeccion','valor'=>$criteriosSeleccion->fechaFinal]);
-            }
-            $where = $this->where($filtros);
-        }
-        //$where = $this->where($filtros);
+        $filtros = $this->getFiltros($usuario, $criteriosSeleccion);
+        $where = $this->where($filtros);
         
         $consulta = "SELECT U.id, CONCAT(U.nombre,' ', U.apellido)  nombre, count(I.id) valor " .
             " FROM inspecciones I " .

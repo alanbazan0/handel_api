@@ -29,10 +29,10 @@ class UsuariosProcedimientosVista extends CatalogoVista
 	{
 		this.tabla.columnas = [
 			{longitud:200, 	titulo:"Usuario",   alias:"usuarioNombre", alineacion:"I", class: "desc" }, 
-			{longitud:200, 	titulo:"Procedimiento",   alias:"procedimientoNombre", alineacion:"I"}, 
+			{longitud:200, 	titulo:"Procedimiento",   alias:"nombre", alineacion:"I"}, 
 			{longitud:200, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I",  },		
 			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus},
-			{longitud:200, 	titulo:"Fecha de cancelación",   alias:"fechaCancelacion", alineacion:"I",itemRenderer:this.renderFechaCancelacion },
+			{longitud:200, 	titulo:"Fecha de cancelación",   alias:"fechaCancelacion", alineacion:"C",itemRenderer:this.renderFechaCancelacion },
 			{longitud:200, 	titulo:"Limite de justificaciones",   alias:"limiteJusiticaciones", alineacion:"C",itemRenderer:this.renderLimiteJustificaciones }	
 			
 		]
@@ -100,7 +100,7 @@ class UsuariosProcedimientosVista extends CatalogoVista
 		if(renglon.limitarJustificaciones==1)
 			contenido += renglon.limiteJustificaciones;
 		else
-			contenido += "";
+			contenido += "ilimitadas";
 	    return contenido;
 	}
 	
@@ -108,7 +108,7 @@ class UsuariosProcedimientosVista extends CatalogoVista
 	{    
 		var contenido = "";
 		if(renglon.estatus==1)
-			contenido += "";
+			contenido += "<label>-</label>";
 		else
 			contenido += renglon.fechaCancelacion;
 	    return contenido;

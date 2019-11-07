@@ -96,6 +96,7 @@ class PuestosVista extends CatalogoVista
 		 var criteriosSeleccion = 
 		 {				    
 			empresaId: $('#empresaSelectCriterio').val(),
+			sedeId: $('#sedeSelectCriterio').val(),
 			nombre:$('#nombreInputCriterio').val()
 		 }
 		 return criteriosSeleccion;
@@ -160,6 +161,8 @@ class PuestosVista extends CatalogoVista
 	set empresas(registros)
 	{		
 		this.cargarOpciones('#empresaSelect', registros, this.modo, this.modeloEdicion, 'empresaId',"");
+		if(this.modo==Modo.ALTA)
+			$("#empresaSelect").val($("#empresaSelectCriterio").val());
 	}
 	
 	consultarEmpresasCriterio()
@@ -179,6 +182,11 @@ class PuestosVista extends CatalogoVista
 		this.consultarSedes();
 	}
 	
+	cambiarEmpresaCriterio()
+	{
+		this.consultarSedesCriterio();
+	}
+	
 	consultarSedes()
 	{
 		this.cargandoOpciones("#sedeSelect");
@@ -188,7 +196,26 @@ class PuestosVista extends CatalogoVista
 	set sedes(registros)
 	{		
 		this.cargarOpciones('#sedeSelect', registros, this.modo, this.modeloEdicion, 'sedeId',"");
+		if(this.modo==Modo.ALTA)
+			$("#sedeSelect").val($("#sedeSelectCriterio").val());
 	}
+	
+	consultarSedesCriterio()
+	{
+		this.cargandoOpciones("#sedeSelectCriterio");
+		this.presentador.consultarSedesCriterio();
+	}
+	
+	set sedesCriterio(registros)
+	{		
+		this.cargarOpciones('#sedeSelectCriterio', registros);
+		if(this.consultoGrid==false)
+		{
+			this.consultar();
+			this.consultoGrid=true;
+		}
+	}
+
 
 	
 }

@@ -92,6 +92,7 @@ class AreasVista extends CatalogoVista
 		
 		this.consultarEmpresas();
 		this.consultarTiposArea();
+		
 	}
 	
 	editar(id)
@@ -175,6 +176,8 @@ class AreasVista extends CatalogoVista
 	set empresas(registros)
 	{		
 		this.cargarOpciones('#empresaSelect', registros, this.modo, this.modeloEdicion, 'empresaId',"");
+		if(this.modo==Modo.ALTA)
+			$("#empresaSelect").val($("#empresaSelectCriterio").val());
 	}
 	
 	set tiposArea(registros)
@@ -214,6 +217,8 @@ class AreasVista extends CatalogoVista
 	set sedes(registros)
 	{
 		this.cargarOpciones('#sedeSelect', registros, this.modo, this.modeloEdicion, 'sedeId',"");
+		if(this.modo==Modo.ALTA)
+			$("#sedeSelect").val($("#sedeSelectCriterio").val());
 	}
 	
 	consultarSedesCriterio()

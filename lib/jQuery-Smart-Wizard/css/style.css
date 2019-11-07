@@ -1,0 +1,145 @@
+
+.form_wizard .stepContainer {
+    display: block;
+    position: relative;
+    margin: 0;
+    padding: 0;
+    border: 0 solid #CCC;
+    overflow-x: hidden
+}
+.wizard_horizontal ul.wizard_steps {
+    display: table;
+    list-style: none;
+    position: relative;
+    width: 100%;
+    margin: 0 0 20px
+}
+.wizard_horizontal ul.wizard_steps li {
+    display: table-cell;
+    text-align: center
+}
+.wizard_horizontal ul.wizard_steps li a,
+.wizard_horizontal ul.wizard_steps li:hover {
+    display: block;
+    position: relative;
+    -moz-opacity: 1;
+    filter: alpha(opacity=100);
+    opacity: 1;
+    color: #666
+}
+.wizard_horizontal ul.wizard_steps li a:before {
+    content: "";
+    position: absolute;
+    height: 4px;
+    background: #ccc;
+    top: 20px;
+    width: 100%;
+    z-index: 4;
+    left: 0
+}
+.wizard_horizontal ul.wizard_steps li a.disabled .step_no {
+    background: #ccc
+}
+.wizard_horizontal ul.wizard_steps li a .step_no {
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    border-radius: 100px;
+    display: block;
+    margin: 0 auto 5px;
+    font-size: 16px;
+    text-align: center;
+    position: relative;
+    z-index: 5
+}
+.wizard_horizontal ul.wizard_steps li a.selected:before,
+.step_no {
+    background: #ffb22b;
+    color: #fff
+}
+.wizard_horizontal ul.wizard_steps li a.done:before,
+.wizard_horizontal ul.wizard_steps li a.done .step_no {
+    background: #1ABB9C;
+    color: #fff
+}
+.wizard_horizontal ul.wizard_steps li:first-child a:before {
+    left: 50%
+}
+.wizard_horizontal ul.wizard_steps li:last-child a:before {
+    right: 50%;
+    width: 50%;
+    left: auto
+}
+
+.actionBar {
+    width: 100%;
+    border-top: 1px solid #ddd;
+    padding: 10px 5px;
+    text-align: right;
+    margin-top: 10px;
+}
+
+.wizard_horizontal ul.wizard_stepss {
+    display: table;
+    list-style: none;
+    position: relative;
+    width: 100%;
+    margin: 0 0 20px
+}
+.wizard_horizontal ul.wizard_stepss li {
+    display: table-cell;
+    text-align: center
+}
+.wizard_horizontal ul.wizard_stepss li a,
+.wizard_horizontal ul.wizard_stepss li:hover {
+    display: block;
+    position: relative;
+    -moz-opacity: 1;
+    filter: alpha(opacity=100);
+    opacity: 1;
+    color: #666
+}
+.wizard_horizontal ul.wizard_stepss li a:before {
+    content: "";
+    position: absolute;
+    height: 4px;
+    background: #ccc;
+    top: 20px;
+    width: 100%;
+    z-index: 4;
+    left: 0
+}
+.wizard_horizontal ul.wizard_stepss li a.disabled .step_no {
+    background: #ccc
+}
+.wizard_horizontal ul.wizard_stepss li a .step_no {
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    border-radius: 100px;
+    display: block;
+    margin: 0 auto 5px;
+    font-size: 16px;
+    text-align: center;
+    position: relative;
+    z-index: 5
+}
+.wizard_horizontal ul.wizard_stepss li a.selected:before,
+.step_no {
+    background: #ffb22b;
+    color: #fff
+}
+.wizard_horizontal ul.wizard_stepss li a.done:before,
+.wizard_horizontal ul.wizard_stepss li a.done .step_no {
+    background: #1ABB9C;
+    color: #fff
+}
+.wizard_horizontal ul.wizard_stepss li:first-child a:before {
+    left: 50%
+}
+.wizard_horizontal ul.wizard_stepss li:last-child a:before {
+    right: 0%;
+    width: 0%;
+    left: auto
+}
+
