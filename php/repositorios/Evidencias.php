@@ -72,69 +72,69 @@ try
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);
             break;
-            case 'consultarEvidenciasCumplidasMesActual':
+            case 'consultarEvidenciasCumplidas':
                 session_start();
                 $usuario = null;
                 if(isset($_SESSION['usuario']))
                     $usuario = $_SESSION['usuario'];
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarEvidenciasCumplidasMesActual($usuario,$criteriosSeleccion);
+                $resultado = $repositorio->consultarEvidenciasCumplidas($usuario,$criteriosSeleccion);
             break;
-            case 'consultarEvidenciasJustificacionMesActual':
+            case 'consultarEvidenciasJustificacion':
                 session_start();
                 $usuario = null;
                 if(isset($_SESSION['usuario']))
                     $usuario = $_SESSION['usuario'];
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarEvidenciasJustificacionMesActual($usuario,$criteriosSeleccion);
+                $resultado = $repositorio->consultarEvidenciasJustificacion($usuario,$criteriosSeleccion);
             break;
             case 'consultarComentariosEvidencia':
                 $evidenciaId = REQUEST('evidenciaId');
                 $resultado = $repositorio->consultarComentariosEvidencia($evidenciaId);
             break;
-            case 'consultarEvidenciasMesActual':
+            case 'consultarEvidencias':
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarEvidenciasMesActual($criteriosSeleccion);
+                $resultado = $repositorio->consultarEvidencias($criteriosSeleccion);
             break;
-            case 'consultarPorcentajesEvidenciasMesActual':
+            case 'consultarPorcentajesEvidencias':
                 session_start();
                 $usuario = null;
                 if(isset($_SESSION['usuario']))
                     $usuario = $_SESSION['usuario'];
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarPorcentajesEvidenciasMesActual($usuario,$criteriosSeleccion);
+                $resultado = $repositorio->consultarPorcentajesEvidencias($usuario,$criteriosSeleccion);
             break;
-            case 'consultarPorcentajesEmpresasMesActual':
+            case 'consultarPorcentajesEmpresas':
                 session_start();
                 $usuario = null;
                 if(isset($_SESSION['usuario']))
                     $usuario = $_SESSION['usuario'];
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarPorcentajesEmpresasMesActual($usuario,$criteriosSeleccion);
+                $resultado = $repositorio->consultarPorcentajesEmpresas($usuario,$criteriosSeleccion);
             break;
-            case 'consultarPorcentajesAdministradoresMesActual':
+            case 'consultarPorcentajesAdministradores':
                 session_start();
                 $usuario = null;
                 if(isset($_SESSION['usuario']))
                     $usuario = $_SESSION['usuario'];
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarPorcentajesAdministradoresMesActual($usuario,$criteriosSeleccion);
+                $resultado = $repositorio->consultarPorcentajesAdministradores($usuario,$criteriosSeleccion);
             break;
-            case 'consultarPorcentajesAreasMesActual':
+            case 'consultarPorcentajesAreas':
                 session_start();
                 $usuario = null;
                 if(isset($_SESSION['usuario']))
                     $usuario = $_SESSION['usuario'];
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarPorcentajesAreasMesActual($usuario,$criteriosSeleccion);
+                $resultado = $repositorio->consultarPorcentajesAreas($usuario,$criteriosSeleccion);
             break;
-            case 'consultarPorcentajesUsuariosMesActual':
+            case 'consultarPorcentajesUsuarios':
                 session_start();
                 $usuario = null;
                 if(isset($_SESSION['usuario']))
                     $usuario = $_SESSION['usuario'];
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarPorcentajesUsuariosMesActual($usuario,$criteriosSeleccion);
+                $resultado = $repositorio->consultarPorcentajesUsuarios($usuario,$criteriosSeleccion);
                 break;
             case 'consultarAnosMeses':
                 session_start();
@@ -143,6 +143,14 @@ try
                     $usuario = $_SESSION['usuario'];
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 $resultado = $repositorio->consultarAnosMeses($usuario,$criteriosSeleccion);
+            break;
+            case 'consultarAnos':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarAnos($usuario,$criteriosSeleccion);
             break;
             default:
                 $resultado->mensajeError = 'Acción no válida';

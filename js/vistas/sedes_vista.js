@@ -201,6 +201,8 @@ class SedesVista extends CatalogoVista
 	set empresas(registros)
 	{		
 		this.cargarOpciones('#empresaSelect', registros, this.modo, this.modeloEdicion, 'empresaId',"");
+		if(this.modo==Modo.ALTA)
+			$("#empresaSelect").val($("#empresaSelectCriterio").val());
 	}
 	
 	set empresasCriterio(registros)

@@ -37,15 +37,19 @@ class UsuariosProcedimientosVista extends CatalogoVista
 			
 		]
 		
-		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Cancelar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>" +
+										"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>"; 
+//										"<button data-toggle='tooltip' data-placemen='bottom' title='Cancelar'  type='button' class='cancelar btn-circle mr-0 botones-icon btn btn-sm float-left btn-warning active'><span  data-toggle='tooltip' class='fa fa-ban fa-lg'></span></button>";
 
 		this.tabla.registros = [];		
 	}
 	
 	inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave)
 	{
+		
+		super.inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave);
 		var _this = this;
-		$(tbody).on("click", "button.eliminar", function()
+		$(tbody).on("click", "button.cancelar", function()
 		{
 			 var tr = $(this).closest('tr');
 			    
@@ -67,6 +71,11 @@ class UsuariosProcedimientosVista extends CatalogoVista
 			}
 		});
 	}
+	
+//	inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave)
+//	{
+//		
+//	}
 	
 	cancelar()
 	{ 
@@ -98,7 +107,12 @@ class UsuariosProcedimientosVista extends CatalogoVista
 	{    
 		var contenido = "";
 		if(renglon.limitarJustificaciones==1)
-			contenido += renglon.limiteJustificaciones;
+		{
+			if(renglon.limiteJustificaciones==0)
+				contenido +="No se puede justificar";
+			else
+				contenido += renglon.limiteJustificaciones;
+		}
 		else
 			contenido += "ilimitadas";
 	    return contenido;
@@ -169,6 +183,14 @@ class UsuariosProcedimientosVista extends CatalogoVista
 	
 	consultarCombos()
 	{
+		if(this.modo==Modo.CAMBIO)
+		{
+			$('#empresaIdSelect').attr("disabled","disabled");
+			$('#sedeIdSelect').attr("disabled","disabled");
+			$('#usuarioIdSelect').attr("disabled","disabled");
+			$('#procedimientoIdSelect').attr("disabled","disabled");
+		}
+			
 		this.consultarEmpresas();
 	}
 	
@@ -191,14 +213,19 @@ class UsuariosProcedimientosVista extends CatalogoVista
 	set modelo(valor)
 	{		
 		this.modeloEdicion = valor;
-//		$('#nombreInput').val(this.modeloEdicion.nombre);
-//		$('#codigoInput').val(this.modeloEdicion.codigo);
-//		$('#descripcionInput').val(this.modeloEdicion.descripcion);
-//		$('#rutaArchivoInput').val(this.modeloEdicion.rutaArchivo);
-//		if(this.modeloEdicion.estatus==1)
-//			$("#estatusRadio").prop('checked', true);
-//		else
-//			$("#estatusRadio").prop('checked', false);
+		if(this.modeloEdicion.limitarJustificaciones==1)
+			$("#limitarJustificacionesSwitch").prop('checked', true);
+		else
+			$("#limitarJustificacionesSwitch").prop('checked', false);
+		this.cambiarLimitarJustificaciones();
+		$('#limiteJustificacionesSelect').val(this.modeloEdicion.limiteJustificaciones);
+		
+		if(this.modeloEdicion.estatus==1)
+			$("#estatusRadio").prop('checked', true);
+		else
+			$("#estatusRadio").prop('checked', false);
+	
+		
 		this.consultarCombos();
 	}
 	
@@ -211,7 +238,8 @@ class UsuariosProcedimientosVista extends CatalogoVista
 			 usuarioId:$('#usuarioIdSelect').val(),
 			 procedimientoId:$('#procedimientoIdSelect').val(),
 			 limitarJustificaciones:$('#limitarJustificacionesSwitch').is(':checked')?1:0,
-			 limiteJustificaciones : $('#limiteJustificacionesSelect').val()
+			 limiteJustificaciones : $('#limiteJustificacionesSelect').val(),
+			 estatus:$('#estatusRadio').is(':checked')?1:0
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;

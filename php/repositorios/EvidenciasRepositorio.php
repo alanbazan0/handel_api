@@ -103,7 +103,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     FROM evidencias E
                         INNER JOIN usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
                         INNER JOIN usuarios U ON U.id = UP.usuario_id
-                    WHERE (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5) AND MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) AND justificacion_id IS NOT NULL 
+                    WHERE (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5) AND MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano AND justificacion_id IS NOT NULL 
                     ";
         $consulta.=  $this->and($filtros);
         
@@ -217,7 +217,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
     }
     
     
-    public function consultarEvidenciasCumplidasMesActual($usuario,$criteriosSeleccion)
+    public function consultarEvidenciasCumplidas($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
         
@@ -230,7 +230,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         //UP.usuario_id = ? AND 
         
         $consulta =  $this->consultaBase .
-        " WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) " . $and ." " .
+        " WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano " . $and ." " .
         "ORDER BY codigo";
 
         if($sentencia = $this->conexion->prepare($consulta))
@@ -262,7 +262,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             return $resultado;
     }
     
-    public function consultarEvidenciasMesActual($criteriosSeleccion)
+    public function consultarEvidencias($criteriosSeleccion)
     {
         $resultado = new Resultado();
         
@@ -288,7 +288,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         $and = $this->and($filtros);
         
         $consulta =  $this->consultaBase .
-        " WHERE  MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) " . $and ." " .
+        " WHERE  MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano " . $and ." " .
         "ORDER BY codigo";
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -320,24 +320,24 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             return $resultado;
     }
     
-    public function consultarPorcentajesEvidenciasMesActual($usuario,$criteriosSeleccion)
-    {
-        $resultado = new Resultado();
+//     public function consultarPorcentajesEvidencias($usuario,$criteriosSeleccion)
+//     {
+//         $resultado = new Resultado();
         
-        $justificadas = $this->numeroEvidenciasJustificadasMesActual($usuario,$criteriosSeleccion);
-        $enviadas =  $this->numeroEvidenciasEnviadasMesActual($usuario,$criteriosSeleccion);
-        $pendientes =  $this->numeroEvidenciasPendientesMesActual($usuario,$criteriosSeleccion);
+//         $justificadas = $this->numeroEvidenciasJustificadasMesActual($usuario,$criteriosSeleccion);
+//         $enviadas =  $this->numeroEvidenciasEnviadasMesActual($usuario,$criteriosSeleccion);
+//         $pendientes =  $this->numeroEvidenciasPendientesMesActual($usuario,$criteriosSeleccion);
         
-        $porcentajes = array();
-        array_push($porcentajes,(object)['nombre'=>'Enviadas','valor'=>$enviadas->valor]);
-        array_push($porcentajes,(object)['nombre'=>'Pendientes','valor'=>$pendientes->valor]);
-        array_push($porcentajes,(object)['nombre'=>'Justificadas','valor'=>$justificadas->valor]);
+//         $porcentajes = array();
+//         array_push($porcentajes,(object)['nombre'=>'Enviadas','valor'=>$enviadas->valor]);
+//         array_push($porcentajes,(object)['nombre'=>'Pendientes','valor'=>$pendientes->valor]);
+//         array_push($porcentajes,(object)['nombre'=>'Justificadas','valor'=>$justificadas->valor]);
       
        
-        $resultado->valor = $porcentajes;
+//         $resultado->valor = $porcentajes;
 
-        return $resultado;
-    }
+//         return $resultado;
+//     }
     
     public function consultarPorcentajesEvidencias($usuario,$criteriosSeleccion)
     {
@@ -362,7 +362,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
     }
     
     
-    public function consultarPorcentajesEmpresasMesActual($usuario,$criteriosSeleccion)
+    public function consultarPorcentajesEmpresas($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
         $registros = array();
@@ -412,7 +412,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     	INNER JOIN usuarios U ON U.id = UP.usuario_id
                     	LEFT JOIN sedes S ON S.id = U.sede_id
                     	LEFT JOIN empresas EM ON EM.id = S.empresa_id
-                    WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW())
+                    WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano
                     GROUP BY EM.id, EM.nombre";
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -459,7 +459,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         return $resultado;
     }
     
-    public function consultarPorcentajesAreasMesActual($usuario,$criteriosSeleccion)
+    public function consultarPorcentajesAreas($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
         $registros = array();
@@ -475,7 +475,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     		INNER JOIN sedes S1 ON S1.id = U1.sede_id
                     		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
                     		INNER JOIN areas A1 ON A1.id = U1.area_id
-                    	WHERE MONTH(E1.fecha_alta) = MONTH(NOW())  AND YEAR(E1.fecha_alta) = YEAR(NOW()) AND justificacion_id IS NOT NULL AND EM1.id = EM.id AND A1.id = A.id
+                    	WHERE MONTH(E1.fecha_alta) = $criteriosSeleccion->mes  AND YEAR(E1.fecha_alta) = $criteriosSeleccion->ano AND justificacion_id IS NOT NULL AND EM1.id = EM.id AND A1.id = A.id
                     ) justificadas,
                     (
                     	SELECT count(*) numero
@@ -485,7 +485,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     		INNER JOIN sedes S1 ON S1.id = U1.sede_id
                     		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
                     		INNER JOIN areas A1 ON A1.id = U1.area_id
-                    	WHERE MONTH(E1.fecha_alta) = MONTH(NOW())  AND YEAR(E1.fecha_alta) = YEAR(NOW()) AND justificacion_id IS NULL AND EM1.id = EM.id AND A1.id = A.id
+                    	WHERE MONTH(E1.fecha_alta) = $criteriosSeleccion->mes  AND YEAR(E1.fecha_alta) = $criteriosSeleccion->mes AND justificacion_id IS NULL AND EM1.id = EM.id AND A1.id = A.id
                     ) enviadas,
                     (
                     	SELECT count(*)
@@ -504,7 +504,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     					INNER JOIN sedes S2 ON S2.id = U2.sede_id
                     					INNER JOIN empresas EM2 ON EM2.id = S2.empresa_id
                                         INNER JOIN areas A2 ON A2.id = U2.area_id
-                    				WHERE MONTH(E2.fecha_alta) = MONTH(NOW())  AND YEAR(E2.fecha_alta) = YEAR(NOW()) AND EM2.id = EM1.id AND A2.id = A1.id
+                    				WHERE MONTH(E2.fecha_alta) =$criteriosSeleccion->mes  AND YEAR(E2.fecha_alta) =$criteriosSeleccion->ano AND EM2.id = EM1.id AND A2.id = A1.id
                     				)
                     
                     )pendientes
@@ -559,7 +559,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             return $resultado;
     }
     
-    public function consultarPorcentajesUsuariosMesActual($usuario,$criteriosSeleccion)
+    public function consultarPorcentajesUsuarios($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
         $registros = array();
@@ -575,7 +575,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     		INNER JOIN sedes S1 ON S1.id = U1.sede_id
                     		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
                     		INNER JOIN areas A1 ON A1.id = U1.area_id
-                    	WHERE MONTH(E1.fecha_alta) = MONTH(NOW())  AND YEAR(E1.fecha_alta) = YEAR(NOW()) AND justificacion_id IS NOT NULL AND EM1.id = EM.id AND A1.id = A.id AND U1.id = U.id
+                    	WHERE MONTH(E1.fecha_alta) = $criteriosSeleccion->mes  AND YEAR(E1.fecha_alta) = $criteriosSeleccion->ano AND justificacion_id IS NOT NULL AND EM1.id = EM.id AND A1.id = A.id AND U1.id = U.id
                     ) justificadas,
                     (
                     	SELECT count(*) numero
@@ -585,7 +585,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     		INNER JOIN sedes S1 ON S1.id = U1.sede_id
                     		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
                     		INNER JOIN areas A1 ON A1.id = U1.area_id
-                    	WHERE MONTH(E1.fecha_alta) = MONTH(NOW())  AND YEAR(E1.fecha_alta) = YEAR(NOW()) AND justificacion_id IS NULL AND EM1.id = EM.id AND A1.id = A.id AND U1.id = U.id
+                    	WHERE MONTH(E1.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E1.fecha_alta) = $criteriosSeleccion->ano AND justificacion_id IS NULL AND EM1.id = EM.id AND A1.id = A.id AND U1.id = U.id
                     ) enviadas,
                     (
                     	SELECT count(*)
@@ -604,7 +604,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     					INNER JOIN sedes S2 ON S2.id = U2.sede_id
                     					INNER JOIN empresas EM2 ON EM2.id = S2.empresa_id
                     					INNER JOIN areas A2 ON A2.id = U2.area_id
-                    				WHERE MONTH(E2.fecha_alta) = MONTH(NOW())  AND YEAR(E2.fecha_alta) = YEAR(NOW()) AND EM2.id = EM1.id AND A2.id = A1.id AND U1.id = U.id
+                    				WHERE MONTH(E2.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E2.fecha_alta) = $criteriosSeleccion->ano AND EM2.id = EM1.id AND A2.id = A1.id AND U1.id = U.id
                     				)
                     
                     )pendientes
@@ -725,6 +725,57 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             return $resultado;
     }
     
+    public function consultarAnos($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion,false);
+        
+        $consulta = "SELECT YEAR(E.fecha_alta) ano
+                    FROM evidencias E
+                        INNER JOIN  usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
+                        INNER JOIN usuarios U ON U.id = UP.usuario_id
+                        LEFT JOIN sedes S ON S.id = U.sede_id
+                        LEFT JOIN empresas EM ON EM.id = S.empresa_id ";
+        
+        $consulta .= $this->where($filtros);
+        
+        $consulta.=" GROUP BY ano
+                    ORDER BY ano";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($ano))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro= (object) [
+                                'id' =>  $ano,
+                                'nombre' =>  $ano
+                            ];
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
+    }
+    
     private function getNombreMes($mes)
     {
         $nombreMes="";
@@ -806,7 +857,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             return $resultado;
     }
     
-    public function consultarPorcentajesAdministradoresMesActual($usuario,$criteriosSeleccion)
+    public function consultarPorcentajesAdministradores($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
         $registros = array();
@@ -841,7 +892,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                 	INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
                 	LEFT JOIN justificaciones J ON J.id = E.justificacion_id
                 	LEFT JOIN usuarios V ON V.id = EM.administrador_id
-                WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW())
+                WHERE MONTH(E.fecha_alta) =$criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano AND V.id  IS NOT NULL 
                 GROUP BY V.id, V.nombre, V.apellido";
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -865,7 +916,10 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                             $registro->total = $registro->validadas + $registro->noValidadas;
                             $cumplimieto =$registro->validadas;
                             
-                            $registro->porcentajeCumplimiento = $cumplimieto * 100 / $registro->total;
+                            if($registro->total!=0)
+                                $registro->porcentajeCumplimiento = $cumplimieto * 100 / $registro->total;
+                            else
+                                $registro->porcentajeCumplimiento = 0;
                             
                             $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
                             $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
@@ -921,7 +975,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         return $filtros;
     }
     
-    public function consultarEvidenciasJustificacionMesActual($usuario,$criteriosSeleccion)
+    public function consultarEvidenciasJustificacion($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
         $registros = array();
@@ -933,11 +987,11 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         
         $consulta = "SELECT justificacion_id, J.nombre, count(justificacion_id) valor
             FROM evidencias E
-            		INNER JOIN  usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
+            		INNER JOIN usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
             		INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
                     INNER JOIN justificaciones J ON J.id = E.justificacion_id
                     INNER JOIN usuarios U ON U.id = UP.usuario_id
-            WHERE MONTH(E.fecha_alta) = MONTH(NOW()) ". $and . " ".
+            WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano ". $and . " ".
             "GROUP BY justificacion_id, J.nombre";
         if($sentencia = $this->conexion->prepare($consulta))
         {

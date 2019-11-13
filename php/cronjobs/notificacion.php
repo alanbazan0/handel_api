@@ -762,7 +762,10 @@ function getValor($nombre,$arreglo)
 function getEvidenciasEnviadas($usuario,EvidenciasRepositorio $repositorio)
 {
     $texto="";
-    $resultado = $repositorio->consultarEvidenciasCumplidasMesActual($usuario,null);
+    $ano=  date("Y");
+    $mes = date("m");
+    $criteriosSeleccion = (object) ['ano' => $ano, "mes"=> $mes];
+    $resultado = $repositorio->consultarEvidenciasCumplidasMesActual($usuario,$criteriosSeleccion);
     if($resultado->correcto())
     {
         $evidencias = $resultado->valor;

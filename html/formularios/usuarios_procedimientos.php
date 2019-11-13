@@ -69,6 +69,14 @@ header('Access-Control-Allow-Credentials: true');
 							</select>
                       </div>
                   </div>
+                   <div class="form-group">
+                      		<label class="control-label mb-1">Activo</label>
+                     		<label class="switch switch-3d switch-success mr-3">
+                             <input id="estatusRadio" name="estatus" type="checkbox" class="switch-input" checked="true">
+                             <span class="switch-label"></span>
+                             <span class="switch-handle"></span>
+                           </label>
+                   </div>  
                  
               </form>
           </div>

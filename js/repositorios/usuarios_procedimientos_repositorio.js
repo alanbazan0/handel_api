@@ -6,13 +6,35 @@ class UsuariosProcedimientosRepositorio extends Repositorio
 	}
 	
 	
-	consultarProcedimientosPendientesMesActual(contexto,funcion, usuarioId)
+	consultarProcedimientosPendientesMesActual(contexto,funcion)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;
 		   $.ajax({
 	       url: url,
 	       type: 'POST',
-	       data: {accion : "consultarProcedimientosPendientesMesActual", usuarioId: usuarioId},
+	       data: {accion : "consultarProcedimientosPendientesMesActual"},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : errorThrown});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : errorThrown});
+	       }
+	   });
+	}
+	
+	consultarProcedimientosPendientes(contexto,funcion, criteriosSeleccion)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarProcedimientosPendientes",  criteriosSeleccion: JSON.stringify(criteriosSeleccion)},
 	       success: function( data, textStatus, jQxhr )
 	       {
 	           funcion.call(contexto,data);

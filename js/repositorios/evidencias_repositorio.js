@@ -123,13 +123,13 @@ class EvidenciasRepositorio extends Repositorio
 	   });
 	}
 	
-	consultarEvidenciasCumplidasMesActual(contexto,funcion, usuarioId)
+	consultarEvidenciasCumplidas(contexto,funcion, criteriosSeleccion)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;
 		   $.ajax({
 	       url: url,
 	       type: 'POST',
-	       data: {accion : "consultarEvidenciasCumplidasMesActual", usuarioId: usuarioId},
+	       data: {accion : "consultarEvidenciasCumplidas",criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
 	       success: function( data, textStatus, jQxhr )
 	       {
 	           funcion.call(contexto,data);
@@ -145,13 +145,13 @@ class EvidenciasRepositorio extends Repositorio
 	   });
 	}
 	
-	consultarEvidenciasJustificacionMesActual(contexto,funcion, usuarioId)
+	consultarEvidenciasJustificacion(contexto,funcion, criteriosSeleccion)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;
 		   $.ajax({
 	       url: url,
 	       type: 'POST',
-	       data: {accion : "consultarEvidenciasJustificacionMesActual", usuarioId: usuarioId},
+	       data: {accion : "consultarEvidenciasJustificacion", criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
 	       success: function( data, textStatus, jQxhr )
 	       {
 	           funcion.call(contexto,data);
@@ -167,13 +167,13 @@ class EvidenciasRepositorio extends Repositorio
 	   });
 	}
 	
-	consultarEvidenciasMesActual(contexto,funcion,criteriosSeleccion)
+	consultarEvidencias(contexto,funcion,criteriosSeleccion)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;
 		   $.ajax({
 	       url: url,
 	       type: 'POST',
-	       data: {accion : "consultarEvidenciasMesActual",criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
+	       data: {accion : "consultarEvidencias",criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
 	       success: function( data, textStatus, jQxhr )
 	       {
 	           funcion.call(contexto,data);
@@ -189,35 +189,13 @@ class EvidenciasRepositorio extends Repositorio
 	   });
 	}
 	
-	consultarPorcentajesEvidenciasMesActual(contexto,funcion,criteriosSeleccion)
+	consultarPorcentajesEvidencias(contexto,funcion,criteriosSeleccion)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;
 		   $.ajax({
 	       url: url,
 	       type: 'POST',
-	       data: {accion : "consultarPorcentajesEvidenciasMesActual",criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
-	       success: function( data, textStatus, jQxhr )
-	       {
-	           funcion.call(contexto,data);
-	       },
-	       error: function( jqXhr, textStatus, errorThrown )
-	       {
-	      	 funcion.call(contexto,{ mensajeError : errorThrown + "." +jqXhr.responseText});
-	       },
-	       fail: function( jqXhr, textStatus, errorThrown )
-	       {
-	      	 funcion.call(contexto,{ mensajeError : errorThrown+ "." +jqXhr.responseText});
-	       }
-	   });
-	}
-	
-	consultarPorcentajesEmpresasMesActual(contexto,funcion,criteriosSeleccion)
-	{		
-		var url = HANDEL_API + "/" + this.servicio;
-		   $.ajax({
-	       url: url,
-	       type: 'POST',
-	       data: {accion : "consultarPorcentajesEmpresasMesActual",criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
+	       data: {accion : "consultarPorcentajesEvidencias",criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
 	       success: function( data, textStatus, jQxhr )
 	       {
 	           funcion.call(contexto,data);
@@ -233,13 +211,13 @@ class EvidenciasRepositorio extends Repositorio
 	   });
 	}
 	
-	consultarPorcentajesAdministradoresMesActual(contexto,funcion,criteriosSeleccion)
+	consultarPorcentajesEmpresas(contexto,funcion,criteriosSeleccion)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;
 		   $.ajax({
 	       url: url,
 	       type: 'POST',
-	       data: {accion : "consultarPorcentajesAdministradoresMesActual",criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
+	       data: {accion : "consultarPorcentajesEmpresas",criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
 	       success: function( data, textStatus, jQxhr )
 	       {
 	           funcion.call(contexto,data);
@@ -255,13 +233,13 @@ class EvidenciasRepositorio extends Repositorio
 	   });
 	}
 	
-	consultarPorcentajesAreasMesActual(contexto,funcion,criteriosSeleccion)
+	consultarPorcentajesAdministradores(contexto,funcion,criteriosSeleccion)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;
 		   $.ajax({
 	       url: url,
 	       type: 'POST',
-	       data: {accion : "consultarPorcentajesAreasMesActual",criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
+	       data: {accion : "consultarPorcentajesAdministradores",criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
 	       success: function( data, textStatus, jQxhr )
 	       {
 	           funcion.call(contexto,data);
@@ -277,13 +255,35 @@ class EvidenciasRepositorio extends Repositorio
 	   });
 	}
 	
-	consultarPorcentajesUsuariosMesActual(contexto,funcion,criteriosSeleccion)
+	consultarPorcentajesAreas(contexto,funcion,criteriosSeleccion)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;
 		   $.ajax({
 	       url: url,
 	       type: 'POST',
-	       data: {accion : "consultarPorcentajesUsuariosMesActual",criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
+	       data: {accion : "consultarPorcentajesAreas",criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : errorThrown + "." +jqXhr.responseText});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : errorThrown+ "." +jqXhr.responseText});
+	       }
+	   });
+	}
+	
+	consultarPorcentajesUsuarios(contexto,funcion,criteriosSeleccion)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarPorcentajesUsuarios",criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
 	       success: function( data, textStatus, jQxhr )
 	       {
 	           funcion.call(contexto,data);
@@ -321,6 +321,28 @@ class EvidenciasRepositorio extends Repositorio
 	   });
 	}
 	
+	
+	consultarAnos(contexto,funcion,criteriosSeleccion)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarAnos",criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : errorThrown + "." +jqXhr.responseText});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : errorThrown+ "." +jqXhr.responseText});
+	       }
+	   });
+	}
 	
 	
 	
