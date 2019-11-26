@@ -11,18 +11,20 @@ class ReportesEvidenciasVista extends CatalogoVista
 	{
 		this.tabla.textoTablaVacia = "No hay reportes disponibles";
 		this.crearColumnasGrid();
-		this.consultarAnosMeses();
+		
 		
 		var _this = this;
 		$("#consultarButton").click(function(){
 			_this.consultar();
 		});
+		
+		this.consultar();
 	}
 	
-	consultarAnosMeses()
-	{
-		this.presentador.consultarAnosMeses();
-	}
+//	consultarAnosMeses()
+//	{
+//		this.presentador.consultarAnosMeses();
+//	}
 	
 //	onLoad()
 //	{			
@@ -35,15 +37,59 @@ class ReportesEvidenciasVista extends CatalogoVista
 		
 		this.tabla.columnas = [
 			{longitud:250, 	titulo:"Mes",   alias:"mesNombre", alineacion:"I" },	
-			{longitud:200, 	titulo:"Año",   alias:"ano", alineacion:"I" } 					
+			{longitud:200, 	titulo:"Año",   alias:"ano", alineacion:"I" },
+			{longitud:100, 	titulo:"",   alias:"", alineacion:"I", itemRenderer: this.renderBotonImprimir}
 			
 		]
 		
-		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Imprimir'  type='button' class='imprimir btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fas fa-file-pdf fa-lg'></span></button>";
+		//this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Imprimir'  type='button' class='imprimir btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fas fa-file-pdf fa-lg'></span></button>";
 		
 
 		this.tabla.registros = [];
 	}
+	
+	renderBotonImprimir(renglon, type, set)
+	{    
+		var	html = "";
+		if(renglon.mensajeError=="")
+			html += "<button data-toggle='tooltip' data-placemen='bottom' title='Imprimir'  type='button' class='imprimir btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fas fa-file-pdf fa-lg'></span></button>";
+		else
+			html += "<span>" +renglon.mensajeError +"</span>";
+		return html;
+	}
+	
+	inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave)
+	{
+		var _this = this;
+		$(tbody).on("click", "button.imprimir", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.imprimirReporte();
+			}
+		});
+	}
+	
+	imprimirReporte()
+	{
+		var reporte = "";
+			
+		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_evidencias.php" + reporte);
+		this.createNewFormElement(submitForm, "usuarioId", JSON.stringify(this.usuario.id));	 
+		this.createNewFormElement(submitForm, "ano", JSON.stringify(this._registroSeleccionado.ano));	 
+		this.createNewFormElement(submitForm, "mes", JSON.stringify(this._registroSeleccionado.mes));	 
+	    submitForm.target= "_blank";
+	    submitForm.submit();
+	}
+	
 	
 	inicializarValidacionesFormulario()
 	{
@@ -76,107 +122,6 @@ class ReportesEvidenciasVista extends CatalogoVista
             }
         });
 	}
-//	
-//	renderEstatus(renglon, campoBase)
-//	{    
-//		var contenido = "";
-//		if(renglon.estatus==1)
-//			contenido += "<center><span class='fa "+ ICONO_ACTIVO +" fa-lg' style='color:"+COLOR_ACTIVO+"'></span></center>";
-//		else
-//			contenido += "<center><span class='fa "+ ICONO_INACTIVO+" fa-lg' style='color:"+COLOR_INACTIVO+"'></span></center>";
-//	    return contenido;
-//	}
-	
-	
-//	mostrarIndicador()
-//	{
-//		$('#indicador').show();				
-//	}
-//	
-//	ocultarIndicador()
-//	{		
-//		$('#indicador').hide();
-//	}
-//	
-//	btnBaja_onClick()
-//	{ 
-//		if(this.grid._selectedItem!=null)
-//		{
-//			var confirmacion = confirm("¿Esta seguro que desea eliminar el registro?")
-//		    if (confirmacion)
-//		    {
-//		    		this.presentador.eliminar();
-//		    }	
-//		}
-//		else
-//			this.mostrarMensaje("Acción no válida","Seleccione un registro para eliminar.");
-//	}
-//	
-//	btnAlta_onClick()
-//	{
-//		this.modo = "ALTA";
-//		this.ocultarIndicador();
-//		this.limpiarFormulario();	
-//		this.mostrarFormulario();
-//		$('#nombreInput').focus();
-//		
-//	}
-//	
-//	btnCambio_onClick()
-//	{
-//		if(this.grid._selectedItem!=null)
-//		{			
-//			this.modo = "CAMBIO";
-//			this.limpiarFormulario();	
-//			this.mostrarFormulario();
-//			$('#nombreInput').focus();				
-//			this.presentador.consultarPorLlaves();
-//		}
-//		else
-//			this.mostrarMensaje("Acción no válida","Seleccione un registro para modificar.");
-//				
-//	}
-//	
-//	btnConsulta_onClick()
-//	{	
-//		this.presentador.consultar();
-//	}	
-//	
-//	btnGuardarFormulario_onClick()
-//	{		
-//		 if(this.datosValidos())
-//		 {
-//			if(this.modo=='ALTA')
-//				this.presentador.insertar();
-//			else
-//				this.presentador.actualizar();
-//		 }		
-//		
-//	}
-//	
-//	btnSalir_onClick()
-//	{
-//		var confirmacion = confirm("¿Esta seguro que desea salir?")
-//	    if (confirmacion)
-//	    	{
-//		    	
-//	    	}
-//	}
-//	
-//	btnSalirFormulario_onClick()
-//	{		
-//		this.salirFormulario();
-//	}	
-//	
-//	get llaves()
-//	{
-//		var llaves =
-//		{
-//			id:this.grid._selectedItem.id	
-//		}
-//		return llaves;
-//	}
-//	
 	
 	get criteriosSeleccion()
 	{
@@ -186,13 +131,8 @@ class ReportesEvidenciasVista extends CatalogoVista
 		 }
 		 return criteriosSeleccion;
 	}		
-
-//	set datos(valor)
-//	{
-//		this.grid._dataProvider = valor;	
-//		this.grid.render();
-//	}
-//	
+	
+	
 	set modelo(valor)
 	{		
 		this.modeloEdicion = valor;
@@ -214,36 +154,6 @@ class ReportesEvidenciasVista extends CatalogoVista
 	 }
 	 
 
-	
-//	mostrarFormulario()
-//	{
-//		$('#principalDiv').hide();	
-//		$('#formularioDiv').show();
-//	}
-//	
-//	salirFormulario()
-//	{
-//		$('#principalDiv').show()	
-//		$('#formularioDiv').hide();
-//	}
-//	
-	
-	datosValidos()
-	{
-		var nombre = $("#nombreInput");
-	        
-        
-        var allFields = $( [] ).add(nombre);
-        var tips = $( ".validateTips" );
-		tips.text("");
-		
-		var valid = true;
-		allFields.removeClass("ui-state-error");
-		
-	    valid = valid && this.validaciones.checkValue( nombre, "nombre", tips );
-	   
-		return valid;
-	}	
 
 	limpiarFormulario()
 	{

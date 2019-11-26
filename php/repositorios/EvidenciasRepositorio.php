@@ -412,7 +412,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     	INNER JOIN usuarios U ON U.id = UP.usuario_id
                     	LEFT JOIN sedes S ON S.id = U.sede_id
                     	LEFT JOIN empresas EM ON EM.id = S.empresa_id
-                    WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano
+                    WHERE UP.estatus = 1 AND MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano
                     GROUP BY EM.id, EM.nombre";
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -466,55 +466,55 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         
         $filtros =  array();
         
-        $consulta = "SELECT U.area_id,A.nombre,
-                    (
-                    	SELECT count(*) numero
-                    	FROM evidencias E1
-                    		INNER JOIN usuarios_procedimientos UP1 ON UP1.id = E1.usuario_procedimiento_id
-                    		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
-                    		INNER JOIN sedes S1 ON S1.id = U1.sede_id
-                    		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
-                    		INNER JOIN areas A1 ON A1.id = U1.area_id
-                    	WHERE MONTH(E1.fecha_alta) = $criteriosSeleccion->mes  AND YEAR(E1.fecha_alta) = $criteriosSeleccion->ano AND justificacion_id IS NOT NULL AND EM1.id = EM.id AND A1.id = A.id
-                    ) justificadas,
-                    (
-                    	SELECT count(*) numero
-                    	FROM evidencias E1
-                    		INNER JOIN usuarios_procedimientos UP1 ON UP1.id = E1.usuario_procedimiento_id
-                    		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
-                    		INNER JOIN sedes S1 ON S1.id = U1.sede_id
-                    		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
-                    		INNER JOIN areas A1 ON A1.id = U1.area_id
-                    	WHERE MONTH(E1.fecha_alta) = $criteriosSeleccion->mes  AND YEAR(E1.fecha_alta) = $criteriosSeleccion->mes AND justificacion_id IS NULL AND EM1.id = EM.id AND A1.id = A.id
-                    ) enviadas,
-                    (
-                    	SELECT count(*)
-                    	FROM usuarios_procedimientos UP1
-                    		INNER JOIN procedimientos P1 ON P1.id = UP1.procedimiento_id
-                    		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
-                    		INNER JOIN sedes S1 ON S1.id = U1.sede_id
-                    		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
-                            INNER JOIN areas A1 ON A1.id = U1.area_id
-                    	WHERE UP1.estatus = 1 AND EM1.id = EM.id AND A1.id = A.id
-                    		AND UP1.id NOT IN(
-                    				SELECT usuario_procedimiento_id
-                    				FROM evidencias E2
-                    					INNER JOIN usuarios_procedimientos UP2 ON UP2.id = E2.usuario_procedimiento_id
-                    					INNER JOIN usuarios U2 ON U2.id = UP2.usuario_id
-                    					INNER JOIN sedes S2 ON S2.id = U2.sede_id
-                    					INNER JOIN empresas EM2 ON EM2.id = S2.empresa_id
-                                        INNER JOIN areas A2 ON A2.id = U2.area_id
-                    				WHERE MONTH(E2.fecha_alta) =$criteriosSeleccion->mes  AND YEAR(E2.fecha_alta) =$criteriosSeleccion->ano AND EM2.id = EM1.id AND A2.id = A1.id
-                    				)
-                    
-                    )pendientes
-                    FROM usuarios_procedimientos UP 
-                    	LEFT JOIN usuarios U ON U.id = UP.usuario_id
-                    	LEFT JOIN sedes S ON S.id = U.sede_id
-                    	LEFT JOIN empresas EM ON EM.id = S.empresa_id
-                        LEFT JOIN areas A ON A.id = U.area_id
-                    WHERE  EM.id = ?
-                    GROUP BY U.area_id, A.nombre";
+            $consulta = "SELECT U.area_id,A.nombre,
+                        (
+                        	SELECT count(*) numero
+                        	FROM evidencias E1
+                        		INNER JOIN usuarios_procedimientos UP1 ON UP1.id = E1.usuario_procedimiento_id
+                        		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                        		INNER JOIN sedes S1 ON S1.id = U1.sede_id
+                        		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                        		INNER JOIN areas A1 ON A1.id = U1.area_id
+                        	WHERE MONTH(E1.fecha_alta) = $criteriosSeleccion->mes  AND YEAR(E1.fecha_alta) = $criteriosSeleccion->ano AND justificacion_id IS NOT NULL AND EM1.id = EM.id AND A1.id = A.id
+                        ) justificadas,
+                        (
+                        	SELECT count(*) numero
+                        	FROM evidencias E1
+                        		INNER JOIN usuarios_procedimientos UP1 ON UP1.id = E1.usuario_procedimiento_id
+                        		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                        		INNER JOIN sedes S1 ON S1.id = U1.sede_id
+                        		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                        		INNER JOIN areas A1 ON A1.id = U1.area_id
+                        	WHERE MONTH(E1.fecha_alta) = $criteriosSeleccion->mes  AND YEAR(E1.fecha_alta) = $criteriosSeleccion->ano AND justificacion_id IS NULL AND EM1.id = EM.id AND A1.id = A.id
+                        ) enviadas,
+                        (
+                        	SELECT count(*)
+                        	FROM usuarios_procedimientos UP1
+                        		INNER JOIN procedimientos P1 ON P1.id = UP1.procedimiento_id
+                        		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                        		INNER JOIN sedes S1 ON S1.id = U1.sede_id
+                        		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                                INNER JOIN areas A1 ON A1.id = U1.area_id
+                        	WHERE UP1.estatus = 1 AND EM1.id = EM.id AND A1.id = A.id
+                        		AND UP1.id NOT IN(
+                        				SELECT usuario_procedimiento_id
+                        				FROM evidencias E2
+                        					INNER JOIN usuarios_procedimientos UP2 ON UP2.id = E2.usuario_procedimiento_id
+                        					INNER JOIN usuarios U2 ON U2.id = UP2.usuario_id
+                        					INNER JOIN sedes S2 ON S2.id = U2.sede_id
+                        					INNER JOIN empresas EM2 ON EM2.id = S2.empresa_id
+                                            INNER JOIN areas A2 ON A2.id = U2.area_id
+                        				WHERE MONTH(E2.fecha_alta) =$criteriosSeleccion->mes  AND YEAR(E2.fecha_alta) =$criteriosSeleccion->ano AND EM2.id = EM1.id AND A2.id = A1.id
+                        				)
+                        
+                        )pendientes
+                        FROM usuarios_procedimientos UP 
+                        	LEFT JOIN usuarios U ON U.id = UP.usuario_id
+                        	LEFT JOIN sedes S ON S.id = U.sede_id
+                        	LEFT JOIN empresas EM ON EM.id = S.empresa_id
+                            LEFT JOIN areas A ON A.id = U.area_id
+                        WHERE UP.estatus = 1 AND EM.id = ?
+                        GROUP BY U.area_id, A.nombre";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -526,12 +526,19 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     {
                         while($sentencia->fetch())
                         {
+                            $total = $enviadas + $justificadas + $pendientes;
+                            $cumplidas = $enviadas + $justificadas;
+                            $porcentajeCumplimiento = 0;
+                            if($total!=0)
+                                $porcentajeCumplimiento = $cumplidas * 100 / $total;
                             $registro= (object) [
                                 'id' =>  $id,
                                 'nombre' =>  $nombre,
                                 'justificadas' =>  $justificadas,
                                 'enviadas' =>  $enviadas,
-                                'pendientes' =>  $pendientes
+                                'pendientes' =>  $pendientes,
+                                'cumplidas' => $cumplidas,
+                                '$porcentajeCumplimiento' => $porcentajeCumplimiento
                             ];
                             
                             $total = $registro->justificadas + $registro->enviadas + $registro->pendientes;
@@ -564,7 +571,23 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         $resultado = new Resultado();
         $registros = array();
         
-        $filtros =  array();
+//         $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion,false);
+//        
+
+        $filtros = array();
+        switch ($usuario->tipoUsuarioId)
+        {
+            case \TipoUsuario::USUARIO:
+                break;
+            case \TipoUsuario::SUPERVISOR:
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','valor'=>$usuario->empresaId]);
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'area_id','valor'=>$usuario->areaId]);
+                break;
+            case \TipoUsuario::COORDINADOR:
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','valor'=>$usuario->empresaId]);
+                break;
+        }
+        $and = $this->and($filtros);
         
         $consulta = "SELECT U.id,U.nombre, U.apellido,U.tipo_usuario_id, U.empresa_id, U.sede_id, U.area_id,
                     (
@@ -613,12 +636,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     	LEFT JOIN sedes S ON S.id = U.sede_id
                     	LEFT JOIN empresas EM ON EM.id = S.empresa_id
                     	LEFT JOIN areas A ON A.id = U.area_id
-                    WHERE  EM.id = ? AND A.id = ? AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5)
-                    GROUP BY U.id, U.nombre";
+                    WHERE UP.estatus = 1  AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5) ";
+        
+        $consulta.= $and;
+        $consulta.=" GROUP BY U.id, U.nombre";
+        
+      
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param('ii',$usuario->empresaId,$usuario->areaId))
+            if($this->bind_param($sentencia, $filtros))
             {
                 if($sentencia->execute())
                 {
@@ -626,6 +653,12 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     {
                         while($sentencia->fetch())
                         {
+                            $total = $enviadas + $justificadas + $pendientes;
+                            $cumplidas = $enviadas + $justificadas;
+                            $porcentajeCumplimiento = 0;
+                            if($total!=0)
+                                $porcentajeCumplimiento = $cumplidas * 100 / $total;
+                            
                             $registro= (object) [
                                 'id' =>  $id,
                                 'nombre' =>  $nombre,
@@ -636,7 +669,9 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                                 'areaId' =>  $areaId,
                                 'justificadas' =>  $justificadas,
                                 'enviadas' =>  $enviadas,
-                                'pendientes' =>  $pendientes
+                                'pendientes' =>  $pendientes,
+                                "cumplidas" => $cumplidas,
+                                'porcentajeCumplimiento' => $porcentajeCumplimiento
                             ];
                             
                             $total = $registro->justificadas + $registro->enviadas + $registro->pendientes;
@@ -810,7 +845,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     	LEFT JOIN sedes S ON S.id = U.sede_id
                     	LEFT JOIN empresas EM ON EM.id = S.empresa_id
                     	LEFT JOIN areas A ON A.id = U.area_id
-                    WHERE  EM.id = ? AND A.id = ? AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5)
+                    WHERE  UP.estatus = 1 AND EM.id = ? AND A.id = ? AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5)
                     GROUP BY U.id, U.nombre";
         
         if($sentencia = $this->conexion->prepare($consulta))
