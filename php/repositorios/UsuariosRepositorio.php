@@ -258,7 +258,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
     }
     
     
-    public function consultar($criteriosSeleccion)
+    public function consultar($usuario,$criteriosSeleccion,$opcional)
     {     
         $resultado = new Resultado();
         $registros = array();     
@@ -318,6 +318,14 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                         {
                             $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7);
                             array_push($registros,$registro);
+                        }
+                        if($opcional=="true")
+                        {
+                            if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
+                            {
+                                $registro = $this->crearRegistro("", "Todos los usuarios", null, null, null,null, null, null, null, null, null, null, null, null, null, null, null,null, null,null, null,null, null, null, null,null, null,null, null, null);
+                                array_unshift($registros, $registro);
+                            }
                         }
                         $resultado->valor = $registros; 
                     }           
@@ -450,7 +458,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         return $resultado;
     }   
     
-    public function consultarPorEmpresaSede($empresaId,$sedeId)
+    public function consultarPorEmpresaSede($usuario,$empresaId,$sedeId,$opcional)
     {
         $resultado = new Resultado();
         $registros = array();
@@ -472,6 +480,14 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                         {
                             $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7);
                             array_push($registros,$registro);
+                        }
+                        if($opcional=="true")
+                        {
+                            if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
+                            {
+                                $registro = $this->crearRegistro("", "Todos los usuarios", null, null, null,null, null, null, null, null, null, null, null, null, null, null, null,null, null,null, null,null, null, null, null,null, null,null, null, null);
+                                array_unshift($registros, $registro);
+                            }
                         }
                         $resultado->valor = $registros;
                     }

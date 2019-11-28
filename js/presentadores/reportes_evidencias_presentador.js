@@ -45,5 +45,66 @@ class ReportesEvidenciasPresentador extends CatalogoPresentador
 		 }
 	 }
 	 
+	 consultarEmpresasCriterio()	
+	 {
+		 var repositorio = new EmpresasRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.empresasCriterio = resultado.valor;
+				this.vista.cambiarEmpresaCriterio();
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },null,false);
+	 }
+	
+	 
+	 consultarSedesCriterio()	
+	 {
+		 var repositorio = new SedesRepositorio(this);		
+		 repositorio.consultarPorEmpresa(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.sedesCriterio = resultado.valor;
+				this.vista.cambiarSedeCriterio();
+			}
+			else
+				this.vista.mostrarMensaje("Error",resultado.mensajeError);
+		 },this.vista.criteriosSeleccion.empresaId,false);
+	 }
+	 
+	 
+	 consultarUsuariosCriterio()	
+	 {
+		 var repositorio = new UsuariosRepositorio(this);		
+		 repositorio.consultarPorEmpresaSede(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				var coordinadoresSupervisores = this.getCoordinadoresSupervisores(resultado.valor);
+				this.vista.usuariosCriterio = coordinadoresSupervisores;				
+			}
+			else
+				this.vista.mostrarMensaje("Error",resultado.mensajeError);
+		 },this.vista.criteriosSeleccion.empresaId,this.vista.criteriosSeleccion.sedeId,false);
+	 }
+	 
+	 getCoordinadoresSupervisores(usuarios)
+	 {
+		var coordinadoresSupervisores = [];
+		for(var i=0; i< usuarios.length; i++)
+		{
+			var usuario = usuarios[i];
+			if(usuario.tipoUsuarioId == TipoUsuario.COORDINADOR || usuario.tipoUsuarioId == TipoUsuario.SUPERVISOR)
+				coordinadoresSupervisores.push(usuario);
+		}
+		
+		return coordinadoresSupervisores;
+	 }
+	 
 	 
 }

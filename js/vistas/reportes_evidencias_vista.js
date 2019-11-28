@@ -12,13 +12,22 @@ class ReportesEvidenciasVista extends CatalogoVista
 		this.tabla.textoTablaVacia = "No hay reportes disponibles";
 		this.crearColumnasGrid();
 		
+		this.consultoGrid = false;
 		
 		var _this = this;
 		$("#consultarButton").click(function(){
 			_this.consultar();
 		});
 		
-		this.consultar();
+	
+		
+		if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
+		{
+			$("#criteriosRow").show();
+			this.consultarEmpresasCriterio();
+		}	
+		else	
+			this.consultar();
 	}
 	
 //	consultarAnosMeses()
@@ -78,15 +87,21 @@ class ReportesEvidenciasVista extends CatalogoVista
 		});
 	}
 	
+	
+	
 	imprimirReporte()
 	{
-		var reporte = "";
-			
-		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_evidencias.php" + reporte);
-		this.createNewFormElement(submitForm, "usuarioId", JSON.stringify(this.usuario.id));	 
-		this.createNewFormElement(submitForm, "ano", JSON.stringify(this._registroSeleccionado.ano));	 
-		this.createNewFormElement(submitForm, "mes", JSON.stringify(this._registroSeleccionado.mes));	 
-	    submitForm.target= "_blank";
+		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_evidencias.php");
+		if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
+		{
+			var usuarioSeleccionado =$("#usuarioSelectCriterio").val();
+			this.createNewFormElement(submitForm, "usuarioId", usuarioSeleccionado);
+		}
+		else
+			this.createNewFormElement(submitForm, "usuarioId", this.usuario.id);	 
+		this.createNewFormElement(submitForm, "ano", this._registroSeleccionado.ano);	 
+		this.createNewFormElement(submitForm, "mes", this._registroSeleccionado.mes);	 
+		submitForm.target= "_blank";
 	    submitForm.submit();
 	}
 	
@@ -127,7 +142,8 @@ class ReportesEvidenciasVista extends CatalogoVista
 	{
 		 var criteriosSeleccion = 
 		 {				    
-			nombre:$('#nombreInputCriterio').val()
+			empresaId: $('#empresaSelectCriterio').val(),
+			sedeId: $('#sedeSelectCriterio').val(),
 		 }
 		 return criteriosSeleccion;
 	}		
@@ -162,7 +178,94 @@ class ReportesEvidenciasVista extends CatalogoVista
 	}
 	
 	
+	consultarEmpresasCriterio()
+	{
+		this.cargandoOpciones("#empresaSelectCriterio");
+		this.cargandoOpciones("#sedeSelectCriterio");
+		this.cargandoOpciones("#usuarioSelectCriterio");
+		this.presentador.consultarEmpresasCriterio();
+	}
 	
+	set empresasCriterio(registros)
+	{		
+		this.cargarOpciones('#empresaSelectCriterio', registros);
+	}
+	
+	cambiarEmpresa()
+	{
+		this.consultarSedes();
+	}
+	
+	cambiarEmpresaCriterio()
+	{
+		this.consultarSedesCriterio();
+	}
+	
+
+	consultarSedesCriterio()
+	{
+		this.cargandoOpciones("#sedeSelectCriterio");
+		this.cargandoOpciones("#usuarioSelectCriterio");
+		this.presentador.consultarSedesCriterio();
+	}
+	
+	
+	
+	set sedesCriterio(registros)
+	{		
+		this.cargarOpciones('#sedeSelectCriterio', registros);
+		
+	}
+	
+	consultarUsuariosCriterio()
+	{
+		this.cargandoOpciones("#usuarioSelectCriterio");
+		this.presentador.consultarUsuariosCriterio();
+	}
+	
+	set usuariosCriterio(registros)
+	{		
+		this.cargarOpciones('#usuarioSelectCriterio', registros,"", null, "id", null, "nombreCompleto");
+		if(this.consultoGrid==false)
+		{
+			this.consultar();
+			this.consultoGrid=true;
+		}
+	}
+	
+	cambiarSedeCriterio()
+	{
+		this.cargandoOpciones("#usuarioSelectCriterio");
+		this.consultarUsuariosCriterio();
+	}
+
+	set datos(datos)
+	{
+		if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
+		{
+			
+			var usuarioSeleccionado =$("#usuarioSelectCriterio").val();
+			if(usuarioSeleccionado!="")
+			{
+				var opcionId = "option" + usuarioSeleccionado;
+				var usuario = $("#usuarioSelectCriterio option[id='"+opcionId+"']").data("data");
+				if(usuario!=null)
+				{
+					var fecha = new Date();
+					$("#usuarioRow").show();
+					$("#usuarioImg").attr("src",HANDEL_API + "/" +usuario.fotoPerfil+"?"+fecha.getTime());
+					$("#usuarioSpan").html(usuario.nombreCompleto);
+					if(usuario.tipoUsuarioId == TipoUsuario.SUPERVISOR)
+						$("#tipoUsuarioLabel").html("Supervisor:");
+					else
+						$("#tipoUsuarioLabel").html("Coordinador:");
+					super.datos = datos;
+				}
+			}
+		}
+		else
+			super.datos = datos;
+	}
 	
 
 	

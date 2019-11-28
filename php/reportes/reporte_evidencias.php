@@ -223,40 +223,40 @@ class PDF extends FPDF
         switch($mes)
         {
             case 1:
-                $nombre = "ENERO";
+                $nombre = "Enero";
             break;
             case 2:
-                $nombre = "FEBRERO";
+                $nombre = "Febrero";
             break;
             case 3:
-                $nombre = "MARZO";
+                $nombre = "Marzo";
             break;
             case 4:
-                $nombre = "ABRIL";
+                $nombre = "Abril";
             break;
             case 5:
-                $nombre = "MAYO";
+                $nombre = "Mayo";
             break;
             case 6:
-                $nombre = "JUNIO";
+                $nombre = "Junio";
             break;
             case 7:
-                $nombre = "JULIO";
+                $nombre = "Julio";
             break;
             case 8:
-                $nombre = "AGOSTO";
+                $nombre = "Agosto";
             break;
             case 9:
-                $nombre = "SEPTIEMBRE";
+                $nombre = "Septiembre";
             break;
             case 10:
-                $nombre = "OCTUBRE";
+                $nombre = "Octubre";
             break;
             case 11:
-                $nombre = "NOVIEMBRE";
+                $nombre = "Noviembre";
             break;
             case 12:
-                $nombre = "DICIEMBRE";
+                $nombre = "Diciembre";
             break;
         }
         return $nombre;
@@ -320,7 +320,7 @@ class PDF extends FPDF
         $this->Cell(60, $altoLinea ,'http://www.handel-sce.com/',$borde,'','',false, "http://www.handel-sce.com/");
         $this->SetFont($this->font,'I',8);
         $this->SetTextColor(130,130,130);
-        $this->Cell(120, $altoLinea, $this->texto("Prohibida la reproducción total o parcial de este documento por escrito de Handel."), $borde, 0, 'R');
+        $this->Cell(120, $altoLinea, $this->texto("Prohibida la reproducción total o parcial de este documento por escrito de Handel,"), $borde, 0, 'R');
         
         $this->Ln();
         $this->SetLeftMargin(20);
@@ -329,7 +329,7 @@ class PDF extends FPDF
         $this->Cell(60, $altoLinea ,'871 7508682 / 871 688 7317',$borde);
         $this->SetFont($this->font,'I',8);
         $this->SetTextColor(130,130,130);
-        $this->Cell(120, $altoLinea, $this->texto("Servicios  de consultoría."), $borde, 0, 'R');
+        $this->Cell(120, $altoLinea, $this->texto("Servicios de Consultoría Especializada S.C."), $borde, 0, 'R');
         
         $this->Ln();
         $this->SetLeftMargin(20);
@@ -395,9 +395,9 @@ class PDF extends FPDF
             $this->ano = $ano;
             $this->SetFont($this->font,'',20);
           
-          //   $this->encabezado();
-//             $this->aviso();
-//             $this->introduccion();
+             $this->encabezado();
+             $this->aviso();
+             $this->introduccion();
             
             
             if($this->usuario->tipoUsuarioId==TipoUsuario::COORDINADOR)
@@ -418,18 +418,24 @@ class PDF extends FPDF
             'ano' =>  $this->ano,
         ];
         
+       
+        
         $fecha = new DateTime();
         $fecha->setDate($this->ano,$this->mes,1);
         $fecha->sub(new DateInterval('P1M'));
         
-        $ano = $fecha->format("Y");
-        $mes = $fecha->format("m");
+        $anoAnterior = $fecha->format("Y");
+        $mesAnterior = $fecha->format("m");
         $criteriosSeleccionAnterior= (object) [
-            'mes' =>   (int)$mes,
-            'ano' => (int)$ano,
+            'mes' =>   (int)$mesAnterior,
+            'ano' => (int)$anoAnterior,
         ];
         
+        $nombreMes = ucfirst($this->getNombreMes($this->mes));
+        $nombreMesAnterior = ucfirst($this->getNombreMes($mesAnterior));
+        
         $chartWidth = 120;
+      
         
         $repositorio = new EvidenciasRepositorio($this->conexion);
         
@@ -438,7 +444,7 @@ class PDF extends FPDF
         {
             $porcentajes = $resultado->valor;
             $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-            $image = toPieChart('Cumplimiento global del área (Mes) ','Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
+            $image = toPieChart("Cumplimiento global del área <br>($nombreMes)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
             if($image!='')
                 $this->Image($image,0 ,40, $chartWidth);
         }
@@ -448,7 +454,7 @@ class PDF extends FPDF
         {
             $porcentajes = $resultado->valor;
             $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-            $image = toPieChart('Cumplimiento global del área (Mes previo) ','Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
+            $image = toPieChart("Cumplimiento global del área <br>($nombreMesAnterior)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
             if($image!='')
                 $this->Image($image, 95 ,40,$chartWidth);
         }
@@ -459,10 +465,51 @@ class PDF extends FPDF
         {
             $porcentajes = $resultado->valor;
             $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-            $image = toColumnChart('Cumplimiento por departamento','','Usuarios',$porcentajes,"nombre","cumplidas",$colores,false,0);
+            $image = toColumnChart("Cumplimiento por departamento <br>($nombreMes)",'','Areas',$porcentajes,"nombre","porcentajeCumplimiento",$colores,false,100);
             if($image!='')
                 $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,140, $chartWidth);
         }
+        
+        $this->AddPage();
+        
+        $meses = array();
+        for($i = 1; $i < 13; $i++)
+        {
+            $mes = (object) [];
+            $mes->mes = $i;
+            $mes->nombreMes = $this->getNombreMes($i);
+            
+            $criteriosSeleccion= (object) [
+                'mes' =>  $i,
+                'ano' =>  $this->ano,
+            ];
+            
+            $resultado = $repositorio->consultarPorcentajesEvidencias($this->usuario, $criteriosSeleccion);
+            if($resultado->correcto())
+            {
+                $mes->enviadas = $resultado->valor[0]->valor;
+                $mes->pedientes = $resultado->valor[1]->valor;
+                $mes->justificadas = $resultado->valor[2]->valor;
+                
+                $total =  $mes->enviadas +  $mes->pedientes +   $mes->justificadas;
+                $cumplidas = $mes->enviadas +  $mes->justificadas;
+                $porcentajeCumplimiento = 0;
+                if($total!=0)
+                    $porcentajeCumplimiento = $cumplidas * 100 / $total;
+                    
+                    $mes->porcentajeCumplimiento=    number_format($porcentajeCumplimiento, 1, '.', '');
+                    
+                    
+            }
+            array_push($meses, $mes);
+            
+        }
+        $pdfWidth = $this->GetPageWidth();
+        $chartWidth= 170;
+        $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
+        $image = toLineChart("Nivel de riesgo anual <br>($this->ano)",'','Cumplimiento global',$meses,"nombreMes","porcentajeCumplimiento",$colores,true,100);
+        if($image!='')
+            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
         
       
     }
@@ -481,12 +528,15 @@ class PDF extends FPDF
         $fecha->setDate($this->ano,$this->mes,1);
         $fecha->sub(new DateInterval('P1M'));
         
-        $ano = $fecha->format("Y");
-        $mes = $fecha->format("m");
+        $anoAnterior = $fecha->format("Y");
+        $mesAnterior = $fecha->format("m");
         $criteriosSeleccionAnterior= (object) [
-            'mes' =>   (int)$mes,
-            'ano' => (int)$ano,
+            'mes' =>   (int)$mesAnterior,
+            'ano' => (int)$anoAnterior,
         ];
+        
+        $nombreMes = ucfirst($this->getNombreMes($this->mes));
+        $nombreMesAnterior = ucfirst($this->getNombreMes($mesAnterior));
         
         $chartWidth = 120;
         
@@ -497,7 +547,7 @@ class PDF extends FPDF
         {
             $porcentajes = $resultado->valor;
             $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-            $image = toPieChart('Cumplimiento global del área (Mes) ','Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
+            $image = toPieChart("Cumplimiento global del área <br>($nombreMes)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
             if($image!='')
                 $this->Image($image,0 ,40, $chartWidth);
         }
@@ -507,7 +557,7 @@ class PDF extends FPDF
         {
             $porcentajes = $resultado->valor;
             $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-            $image = toPieChart('Cumplimiento global del área (Mes previo) ','Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
+            $image = toPieChart("Cumplimiento global del área <br>($nombreMesAnterior)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
             if($image!='')
                 $this->Image($image, 95 ,40,$chartWidth);
         }
@@ -518,7 +568,7 @@ class PDF extends FPDF
         {
             $porcentajes = $resultado->valor;
             $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-            $image = toColumnChart('Porcentaje de cumplimiento del mes','','Usuarios',$porcentajes,"nombre","porcentajeCumplimiento",$colores,false,100);
+            $image = toColumnChart("Porcentaje de cumplimiento <br>($nombreMes)",'','Usuarios',$porcentajes,"nombre","porcentajeCumplimiento",$colores,false,100);
             if($image!='')
                 $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,120, $chartWidth);
         }
@@ -528,12 +578,52 @@ class PDF extends FPDF
         {
             $porcentajes = $resultado->valor;
             $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-            $image = toColumnChart('Porcentaje de cumplimiento del mes previo','','Usuarios',$porcentajes,"nombre","porcentajeCumplimiento",$colores,false,100);
+            $image = toColumnChart("Porcentaje de cumplimiento  <br>($nombreMesAnterior)",'','Usuarios',$porcentajes,"nombre","porcentajeCumplimiento",$colores,false,100);
             if($image!='')
                 $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,200, $chartWidth);
         }
         
-      
+        $this->AddPage();
+        
+        $meses = array();
+        for($i = 1; $i < 13; $i++)
+        {
+            $mes = (object) [];
+            $mes->mes = $i;
+            $mes->nombreMes = $this->getNombreMes($i);
+            
+            $criteriosSeleccion= (object) [
+                'mes' =>  $i,
+                'ano' =>  $this->ano,
+            ];
+            
+            $resultado = $repositorio->consultarPorcentajesEvidencias($this->usuario, $criteriosSeleccion);
+            if($resultado->correcto())
+            {
+                $mes->enviadas = $resultado->valor[0]->valor;
+                $mes->pedientes = $resultado->valor[1]->valor;
+                $mes->justificadas = $resultado->valor[2]->valor;
+                
+                $total =  $mes->enviadas +  $mes->pedientes +   $mes->justificadas;
+                $cumplidas = $mes->enviadas +  $mes->justificadas;
+                $porcentajeCumplimiento = 0;
+                if($total!=0)
+                    $porcentajeCumplimiento = $cumplidas * 100 / $total;
+                    
+                $mes->porcentajeCumplimiento=    number_format($porcentajeCumplimiento, 1, '.', '');
+                
+                
+            }
+            array_push($meses, $mes);
+            
+        }
+        $pdfWidth = $this->GetPageWidth();
+        $chartWidth= 170;
+        $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
+        $image = toLineChart("Nivel de riesgo anual <br>($this->ano)",'','Cumplimiento global',$meses,"nombreMes","porcentajeCumplimiento",$colores,true,100);
+        if($image!='')
+            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
+        
     }
     
     public function guardar()
@@ -721,6 +811,9 @@ class PDF extends FPDF
         $this->AddPage();
        // $this->SetY(20);
        // $this->SetX(20);
+       
+        $this->SetY(145);
+        
         $borde = 0;
         $w1 = 85;
         $w2 = 85;
@@ -731,7 +824,7 @@ class PDF extends FPDF
         $this->SetLeftMargin(30);
         $this->SetFont($this->font, '', 10);
         $this->SetFillColor(242, 242, 242);
-        $this->SetTextColor(0,0,0);
+        $this->SetTextColor(130,130,130);
         //$this->cMargin=10;
         //Print 2 Cells
         $tamanoLinea = 6;
@@ -740,8 +833,9 @@ class PDF extends FPDF
         $this->Cell(150,$tamanoLinea,'',$borde,1,'L',0);
         $this->SetFont($this->font, 'B', 10);
         $this->Cell(150,$tamanoLinea,$this->texto('Aviso'),$borde,1,'L',0);
-        $this->Cell(150,$tamanoLinea,'',$borde,1,'L',0);
+        //$this->Cell(150,$tamanoLinea,'',$borde,1,'L',0);
         $this->SetFont($this->font, '', 10);
+        $this->SetFont($this->font, 'I', 10);
         $this->Cell(150,$tamanoLinea,$this->texto('     El presente reporte incluye un resumen de las evidencias entregadas por cada'),$borde,1,'FJ',0);
         $this->Cell(150,$tamanoLinea,$this->texto('persona involucrada en la certificación utilizando el sistema SAHA, es importante que la'),$borde,1,'FJ',0);
         $this->Cell(150,$tamanoLinea,$this->texto('alta gerencia tenga disponible esta información a fin de que se promueva la activa'),$borde,1,'FJ',0);
@@ -752,8 +846,8 @@ class PDF extends FPDF
         
         $this->SetFont($this->font, 'B', 10);
         $this->Cell(150,$tamanoLinea,$this->texto('Aviso de privacidad'),$borde,1,'L',0);
-        $this->Cell(150,$tamanoLinea,'',$borde,1,'L',0);
-        $this->SetFont($this->font, '', 10);
+        $this->SetFont($this->font, 'I', 10);
+        //$this->Cell(150,$tamanoLinea,'',$borde,1,'L',0);
         $this->Cell(150,$tamanoLinea,$this->texto('     Las evidencias subidas a SAHA son protegidas por nuestro aviso de privacidad entendiendo'),$borde,1,'FJ',0);
         $this->Cell(150,$tamanoLinea,$this->texto('que las mismas son utilizadas exclusivamente para realizar una evaluación en el entorno'),$borde,1,'FJ',0);
         $this->Cell(150,$tamanoLinea,$this->texto('de la certificación. El cliente y sus trabajadores aceptan que el contenido del mismo es'),$borde,1,'FJ',0);
@@ -954,7 +1048,7 @@ class PDF extends FPDF
         $this->SetLeftMargin(20);
         $this->SetTextColor(0, 0, 0);
         $this->SetFont($this->font, '', 10);
-        $this->Cell(170, 6,$this->texto("Se	listan a continuación incidentes menores	observados durante	la visita de inspección."), $borde, 1, 'L',1);
+        $this->Cell(170, 6,$this->texto("Se	listan a continuación incidentes menores observados durante	la visita de inspección."), $borde, 1, 'L',1);
         
     }
     
@@ -964,9 +1058,9 @@ class PDF extends FPDF
     {
         $this->AddPage();
         $imagen = "../imagenes/logo_saha.png";
-        $anchoFoto = 200;
+        $anchoFoto = 100;
         $x = (210/2) - ($anchoFoto/2);
-        $y = 30;
+        $y = 45;
         $this->Image($imagen,$x,$y,$anchoFoto);
         
         //$mesAno = $this->getNombreMes($this->mes). " " . $this->ano;
@@ -987,7 +1081,20 @@ class PDF extends FPDF
         $borde = 0;
         $w1 = 50;
         $w2 = 100; 
-        //Numero de registro
+        
+        $tipoUsuario = "";
+        if($this->usuario->tipoUsuarioId == TipoUsuario::SUPERVISOR)
+         $tipoUsuario = "Supervisor";
+        else
+            $tipoUsuario = "Coordinador";
+        //Coordinador
+        $this->Ln();
+        $this->SetLeftMargin(30);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell($w1, 10,$this->texto($tipoUsuario), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($w2, 10, $this->texto($this->usuario->nombreCompleto), $borde, 0, 'L');
         //Empresa
         $this->Ln();
         $this->SetLeftMargin(30);
@@ -1013,6 +1120,9 @@ class PDF extends FPDF
         $this->Cell($w1, 10,$this->texto("Año"), $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
         $this->Cell($w2, 10, $this->texto($this->ano), $borde, 0, 'L');
+        
+        
+      
         
         $this->SetDrawColor(130,130,130);
         $y = 140;
@@ -1043,8 +1153,10 @@ class PDF extends FPDF
             if($total!=0)
                 $porcentajeCumplimiento = $cumplimiento * 100 / $total;
             
+            $porcentajeCumplimiento=    number_format($porcentajeCumplimiento, 1, '.', '');
+            
             $this->SetY(200);
-            $this->SetFont($this->font, 'B', 13);
+            $this->SetFont($this->font, 'B', 15);
             $this->Cell(0, 10, $this->texto("$porcentajeCumplimiento% de cumplimiento en el mes"), $borde, 0, 'C');
         }
         
@@ -1108,8 +1220,8 @@ try
     if($conexion)
     {
         $usuarioId = REQUEST('usuarioId');
-        $mes = REQUEST('mes');
-        $ano = REQUEST('ano');
+        $mes =(int) REQUEST('mes');
+        $ano =(int) REQUEST('ano');
          $pdf = new PDF();
          $pdf->AliasNbPages();
          $pdf->generar($conexion,$usuarioId,$mes,$ano);

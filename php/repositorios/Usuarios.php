@@ -103,17 +103,27 @@ try
                 $resultado = $repositorio->consultarSupervisoresPorEmpresa($empresaId,$usuarioId);              
             break;
             case 'consultarPorEmpresaSede':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $opcional = REQUEST('opcional');
                 $empresaId = REQUEST('empresaId');
                 $sedeId = REQUEST('sedeId');
-                $resultado = $repositorio->consultarPorEmpresaSede($empresaId,$sedeId);
+                $resultado = $repositorio->consultarPorEmpresaSede($usuario,$empresaId,$sedeId,$opcional);
             break;
             case 'consultarPorLlaves':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->consultarPorLlaves($llaves);
             break;
             case 'consultar':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $opcional = REQUEST('opcional');
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultar($criteriosSeleccion);               
+                $resultado = $repositorio->consultar($usuario,$criteriosSeleccion,$opcional);               
             break;
             case 'consultarAdministradores':
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));

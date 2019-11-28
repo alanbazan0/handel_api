@@ -526,26 +526,30 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     {
                         while($sentencia->fetch())
                         {
-                            $total = $enviadas + $justificadas + $pendientes;
-                            $cumplidas = $enviadas + $justificadas;
-                            $porcentajeCumplimiento = 0;
-                            if($total!=0)
-                                $porcentajeCumplimiento = $cumplidas * 100 / $total;
+//                             $total = $enviadas + $justificadas + $pendientes;
+//                             $cumplidas = $enviadas + $justificadas;
+//                             $porcentajeCumplimiento = 0;
+                           
                             $registro= (object) [
                                 'id' =>  $id,
                                 'nombre' =>  $nombre,
                                 'justificadas' =>  $justificadas,
                                 'enviadas' =>  $enviadas,
-                                'pendientes' =>  $pendientes,
-                                'cumplidas' => $cumplidas,
-                                '$porcentajeCumplimiento' => $porcentajeCumplimiento
+                                'pendientes' =>  $pendientes
                             ];
                             
                             $total = $registro->justificadas + $registro->enviadas + $registro->pendientes;
-                            $cumplimieto = $registro->justificadas + $registro->enviadas;
+                            
+                            //$cumplimieto = $registro->justificadas + $registro->enviadas;
                             
                             $registro->cumplidas =$registro->justificadas + $registro->enviadas;
-                            $registro->porcentajeCumplimiento = $cumplimieto * 100 / $total;
+                            $registro->porcentajeCumplimiento  = 0;
+                            if($total!=0)
+                            {
+                                
+                                $registro->porcentajeCumplimiento = $registro->cumplidas  * 100 / $total;
+                                $registro->porcentajeCumplimiento = number_format($registro->porcentajeCumplimiento, 1, '.', '');
+                            }
                             
                             
                             array_push($registros,$registro);
@@ -724,7 +728,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         $consulta .= $this->where($filtros);
         
         $consulta.=" GROUP BY ano, mes
-                    ORDER BY ano, mes";
+                    ORDER BY ano desc, mes desc";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {

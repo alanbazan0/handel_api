@@ -122,7 +122,7 @@ function toColumnChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$co
     {
         $row = $rows[$i];
         $category = $row->$xField;
-        $value = $row->$yField;
+        $value = (float)$row->$yField;
         
         $color = $colors[$c];
         
@@ -179,6 +179,144 @@ function toColumnChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$co
         'yAxis' => $yAxis,
         'series' => array(
             (object) ['name' => $serieTitle, 'data' => $data,  'showInLegend' => $showInLegend]
+        )
+    ];
+    
+    $data= (object) [
+        'async' =>  true,
+        'type' => 'image/jpeg',
+        'width' => 1080,
+        'options' => $highchart
+    ];
+    
+    $options = array(
+        'http' => array(
+            'method'  => 'POST',
+            'content' => json_encode( $data ),
+            'header'=>  "Content-Type: application/json\r\n" .
+            "Accept: application/json\r\n"
+        )
+    );
+    
+    $url = 'http://export.highcharts.com/';
+    
+    $context  = stream_context_create( $options );
+    
+    
+    
+    $result = file_get_contents( $url, false, $context );
+    
+    $charturl='';
+    if ($result === FALSE)
+    {
+        
+    }
+    else
+    {
+        $charturl = $url . $result;
+        
+    }
+    return $charturl;
+    
+    //  return 'ok';
+    
+}
+
+function toLineChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colors, $showInLegend,$max)
+{
+    $categories = array();
+    $data = array();
+    
+    $data = array();
+    
+    $data1 = array();
+    $data2 = array();
+    $data3 = array();
+
+    for ($i = 0; $i < count($rows); $i++)
+    {
+        $row = $rows[$i];
+        
+        $newRow= (object) [
+            'name' =>  $row->$xField,
+            'y' => (float)$row->$yField,
+            'color' => "#00a1ff" 
+            
+        ];
+        
+        $newRow1= (object) [
+            'name' =>  $row->$xField,
+            'y' => 85,
+            'color' => "#60d836"
+        ];
+        
+        $newRow2= (object) [
+            'name' =>  $row->$xField,
+            'y' => 70,
+            'color' => "#f9c320"
+            
+        ];
+        
+        $newRow3= (object) [
+            'name' =>  $row->$xField,
+            'y' => 50,
+            'color' => "#fe2500"
+            
+            
+        ];
+        
+        array_push($categories, $row->$xField);
+        array_push($data, $newRow);
+        array_push($data1, $newRow1);
+        array_push($data2, $newRow2);
+        array_push($data3, $newRow3);
+    }
+    
+    $yAxis = (object) [ 'title' => (object) [ 'text'=> $yTitle]];
+    if($max>0)
+    {
+        $yAxis->min= 0;
+        $yAxis->max= $max;
+        $yAxis->tickInterval= 10;
+    }
+    
+    
+    
+    
+    $highchart = (object)
+    [
+        'chart' => (object) [ 'type' => "line"],
+        'title' => (object) [ 'text'=> $title],
+        'credits' => (object) ['enabled' => false],
+        'xAxis' => (object) [ 'categories' => $categories],
+//         'plotOptions' => (object)
+//         [
+//             'line'=> (object)[
+//                 'dataLabels'=>(object)
+//                 [
+//                     'enabled'=>false,
+//                     'style'=> (object)
+//                     [
+//                         'fontSize' => 10,
+//                         'textOutline' => '0px'
+//                     ]
+//                 ]
+//             ]
+//         ],
+        'yAxis' => $yAxis,
+        'series' => array(
+            (object) ['name' => $serieTitle, 'data' => $data,  'showInLegend' => $showInLegend,  'dataLabels'=>(object)
+                [
+                    'enabled'=>true,
+                    'style'=> (object)
+                    [
+                        'fontSize' => 10,
+                        'textOutline' => '0px'
+                    ]
+                ]],
+            (object) ['name' => "Riesgo bajo", 'data' => $data1,  'showInLegend' => $showInLegend, "color"=>"#60d836"],
+            (object) ['name' => "Riesgo medio", 'data' => $data2,  'showInLegend' => $showInLegend, "color"=>"#f9c320"],
+            (object) ['name' => "Riesgo alto", 'data' => $data3,  'showInLegend' => $showInLegend, "color"=>"#fe2500"]
         )
     ];
     

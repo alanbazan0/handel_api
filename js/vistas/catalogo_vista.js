@@ -356,7 +356,7 @@ class CatalogoVista extends Vista
 			if(campoNombre!=undefined)
 				nombre = p[campoNombre];
 			
-		    $(select).append($('<option></option>').val(p.id).html(nombre));
+			 $(select).append($("<option id='option"+p.id+"'></option>").val(p.id).html(nombre).data("data",p));
 		});
 		if(modo==Modo.CAMBIO && modeloEdicion!=null)
 		{

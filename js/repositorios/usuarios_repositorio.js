@@ -107,13 +107,13 @@ class UsuariosRepositorio extends Repositorio
        });
 	}
 	
-	consultarPorEmpresaSede(contexto,funcion, empresaId, sedeId)
+	consultarPorEmpresaSede(contexto,funcion, empresaId, sedeId, opcional)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
            url: url,
            type: 'POST',
-           data: {accion : "consultarPorEmpresaSede", empresaId : empresaId, sedeId : sedeId },
+           data: {accion : "consultarPorEmpresaSede", empresaId : empresaId, sedeId : sedeId, opcional:opcional},
            success: function( data, textStatus, jQxhr )
            {
                funcion.call(contexto,data);
