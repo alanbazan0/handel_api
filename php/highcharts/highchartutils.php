@@ -124,7 +124,13 @@ function toColumnChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$co
         $category = $row->$xField;
         $value = (float)$row->$yField;
         
-        $color = $colors[$c];
+        if($value>=0 && $value<51)
+            $color="#dd4b39";
+        else if($value>=51 &&   $value <100)
+            $color="#f39c12";
+        else iF($value>=100)
+            $color="#00a65a";
+        
         
         
         $newRow= (object) [
@@ -171,7 +177,7 @@ function toColumnChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$co
                         'style'=> (object)
                         [
                             'fontSize' => 10,
-                            'textOutline' => '0px'
+                            'textOutline' => '1px'
                         ]
                     ]
             ] 
@@ -247,20 +253,20 @@ function toLineChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colo
         $newRow1= (object) [
             'name' =>  $row->$xField,
             'y' => 85,
-            'color' => "#60d836"
+            'color' => "#00a65a"
         ];
         
         $newRow2= (object) [
             'name' =>  $row->$xField,
             'y' => 70,
-            'color' => "#f9c320"
+            'color' => "#f39c12"
             
         ];
         
         $newRow3= (object) [
             'name' =>  $row->$xField,
             'y' => 50,
-            'color' => "#fe2500"
+            'color' => "#dd4b39"
             
             
         ];

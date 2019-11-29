@@ -443,7 +443,7 @@ class PDF extends FPDF
         if($resultado->correcto())
         {
             $porcentajes = $resultado->valor;
-            $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
+            $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
             $image = toPieChart("Cumplimiento global del área <br>($nombreMes)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
             if($image!='')
                 $this->Image($image,0 ,40, $chartWidth);
@@ -453,7 +453,7 @@ class PDF extends FPDF
         if($resultado->correcto())
         {
             $porcentajes = $resultado->valor;
-            $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
+            $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
             $image = toPieChart("Cumplimiento global del área <br>($nombreMesAnterior)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
             if($image!='')
                 $this->Image($image, 95 ,40,$chartWidth);
@@ -472,8 +472,10 @@ class PDF extends FPDF
         
         $this->AddPage();
         
+        $fecha = new DateTime();
+        $mesActual = (int)$fecha->format("m");
         $meses = array();
-        for($i = 1; $i < 13; $i++)
+        for($i = 1; $i <= $mesActual; $i++)
         {
             $mes = (object) [];
             $mes->mes = $i;
@@ -546,7 +548,7 @@ class PDF extends FPDF
         if($resultado->correcto())
         {
             $porcentajes = $resultado->valor;
-            $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
+            $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
             $image = toPieChart("Cumplimiento global del área <br>($nombreMes)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
             if($image!='')
                 $this->Image($image,0 ,40, $chartWidth);
@@ -556,7 +558,7 @@ class PDF extends FPDF
         if($resultado->correcto())
         {
             $porcentajes = $resultado->valor;
-            $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
+            $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
             $image = toPieChart("Cumplimiento global del área <br>($nombreMesAnterior)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
             if($image!='')
                 $this->Image($image, 95 ,40,$chartWidth);
@@ -584,9 +586,10 @@ class PDF extends FPDF
         }
         
         $this->AddPage();
-        
+        $fecha = new DateTime();
+        $mesActual = (int)$fecha->format("m");
         $meses = array();
-        for($i = 1; $i < 13; $i++)
+        for($i = 1; $i <= $mesActual; $i++)
         {
             $mes = (object) [];
             $mes->mes = $i;
