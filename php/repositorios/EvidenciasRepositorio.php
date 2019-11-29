@@ -574,9 +574,6 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
     {
         $resultado = new Resultado();
         $registros = array();
-        
-//         $filtros = $this->getFiltrosUsuario($usuario, $criteriosSeleccion,false);
-//        
 
         $filtros = array();
         switch ($usuario->tipoUsuarioId)
@@ -593,6 +590,23 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         }
         $and = $this->and($filtros);
         
+        
+        
+        $filtroAno1 = "";
+        $filtroMes1 = "";
+        $filtroAno2 = "";
+        $filtroMes2 = "";
+        if(isset($criteriosSeleccion->ano))
+        {
+            $filtroAno1 = "AND YEAR(E1.fecha_alta) = $criteriosSeleccion->ano";
+            $filtroAno2 = "AND YEAR(E2.fecha_alta) = $criteriosSeleccion->ano";
+        }
+        if(isset($criteriosSeleccion->mes))
+        {
+            $filtroMes1 = "AND MONTH(E1.fecha_alta) = $criteriosSeleccion->mes";
+            $filtroMes2 = "AND MONTH(E2.fecha_alta) = $criteriosSeleccion->mes";
+        }
+        
         $consulta = "SELECT U.id,U.nombre, U.apellido,U.tipo_usuario_id, U.empresa_id, U.sede_id, U.area_id,
                     (
                     	SELECT count(*) numero
@@ -602,7 +616,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     		INNER JOIN sedes S1 ON S1.id = U1.sede_id
                     		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
                     		INNER JOIN areas A1 ON A1.id = U1.area_id
-                    	WHERE MONTH(E1.fecha_alta) = $criteriosSeleccion->mes  AND YEAR(E1.fecha_alta) = $criteriosSeleccion->ano AND justificacion_id IS NOT NULL AND EM1.id = EM.id AND A1.id = A.id AND U1.id = U.id
+                    	WHERE justificacion_id IS NOT NULL AND EM1.id = EM.id AND A1.id = A.id AND U1.id = U.id $filtroAno1 $filtroMes1
                     ) justificadas,
                     (
                     	SELECT count(*) numero
@@ -612,7 +626,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     		INNER JOIN sedes S1 ON S1.id = U1.sede_id
                     		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
                     		INNER JOIN areas A1 ON A1.id = U1.area_id
-                    	WHERE MONTH(E1.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E1.fecha_alta) = $criteriosSeleccion->ano AND justificacion_id IS NULL AND EM1.id = EM.id AND A1.id = A.id AND U1.id = U.id
+                    	WHERE justificacion_id IS NULL AND EM1.id = EM.id AND A1.id = A.id AND U1.id = U.id $filtroAno1 $filtroMes1
                     ) enviadas,
                     (
                     	SELECT count(*)
@@ -631,7 +645,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     					INNER JOIN sedes S2 ON S2.id = U2.sede_id
                     					INNER JOIN empresas EM2 ON EM2.id = S2.empresa_id
                     					INNER JOIN areas A2 ON A2.id = U2.area_id
-                    				WHERE MONTH(E2.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E2.fecha_alta) = $criteriosSeleccion->ano AND EM2.id = EM1.id AND A2.id = A1.id AND U1.id = U.id
+                    				WHERE EM2.id = EM1.id AND A2.id = A1.id AND U1.id = U.id $filtroAno2 $filtroMes2
                     				)
                     
                     )pendientes
@@ -657,11 +671,6 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     {
                         while($sentencia->fetch())
                         {
-                            $total = $enviadas + $justificadas + $pendientes;
-                            $cumplidas = $enviadas + $justificadas;
-                            $porcentajeCumplimiento = 0;
-                            if($total!=0)
-                                $porcentajeCumplimiento = $cumplidas * 100 / $total;
                             
                             $registro= (object) [
                                 'id' =>  $id,
@@ -673,17 +682,18 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                                 'areaId' =>  $areaId,
                                 'justificadas' =>  $justificadas,
                                 'enviadas' =>  $enviadas,
-                                'pendientes' =>  $pendientes,
-                                "cumplidas" => $cumplidas,
-                                'porcentajeCumplimiento' => $porcentajeCumplimiento
+                                'pendientes' =>  $pendientes
                             ];
                             
                             $total = $registro->justificadas + $registro->enviadas + $registro->pendientes;
-                            $cumplimieto = $registro->justificadas + $registro->enviadas;
-                            
                             $registro->cumplidas =$registro->justificadas + $registro->enviadas;
-                            $registro->porcentajeCumplimiento = $cumplimieto * 100 / $total;
-                            
+                            $registro->porcentajeCumplimiento  = 0;
+                            if($total!=0)
+                            {
+                                
+                                $registro->porcentajeCumplimiento = $registro->cumplidas  * 100 / $total;
+                                $registro->porcentajeCumplimiento = number_format($registro->porcentajeCumplimiento, 1, '.', '');
+                            }
                             
                             $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
                             $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";

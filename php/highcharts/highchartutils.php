@@ -238,6 +238,9 @@ function toLineChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colo
     $data1 = array();
     $data2 = array();
     $data3 = array();
+    
+    $fecha = new DateTime();
+    $mesActual = (int)$fecha->format("m");
 
     for ($i = 0; $i < count($rows); $i++)
     {
@@ -272,7 +275,8 @@ function toLineChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colo
         ];
         
         array_push($categories, $row->$xField);
-        array_push($data, $newRow);
+        if($i<=$mesActual-1)
+            array_push($data, $newRow);
         array_push($data1, $newRow1);
         array_push($data2, $newRow2);
         array_push($data3, $newRow3);

@@ -472,10 +472,9 @@ class PDF extends FPDF
         
         $this->AddPage();
         
-        $fecha = new DateTime();
-        $mesActual = (int)$fecha->format("m");
+      
         $meses = array();
-        for($i = 1; $i <= $mesActual; $i++)
+        for($i = 1; $i <= 12; $i++)
         {
             $mes = (object) [];
             $mes->mes = $i;
@@ -485,6 +484,7 @@ class PDF extends FPDF
                 'mes' =>  $i,
                 'ano' =>  $this->ano,
             ];
+            
             
             $resultado = $repositorio->consultarPorcentajesEvidencias($this->usuario, $criteriosSeleccion);
             if($resultado->correcto())
@@ -503,6 +503,7 @@ class PDF extends FPDF
                     
                     
             }
+
             array_push($meses, $mes);
             
         }
@@ -512,6 +513,7 @@ class PDF extends FPDF
         $image = toLineChart("Nivel de riesgo anual <br>($this->ano)",'','Cumplimiento global',$meses,"nombreMes","porcentajeCumplimiento",$colores,true,100);
         if($image!='')
             $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
+      
         
       
     }
@@ -570,7 +572,7 @@ class PDF extends FPDF
         {
             $porcentajes = $resultado->valor;
             $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-            $image = toColumnChart("Porcentaje de cumplimiento <br>($nombreMes)",'','Usuarios',$porcentajes,"nombre","porcentajeCumplimiento",$colores,false,100);
+            $image = toColumnChart("Porcentaje de cumplimiento <br>($nombreMes)",'','Usuarios',$porcentajes,"nombreCompleto","porcentajeCumplimiento",$colores,false,100);
             if($image!='')
                 $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,120, $chartWidth);
         }
@@ -580,16 +582,67 @@ class PDF extends FPDF
         {
             $porcentajes = $resultado->valor;
             $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-            $image = toColumnChart("Porcentaje de cumplimiento  <br>($nombreMesAnterior)",'','Usuarios',$porcentajes,"nombre","porcentajeCumplimiento",$colores,false,100);
+            $image = toColumnChart("Porcentaje de cumplimiento  <br>($nombreMesAnterior)",'','Usuarios',$porcentajes,"nombreCompleto","porcentajeCumplimiento",$colores,false,100);
             if($image!='')
                 $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,200, $chartWidth);
         }
         
         $this->AddPage();
+        
+        $chartWidth= 170;
+        
         $fecha = new DateTime();
+        $fecha->setDate($this->ano,$this->mes,1);
         $mesActual = (int)$fecha->format("m");
-        $meses = array();
+        
+        $usuarios = array();
         for($i = 1; $i <= $mesActual; $i++)
+        {
+            $criteriosSeleccion= (object) [
+                'ano' =>  $this->ano,
+                'mes' =>  $i,
+            ];
+            $resultado = $repositorio->consultarPorcentajesUsuarios($this->usuario, $criteriosSeleccion);
+            if($resultado->correcto())
+            {
+                for ($j = 0; $j < count($resultado->valor); $j++) 
+                {
+                    $usuario = $this->getUsuario($resultado->valor[$j]->id,$usuarios);
+                    if($usuario==null)
+                    {
+                        $nuevoUsuario= (object) [
+                            'id' =>  $resultado->valor[$j]->id,
+                            'nombreCompleto' =>  $resultado->valor[$j]->nombreCompleto,
+                            'porcentajeCumplimiento' =>  $resultado->valor[$j]->porcentajeCumplimiento,
+                        ];
+                        array_push($usuarios, $nuevoUsuario);
+                    }
+                    else
+                    {
+                        $usuario->porcentajeCumplimiento += $resultado->valor[$j]->porcentajeCumplimiento;
+                    }
+                }
+               
+            }
+        }
+        for($i = 0; $i < count($usuarios); $i++)
+        {
+            $usuario =$usuarios[$i];
+            $usuario->porcentajeCumplimiento = $usuario->porcentajeCumplimiento/$mesActual;
+            $usuario->porcentajeCumplimiento =  number_format( $usuario->porcentajeCumplimiento, 1, '.', '');
+        }
+        
+        
+        $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
+        $image = toColumnChart("Porcentaje de cumplimiento en el año <br>($this->ano)",'','Usuarios',$usuarios,"nombreCompleto","porcentajeCumplimiento",$colores,false,100);
+        if($image!='')
+            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
+    
+        
+        $fecha = new DateTime();
+      
+        $meses = array();
+        for($i = 1; $i <= 12; $i++)
         {
             $mes = (object) [];
             $mes->mes = $i;
@@ -621,12 +674,27 @@ class PDF extends FPDF
             
         }
         $pdfWidth = $this->GetPageWidth();
-        $chartWidth= 170;
+        
         $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
         $image = toLineChart("Nivel de riesgo anual <br>($this->ano)",'','Cumplimiento global',$meses,"nombreMes","porcentajeCumplimiento",$colores,true,100);
         if($image!='')
-            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
+            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,140, $chartWidth);
         
+            
+      
+        
+    }
+    
+    private function getUsuario($usuarioId,$usuarios)
+    {
+        for($i = 0; $i < count($usuarios); $i++)
+        {
+            $usuario =$usuarios[$i];
+            if($usuario->id == $usuarioId)
+                return $usuario;
+            
+        }
+        return null;
     }
     
     public function guardar()
