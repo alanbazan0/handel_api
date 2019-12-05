@@ -225,7 +225,7 @@ class ReportesEvidenciasVista extends CatalogoVista
 	
 	set usuariosCriterio(registros)
 	{		
-		this.cargarOpciones('#usuarioSelectCriterio', registros,"", null, "id", null, "nombreCompleto");
+		this.cargarOpciones('#usuarioSelectCriterio', registros,"", null, "id", null, "nombreCompleto",true);
 		if(this.consultoGrid==false)
 		{
 			this.consultar();
@@ -247,7 +247,7 @@ class ReportesEvidenciasVista extends CatalogoVista
 			var usuarioSeleccionado =$("#usuarioSelectCriterio").val();
 			if(usuarioSeleccionado!="")
 			{
-				var opcionId = "option" + usuarioSeleccionado;
+				var opcionId = "usuarioSelectCriteriooption" + usuarioSeleccionado;
 				var usuario = $("#usuarioSelectCriterio option[id='"+opcionId+"']").data("data");
 				if(usuario!=null)
 				{

@@ -112,6 +112,14 @@ try
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 $resultado = $repositorio->consultarPorcentajesEmpresas($usuario,$criteriosSeleccion);
             break;
+            case 'consultarPorcentajesSedes':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarPorcentajesSedes($usuario,$criteriosSeleccion);
+            break;
             case 'consultarPorcentajesAdministradores':
                 session_start();
                 $usuario = null;

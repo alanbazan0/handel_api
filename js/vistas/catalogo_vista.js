@@ -340,7 +340,7 @@ class CatalogoVista extends Vista
 
 	}
 	
-	cargarOpciones(select, registros, modo, modeloEdicion, campo, texto, campoNombre)
+	cargarOpciones(select, registros, modo, modeloEdicion, campo, texto, campoNombre,asignarData)
 	{
 		$(select).empty();
 		if(texto!=null)
@@ -350,13 +350,21 @@ class CatalogoVista extends Vista
 			else 
 				$(select).append($('<option></option>').val("").html(texto));
 		}
+		
+		var id = select.replace("#","");
 		$.each(registros, function(i, p) 
 		{
 			var nombre = p.nombre;
 			if(campoNombre!=undefined)
 				nombre = p[campoNombre];
 			
-			 $(select).append($("<option id='option"+p.id+"'></option>").val(p.id).html(nombre).data("data",p));
+		
+			
+			 $(select).append($("<option id='"+id+"option"+p.id+"'></option>").val(p.id).html(nombre));
+			 
+			 if(asignarData)
+				 $("#"+id+"option"+p.id).data("data",p);
+			 
 		});
 		if(modo==Modo.CAMBIO && modeloEdicion!=null)
 		{

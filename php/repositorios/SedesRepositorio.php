@@ -227,7 +227,7 @@ class SedesRepositorio extends RepositorioBase implements ISedesRepositorio
 //         $consulta = $this->consultaBase .
 //                   " WHERE S.empresa_id  = ?";
         $consulta = $this->consultaBase .
-                    $where;
+                    $where. " ORDER BY S.nombre";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {

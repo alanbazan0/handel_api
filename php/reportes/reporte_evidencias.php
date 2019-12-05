@@ -590,6 +590,7 @@ class PDF extends FPDF
         $this->AddPage();
         
         $chartWidth= 170;
+        $pdfWidth = $this->GetPageWidth();
         
         $fecha = new DateTime();
         $fecha->setDate($this->ano,$this->mes,1);
@@ -636,7 +637,7 @@ class PDF extends FPDF
         $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
         $image = toColumnChart("Porcentaje de cumplimiento en el año <br>($this->ano)",'','Usuarios',$usuarios,"nombreCompleto","porcentajeCumplimiento",$colores,false,100);
         if($image!='')
-            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
+            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,30, $chartWidth);
     
         
         $fecha = new DateTime();
@@ -673,7 +674,7 @@ class PDF extends FPDF
             array_push($meses, $mes);
             
         }
-        $pdfWidth = $this->GetPageWidth();
+       
         
         $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
         $image = toLineChart("Nivel de riesgo anual <br>($this->ano)",'','Cumplimiento global',$meses,"nombreMes","porcentajeCumplimiento",$colores,true,100);
