@@ -1,9 +1,9 @@
-class GraficaEvidenciasSedeVista extends CatalogoVista
+class GraficaEvidenciasUsuarioVista extends CatalogoVista
 {		
 	constructor()
 	{	
 		super();
-		this.presentador = new GraficaEvidenciasSedePresentador(this);
+		this.presentador = new GraficaEvidenciasUsuarioPresentador(this);
 	}
 	
 	inicializar()
@@ -58,6 +58,11 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 		this.consultarSedesCriterio();
 	}
 
+	cambiarSedeCriterio()
+	{
+		this.consultarAreasCriterio();
+	}
+
 	
 	consultarEmpresasCriterio()
 	{
@@ -71,9 +76,20 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 		this.presentador.consultarSedesCriterio();
 	}
 	
+	consultarAreasCriterio()
+	{
+		this.cargandoOpciones("#areaSelectCriterio");
+		this.presentador.consultarAreasCriterio();
+	}
+	
 	set sedesCriterio(registros)
 	{		
 		this.cargarOpciones('#sedeSelectCriterio', registros);
+	}
+	
+	set areasCriterio(registros)
+	{		
+		this.cargarOpciones('#areaSelectCriterio', registros);
 		if(this.consultoGrid==false)
 		{
 			this.consultar();
@@ -94,13 +110,14 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 		{
 			empresaId:  $('#empresaSelectCriterio').val(),
 			sedeId:  $('#sedeSelectCriterio').val(),
+			areaId:  $('#areaSelectCriterio').val(),
 			mes:  $('#mesSelectCriterio').val(),
 			ano: $('#anoSelectCriterio').val()
 		};
 		return criteriosSeleccion;
 	}
 
-	set porcentajesEmpresas(porcentajesAreas)
+	set porcentajesUsuarios(porcentajesAreas)
 	{
 		am4core.ready(function() {
 
@@ -116,7 +133,7 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 
 			// Create axes
 			var categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
-			categoryAxis.dataFields.category = "nombreId";
+			categoryAxis.dataFields.category = "nombreCompleto";
 			categoryAxis.renderer.grid.template.location = 0;
 			categoryAxis.renderer.minGridDistance = 30;
 			categoryAxis.renderer.labels.template.horizontalCenter = "middle";
@@ -124,16 +141,14 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 			categoryAxis.renderer.labels.template.rotation = 315;
 			categoryAxis.tooltip.disabled = true;
 			categoryAxis.renderer.minHeight = 110;
-			categoryAxis.renderer.labels.template.adapter.add("textOutput", function(text) {
-				  return text.replace(/ \(.*/, "");
-				});
-			
+//			categoryAxis.renderer.labels.template.adapter.add("textOutput", function(text) {
+//				  return text.replace(/ \(.*/, "");
+//				});
 			
 			let label = categoryAxis.renderer.labels.template;
 			label.wrap = true;
-			label.maxWidth = 120;
-			
-			
+
+		
 			
 
 			var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
@@ -145,8 +160,8 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 			var series = chart.series.push(new am4charts.ColumnSeries());
 			series.sequencedInterpolation = true;
 			series.dataFields.valueY = "porcentajeCumplimiento";
-			series.dataFields.categoryX = "nombreId";
-			series.tooltipText = "[{categoryX}: bold]{valueY}%[/]";
+			series.dataFields.categoryX = "nombreCompleto";
+			series.tooltipText = "{nombre} : {valueY}% ({cumplidas}/{total})";
 			series.columns.template.strokeWidth = 0;
 
 			series.tooltip.pointerOrientation = "vertical";
@@ -186,7 +201,9 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 				{
 					try
 					{
-						//categoryAxis.zoomToIndexes(0, 6);
+						var zoom = 6;
+						//if(_this.porcentajesAreas.lengh>=zoom)
+						//categoryAxis.zoomToIndexes(0, zoom);
 					}
 					catch(e)
 					{
@@ -205,7 +222,7 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 	
 }
 
-var vista = new GraficaEvidenciasSedeVista(this);	
+var vista = new GraficaEvidenciasUsuarioVista(this);	
 $(document).ready(function() 
 {
 	vista.inicializar();

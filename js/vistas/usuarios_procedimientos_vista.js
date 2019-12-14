@@ -28,6 +28,7 @@ class UsuariosProcedimientosVista extends CatalogoVista
 	crearColumnasGrid()
 	{
 		this.tabla.columnas = [
+			{longitud:200, 	titulo:"Id",   alias:"id", alineacion:"I", class: "desc" }, 
 			{longitud:200, 	titulo:"Usuario",   alias:"usuarioNombre", alineacion:"I", class: "desc" }, 
 			{longitud:200, 	titulo:"Procedimiento",   alias:"nombre", alineacion:"I"}, 
 			{longitud:200, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I",  },		

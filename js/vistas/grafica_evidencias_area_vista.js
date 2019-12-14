@@ -1,9 +1,9 @@
-class GraficaEvidenciasSedeVista extends CatalogoVista
+class GraficaEvidenciasAreaVista extends CatalogoVista
 {		
 	constructor()
 	{	
 		super();
-		this.presentador = new GraficaEvidenciasSedePresentador(this);
+		this.presentador = new GraficaEvidenciasAreaPresentador(this);
 	}
 	
 	inicializar()
@@ -58,6 +58,11 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 		this.consultarSedesCriterio();
 	}
 
+	cambiarSedeCriterio()
+	{
+		this.consultarAreasCriterio();
+	}
+
 	
 	consultarEmpresasCriterio()
 	{
@@ -71,9 +76,20 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 		this.presentador.consultarSedesCriterio();
 	}
 	
+	consultarAreasCriterio()
+	{
+		this.cargandoOpciones("#areaSelectCriterio");
+		this.presentador.consultarAreasCriterio();
+	}
+	
 	set sedesCriterio(registros)
 	{		
 		this.cargarOpciones('#sedeSelectCriterio', registros);
+	}
+	
+	set areasCriterio(registros)
+	{		
+		this.cargarOpciones('#areaSelectCriterio', registros);
 		if(this.consultoGrid==false)
 		{
 			this.consultar();
@@ -94,6 +110,7 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 		{
 			empresaId:  $('#empresaSelectCriterio').val(),
 			sedeId:  $('#sedeSelectCriterio').val(),
+			areaId:  $('#areaSelectCriterio').val(),
 			mes:  $('#mesSelectCriterio').val(),
 			ano: $('#anoSelectCriterio').val()
 		};
@@ -128,12 +145,10 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 				  return text.replace(/ \(.*/, "");
 				});
 			
-			
 			let label = categoryAxis.renderer.labels.template;
 			label.wrap = true;
-			label.maxWidth = 120;
-			
-			
+
+		
 			
 
 			var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
@@ -146,7 +161,7 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 			series.sequencedInterpolation = true;
 			series.dataFields.valueY = "porcentajeCumplimiento";
 			series.dataFields.categoryX = "nombreId";
-			series.tooltipText = "[{categoryX}: bold]{valueY}%[/]";
+			series.tooltipText = "{nombre} : {valueY}% ({cumplidas}/{total})";
 			series.columns.template.strokeWidth = 0;
 
 			series.tooltip.pointerOrientation = "vertical";
@@ -186,7 +201,9 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 				{
 					try
 					{
-						//categoryAxis.zoomToIndexes(0, 6);
+						var zoom = 6;
+						//if(_this.porcentajesAreas.lengh>=zoom)
+						//categoryAxis.zoomToIndexes(0, zoom);
 					}
 					catch(e)
 					{
@@ -205,7 +222,7 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 	
 }
 
-var vista = new GraficaEvidenciasSedeVista(this);	
+var vista = new GraficaEvidenciasAreaVista(this);	
 $(document).ready(function() 
 {
 	vista.inicializar();

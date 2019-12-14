@@ -472,6 +472,20 @@ class PDF extends FPDF
         
         $this->AddPage();
         
+        
+        $pdfWidth = $this->GetPageWidth();
+        $chartWidth= 170;
+        $resultado = $repositorio->consultarPorcentajesUsuarios($this->usuario, $criteriosSeleccion);
+        if($resultado->correcto())
+        {
+            $porcentajes = $resultado->valor;
+            $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
+            $image = toColumnChart("Porcentaje de cumplimiento <br>($nombreMes)",'','Usuarios',$porcentajes,"nombreCompleto","porcentajeCumplimiento",$colores,false,100);
+            if($image!='')
+                $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,20, $chartWidth);
+        }
+        
+        
       
         $meses = array();
         for($i = 1; $i <= 12; $i++)
@@ -512,7 +526,7 @@ class PDF extends FPDF
         $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
         $image = toLineChart("Nivel de riesgo anual <br>($this->ano)",'','Cumplimiento global',$meses,"nombreMes","porcentajeCumplimiento",$colores,true,100);
         if($image!='')
-            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
+            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,130, $chartWidth);
       
         
       

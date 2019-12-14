@@ -117,9 +117,9 @@ class GraficaEvidenciasEmpresaVista extends CatalogoVista
 			categoryAxis.dataFields.category = "nombre";
 			categoryAxis.renderer.grid.template.location = 0;
 			categoryAxis.renderer.minGridDistance = 30;
-			categoryAxis.renderer.labels.template.horizontalCenter = "right";
+			categoryAxis.renderer.labels.template.horizontalCenter = "middle";
 			categoryAxis.renderer.labels.template.verticalCenter = "middle";
-			//categoryAxis.renderer.labels.template.rotation = 270;
+			categoryAxis.renderer.labels.template.rotation = 315;
 			categoryAxis.tooltip.disabled = true;
 			categoryAxis.renderer.minHeight = 110;
 			
@@ -132,6 +132,7 @@ class GraficaEvidenciasEmpresaVista extends CatalogoVista
 
 			var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
 			valueAxis.renderer.minWidth = 50;
+			valueAxis.min = 0;
 			valueAxis.max = 100;
 
 			// Create series
@@ -139,7 +140,7 @@ class GraficaEvidenciasEmpresaVista extends CatalogoVista
 			series.sequencedInterpolation = true;
 			series.dataFields.valueY = "porcentajeCumplimiento";
 			series.dataFields.categoryX = "nombre";
-			series.tooltipText = "[{categoryX}: bold]{valueY}%[/]";
+			series.tooltipText = "{nombre} : {valueY}% ({cumplidas}/{total})";
 			series.columns.template.strokeWidth = 0;
 
 			series.tooltip.pointerOrientation = "vertical";
@@ -179,7 +180,7 @@ class GraficaEvidenciasEmpresaVista extends CatalogoVista
 				{
 					try
 					{
-						categoryAxis.zoomToIndexes(0, 5);
+						//categoryAxis.zoomToIndexes(0, 5);
 					}
 					catch(e)
 					{
