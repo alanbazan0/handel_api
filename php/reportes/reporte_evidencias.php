@@ -524,7 +524,7 @@ class PDF extends FPDF
         $pdfWidth = $this->GetPageWidth();
         $chartWidth= 170;
         $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-        $image = toLineChart("Nivel de riesgo anual <br>($this->ano)",'','Cumplimiento global',$meses,"nombreMes","porcentajeCumplimiento",$colores,true,100);
+        $image = toLineChart("Nivel de riesgo anual <br>($this->ano)",'','Cumplimiento global',$meses,"nombreMes","porcentajeCumplimiento",$colores,true,100,$this->mes);
         if($image!='')
             $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,130, $chartWidth);
       
@@ -691,7 +691,7 @@ class PDF extends FPDF
        
         
         $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-        $image = toLineChart("Nivel de riesgo anual <br>($this->ano)",'','Cumplimiento global',$meses,"nombreMes","porcentajeCumplimiento",$colores,true,100);
+        $image = toLineChart("Nivel de riesgo anual <br>($this->ano)",'','Cumplimiento global',$meses,"nombreMes","porcentajeCumplimiento",$colores,true,100,$this->mes);
         if($image!='')
             $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,140, $chartWidth);
         

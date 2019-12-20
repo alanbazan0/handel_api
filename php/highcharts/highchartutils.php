@@ -173,11 +173,11 @@ function toColumnChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$co
                         'crop'=>false, 
                         'overflow' =>'none',
                         "inside"=> true,
-                        'color'=> 'white',
+                        'color'=> 'black',
                         'style'=> (object)
                         [
                             'fontSize' => 10,
-                            'textOutline' => '1px'
+                            'textOutline' => '0px'
                         ]
                     ]
             ] 
@@ -228,7 +228,7 @@ function toColumnChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$co
     
 }
 
-function toLineChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colors, $showInLegend,$max)
+function toLineChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colors, $showInLegend,$max,$mes)
 {
     $categories = array();
     $data = array();
@@ -275,7 +275,7 @@ function toLineChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colo
         ];
         
         array_push($categories, $row->$xField);
-        if($i<=$mesActual-1)
+        if($i<=$mes-1)
             array_push($data, $newRow);
         array_push($data1, $newRow1);
         array_push($data2, $newRow2);
@@ -402,10 +402,10 @@ function toPieChart( $title, $yTitle, $serieTitle, $rows, $xField, $yField, $col
                 'dataLabels'=>(object)
                 [
                     'distance'=> -50,
-                    'color'=> 'white',
+                    'color'=> 'black',
                     'style'=> (object)
                      [
-                         'fontSize' => 15,
+                         'fontSize' => 10,
                          'textOutline' => '0px'
                          
                      ], 

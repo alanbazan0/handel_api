@@ -146,7 +146,7 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 			series.sequencedInterpolation = true;
 			series.dataFields.valueY = "porcentajeCumplimiento";
 			series.dataFields.categoryX = "nombreId";
-			series.tooltipText = "[{categoryX}: bold]{valueY}%[/]";
+			series.tooltipText = "{nombre} : {valueY}% ({cumplidas}/{total})";
 			series.columns.template.strokeWidth = 0;
 
 			series.tooltip.pointerOrientation = "vertical";

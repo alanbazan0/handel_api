@@ -22,7 +22,7 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
                                 FROM usuarios_procedimientos UP
                                     LEFT JOIN usuarios U ON U.id = UP.usuario_id
                                     LEFT JOIN procedimientos P ON P.id = UP.procedimiento_id
-                                ";
+                                    INNER JOIN tipos_usuario TU ON TU.id = U.tipo_usuario_id ";
     }
 
     public function insertar(UsuarioProcedimiento $modelo)
@@ -201,16 +201,16 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
         $and = $this->and($filtros);
 
         
-//         $consulta = $this->consultaBase .
-//                         " WHERE UP.estatus = 1 AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5)
-//                     	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " " .
-//                     	"ORDER BY U.nombre, P.nombre";
 
-        //MES ACtual
+//         $consulta = $this->consultaBase .
+//                    " WHERE UP.estatus = 1 AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5) 
+//                     	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) ) " . $and . " " .
+//                     	"ORDER BY U.nombre, P.nombre";
+        
         $consulta = $this->consultaBase .
-                   " WHERE UP.estatus = 1 AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5) 
+        " WHERE UP.estatus = 1 
                     	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) ) " . $and . " " .
-                    	"ORDER BY U.nombre, P.nombre";
+                    	"ORDER BY  TU.orden,U.nombre, P.nombre";
         
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -251,10 +251,15 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
         $and = $this->and($filtros);
         
         
+//         $consulta = $this->consultaBase .
+//                         " WHERE UP.estatus = 1 AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5)
+//                     	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " " .
+//                     	"ORDER BY tipo_usuario_id DESC, U.nombre, P.nombre";
+        
         $consulta = $this->consultaBase .
-                        " WHERE UP.estatus = 1 AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5)
+        " WHERE UP.estatus = 1 
                     	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " " .
-                    	"ORDER BY tipo_usuario_id DESC, U.nombre, P.nombre";
+                    	"ORDER BY TU.orden, U.nombre, P.nombre";
         
         
         if($sentencia = $this->conexion->prepare($consulta))
