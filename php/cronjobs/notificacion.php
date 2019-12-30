@@ -31,7 +31,7 @@ header('Access-Control-Allow-Credentials: true');
     
 $debug = true;
 $imprimirMensaje = true;
-$numeroUsuarios = 1;
+$numeroUsuarios = 3;
 $tiempoEspera = 10;
 $administrador_conexion = new AdministradorConexion();
 $resultado = new Resultado();
@@ -47,19 +47,19 @@ try
         $supervisores = array();
         $coordinadores= array();
         
-        $resultado = $usuariosRepositorio->consultar((object) ['tipoUsuarioId' =>  TipoUsuario::USUARIO]);
+        $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::USUARIO, 'permisoSAHA' => 1],false);
         if($resultado->correcto())
             $asociados = $resultado->valor;
         else
             mensajeLog("error",$resultado->mensajeError);
         
-        $resultado = $usuariosRepositorio->consultar((object) ['tipoUsuarioId' =>  TipoUsuario::SUPERVISOR]);
+            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::SUPERVISOR, 'permisoSAHA' => 1],false);
         if($resultado->correcto())
             $supervisores = $resultado->valor;
         else
             mensajeLog("error",$resultado->mensajeError);
         
-        $resultado = $usuariosRepositorio->consultar((object) ['tipoUsuarioId' =>  TipoUsuario::COORDINADOR]);
+            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::COORDINADOR, 'permisoSAHA' => 1],false);
         if($resultado->correcto())
             $coordinadores = $resultado->valor;
         else

@@ -296,6 +296,11 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 if($criteriosSeleccion->usuarioId!="" && $criteriosSeleccion->usuarioId!=null)
                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'id','valor'=>$criteriosSeleccion->usuarioId]);
             }
+            if(isset($criteriosSeleccion->permisoSAHA))
+            {
+                if($criteriosSeleccion->permisoSAHA!="" && $criteriosSeleccion->permisoSAHA!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'permiso_saha','valor'=>$criteriosSeleccion->permisoSAHA]);
+            }
             $where = $this->where($filtros);
         }
         
