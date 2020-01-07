@@ -187,10 +187,44 @@ class CatalogoVista extends Vista
 		{
 			var html = "<small id='mensajesSmall' class='label pull-right bg-yellow'>"+numeroMensajesNoLeidos+"</small>";
 			$("#mensajesNotificacionSpan").html(html)
+			
+			$("#notificacionMensajesSpan").html(numeroMensajesNoLeidos)
+			
+			var html="";
+			if(numeroMensajesNoLeidos==1)
+			{
+				html+="<li class='header'>"+
+						"<a id='mensajesLink' href='#'>" +
+						"Tienes "+numeroMensajesNoLeidos+" mensaje "+
+						"</a>" +
+						"</li>";
+			}
+			else
+			{
+				html+="<li class='header'>Tienes "+numeroMensajesNoLeidos+" mensajes</li>";
+			}
+			
+			$("#notificacionMensajesUl").html(html);	
+			
+			$("#mensajesLink").click(this.mensajesClick);
+			
 		}
 		else
+		{
 			$("#mensajesNotificacionSpan").html("");
+			$("#notificacionMensajesSpan").html("")
+		}
 	}
+	
+	mensajesClick(event)
+	{
+		var _this = $("body").data("_this");
+		var url = "mensajes.php";
+		var submitForm = _this.getNewSubmitForm(url);
+	    submitForm.target= "_self";
+	    submitForm.submit();
+	}
+	
 	
 	crearColumnasGrid()
 	{
@@ -373,4 +407,60 @@ class CatalogoVista extends Vista
 		}
 	}
 
+	mostrarFormularioHTML(url,contexto,funcionConsultarPorLlaves, functionConsultarCombos,functionInicializarValidacionesHTML,id, formulario, guardarButton)
+	{
+		var modal = id;
+		if(modal==undefined)
+			modal = "modalAlta";
+		if(formulario==undefined)
+			formulario="formulario";
+		if(guardarButton==undefined)
+			guardarButton="guardarButton";
+		if($("#"+modal).length ==0)
+		{
+			this.renderizarFormularioHTML(url,contexto,funcionConsultarPorLlaves, functionConsultarCombos,functionInicializarValidacionesHTML,modal,formulario, guardarButton);
+		}
+		else
+		{
+			$("#"+modal).modal({backdrop: 'static', keyboard: false});
+			
+		}
+	}
+	
+	renderizarFormularioHTML(url,contexto,funcionConsultarPorLlaves, functionConsultarCombos,functionInicializarValidacionesHTML,modal,formulario,guardarButton)
+	{
+		//var url = this._urlFormulario;
+		this.mostrarIndicador();
+		var _this = this;
+		$.post(url,{}, function(html) 
+		{
+			_this.ocultarIndicador();
+			$("body").append(html);
+			$("#"+modal).on("hidden.bs.modal", function () {
+				$("#"+modal).remove();
+			});
+			
+			$("#"+modal).on("show.bs.modal", function () {
+				
+				if(_this.modo != Modo.ALTA)
+				{	
+					if(funcionConsultarPorLlaves!=null)
+						funcionConsultarPorLlaves.call(contexto);
+				}
+				if(functionConsultarCombos!=null)
+					functionConsultarCombos.call(contexto);
+			});
+		
+			
+			if(functionInicializarValidacionesHTML!=null)
+				functionInicializarValidacionesHTML.call(contexto);
+			
+			
+//			$("#"+guardarButton).click(function () {
+//				 $("#"+formulario).submit();
+//			});
+			
+			$("#"+modal).modal({backdrop: 'static', keyboard: false});
+		});
+	}
 }

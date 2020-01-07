@@ -58,6 +58,7 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
         
         $consulta = "UPDATE usuarios_procedimientos
                      SET 
+                        usuario_id = ?,
                         limitar_justificaciones =?,
                          limite_justificaciones = ?,
                         estatus = ?,
@@ -65,7 +66,7 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
                      WHERE id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param('iiii',$modelo->limitarJustificaciones,$modelo->limiteJustificaciones,$modelo->estatus,$modelo->id ))
+            if($sentencia->bind_param('iiiii',$modelo->usuarioId,$modelo->limitarJustificaciones,$modelo->limiteJustificaciones,$modelo->estatus,$modelo->id ))
             {
                 if($sentencia->execute())
                 {
@@ -197,20 +198,36 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
         $resultado = new Resultado();
         $registros = array();
         
+        $criteriosSeleccion= (object)
+        [
+            'mes' => date('m'),
+            'ano' =>  date('Y')
+        ];
+        
         $filtros  = $this->getFiltrosUsuario($usuario, $criteriosSeleccion);
         $and = $this->and($filtros);
-
-        
 
 //         $consulta = $this->consultaBase .
 //                    " WHERE UP.estatus = 1 AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5) 
 //                     	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) ) " . $and . " " .
 //                     	"ORDER BY U.nombre, P.nombre";
+
+        $primerDiaMes = "$criteriosSeleccion->ano-$criteriosSeleccion->mes-1";
+        $ultimoDiaMes = date("Y-m-t", strtotime($primerDiaMes));
+        
+//         $consulta = $this->consultaBase .
+//         " WHERE UP.estatus = 1 
+//                     	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) ) " . $and . " " .
+//                     	"ORDER BY  TU.orden,U.nombre, P.nombre";
+
+        
+        $primerDiaMes = "$criteriosSeleccion->ano-$criteriosSeleccion->mes-1";
+        $ultimoDiaMes = date("Y-m-t", strtotime($primerDiaMes));
         
         $consulta = $this->consultaBase .
-        " WHERE UP.estatus = 1 
-                    	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) ) " . $and . " " .
-                    	"ORDER BY  TU.orden,U.nombre, P.nombre";
+        " WHERE U.estatus = 1 AND ((UP.estatus = 1 AND UP.fecha_alta  <=  '$ultimoDiaMes') OR (UP.estatus = 0 AND MONTH(UP.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP.fecha_alta) <= $criteriosSeleccion->ano AND MONTH(UP.fecha_cancelacion) > $criteriosSeleccion->mes AND  YEAR(UP.fecha_cancelacion) >= $criteriosSeleccion->ano))
+                AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " " .
+                "ORDER BY TU.orden, U.nombre, P.nombre";
         
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -257,11 +274,20 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
 //                         " WHERE UP.estatus = 1 AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5)
 //                     	AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " " .
 //                     	"ORDER BY tipo_usuario_id DESC, U.nombre, P.nombre";
+
+        $primerDiaMes = "$criteriosSeleccion->ano-$criteriosSeleccion->mes-1";
+        $ultimoDiaMes = date("Y-m-t", strtotime($primerDiaMes));
         
         $consulta = $this->consultaBase .
-        " WHERE U.estatus = 1 AND ((UP.estatus = 1 AND MONTH(UP.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP.fecha_alta) <= $criteriosSeleccion->ano) OR (UP.estatus = 0 AND MONTH(UP.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP.fecha_alta) <= $criteriosSeleccion->ano AND MONTH(UP.fecha_cancelacion) > $criteriosSeleccion->mes AND  YEAR(UP.fecha_cancelacion) >= $criteriosSeleccion->ano))
-                AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " " .
-    	"ORDER BY TU.orden, U.nombre, P.nombre";
+        " WHERE U.estatus = 1 AND ((UP.estatus = 1 AND UP.fecha_alta  <=  '$ultimoDiaMes') OR (UP.estatus = 0 AND MONTH(UP.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP.fecha_alta) <= $criteriosSeleccion->ano AND MONTH(UP.fecha_cancelacion) > $criteriosSeleccion->mes AND  YEAR(UP.fecha_cancelacion) >= $criteriosSeleccion->ano))
+                AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " ";
+        
+        if($usuario->tipoUsuarioId==\TipoUsuario::ADMINISTRADOR)
+            $consulta.="ORDER BY TU.orden, U.nombre, P.nombre";
+        else
+            $consulta.="ORDER BY FIELD(U.id,$usuario->id) DESC,U.nombre, P.nombre";
+        
+        
         
         if($sentencia = $this->conexion->prepare($consulta))
         {

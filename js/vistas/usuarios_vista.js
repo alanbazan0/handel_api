@@ -33,7 +33,7 @@ class UsuariosVista extends CatalogoVista
 			{longitud:100, 	titulo:"Supervisor 2",   alias:"supervisor2Nombre", alineacion:"I" },	
 			{longitud:100, 	titulo:"Supervisor 3",   alias:"supervisor3Nombre", alineacion:"I" },	
 			{longitud:100, 	titulo:"Tipo de usuario",   alias:"tipoUsuarioNombre", alineacion:"I" },
-			{longitud:200, 	titulo:"Ultimo acceso",   alias:"ultimoAcceso", alineacion:"I" },			
+			{longitud:200, 	titulo:"Ultimo acceso",   alias:"ultimoAcceso", alineacion:"I",itemRenderer:this.renderUltimoAcceso },			
 			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
 			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
 			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus},
@@ -118,6 +118,21 @@ class UsuariosVista extends CatalogoVista
 				_this.reenviarCorreo();
 			}
 		});
+		$(tbody).on("click", "a.historial", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.mostrarHistorialAcceso();
+			}
+		});
 	}
 	
 //	get registroSeleccionado()
@@ -133,6 +148,45 @@ class UsuariosVista extends CatalogoVista
 	reenviarCorreo()
 	{
 		this.presentador.reenviarCorreo();
+	}
+	
+	mostrarHistorialAcceso()
+	{
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/historial_acceso.php",this, null, this.consultarCombosHistorial,null,"historialModal","","");
+
+	}
+	
+
+	consultarCombosHistorial()
+	{
+		this.crearTablaHistorial();
+	}
+	
+	crearTablaHistorial()
+	{
+		this._historialTabla = new Tabla("historialTabla");
+		this._historialTabla.buscar = false;
+		this._historialTabla.paginacion = false;
+		this._historialTabla.columnas = [
+			{longitud:50, 	titulo:"Fecha",   alias:"fecha", alineacion:"C"} ,
+			{longitud:300, 	titulo:"Aplicación",   alias:"aplicacionId", alineacion:"I" } ,
+			{longitud:300, 	titulo:"Versión",   alias:"aplicacionVersion", alineacion:"I" } ,
+			{longitud:300, 	titulo:"IP",   alias:"ip", alineacion:"I"},
+			{longitud:300, 	titulo:"Referer",   alias:"referer", alineacion:"I" } ,
+			{longitud:300, 	titulo:"User Agent",   alias:"userAgent", alineacion:"I" } 
+		
+		]
+		
+	
+		this._historialTabla.textoTablaVacia = "No hay historial de acceso";
+		this._historialTabla.registros = [];
+		
+		this.consultarHistorialAcceso();
+	}
+	
+	consultarHistorialAcceso()
+	{
+		this.presentador.consultarHistorialAcceso();
 	}
 	
 	inicializarValidacionesFormularioInspector()
@@ -186,6 +240,14 @@ class UsuariosVista extends CatalogoVista
 		var contenido = "";
 		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+fecha.getTime();
 		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
+	    return contenido;
+	}
+	
+	renderUltimoAcceso(renglon, type, set)
+	{    
+		var fecha = new Date();
+		var contenido = "";
+		contenido += "<center><a href='#' class='historial'>"+renglon.ultimoAcceso+"</a></center>";
 	    return contenido;
 	}
 	
@@ -589,6 +651,11 @@ class UsuariosVista extends CatalogoVista
 			this.consultar();
 			this.consultoGrid=true;
 		}
+	}
+	
+	set historialAcceso(historialAcceso)
+	{
+		this._historialTabla.registros = historialAcceso;
 	}
 	
 }

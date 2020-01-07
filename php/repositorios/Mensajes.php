@@ -50,7 +50,7 @@ try
                 {
                     $modelo->id = $resultado->valor;
                     $usuariosRepositorio = new UsuariosRepositorio($conexion);
-                    $resultado = $usuariosRepositorio->consultar($modelo);
+                    $resultado = $usuariosRepositorio->consultar($modelo,null,false);
                     if($resultado->correcto())
                     {
                         $administrador_correo = new AdministradorCorreo();

@@ -29,7 +29,7 @@ header('Access-Control-Allow-Origin: '.$origin);
 header('Content-Type: html; charset=UTF-8');
 header('Access-Control-Allow-Credentials: true');
     
-$debug = true;
+$debug = false;
 $imprimirMensaje = true;
 $numeroUsuarios = 3;
 $tiempoEspera = 10;

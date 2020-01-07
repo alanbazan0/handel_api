@@ -1,13 +1,14 @@
-class GraficaEvidenciasUsuarioVista extends CatalogoVista
+class HistorialAccesoVista extends CatalogoVista
 {		
 	constructor()
 	{	
 		super();
-		this.presentador = new GraficaEvidenciasUsuarioPresentador(this);
+		this.presentador = new HistorialAccesoPresentador(this);
 	}
 	
 	inicializar()
 	{
+		this.crearColumnasGrid();
 		$("body").data("_this",this);
 		//this.crearTablas();
 		
@@ -25,6 +26,38 @@ class GraficaEvidenciasUsuarioVista extends CatalogoVista
 		
 		
 		
+	}
+	
+	crearColumnasGrid()
+	{
+		this.tabla._columnas = [
+			//{longitud:200, 	titulo:"Nombre de usuario",   	alias:"nombreUsuario", alineacion:"I", classSpan:"block-email" }, 
+			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogo},
+			{longitud:200, 	titulo:"Nombre",   alias:"usuarioNombre", alineacion:"I",class: "desc" }, 
+			{longitud:200, 	titulo:"Apellido",   alias:"usuarioApellido", alineacion:"I",class: "desc" }, 
+			{longitud:50, 	titulo:"Fecha",   alias:"fecha", alineacion:"C"} ,
+			{longitud:300, 	titulo:"Aplicación",   alias:"aplicacionId", alineacion:"I" } ,
+			{longitud:300, 	titulo:"Versión",   alias:"aplicacionVersion", alineacion:"I" } ,
+			{longitud:300, 	titulo:"IP",   alias:"ip", alineacion:"I"},
+			{longitud:300, 	titulo:"Referer",   alias:"referer", alineacion:"I" } ,
+			{longitud:300, 	titulo:"User Agent",   alias:"userAgent", alineacion:"I" } 
+		
+		]
+		
+		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
+									"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+
+		this.tabla.registros = [];
+	}
+	
+
+	renderLogo(renglon, type, set)
+	{    
+		var fecha = new Date();
+		var contenido = "";
+		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+fecha.getTime();
+		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
+	    return contenido;
 	}
 	
 	consultarAnos()
@@ -222,7 +255,7 @@ class GraficaEvidenciasUsuarioVista extends CatalogoVista
 	
 }
 
-var vista = new GraficaEvidenciasUsuarioVista(this);	
+var vista = new HistorialAccesoVista(this);	
 $(document).ready(function() 
 {
 	vista.inicializar();

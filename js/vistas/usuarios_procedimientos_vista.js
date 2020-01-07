@@ -188,7 +188,7 @@ class UsuariosProcedimientosVista extends CatalogoVista
 		{
 			$('#empresaIdSelect').attr("disabled","disabled");
 			$('#sedeIdSelect').attr("disabled","disabled");
-			$('#usuarioIdSelect').attr("disabled","disabled");
+			//$('#usuarioIdSelect').attr("disabled","disabled");
 			$('#procedimientoIdSelect').attr("disabled","disabled");
 		}
 			

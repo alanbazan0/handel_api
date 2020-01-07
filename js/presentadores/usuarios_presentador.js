@@ -270,10 +270,24 @@ class UsuariosPresentador extends CatalogoPresentador
 			this.vista.sedesCriterio = resultado.valor;				
 		}
 		else
-			this.vista.mostrarMensaje("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 	 }
 	 
+	 consultarHistorialAcceso()	
+	 {
+		 var repositorio = new HistorialAccesoRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.historialAcceso = resultado.valor;				
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },{nombreUsuario:this.vista._registroSeleccionado.nombreUsuario});
+	 }
 	 
+	
 	
 	 
 }
