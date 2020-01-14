@@ -5,22 +5,35 @@ class EmpresasPresentador extends CatalogoPresentador
 		super(vista,new EmpresasRepositorio());
 	 }
 	 
-//	 consultar()
-//	 {
-//		 this.vista.mostrarIndicador();
-//		 var repositorio = new EmpresasRepositorio(this);		
-//		 repositorio.consultar(this,this.consultarResultado,this.vista.criteriosSeleccion);
-//	 }
-//	 
-//	 consultarResultado(resultado)
-//	 {
-//		this.vista.ocultarIndicador();	
-//		if(resultado.mensajeError=="")
-//			this.vista.datos = resultado.valor;
-//		else
-//			this.vista.mostrarMensaje("Error",resultado.mensajeError);
-//		
-//	 }
+	 consultarEstructura()
+	 {
+		 this.vista.mostrarIndicador();
+		 this._repositorio.consultarEstructura(this,function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.estructura = resultado.valor;
+			else
+				this.vista.mostrarMensaje("Error",resultado.mensajeError);
+		
+		 },this.vista.criteriosSeleccion);
+	 }
+	 
+	 consultarOrganigrama()
+	 {
+		 this.vista.mostrarIndicador();
+		 var repositorio = new UsuariosRepositorio();
+		 repositorio.consultarEstructura(this,function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.organigrama = resultado.valor;
+			else
+				this.vista.mostrarMensaje("Error",resultado.mensajeError);
+		
+		 },this.vista.llaves.id);
+	 }
+
 	 
 	 consultarEmpresas()	
 	 {

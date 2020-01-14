@@ -55,10 +55,14 @@ try
                 $resultado = actualizar($modelo,$conexion,$repositorio,$diaLimite);
             break;
             case 'validarEvidencia':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
                 $modelo = $mapper->map($json, new Evidencia());
-                $resultado = $repositorio->validarEvidencia($modelo);
+                $resultado = $repositorio->validarEvidencia($usuario,$modelo);
                 break;
             case 'consultar':
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));

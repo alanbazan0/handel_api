@@ -69,37 +69,59 @@ class EvidenciasRepositorio extends Repositorio
 		xhr.send( data );  
 	}
 	
-	validarEvidencia(contexto,funcionResultado, modelo)
-	{		
-		var data = new FormData();
-		data.append("accion", "validarEvidencia");
-		data.append("modelo", JSON.stringify(modelo));
-    	var url = HANDEL_API + "/" + this.servicio;
-        var xhr = new XMLHttpRequest();
-        xhr.open( 'POST', url, true );
-		xhr.onreadystatechange = function ( resultado ) 
-		{
-		    if (this.readyState == 4 && this.status == 200) 
-		    {
-		    	var datos = null;
-		    	try 
-		    	{
-		    		datos = JSON.parse(resultado.target.response);
-		    		funcionResultado.call(contexto,datos);
-				} 
-		    	catch (e) 
-				{
-		    		datos = new Object();
-		    		datos.mensajeError = resultado.target.response;
-		    		funcionResultado.call(contexto,datos);
-				}
-		    
-		    	
-		    }
-		};
-		xhr.send( data );  
-	}
+//	validarEvidencia(contexto,funcionResultado, modelo)
+//	{		
+//		var data = new FormData();
+//		data.append("accion", "validarEvidencia");
+//		data.append("modelo", JSON.stringify(modelo));
+//    	var url = HANDEL_API + "/" + this.servicio;
+//        var xhr = new XMLHttpRequest();
+//        xhr.open( 'POST', url, true );
+//		xhr.onreadystatechange = function ( resultado ) 
+//		{
+//		    if (this.readyState == 4 && this.status == 200) 
+//		    {
+//		    	var datos = null;
+//		    	try 
+//		    	{
+//		    		datos = JSON.parse(resultado.target.response);
+//		    		funcionResultado.call(contexto,datos);
+//				} 
+//		    	catch (e) 
+//				{
+//		    		datos = new Object();
+//		    		datos.mensajeError = resultado.target.response;
+//		    		funcionResultado.call(contexto,datos);
+//				}
+//		    
+//		    	
+//		    }
+//		};
+//		xhr.send( data );  
+//	}
 	
+	
+	validarEvidencia(contexto,funcion, modelo)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "validarEvidencia",modelo: JSON.stringify(modelo)},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : errorThrown+ "." +jqXhr.responseText});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : errorThrown+ "." +jqXhr.responseText});
+	       }
+	   });
+	}
 	
 	consultarComentariosEvidencia(contexto,funcion, evidenciaId)
 	{		

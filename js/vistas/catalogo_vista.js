@@ -404,6 +404,16 @@ class CatalogoVista extends Vista
 		{
 			var id = modeloEdicion[campo];
 			$(select).val(id);
+			var selected = $(select +" option[value='"+id+"']");
+			if(selected.length==0)
+			{	
+				if(texto=="")
+				{
+					$(select).prop('selectedIndex',0);
+				}
+					
+			}
+			
 		}
 	}
 

@@ -88,6 +88,10 @@ try
                 $opcional = REQUEST('opcional');
                 $resultado = $repositorio->consultar($criteriosSeleccion,$opcional,$usuario);      
             break;
+            case 'consultarEstructura':
+                $resultado = $repositorio->consultarEstructura(false);
+            break;
+           
             case 'eliminar':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);

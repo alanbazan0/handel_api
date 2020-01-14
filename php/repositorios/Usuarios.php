@@ -302,6 +302,10 @@ try
                 $areaId = REQUEST('areaId');
                 $opcional = REQUEST('opcional');
                 $resultado = $repositorio->consultarPorEmpresaSedeArea($empresaId,$sedeId,$areaId,$opcional,$usuario);
+            case 'consultarEstructura':
+                $empresaId = REQUEST('empresaId');
+                $resultado = $repositorio->consultarEstructura($empresaId);
+            break;
             break;
 //             case 'enviarNotificacion':
 //                 session_start();

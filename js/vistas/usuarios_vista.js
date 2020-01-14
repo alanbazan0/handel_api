@@ -21,13 +21,14 @@ class UsuariosVista extends CatalogoVista
 		this.tabla.columnas = [
 			
 			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
-			{longitud:200, 	titulo:"Nombre de usuario",   	alias:"nombreUsuario", alineacion:"I", classSpan:"block-email" }, 
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogo},
 			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I",class: "desc" }, 
 			{longitud:200, 	titulo:"Apellido",   alias:"apellido", alineacion:"I",class: "desc" }, 
+			{longitud:200, 	titulo:"Nombre de usuario",   	alias:"nombreUsuario", alineacion:"I", classSpan:"block-email" }, 
 			{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },	
 			{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" },	
 			{longitud:100, 	titulo:"Puesto",   alias:"puestoNombre", alineacion:"I" },	
+			{longitud:100, 	titulo:"Departamento",   alias:"departamentoNombre", alineacion:"I" },	
 			{longitud:100, 	titulo:"Area",   alias:"areaNombre", alineacion:"I" },	
 			{longitud:100, 	titulo:"Supervisor 1",   alias:"supervisor1Nombre", alineacion:"I" },	
 			{longitud:100, 	titulo:"Supervisor 2",   alias:"supervisor2Nombre", alineacion:"I" },	
@@ -77,7 +78,7 @@ class UsuariosVista extends CatalogoVista
                 "empresaSelect": {required: !0},
                 "sedeSelect": {required: !0},
                 "puestoSelect": {required: !0},
-                "areaSelect": {required: !0}
+                "departamentoSelect": {required: !0}
                
             },
             messages: {
@@ -89,7 +90,7 @@ class UsuariosVista extends CatalogoVista
                 "empresaSelect": "Por favor seleccione una empresa",
                 "sedeSelect": "Por favor seleccione una sede",
                 "puestoSelect": "Por favor seleccione un puesto",
-                "areaSelect": "Por favor seleccione un área"
+                "departamentoSelect": "Por favor seleccione un departamento"
                 	
                 
             },
@@ -291,9 +292,9 @@ class UsuariosVista extends CatalogoVista
 	
 	consultarCombos()
 	{
-		
 		this.consultarTiposUsuario();
 		this.consultarEmpresas();
+		this.consultarDepartamentos();
 	}
 	
 	editar(id)
@@ -337,6 +338,7 @@ class UsuariosVista extends CatalogoVista
 			 sedeId:$('#sedeSelect').val(),
 			 puestoId:$('#puestoSelect').val(),
 			 areaId:$('#areaSelect').val(),
+			 departamentoId:$('#departamentoSelect').val(),
 			 supervisor1Id:$('#supervisor1Select').val(),
 			 supervisor2Id:$('#supervisor2Select').val(),
 			 supervisor3Id:$('#supervisor3Select').val(),
@@ -426,6 +428,12 @@ class UsuariosVista extends CatalogoVista
 		this.cargandoOpciones("#empresaSelect");
 		this.presentador.consultarEmpresas();
 	}
+	
+	consultarDepartamentos()
+	{
+		this.cargandoOpciones("#departamentoSelect");
+		this.presentador.consultarDepartamentos();
+	}
 
 	consultarTiposUsuario()
 	{
@@ -443,6 +451,13 @@ class UsuariosVista extends CatalogoVista
 		this.cargarOpciones('#empresaSelect', registros, this.modo, this.modeloEdicion, 'empresaId',"");
 		if(this.modo==Modo.ALTA)
 			$("#empresaSelect").val($("#empresaSelectCriterio").val());
+	}
+	
+	set departamentos(registros)
+	{		
+		this.cargarOpciones('#departamentoSelect', registros, this.modo, this.modeloEdicion, 'departamentoId',"");
+//		if(this.modo==Modo.ALTA)
+//			$("#empresaSelect").val($("#empresaSelectCriterio").val());
 	}
 	
 	cambiarEmpresa()
@@ -629,6 +644,16 @@ class UsuariosVista extends CatalogoVista
 		{
 			var id = modeloEdicion[campo];
 			$(select).val(id);
+			var selected = $(select +" option[value='"+id+"']");
+			if(selected.length==0)
+			{	
+				if(texto=="")
+				{
+					$(select).prop('selectedIndex',0);
+				}
+					
+			}
+			
 		}
 	}
 	

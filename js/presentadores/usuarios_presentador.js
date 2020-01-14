@@ -5,29 +5,45 @@ class UsuariosPresentador extends CatalogoPresentador
 		 super(vista,new UsuariosRepositorio());
 	 }
 	 
-//	 consultar()
-//	 {
-//		 this.vista.mostrarIndicador();
-//		 var repositorio = new UsuariosRepositorio(this);		
-//		 repositorio.consultar(this,this.consultarResultado,this.vista.criteriosSeleccion);
-//	 }
-//	 
-//	 consultarResultado(resultado)
-//	 {
-//		this.vista.ocultarIndicador();	
-//		if(resultado.mensajeError=="")
-//			this.vista.datos = resultado.valor;
-//		else
-//			this.vista.mostrarMensaje("Error",resultado.mensajeError);
-//		
-//	 }
-	 
+	 eliminarResultado(resultado)
+	 {		
+		 this.vista.ocultarIndicador();	
+		 this.vista.cerrarConfirmacionEliminar();
+		 if(resultado.mensajeError=="")
+		 {
+			
+			 this.vista.mostrarMensaje("Notificación","El registro se eliminó correctamente.");
+			 this.consultar();
+		 }
+		 else
+		 {
+			 if(resultado.codigoError==1451)
+				 this.vista.mostrarMensajeError("Error","No se puede eliminar el registro porque esta relacionado con otro catálogo. ") ;
+			 else
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar el registro. " + resultado.mensajeError);
+		 }
+	 }
 	 consultarEmpresas()	
 	 {
 		 //this.vista.mostrarIndicador();
 		 var repositorio = new EmpresasRepositorio(this);		
 		 var criteriosSeleccion = {nombre:""};
 		 repositorio.consultar(this,this.consultarEmpresasResultado,null);
+	 }
+	 
+	 consultarDepartamentos()	
+	 {
+		 var repositorio = new DepartamentosRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.departamentos = resultado.valor;
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },null);
 	 }
 	 
 	 consultarEmpresasResultado(resultado)

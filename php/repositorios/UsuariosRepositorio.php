@@ -13,6 +13,7 @@ include "../interfaces/IUsuariosRepositorio.php";
 
 require_once("RepositorioBase.php");
 require_once("../clases/Resultado.php");
+require_once("EmpresasRepositorio.php");
 
 class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositorio
 {
@@ -21,7 +22,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = "SELECT U.id, U.nombre_usuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, U.fecha_alta, U.fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7 " .
+        $this->consultaBase = "SELECT U.id, U.nombre_usuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id, D.nombre as departamentoNombre " .
                              "FROM usuarios U " .
                              "  LEFT JOIN empresas E ON U.empresa_id=E.id ".
                              "  LEFT JOIN sedes S ON U.sede_id = S.id " .
@@ -30,7 +31,8 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                              "  LEFT JOIN tipos_usuario T ON U.tipo_usuario_id = T.id " .
                              "  LEFT JOIN usuarios SU1 ON U.supervisor1_id = SU1.id " .
                              "  LEFT JOIN usuarios SU2 ON U.supervisor2_id = SU2.id " .
-                             "  LEFT JOIN usuarios SU3 ON U.supervisor3_id = SU3.id ";
+                             "  LEFT JOIN usuarios SU3 ON U.supervisor3_id = SU3.id ".
+                             "  LEFT JOIN departamentos D ON D.id = U.departamento_id";
     }    
    
     public function insertar(Usuario $modelo)
@@ -43,8 +45,9 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             $modelo->supervisor2Id=null;
         if($modelo->supervisor3Id=="")
             $modelo->supervisor3Id=null;
+        if($modelo->areaId=="")
+            $modelo->areaId=null;
         
-            
             
         if($resultado->mensajeError=="")
         {
@@ -76,11 +79,12 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                         . " estatus, "
                         . " permiso_saha, "
                         . " permiso_sivah, "
-                        . " permiso_10y7) "
-                        . " VALUE(?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW(),?,?,?,?) ";
+                        . " permiso_10y7, "
+                        . " departamento_id ) "
+                        . " VALUE(?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW(),?,?,?,?,?) ";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if( $sentencia->bind_param("issssiiiiiiiiiiii",
+                if( $sentencia->bind_param("issssiiiiiiiiiiiii",
                     $id, 
                     $modelo->nombreUsuario,
                     $modelo->contrasena,
@@ -97,7 +101,8 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                     $modelo->estatus,
                     $modelo->permisoSAHA,
                     $modelo->permisoSIVAH,
-                    $modelo->permiso10y7))
+                    $modelo->permiso10y7,
+                    $modelo->departamentoId))
                 {
                     if(!$sentencia->execute())              
                     {
@@ -156,6 +161,8 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             $modelo->supervisor2Id=null;
         if($modelo->supervisor3Id=="")
             $modelo->supervisor3Id=null;
+        if($modelo->areaId=="")
+            $modelo->areaId=null;
         $resultado = new Resultado();
         $consulta = " UPDATE usuarios " .
                     "SET nombre_usuario = ?, " .
@@ -174,12 +181,13 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                     " estatus = ?, " .
                     " permiso_saha = ?, " .
                     " permiso_sivah = ?, " .
-                    " permiso_10y7 = ? " .
+                    " permiso_10y7 = ?, " .
+                    " departamento_id = ? " .
                     "WHERE id = ?";    
                         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("ssssiiiiiiiiiiiii",
+            if($sentencia->bind_param("ssssiiiiiiiiiiiiii",
                 $modelo->nombreUsuario, 
                 $modelo->contrasena,
                 $modelo->nombre,
@@ -196,6 +204,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 $modelo->permisoSAHA,
                 $modelo->permisoSIVAH,
                 $modelo->permiso10y7,
+                $modelo->departamentoId,
                 $modelo->id))
             {
                if($sentencia->execute())
@@ -212,7 +221,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         return $resultado;        
     }
     
-    private function crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id, $supervisor2, $supervisor3Id, $supervisor3, $fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus, $tipoEmpresaId, $tipoAreaId, $permisoSAHA, $permisoSIVAH, $permiso10y7)
+    private function crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id, $supervisor2, $supervisor3Id, $supervisor3, $fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus, $tipoEmpresaId, $tipoAreaId, $permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre)
     {
         $registro= (object) [
             'id' =>  $id,
@@ -245,7 +254,10 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             'permisoSAHA' => $permisoSAHA,
             'permisoSIVAH' => $permisoSIVAH,
             'permiso10y7' => $permiso10y7,
+            'departamentoId' => $departamentoId,
+            'departamentoNombre' => $departamentoNombre
         ];
+       
         
         $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
         $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
@@ -253,6 +265,10 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             $registro->fotoPerfil =  "php/fotos/usuario". $registro->id .".jpg";
         else
              $registro->fotoPerfil =  "php/fotos/default.jpg";
+        
+         $registro->nodeId = $id;
+         $registro->parentId = $registro->supervisor1Id;
+         $registro->text = $registro->nodeId." - ".$registro->nombreCompleto;
         
         return $registro;
     }
@@ -317,11 +333,11 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             {
                 if($sentencia->execute())
                 {                
-                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7)  )
+                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre)  )
                     {                    
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7);
+                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre);
                             array_push($registros,$registro);
                         }
                         if($opcional=="true")
@@ -395,11 +411,11 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7)  )
+                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre)  )
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7);
+                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -426,25 +442,71 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         $resultado = new Resultado();
         $registros = array();
         
-        $consulta =   $this->consultaBase .
-                      " WHERE U.empresa_id = ? " .
-                      " AND U.id != ?  "  .
-                      "UNION " .
-                      $this->consultaBase .
-                      " WHERE U.empresa_id = (SELECT corporativo_id FROM empresas CORP WHERE CORP.id = ?) " .
-                      " AND U.id != ? order by nombre";
- 
-        if($sentencia = $this->conexion->prepare($consulta))
+        $resultado = $this->consultarIdsEmpresasCorporativo($empresaId);
+       if($resultado->correcto())
+       {
+           $empresasIds = implode(",", $resultado->valor);
+           
+           $consulta =   $this->consultaBase .
+           " WHERE U.empresa_id IN ($empresasIds)  " .
+           " AND U.id != ? AND (U.tipo_usuario_id = 5 OR U.tipo_usuario_id = 2)  order by U.nombre, U.apellido";
+           
+           
+           if($sentencia = $this->conexion->prepare($consulta))
+           {
+               if($sentencia->bind_param("i",$usuarioId))
+               {
+                   if($sentencia->execute())
+                   {
+                       if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre)  )
+                       {
+                           while($row = $sentencia->fetch())
+                           {
+                               $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre);
+                               array_push($registros,$registro);
+                           }
+                           $resultado->valor = $registros;
+                       }
+                       else
+                           $resultado->mensajeError = "Falló el enlace del resultado.";
+                   }
+                   else
+                       $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+               }
+               else
+                   $resultado->mensajeError = "Falló el enlace de parámetros";
+           }
+           else
+               $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+       }
+       
+        return $resultado;
+    }   
+    
+    public function consultarUsuariosPorEmpresa($empresaId)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $resultado = $this->consultarIdsEmpresasCorporativo($empresaId);
+        if($resultado->correcto())
         {
-            if($sentencia->bind_param("iiii",$empresaId,$usuarioId,$empresaId,$usuarioId))
+            $empresasIds = implode(",", $resultado->valor);
+            
+            $consulta =   $this->consultaBase .
+            " WHERE U.empresa_id IN ($empresasIds)  " .
+            " order by U.nombre, U.apellido";
+            
+            
+            if($sentencia = $this->conexion->prepare($consulta))
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7)  )
+                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre)  )
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7);
+                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -456,10 +518,9 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                     $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = "Falló el enlace de parámetros";
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
         }
-        else
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        
         return $resultado;
     }   
     
@@ -479,11 +540,11 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7)  )
+                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre)  )
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7);
+                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre);
                             array_push($registros,$registro);
                         }
                         if($opcional=="true")
@@ -523,11 +584,11 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7)  )
+                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre)  )
                     {
                         if($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7);
+                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre);
                             $resultado->valor = $registro;
                         }
                        
@@ -560,11 +621,11 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7)  )
+                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre)  )
                     {
                         if($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7);
+                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre);
                             $resultado->valor = $registro;
                         }
                         else
@@ -598,11 +659,11 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             {
                 if($sentencia->execute())
                 {                    
-                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,  $supervisor2Id, $supervisor2, $supervisor3Id, $supervisor3, $fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7)  )
+                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,  $supervisor2Id, $supervisor2, $supervisor3Id, $supervisor3, $fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre)  )
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombreUsuario,$contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7);
+                            $registro = $this->crearRegistro($id, $nombreUsuario,$contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre);
                             
                             $resultado->valor = $registro;
                         }
@@ -644,11 +705,11 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombreUsuario,$contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7))
+                    if ($sentencia->bind_result($id, $nombreUsuario,$contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre))
                     {
                         while($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombreUsuario,$contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7);
+                            $registro = $this->crearRegistro($id, $nombreUsuario,$contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre);
                             array_push($registros,$registro);
                         }
                         if($opcional=="true")
@@ -671,6 +732,127 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             return $resultado;
     }
+    
+    public function consultarEstructura($empresaId)
+    {
+        $resultado = $this->consultarUsuariosPorEmpresa($empresaId);
+        if($resultado->correcto())
+        {
+            $resultado->valor = $this->crearEstructura($resultado->valor);
+        }
+        return $resultado;
+    }
+    
+    public function consultarIdsEmpresasCorporativo($nodoId)
+    {
+        $resultado = new Resultado();
+        $ids = array();
+        if($nodoId!="")
+        {
+            $empresasRepositorio = new EmpresasRepositorio($this->conexion);
+            $resultado = $empresasRepositorio->consultarEstructura(true);
+            if($resultado->correcto())
+            {
+                $estructura = $resultado->valor;
+                $nodo = $this->buscarNodo($nodoId,$estructura);
+                $raiz = $this->getRaiz($nodo);
+                if($raiz!=null)
+                {
+                    array_push($ids, $raiz->nodeId);
+                    $this->agregarEmpresasId($ids,$raiz);
+                    $resultado->valor = $ids;
+                }
+                else
+                {
+                    $resultado->mensajeError="No se encontró la raiz de la empresa $nodo->text";
+                    $resultado->valor = null;
+                }
+            }
+        }
+        else
+        {
+            $resultado->mensajeError="No se encontró la empresa $nodoId";
+            $resultado->valor = null;
+        }
+        return $resultado;
+    }
+    
+    private function agregarEmpresasId(&$ids,$nodo)
+    {
+        if(isset($nodo->nodes))
+        {
+            for ($i = 0; $i < count($nodo->nodes); $i++)
+            {
+                $nodoHijo =  $nodo->nodes[$i];
+                array_push($ids, $nodoHijo->nodeId);
+                $this->agregarEmpresasId($ids,$nodoHijo);
+            }
+        }
+    }
+    
+    private function getRaiz($nodo)
+    {
+        if($nodo->parent!=null)
+        {
+            return $this->getRaiz($nodo->parent);
+        }
+        else 
+            return $nodo;
+    }
+    
+    private function buscarNodo($nodeId,$estructura)
+    {
+        for ($i = 0; $i < count($estructura); $i++)
+        {
+            $nodo =  $estructura[$i];
+            if($nodo->nodeId==$nodeId)
+                return $nodo;
+            else
+            {
+               if(isset($nodo->nodes))
+               {
+                    $nodo = $this->buscarNodo($nodeId, $nodo->nodes);
+                    if($nodo!=null)
+                        return $nodo;
+               }
+            }
+        }
+        return null;
+    }
+    
+   
+    
+    private function crearEstructura($lista)
+    {
+        $estructura = array();
+        for ($i = 0; $i < count($lista); $i++)
+        {
+            $nodo = $lista[$i];
+            if($nodo->parentId==null || $nodo->parentId==0)
+            {
+                array_push($estructura,$nodo);
+                $this->crearNodos($nodo, $lista);
+            }
+        }
+        return $estructura;
+    }
+    
+    private function crearNodos($nodoPadre, $lista)
+    {
+        for ($i = 0; $i < count($lista); $i++)
+        {
+            $nodoHijo = $lista[$i];
+            
+            if($nodoHijo->parentId == $nodoPadre->nodeId)
+            {
+                if(!isset($nodoPadre->nodes))
+                    $nodoPadre->nodes = array();
+                    array_push($nodoPadre->nodes ,$nodoHijo);
+                    $this->crearNodos($nodoHijo, $lista);
+            }
+        }
+    }
+    
     
 }
 

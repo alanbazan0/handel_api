@@ -23,16 +23,26 @@ header('Access-Control-Allow-Credentials: true');
                           <select id='empresaIdSelect' name='empresaIdSelect' onchange="vista.cambiarEmpresa();" class='form-control'></select>
                       </div>
                   </div>
+                   <hr style='border-top: 1px solid #3c8dbc;'>
+                   <label class="control-label text-primary" style='text-align:center'><i class="fa fa-user"></i> USUARIO</label>
                   <div class='form-group'>
                       <div>
                           <label class='control-label mb-1'>Sede</label>
-                          <select id='sedeIdSelect' name='sedeIdSelect' onchange="vista.cambiarSede();" class='form-control'></select>
+                          <select id='sedeIdSelectUsuario' name='sedeIdSelectUsuario' onchange="vista.cambiarSede();" class='form-control'></select>
                       </div>
                   </div>
                     <div class='form-group'>
                       <div>
                           <label class='control-label mb-1'>Usuario</label>
                           <select id='usuarioIdSelect' name='usuarioIdSelect' class='form-control'></select>
+                      </div>
+                  </div>
+                    <hr style='border-top: 1px solid #3c8dbc;'>
+                   <label class="control-label text-primary" style='text-align:center'><i class="fa fa-file-text-o"></i> PROCEDIMIENTO</label>
+                   <div class='form-group'>
+                      <div>
+                          <label class='control-label mb-1'>Sede</label>
+                          <select id='sedeIdSelectProcedimiento' name='sedeIdSelectProcedimiento' onchange="vista.cambiarSedeProcedimiento();" class='form-control'></select>
                       </div>
                   </div>
                     <div class='form-group'>

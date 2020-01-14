@@ -19,7 +19,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
     {
         $this->conexion = $conexion;
         $this->consultaBase = "SELECT E.id, usuario_procedimiento_id, realizo_actividad, justificacion_id, comentarios, IFNULL(DATE_FORMAT(E.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha, P.nombre, nombre_archivo, P.codigo, J.nombre,
-                                (SELECT count(C.id) FROM evidencias_comentarios C WHERE C.evidencia_id = E.id) numeroComentarios, U.nombre, U.apellido, S.id, S.nombre, EM.id, EM.nombre, U.id, validada, comentarios_validacion, EM.administrador_id, V.nombre administradorNombre, V.apellido administradorApellido   
+                                (SELECT count(C.id) FROM evidencias_comentarios C WHERE C.evidencia_id = E.id) numeroComentarios, U.nombre, U.apellido, S.id, S.nombre, EM.id, EM.nombre, U.id, validada, comentarios_validacion, EM.administrador_id, V.nombre administradorNombre, V.apellido administradorApellido,E.validacion_usuario_id validadorId, VL.nombre validadorNombre, VL.apellido validadorApellido   
                                FROM evidencias E
                             		INNER JOIN  usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
                                     INNER JOIN usuarios U ON U.id = UP.usuario_id
@@ -28,6 +28,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                             		INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
                                     LEFT JOIN justificaciones J ON J.id = E.justificacion_id
                                     LEFT JOIN usuarios V ON V.id = EM.administrador_id
+                                    LEFT JOIN usuarios VL ON VL.id = E.validacion_usuario_id
                                 ";
     }
 
@@ -239,11 +240,11 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion, $administradorId, $administradorNombre, $administradorApellido))
+                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion, $administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido))
                     {
                         while($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido);
+                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -298,11 +299,11 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido))
+                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido))
                     {
                         while($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido);
+                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -947,7 +948,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     	INNER JOIN sedes S ON S.id = U.sede_id
                     	INNER JOIN empresas EM ON EM.id = S.empresa_id
                     	INNER JOIN areas A ON A.id = U.area_id
-                    WHERE U.estatus = 1  
+                    WHERE U.estatus = 1 AND UP.estatus = 1
                   ";
         
         $consulta.= $and;
@@ -1433,7 +1434,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         return $resultado;
     }
     
-    public function validarEvidencia(Evidencia $modelo)
+    public function validarEvidencia($usuario,Evidencia $modelo)
     {
         if($modelo->justificacionId=="")
             $modelo->justificacionId=null;
@@ -1442,15 +1443,17 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                      SET
                          validada = ?,
                          comentarios_validacion = ?,
-                         fecha_modificacion = NOW()
+                         fecha_modificacion = NOW(),
+                         validacion_usuario_id = ?
                      WHERE id = ?";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param('isi',$modelo->validada, $modelo->comentariosValidacion,$modelo->id))
+                if($sentencia->bind_param('isii',$modelo->validada, $modelo->comentariosValidacion,$usuario->id,$modelo->id))
                 {
                     if($sentencia->execute())
                     {
                         $resultado->valor=$modelo->id;
+                       
                     }
                     else
                         $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
@@ -1465,42 +1468,73 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
 
     public function consultar($criteriosSeleccion)
     {
-        $resultado = new Resultado();
-        $registros = array();
-        $filtros = array();
-        $where='';
-        if($criteriosSeleccion!=null)
-        {
-            $where = $this->where($filtros);
-        }
-        $consulta = $this->consultaBase . $where;
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if($this->bind_param($sentencia, $filtros))
+       
+            $resultado = new Resultado();
+            
+            $registros = array();
+            
+            $filtros = array();
+            
+            
+            
+            $and="";
+            if($criteriosSeleccion!=null)
             {
-                if($sentencia->execute())
+               
+                if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+                if(isset($criteriosSeleccion->sedeId) && $criteriosSeleccion->sedeId!="")
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+                if(isset($criteriosSeleccion->areaId) && $criteriosSeleccion->areaId!="")
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'area_id','valor'=>$criteriosSeleccion->areaId]);
+                if(isset($criteriosSeleccion->usuarioId) && $criteriosSeleccion->usuarioId!="")
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'UP', 'campo'=>'usuario_id','valor'=>$criteriosSeleccion->usuarioId]);
+                if(isset($criteriosSeleccion->administradorId)  && $criteriosSeleccion->administradorId!="")
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'EM', 'campo'=>'administrador_id','valor'=>$criteriosSeleccion->administradorId]);
+                if(isset($criteriosSeleccion->validada)  && $criteriosSeleccion->validada!="")
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'validada','valor'=> $criteriosSeleccion->validada]);
+//                 if(isset($criteriosSeleccion->usuarioId))
+//                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'usuario_id','valor'=> $criteriosSeleccion->usuarioId]);
+            }
+            
+            
+            
+            
+            $and = $this->and($filtros);
+            
+            $consulta =  $this->consultaBase .
+            " WHERE  MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano " . $and ." " .
+            "order by UNIX_TIMESTAMP(E.fecha_alta) desc";
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($this->bind_param($sentencia, $filtros))
                 {
-                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido))
+                    if($sentencia->execute())
                     {
-                        while($row = $sentencia->fetch())
+                        if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido))
                         {
-                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido);
-                            array_push($registros,$registro);
+                            while($sentencia->fetch())
+                            {
+                                $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido);
+                                array_push($registros,$registro);
+                            }
+                            $resultado->valor = $registros;
                         }
-                        $resultado->valor = $registros;
+                        else
+                            $resultado->mensajeError = 'Falló el enlace del resultado.';
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = 'Falló el enlace de parámetros';
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
-        }
-        else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
-        return $resultado;
+                $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+          return $resultado;
+        
+
     }
 
     public function consultarPorLlaves($llaves)
@@ -1514,11 +1548,11 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido))
+                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido);
+                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido);
                             $resultado->valor = $registro;
                         }
                         else
@@ -1567,7 +1601,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         return $resultado;
     }
 
-    private function crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido)
+    private function crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido)
     {
         $registro= (object) 
         [
@@ -1593,7 +1627,10 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             'comentariosValidacion' => $comentariosValidacion,
             'administradorId' => $administradorId,
             'administradorNombre' => $administradorNombre,
-            'administradorApellido' => $administradorApellido
+            'administradorApellido' => $administradorApellido,
+            'validadorId' => $validadorId,
+            'validadorNombre' => $validadorNombre,
+            'validadorApellido' => $validadorApellido
             
             
         ];
@@ -1612,6 +1649,35 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             $registro->administradorFotoPerfil =  "php/fotos/usuario". $registro->administradorId .".jpg";
         else
             $registro->administradorFotoPerfil =  "php/fotos/default.jpg";
+    
+        if($registro->validada==1) 
+        {
+            if($registro->validadorId==null || $registro->validadorId=="")
+            {
+                $registro->validadorId = $registro->administradorId;
+                $registro->validadorNombre = $registro->administradorNombre;
+                $registro->validadorApellido = $registro->administradorApellido;
+                $registro->validadorNombreCompleto = $registro->administradorNombre . " " . $registro->administradorApellido;
+                $registro->validadorFotoPerfil =  "../fotos/usuario". $registro->administradorId .".jpg";
+                if(file_exists($registro->validadorFotoPerfil))
+                    $registro->validadorFotoPerfil =  "php/fotos/usuario". $registro->administradorId .".jpg";
+                else
+                    $registro->validadorFotoPerfil =  "php/fotos/default.jpg";
+              
+            }
+            else
+            {
+                $registro->validadorNombreCompleto = $registro->validadorNombre . " " . $registro->validadorApellido;
+                $registro->validadorFotoPerfil =  "../fotos/usuario". $registro->validadorId .".jpg";
+                if(file_exists($registro->validadorFotoPerfil))
+                    $registro->validadorFotoPerfil =  "php/fotos/usuario". $registro->validadorId .".jpg";
+                    else
+                        $registro->validadorFotoPerfil =  "php/fotos/default.jpg";
+            }
+        }
+       
+             
+            
         
         $registro->empresaLogo =  "../logos_empresas/logo". $registro->empresaId .".png";
         if(file_exists($registro->empresaLogo))

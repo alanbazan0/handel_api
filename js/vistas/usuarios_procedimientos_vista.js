@@ -32,6 +32,7 @@ class UsuariosProcedimientosVista extends CatalogoVista
 			{longitud:200, 	titulo:"Usuario",   alias:"usuarioNombre", alineacion:"I", class: "desc" }, 
 			{longitud:200, 	titulo:"Procedimiento",   alias:"nombre", alineacion:"I"}, 
 			{longitud:200, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I",  },		
+			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
 			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus},
 			{longitud:200, 	titulo:"Fecha de cancelación",   alias:"fechaCancelacion", alineacion:"C",itemRenderer:this.renderFechaCancelacion },
 			{longitud:200, 	titulo:"Limite de justificaciones",   alias:"limiteJusiticaciones", alineacion:"C",itemRenderer:this.renderLimiteJustificaciones }	
@@ -152,7 +153,10 @@ class UsuariosProcedimientosVista extends CatalogoVista
                 "codigoInput": {
                     required: !0
                 },
-                "sedeIdSelect": {
+                "sedeIdSelectUsuario": {
+                    required: !0
+                },
+                "sedeIdSelectProcedimiento": {
                     required: !0
                 },
                 "nombreInput": {
@@ -187,8 +191,9 @@ class UsuariosProcedimientosVista extends CatalogoVista
 		if(this.modo==Modo.CAMBIO)
 		{
 			$('#empresaIdSelect').attr("disabled","disabled");
-			$('#sedeIdSelect').attr("disabled","disabled");
+			//$('#sedeIdSelect').attr("disabled","disabled");
 			//$('#usuarioIdSelect').attr("disabled","disabled");
+			$('#sedeIdSelectProcedimiento').attr("disabled","disabled");
 			$('#procedimientoIdSelect').attr("disabled","disabled");
 		}
 			
@@ -206,6 +211,7 @@ class UsuariosProcedimientosVista extends CatalogoVista
 		 var criteriosSeleccion = 
 		 {				    
 			empresaId: $('#empresaSelectCriterio').val(),
+			sedeId: $('#sedeSelectCriterio').val(),
 			nombre:$('#nombreInputCriterio').val()
 		 }
 		 return criteriosSeleccion;
@@ -235,7 +241,8 @@ class UsuariosProcedimientosVista extends CatalogoVista
 		 var modelo = 
 		 {		
 			 empresaId:$('#empresaIdSelect').val(),
-			 sedeId:$('#sedeIdSelect').val(),
+			 sedeIdUsuario:$('#sedeIdSelectUsuario').val(),
+			 sedeIdProcedimiento:$('#sedeIdSelectProcedimiento').val(),
 			 usuarioId:$('#usuarioIdSelect').val(),
 			 procedimientoId:$('#procedimientoIdSelect').val(),
 			 limitarJustificaciones:$('#limitarJustificacionesSwitch').is(':checked')?1:0,
@@ -253,13 +260,15 @@ class UsuariosProcedimientosVista extends CatalogoVista
 	{
 		$('#nombreInput').val("");
 		this.cargandoOpciones('#empresaIdSelect');
-		this.cargandoOpciones('#sedeIdSelect');
+		this.cargandoOpciones('#sedeIdSelectUsuario');
+		this.cargandoOpciones('#sedeIdSelectProcedimiento');
 	}
 	
 	consultarEmpresas()
 	{
 		this.cargandoOpciones("#empresaIdSelect");
-		this.cargandoOpciones("#sedeIdSelect");
+		this.cargandoOpciones("#sedeIdSelectUsuario");
+		this.cargandoOpciones("#sedeIdSelectProcedimiento");
 		this.cargandoOpciones("#usuarioIdSelect");
 		this.cargandoOpciones("#procedimientoIdSelect");
 		this.presentador.consultarEmpresas();
@@ -309,6 +318,10 @@ class UsuariosProcedimientosVista extends CatalogoVista
 	cambiarSede()
 	{
 		this.consultarUsuarios();
+	}
+	
+	cambiarSedeProcedimiento()
+	{
 		this.consultarProcedimientos();
 	}
 	
@@ -326,13 +339,15 @@ class UsuariosProcedimientosVista extends CatalogoVista
 	
 	consultarSedes()
 	{
-		this.cargandoOpciones("#sedeIdSelect");
+		this.cargandoOpciones("#sedeIdSelectUsuario");
+		this.cargandoOpciones("#sedeIdSelectProcedimiento");
 		this.presentador.consultarSedes();
 	}
 	
 	set sedes(registros)
 	{		
-		this.cargarOpciones('#sedeIdSelect', registros, this.modo, this.modeloEdicion, 'sedeId',"");
+		this.cargarOpciones('#sedeIdSelectUsuario', registros, this.modo, this.modeloEdicion, 'usuarioSedeId',"");
+		this.cargarOpciones('#sedeIdSelectProcedimiento', registros, this.modo, this.modeloEdicion, 'procedimientoSedeId',"");
 	}
 	
 	set usuarios(registros)

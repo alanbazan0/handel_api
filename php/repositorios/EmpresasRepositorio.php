@@ -8,7 +8,7 @@ use php\modelos\Resultado;
 include "../interfaces/IEmpresasRepositorio.php";
 include "../modelos/Empresa.php";
 require_once("RepositorioBase.php");
-include "../clases/TipoUsuario.php";
+require_once("../clases/TipoUsuario.php");
 require_once("../clases/Resultado.php");
 
 class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositorio
@@ -267,6 +267,9 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
             'administradorApellido' => $administradorApellido,
             'estatus' => $estatus            
         ];
+        $registro->nodeId = $id;
+        $registro->parentId = $registro->corporativoId;
+        $registro->text = $registro->nodeId." - ".$registro->nombre;
         return $registro;
     }
     
@@ -298,6 +301,53 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
                 $resultado->codigoError = $this->conexion->errno;
             }
             return $resultado;
+    }
+    
+    public function consultarEstructura($referenciaPadre)
+    {
+        $resultado = $this->consultar(null, false, null);
+        if($resultado->correcto())
+        {
+            $resultado->valor = $this->crearEstructura($resultado->valor,$referenciaPadre);
+        }
+        return $resultado;
+    }
+    
+   
+    
+    private function crearEstructura($lista,$referenciaPadre)
+    {
+        $estructura = array();
+        for ($i = 0; $i < count($lista); $i++) 
+        {
+            $nodo = $lista[$i];    
+            if($nodo->parentId==null || $nodo->parentId==0)
+            {
+                if($referenciaPadre)
+                    $nodo->parent = null;
+                array_push($estructura,$nodo);
+                $this->crearNodos($nodo, $lista,$referenciaPadre);
+            }   
+        }
+        return $estructura;
+    }
+    
+    private function crearNodos($nodoPadre, $lista,$referenciaPadre)
+    {
+        for ($i = 0; $i < count($lista); $i++) 
+        {
+            $nodoHijo = $lista[$i]; 
+           
+            if($nodoHijo->parentId == $nodoPadre->nodeId)
+            {
+                if(!isset($nodoPadre->nodes))
+                    $nodoPadre->nodes = array();
+                if($referenciaPadre)
+                    $nodoHijo->parent = $nodoPadre;
+                array_push($nodoPadre->nodes ,$nodoHijo);
+                $this->crearNodos($nodoHijo, $lista,$referenciaPadre); 
+            }
+        }
     }
 
     

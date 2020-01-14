@@ -67,10 +67,17 @@
 					</div>
 					<div class="form-group">
 						<div>
+							<label for="departamentoSelect" class="control-label mb-1">Departamento</label> 
+							<select name="departamentoSelect" id="departamentoSelect" class="form-control"></select>
+						</div>
+					</div>
+					<div class="form-group">
+						<div>
 							<label for="areaSelect" class="control-label mb-1">Area</label> 
 							<select name="areaSelect" id="areaSelect" class="form-control"></select>
 						</div>
 					</div>
+					
 					<div class="form-group">
 						<div>
 							<label for="supervisor1Select" class="control-label mb-1">Supervisor 1</label> 

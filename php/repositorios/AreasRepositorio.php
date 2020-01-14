@@ -87,7 +87,7 @@ class AreasRepositorio extends RepositorioBase implements IAreasRepositorio
         $where="";
         if($criteriosSeleccion!=null)
         {
-            if(isset($criteriosSeleccion->nombre))
+            if(isset($criteriosSeleccion->nombre) && $criteriosSeleccion->nombre!="")
                 array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'A','campo'=>'nombre','valor'=>$criteriosSeleccion->nombre]);
             if(isset($criteriosSeleccion->empresaId))
             {

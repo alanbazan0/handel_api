@@ -8,6 +8,103 @@ class EmpresasVista extends CatalogoVista
 		
 	}
 	
+	inicializar()
+	{
+		super.inicializar();
+		var _this = this;
+		$("#estructuraButton").click(function(){
+			_this.consultarEstructura();
+		});
+	}
+	
+	consultarEstructura()
+	{
+		this.presentador.consultarEstructura();
+	}
+	
+	consultarOrganigrama()
+	{
+		this.presentador.consultarOrganigrama();
+	}
+	
+	set organigrama(organigrama)
+	{
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/organigrama_empresa.php",this, null, 
+				function()
+				{
+					 $('#treeDiv').treeview({
+				          color: "#000000",
+				          selectable: false,
+				          selectedBackColor : "#B0BED9",
+				          expandIcon: 'fa fa-chevron-right',
+				          collapseIcon: 'fa fa-chevron-down',
+				          nodeIcon: 'fa fa-user',
+				          data: organigrama,
+				          itemRenderer:this.itemRendererOrganigrama
+				        });
+					
+				},null,"estructuraModal","","");
+	}
+	
+	set estructura(estructura)
+	{
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/estructura_empresas.php",this, null, 
+				function()
+				{
+					
+					 $('#treeDiv').treeview({
+				          color: "#000000",
+				          selectable: false,
+				          selectedBackColor : "#B0BED9",
+				          expandIcon: 'fa fa-chevron-right',
+				          collapseIcon: 'fa fa-chevron-down',
+				          nodeIcon: 'fa fa-building',
+				          data: estructura,
+				          itemRenderer:this.itemRendererRelacion
+				        });
+					
+				},null,"estructuraModal","","");
+	}
+	
+	itemRendererRelacion(node)
+	{
+		var html = "";
+//		if(node.parentId!=undefined)
+//			html += "<button  style='display:inline-block;' data-nodeId = '"+node.nodeId+"' data-tablaNombre='"+node.nombre+"' data-placemen='bottom' title='Eliminar' type='button' class='eliminar float-right botones-icon btn btn-sm btn-danger active' ><span class='ti-trash'></span></button>";
+//			
+//		html += "<button  style='display:inline-block;' data-nodeId = '"+node.nodeId+"' data-tablaNombre='"+node.nombre+"' data-placemen='bottom' title='Agregar tabla' type='button' class='relacionar float-right botones-icon btn btn-sm btn-info active' ><span class='fa fa-plus'></span></button>";
+//	
+//		html += "<button  style='display:inline-block;' data-nodeId = '"+node.nodeId+"' data-tablaNombre='"+node.nombre+"' data-placemen='bottom' title='Datos' type='button' class='datos float-right botones-icon btn btn-sm btn-warning active' ><span class='fa fa-database'></span></button>";
+//		
+//		if(node.parentId!=undefined)
+//			html +=	"<button  style='display:inline-block;' data-nodeId = '"+node.nodeId+"' data-tablaNombre='"+node.nombre+"' data-placemen='bottom' title='Relacionar'  type='button' class='campos float-right botones-icon btn btn-sm btn-success active' ><span class='fas fa-project-diagram'></span></button>";
+//		
+		
+	
+		return html;
+	}
+	
+
+	itemRendererOrganigrama(node)
+	{
+		var html = "";
+		var fecha = new Date();
+		var icono = HANDEL_API+ "/"+node.fotoPerfil+"?"+fecha.getTime();
+//		if(node.parentId!=undefined)
+//			html += "<button  style='display:inline-block;' data-nodeId = '"+node.nodeId+"' data-tablaNombre='"+node.nombre+"' data-placemen='bottom' title='Eliminar' type='button' class='eliminar float-right botones-icon btn btn-sm btn-danger active' ><span class='ti-trash'></span></button>";
+//			
+		//html += "<img class='float-left' src='" + icono + "' style='width:25px;height:25px;border-radius:50%'></img>";
+//	
+//		html += "<button  style='display:inline-block;' data-nodeId = '"+node.nodeId+"' data-tablaNombre='"+node.nombre+"' data-placemen='bottom' title='Datos' type='button' class='datos float-right botones-icon btn btn-sm btn-warning active' ><span class='fa fa-database'></span></button>";
+//		
+//		if(node.parentId!=undefined)
+//			html +=	"<button  style='display:inline-block;' data-nodeId = '"+node.nodeId+"' data-tablaNombre='"+node.nombre+"' data-placemen='bottom' title='Relacionar'  type='button' class='campos float-right botones-icon btn btn-sm btn-success active' ><span class='fas fa-project-diagram'></span></button>";
+//		
+		
+	
+		return html;
+	}
+	
 	
 	crearColumnasGrid()
 	{
@@ -28,10 +125,32 @@ class EmpresasVista extends CatalogoVista
 		]
 		
 		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
-								"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+									"<button data-toggle='tooltip' data-placemen='bottom' title='Organigrama'  type='button' class='organigrama btn-circle mr-0 botones-icon btn btn-sm float-left btn-primary active'><span  data-toggle='tooltip' class='fas fa-project-diagram'></span></button>"+
+									"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 	
 		this.tabla.registros = [];
 
+	}
+	
+	inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave)
+	{
+		super.inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave);
+		var _this = this;
+		$(tbody).on("click", "button.organigrama", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.consultarOrganigrama();
+			}
+		});
 	}
 	
 //	datosValidos()
