@@ -765,7 +765,7 @@ function getEvidenciasEnviadas($usuario,EvidenciasRepositorio $repositorio)
     $ano=  date("Y");
     $mes = date("m");
     $criteriosSeleccion = (object) ['ano' => $ano, "mes"=> $mes];
-    $resultado = $repositorio->consultarEvidenciasCumplidasMesActual($usuario,$criteriosSeleccion);
+    $resultado = $repositorio->consultarEvidenciasCumplidas($usuario,$criteriosSeleccion);
     if($resultado->correcto())
     {
         $evidencias = $resultado->valor;
@@ -863,9 +863,11 @@ function getUsuarios($usuario,UsuariosRepositorio $usuariosRepositorio,Evidencia
 {
     $texto="";
     $asociados = array();
+    $ano=  date("Y");
+    $mes = date("m");
+    $criteriosSeleccion = (object) ['ano' => $ano, "mes"=> $mes];
 
-
-    $resultado = $evidenciasRepositorio->consultarPorcentajesUsuariosMesActual($usuario,null);
+    $resultado = $evidenciasRepositorio->consultarPorcentajesUsuarios($usuario,$criteriosSeleccion);
     if($resultado->correcto())
     {
         $asociados =$resultado->valor;

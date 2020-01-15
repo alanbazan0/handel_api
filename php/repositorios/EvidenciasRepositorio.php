@@ -8,6 +8,7 @@ use php\modelos\Resultado;
 include '../interfaces/IEvidenciasRepositorio.php';
 include '../modelos/Evidencia.php';
 require_once('RepositorioBase.php');
+require_once('UsuariosRepositorio.php');
 require_once("../clases/TipoUsuario.php");
 require_once('../clases/Resultado.php');
 
@@ -845,44 +846,48 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             return $resultado;
     }
     
-    public function consultarPorcentajesUsuarios($usuario,$criteriosSeleccion)
+   
+    
+    private function getFiltroEstructura($usuario)
     {
-        $resultado = new Resultado();
-        $registros = array();
+        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+        $resultado = $usuariosRepositorio->consultarIdsUsuarios($usuario);
+        if($resultado->correcto())
+        {
+            $usuariosIds = implode(",", $resultado->valor);
+            $and = "";
+            switch ($usuario->tipoUsuarioId)
+            {
+                case \TipoUsuario::USUARIO:
+                    $and =" AND U.id IN($usuariosIds)";
+                break;
+                case \TipoUsuario::SUPERVISOR:
+                    $and =" AND U.id IN($usuariosIds)";
+                break;
+                case \TipoUsuario::COORDINADOR:
+                    $and =" AND U.id IN($usuariosIds)";
+                break;
+                case \TipoUsuario::ADMINISTRADOR:
+                break;
+            }
+        }
+        
+        return $and;
+    }
+    
+    public function getConsultaEvidenciasBase($campos,$usuario,$criteriosSeleccion)
+    {
+        
+       // $campos = "U.id,U.nombre, U.nombre_usuario, U.apellido,U.tipo_usuario_id, U.empresa_id, EM.nombre, U.sede_id, S.nombre, U.area_id, A.nombre, U.departamento_id, D.nombre";
+        
         $primerDiaMes = "$criteriosSeleccion->ano-$criteriosSeleccion->mes-1";
         $ultimoDiaMes = date("Y-m-t", strtotime($primerDiaMes));
-        $filtros = array();
-        switch ($usuario->tipoUsuarioId)
-        {
-            case \TipoUsuario::USUARIO:
-                break;
-            case \TipoUsuario::SUPERVISOR:
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','valor'=>$usuario->empresaId]);
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'area_id','valor'=>$usuario->areaId]);
-                break;
-            case \TipoUsuario::COORDINADOR:
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','valor'=>$usuario->empresaId]);
-                break;
-            case \TipoUsuario::ADMINISTRADOR:
-                if($criteriosSeleccion!=null)
-                {
-                    if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
-                        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
-                    if(isset($criteriosSeleccion->sedeId) && $criteriosSeleccion->sedeId!="")
-                        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
-                    if(isset($criteriosSeleccion->areaId) && $criteriosSeleccion->areaId!="")
-                        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'area_id','valor'=>$criteriosSeleccion->areaId]);
-                }
-            break;    
-        }
-        $and = $this->and($filtros);
-        
-        
-        
         $filtroAno1 = "";
         $filtroMes1 = "";
-       // $filtroAno2 = "";
-        $filtroFecha = "";
+        $filtroAno2 = "";
+        $filtroMes2 = "";
+        // $filtroAno2 = "";
+        //$filtroFecha = "";
         if(isset($criteriosSeleccion->ano))
         {
             $filtroAno1 = "AND YEAR(E1.fecha_alta) = $criteriosSeleccion->ano";
@@ -892,15 +897,12 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         {
             $filtroMes1 = "AND MONTH(E1.fecha_alta) = $criteriosSeleccion->mes";
             $filtroMes2 = "AND MONTH(E2.fecha_alta) = $criteriosSeleccion->mes";
-            
         }
-
-        if(isset($criteriosSeleccion->ano) && isset($criteriosSeleccion->mes))
-            $filtroFecha=" AND UP1.fecha_alta <=  '$criteriosSeleccion->ano/$criteriosSeleccion->mes/30'";
         
-            $filtroFecha="";
-        
-        $consulta = "SELECT U.id,U.nombre, U.nombre_usuario, U.apellido,U.tipo_usuario_id, U.empresa_id, U.sede_id, U.area_id,
+//         if(isset($criteriosSeleccion->ano) && isset($criteriosSeleccion->mes))
+//             $filtroFecha=" AND UP1.fecha_alta <=  '$criteriosSeleccion->ano/$criteriosSeleccion->mes/30'";
+        $select = $this->selectAlias($campos);
+        $consulta = $select.",
                     (
                     	SELECT count(*) numero
                     	FROM evidencias E1
@@ -909,7 +911,8 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     		INNER JOIN sedes S1 ON S1.id = U1.sede_id
                     		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
                     		INNER JOIN areas A1 ON A1.id = U1.area_id
-                    	WHERE justificacion_id IS NOT NULL AND EM1.id = EM.id AND A1.id = A.id AND U1.id = U.id $filtroAno1 $filtroMes1
+                            INNER JOIN departamentos D1 ON D1.id = U1.departamento_id
+                    	WHERE justificacion_id IS NOT NULL AND EM1.id = EM.id AND A1.id = A.id AND D1.id = D.id AND U1.id = U.id  $filtroAno1 $filtroMes1
                     ) justificadas,
                     (
                     	SELECT count(*) numero
@@ -919,7 +922,8 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     		INNER JOIN sedes S1 ON S1.id = U1.sede_id
                     		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
                     		INNER JOIN areas A1 ON A1.id = U1.area_id
-                    	WHERE justificacion_id IS NULL AND EM1.id = EM.id AND A1.id = A.id AND U1.id = U.id $filtroAno1 $filtroMes1
+                            INNER JOIN departamentos D1 ON D1.id = U1.departamento_id
+                    	WHERE justificacion_id IS NULL AND EM1.id = EM.id AND A1.id = A.id AND D1.id = D.id AND U1.id = U.id $filtroAno1 $filtroMes1
                     ) enviadas,
                     (
                     	SELECT count(*)
@@ -929,8 +933,9 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     		INNER JOIN sedes S1 ON S1.id = U1.sede_id
                     		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
                     		INNER JOIN areas A1 ON A1.id = U1.area_id
-                    	 WHERE U1.estatus = 1 AND ((UP1.estatus = 1 AND UP1.fecha_alta  <=  '$ultimoDiaMes') OR (UP1.estatus = 0 AND MONTH(UP1.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP1.fecha_alta) <= $criteriosSeleccion->ano AND MONTH(UP1.fecha_cancelacion) > $criteriosSeleccion->mes AND  YEAR(UP1.fecha_cancelacion) >= $criteriosSeleccion->ano))
-                                AND EM1.id = EM.id AND A1.id = A.id AND U1.id = U.id $filtroFecha 
+                           INNER JOIN departamentos D1 ON D1.id = U1.departamento_id
+                    	 WHERE ((UP1.estatus = 1 AND UP1.fecha_alta  <=  '$ultimoDiaMes') OR (UP1.estatus = 0 AND MONTH(UP1.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP1.fecha_alta) <= $criteriosSeleccion->ano AND MONTH(UP1.fecha_cancelacion) > $criteriosSeleccion->mes AND  YEAR(UP1.fecha_cancelacion) >= $criteriosSeleccion->ano))
+                                AND EM1.id = EM.id AND A1.id = A.id AND D1.id = D.id AND U1.id = U.id 
                     		AND UP1.id NOT IN(
                     				SELECT usuario_procedimiento_id
                     				FROM evidencias E2
@@ -939,24 +944,66 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     					INNER JOIN sedes S2 ON S2.id = U2.sede_id
                     					INNER JOIN empresas EM2 ON EM2.id = S2.empresa_id
                     					INNER JOIN areas A2 ON A2.id = U2.area_id
-                    				WHERE  EM2.id = EM1.id AND A2.id = A1.id AND U1.id = U.id  $filtroAno2 $filtroMes2
+                                        INNER JOIN departamentos D2 ON D2.id = U2.departamento_id
+                    				WHERE  EM2.id = EM1.id AND A2.id = A1.id AND D2.id = D1.id AND U1.id = U.id  $filtroAno2 $filtroMes2
                     				)
-                    
+                    				
                     )pendientes
-                    FROM usuarios U 
+                    FROM usuarios U
                     	INNER JOIN usuarios_procedimientos UP ON U.id = UP.usuario_id
                     	INNER JOIN sedes S ON S.id = U.sede_id
                     	INNER JOIN empresas EM ON EM.id = S.empresa_id
                     	INNER JOIN areas A ON A.id = U.area_id
-                    WHERE U.estatus = 1 AND UP.estatus = 1
+                        INNER JOIN departamentos D ON D.id = U.departamento_id
+                    WHERE UP.estatus = 1 
+                        AND U.estatus = 1 
+                        AND S.estatus = 1 
+                        AND EM.estatus = 1 
+                        AND A.estatus = 1
+                        AND D.estatus = 1
                   ";
         
-        $consulta.= $and;
-        $consulta.=" GROUP BY U.id, U.nombre
-                     ORDER BY U.nombre, U.apellido";
+
+        return $consulta;
+    }
+    
+    public function consultarPorcentajesUsuarios($usuario,$criteriosSeleccion)
+    {
+//         $resultado = new Resultado();
         
-        //echo $consulta;
-      
+//         $campos = array();
+//         array_push($campos,(object)['tabla'=>'U','campo'=>'id','alias'=>'usuarioId']);
+//         array_push($campos,(object)['tabla'=>'U','campo'=>'nombre','alias'=>'usuarioNombre']);
+//         array_push($campos,(object)['tabla'=>'U','campo'=>'apellido','alias'=>'usuarioApellido']);
+//         array_push($campos,(object)['tabla'=>'U','campo'=>'nombre_usuario','alias'=>'nombreUsuario']);
+//         $resultado = $this->consultarPorcentajes($campos, $usuario, $criteriosSeleccion);
+        
+//         return $resultado;
+        $resultado = new Resultado();
+        $campos = array();
+        array_push($campos,(object)['tabla'=>'U','campo'=>'id','alias'=>'id']);
+        array_push($campos,(object)['tabla'=>'U','campo'=>'nombre','alias'=>'nombreUsuario']);
+        array_push($campos,(object)['tabla'=>'U','campo'=>'nombre_usuario','alias'=>'nombre']);
+        array_push($campos,(object)['tabla'=>'U','campo'=>'apellido','alias'=>'usuarioApellido']);
+        array_push($campos,(object)['tabla'=>'U','campo'=>'tipo_usuario_id','alias'=>'tipoUsuarioId']);
+        array_push($campos,(object)['tabla'=>'EM','campo'=>'id','alias'=>'empresaId']);
+        array_push($campos,(object)['tabla'=>'EM','campo'=>'nombre','alias'=>'empresaNombre']);
+        array_push($campos,(object)['tabla'=>'S','campo'=>'id','alias'=>'sedeId']);
+        array_push($campos,(object)['tabla'=>'S','campo'=>'nombre','alias'=>'sedeNombre']);
+        array_push($campos,(object)['tabla'=>'A','campo'=>'id','alias'=>'areaId']);
+        array_push($campos,(object)['tabla'=>'A','campo'=>'nombre','alias'=>'areaNombre']);
+        array_push($campos,(object)['tabla'=>'D','campo'=>'id','alias'=>'departamentoId']);
+        array_push($campos,(object)['tabla'=>'D','campo'=>'nombre','alias'=>'departamentoNombre']);
+        $registros = array();
+        
+        $filtros = array();
+        
+        $consulta = $this->getConsultaEvidenciasBase($campos,$usuario,$criteriosSeleccion);
+        $consulta .= $this->getFiltroEstructura($usuario) ." ";
+        
+        $consulta .="\n".$this->groupBy($campos);
+        $consulta .= "\n".$this->orderBy($campos);
+        
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -964,7 +1011,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $nombre, $nombreUsuario, $apellido, $tipoUsuarioId, $empreasaId, $sedeId, $areaId, $justificadas, $enviadas, $pendientes))
+                    if($sentencia->bind_result($id, $nombre, $nombreUsuario, $apellido, $tipoUsuarioId, $empreasaId,$empresaNombre, $sedeId, $sedeNombre, $areaId, $areaNombre, $departamentoId, $departamentoNombre, $justificadas, $enviadas, $pendientes))
                     {
                         while($sentencia->fetch())
                         {
@@ -973,12 +1020,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                                 'id' =>  $id,
                                 'nombreUsuario' => $nombreUsuario,
                                 'nombre' =>  $nombre,
-                               
                                 'apellido' =>  $apellido,
                                 'tipoUsuarioId' =>  $tipoUsuarioId,
                                 'empresaId' =>  $empreasaId,
+                                'empresaNombre' =>  $empresaNombre,
                                 'sedeId' =>  $sedeId,
+                                'sedeNombre' =>  $sedeNombre,
                                 'areaId' =>  $areaId,
+                                'areaNombre' =>  $areaNombre,
+                                'departamentoId' =>  $departamentoId,
+                                'departamentoNombre' =>  $departamentoNombre,
                                 'justificadas' =>  $justificadas,
                                 'enviadas' =>  $enviadas,
                                 'pendientes' =>  $pendientes
@@ -999,25 +1050,108 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                             $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
                             if(file_exists($registro->fotoPerfil))
                                 $registro->fotoPerfil =  "php/fotos/usuario". $registro->id .".jpg";
+                                else
+                                    $registro->fotoPerfil =  "php/fotos/default.jpg";
+                                    
+                                    
+                                    array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__.'. Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__.' .Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__.'. Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__.'. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        return $resultado;
+    }
+   
+    
+    public function consultarPorcentajes($campos,$usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $filtros = array();
+        
+        $consulta = $this->getConsultaEvidenciasBase($campos,$usuario,$criteriosSeleccion);
+        $consulta .= $this->getFiltroEstructura($usuario) ." ";
+        
+        $consulta .="\n".$this->groupBy($campos);
+        $consulta .= "\n".$this->orderBy($campos);
+        
+        echo $consulta;
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id, $nombre, $nombreUsuario, $apellido, $tipoUsuarioId, $empreasaId,$empresaNombre, $sedeId, $sedeNombre, $areaId, $areaNombre, $departamentoId, $departamentoNombre, $justificadas, $enviadas, $pendientes))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            
+                            $registro= (object) [
+                                'id' =>  $id,
+                                'nombreUsuario' => $nombreUsuario,
+                                'nombre' =>  $nombre,
+                                'apellido' =>  $apellido,
+                                'tipoUsuarioId' =>  $tipoUsuarioId,
+                                'empresaId' =>  $empreasaId,
+                                'empresaNombre' =>  $empresaNombre,
+                                'sedeId' =>  $sedeId,
+                                'sedeNombre' =>  $sedeNombre,
+                                'areaId' =>  $areaId,
+                                'areaNombre' =>  $areaNombre,
+                                'departamentoId' =>  $departamentoId,
+                                'departamentoNombre' =>  $departamentoNombre,
+                                'justificadas' =>  $justificadas,
+                                'enviadas' =>  $enviadas,
+                                'pendientes' =>  $pendientes
+                            ];
+                            
+                            $registro->total = $registro->justificadas + $registro->enviadas + $registro->pendientes;
+                            $registro->cumplidas =$registro->justificadas + $registro->enviadas;
+                            $registro->porcentajeCumplimiento  = 0;
+                            if($registro->total !=0)
+                            {
+                                
+                                $registro->porcentajeCumplimiento = $registro->cumplidas  * 100 / $registro->total ;
+                                $registro->porcentajeCumplimiento = number_format($registro->porcentajeCumplimiento, 1, '.', '');
+                            }
+                            
+                            $registro->nombreCompleto = $registro->usuarioNombre . " " . $registro->apellido;
+                            $registro->nombreId =  $registro->nombreCompleto ." (".$registro->id.")";
+                            $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
+                            if(file_exists($registro->fotoPerfil))
+                                $registro->fotoPerfil =  "php/fotos/usuario". $registro->id .".jpg";
                             else
                                 $registro->fotoPerfil =  "php/fotos/default.jpg";
-                            
-                            
+                                    
+                                    
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = __FUNCTION__.'. Falló el enlace del resultado.';
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__.' .Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__.'. Falló el enlace de parámetros';
         }
         else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__.'. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
     

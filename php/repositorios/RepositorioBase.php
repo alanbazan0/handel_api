@@ -33,6 +33,33 @@ class RepositorioBase
         return $resultado;
     }
     
+    
+    public function groupBy($campos)
+    {
+        $alias = "GROUP BY ";
+        for ($i = 0; $i < count($campos);$i++)
+        {
+            $campo = $campos[$i];
+            $alias.=$campo->alias;
+            if($i < count($campos) - 1)
+                $alias.=", "; 
+        }
+        return $alias;
+    }
+    
+    public function orderBy($campos)
+    {
+        $alias = "ORDER BY ";
+        for ($i = 0; $i < count($campos);$i++)
+        {
+            $campo = $campos[$i];
+            $alias.=$campo->alias;
+            if($i < count($campos) - 1)
+                $alias.=", ";
+        }
+        return $alias;
+    }
+    
     public function where($filtros)
     {
         $texto = "";
@@ -185,6 +212,24 @@ class RepositorioBase
             }
         }
        
+        return $texto;
+    }
+    
+    public function selectAlias($campos)
+    {
+        $texto = "";
+        if($campos)
+        {
+            $texto = "SELECT ";
+            for($i = 0; $i < count($campos); $i++)
+            {
+                $campo = $campos[$i];
+                $texto .= trim($campo->tabla) . "." . trim($campo->campo) . " AS " . $campo->alias ;
+                if($i < count($campos) - 1)
+                    $texto .= ", ";
+            }
+        }
+        
         return $texto;
     }
     public function insert($tablaId, $campos)

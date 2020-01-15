@@ -743,6 +743,47 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         return $resultado;
     }
     
+    public function consultarIdsUsuarios($usuario)
+    {
+        $resultado = new Resultado();
+        $ids = array();
+        $nodeId = $usuario->id;
+        if($nodeId!="")
+        {
+            $resultado = $this->consultarEstructura($usuario->empresaId);
+            if($resultado->correcto())
+            {
+                $estructura = $resultado->valor;
+                $raiz = $this->buscarNodo($nodeId,$estructura);
+                if($raiz!=null)
+                {
+                    array_push($ids, $raiz->nodeId);
+                    $this->agregarUsuariosId($ids,$raiz);
+                    $resultado->valor = $ids;
+                }
+                //echo $nodo->id;
+//                 $raiz = $this->getRaiz($nodo);
+//                 if($raiz!=null)
+//                 {
+//                     array_push($ids, $raiz->nodeId);
+//                     $this->agregarEmpresasId($ids,$raiz);
+//                     $resultado->valor = $ids;
+//                 }
+//                 else
+//                 {
+//                     $resultado->mensajeError="No se encontró la raiz de la empresa $nodo->text";
+//                     $resultado->valor = null;
+//                 }
+            }
+        }
+        else
+        {
+            $resultado->mensajeError="No se encontró la empresa $nodoId";
+            $resultado->valor = null;
+        }
+        return $resultado;
+    }
+    
     public function consultarIdsEmpresasCorporativo($nodoId)
     {
         $resultado = new Resultado();
@@ -786,6 +827,19 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 $nodoHijo =  $nodo->nodes[$i];
                 array_push($ids, $nodoHijo->nodeId);
                 $this->agregarEmpresasId($ids,$nodoHijo);
+            }
+        }
+    }
+    
+    private function agregarUsuariosId(&$ids,$nodo)
+    {
+        if(isset($nodo->nodes))
+        {
+            for ($i = 0; $i < count($nodo->nodes); $i++)
+            {
+                $nodoHijo =  $nodo->nodes[$i];
+                array_push($ids, $nodoHijo->nodeId);
+                $this->agregarUsuariosId($ids,$nodoHijo);
             }
         }
     }
