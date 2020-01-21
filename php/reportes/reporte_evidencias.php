@@ -5,12 +5,12 @@ use php\repositorios\EvidenciasRepositorio;
 
 
 require('../vendor/fpdf181/fpdf.php');
-include '../clases/Utilidades.php';
-include '../clases/AdministradorConexion.php';
-include '../repositorios/EmpresasRepositorio.php';
-include '../repositorios/UsuariosRepositorio.php';
-include '../repositorios/EvidenciasRepositorio.php';
-include '../highcharts/highchartutils.php';
+require_once ('../clases/Utilidades.php');
+require_once('../clases/AdministradorConexion.php');
+require_once('../repositorios/EmpresasRepositorio.php');
+require_once('../repositorios/UsuariosRepositorio.php');
+require_once('../repositorios/EvidenciasRepositorio.php');
+require_once('../highcharts/highchartutils.php');
 
 class VariableStream
 {

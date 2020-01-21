@@ -20,7 +20,7 @@ require_once('../clases/TipoUsuario.php');
 include '../repositorios/UsuariosRepositorio.php';
 include '../repositorios/EvidenciasRepositorio.php';
 require_once('../repositorios/UsuariosProcedimientosRepositorio.php');
-
+//require_once('../reportes/reporte_evidencias.php');
 
 $origin = "*";
 if(isset($_SERVER['HTTP_ORIGIN']))
@@ -47,8 +47,8 @@ try
         $supervisores = array();
         $coordinadores= array();
         
-        $tipoUsuario = REQUEST("tipoUsuario");
-        if($tipoUsuario==null)
+        $tipoUsuarioId = REQUEST("tipoUsuarioId");
+        if($tipoUsuarioId==null || $tipoUsuarioId=="")
         {
             $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::USUARIO, 'permisoSAHA' => 1],false);
             if($resultado->correcto())
@@ -68,17 +68,25 @@ try
             else
                 mensajeLog("error",$resultado->mensajeError);
             
+            
             $usuarios = array_merge($asociados, $supervisores,$coordinadores);
+            mensajeLog("log_envio","Usuarios: ". count($asociados));
+            mensajeLog("log_envio","Supervisores: ". count($supervisores));
+            mensajeLog("log_envio","Coordinadores: ". count($coordinadores));
+            mensajeLog("log_envio","Total: ". count($usuarios));
         }
         else 
         {
-            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  $tipoUsuario, 'permisoSAHA' => 1],false);
+            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  $tipoUsuarioId, 'permisoSAHA' => 1],false);
             if($resultado->correcto())
                 $asociados = $resultado->valor;
             else
                 mensajeLog("error",$resultado->mensajeError);
             
             $usuarios = $asociados;
+            
+            mensajeLog("log_envio","Tipo usuario: ". $tipoUsuarioId);
+            mensajeLog("log_envio","Total: ". count($usuarios));
         }
         
         
@@ -160,7 +168,7 @@ try
             {
                 $usuario = $usuarios[$i];
               
-                $contenido = getContenido($usuariosRepositorio,$usuariosProcedimientosRepositorio, $evidenciasRepositorio,$usuario, $dia);
+                $contenido = getContenido($conexion,$usuariosRepositorio,$usuariosProcedimientosRepositorio, $evidenciasRepositorio,$usuario, $dia);
                 $mensaje="";
                 if($contenido!="")
                 {
@@ -183,20 +191,21 @@ try
                     {
                         $resultado->mensajeError="No se pudo enviar el correo electrónico a $usuario->nombreUsuario.  ". htmlspecialchars_decode($error["message"]) ;
                         $resultado->codigoError = 3;
-                        mensajeLog("error",$resultado->mensajeError);
+                        mensajeLog("error",$i. " " .$resultado->mensajeError);
                     }
                     else if($resultadoMail)
                     {
                         $resultado->valor="OK";
-                        mensajeLog("log_envio","Correo enviado a ".$usuario->nombreUsuario);
+                        mensajeLog("log_envio","$i Correo enviado a ".$usuario->nombreUsuario);
                     }
                     
                     sleep($tiempoEspera);
                 }
           
-             if($imprimirMensaje)
-                echo $mensaje;
+                if($imprimirMensaje)
+                    echo $mensaje;
             }
+            mensajeLog("log_envio","Termimado!");
         }
     }
     
@@ -280,11 +289,11 @@ function getCaricatura($caricatura,$width)
 
 
 
-function getContenido(UsuariosRepositorio $usuariosRepositorio,UsuariosProcedimientosRepositorio $usuariosProcedimientosRepositorio,EvidenciasRepositorio $evidenciasRepositorio,$usuario,$dia)
+function getContenido($conexion,UsuariosRepositorio $usuariosRepositorio,UsuariosProcedimientosRepositorio $usuariosProcedimientosRepositorio,EvidenciasRepositorio $evidenciasRepositorio,$usuario,$dia)
 {
 //     $contenido ="";
 //     if($usuario->tipoUsuarioId == TipoUsuario::COORDINADOR)
-//         $contenido = getContenidoCoordinador($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia,);
+//         $contenido = getContenidoCoordinador($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
 //     if($usuario->tipoUsuarioId == TipoUsuario::SUPERVISOR)
 //         $contenido = getContenidoSupervisor($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
 //     else if($usuario->tipoUsuarioId == TipoUsuario::USUARIO)
@@ -294,9 +303,9 @@ function getContenido(UsuariosRepositorio $usuariosRepositorio,UsuariosProcedimi
 
     $contenido ="";
     if($usuario->tipoUsuarioId == TipoUsuario::COORDINADOR)
-        $contenido = getContenidoSupervisor($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
+        $contenido = getContenidoCoordinador($conexion,$usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
     if($usuario->tipoUsuarioId == TipoUsuario::SUPERVISOR)
-        $contenido = getContenidoSupervisor($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
+        $contenido = getContenidoSupervisor($conexion,$usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
     else if($usuario->tipoUsuarioId == TipoUsuario::USUARIO)
         $contenido = getContenidoUsuario($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
             
@@ -304,7 +313,7 @@ function getContenido(UsuariosRepositorio $usuariosRepositorio,UsuariosProcedimi
    
 }
 
-function getContenidoCoordinador(UsuariosRepositorio $usuariosRepositorio,UsuariosProcedimientosRepositorio $usuariosProcedimientosRepositorio,EvidenciasRepositorio $evidenciasRepositorio,$usuario,$dia)
+function getContenidoCoordinador($conexion,UsuariosRepositorio $usuariosRepositorio,UsuariosProcedimientosRepositorio $usuariosProcedimientosRepositorio,EvidenciasRepositorio $evidenciasRepositorio,$usuario,$dia)
 {
     $contenido = "";
     switch($dia)
@@ -314,6 +323,14 @@ function getContenidoCoordinador(UsuariosRepositorio $usuariosRepositorio,Usuari
             
             $contenido.="<div style='text-align:center;width:100%'>
                         <div style='text-align:left; display: inline-block; width:90%'>";
+            
+//             $usuarioId = $usuario->id;
+//             $ano=  date("Y");
+//             $mes = date("m");
+//             $pdf = new PDF();
+//             $pdf->AliasNbPages();
+//             $pdf->generar($conexion,$usuarioId,$mes,$ano);
+//             $pdf->guardar();
             
            
             $contenido .= "<br>".getCaricatura("https://api.apps-handel.com/images/caricatura/Little_Business_Girl-78.png",160);
@@ -494,7 +511,7 @@ function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,UsuariosPr
     return $contenido;   
 }
 
-function getContenidoSupervisor(UsuariosRepositorio $usuariosRepositorio,UsuariosProcedimientosRepositorio $usuariosProcedimientosRepositorio,EvidenciasRepositorio $evidenciasRepositorio,$usuario,$dia)
+function getContenidoSupervisor($conexion,UsuariosRepositorio $usuariosRepositorio,UsuariosProcedimientosRepositorio $usuariosProcedimientosRepositorio,EvidenciasRepositorio $evidenciasRepositorio,$usuario,$dia)
 {
     $contenido = "";
     switch($dia)
@@ -1011,10 +1028,10 @@ function getEvidenciasAsociado($usuario,EvidenciasRepositorio $evidenciasReposit
 }
 
 
-function mensajeLog($archivo,$error)
+function mensajeLog($archivo,$mensaje)
 {
-    $error = date("j/n/Y h:m:s") .":".$error;
-    file_put_contents('./'.$archivo.'_'.date("j.n.Y").'.log',  utf8_decode($error) , FILE_APPEND);
-    echo "<br>".utf8_decode($error);
+    $mensaje = date("j/n/Y h:i:s") .":".$mensaje;
+    file_put_contents('./'.$archivo.'_'.date("j.n.Y").'.log',  utf8_decode("\n".$mensaje) , FILE_APPEND);
+    echo "<br>".utf8_decode($mensaje);
 }
     
