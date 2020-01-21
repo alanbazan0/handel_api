@@ -13,14 +13,35 @@ class Tabla
 		this._contenidoAdicional = null;
 		this._anchoContenidoAdicional = 200;
 		this._alto =  $("body").height() - 350 ;
-		this._registrosPagina = 50;
+		this._buscar = true;
+		this._paginacion = true;
 		this._textoTablaVacia = "Ning&uacute;n dato disponible en esta tabla";
-		this._ocultarEncabezados = false;
+		this._ajustarColumnas = false;
 	}
 	
-	set ocultarEncabezados(ocultarEncabezados)
+	refrescar()
 	{
-		this._ocultarEncabezados = ocultarEncabezados;
+		this.registros = this.registros;
+	}
+	
+	set textoTablaVacia(textoTablaVacia)
+	{
+		this._textoTablaVacia = textoTablaVacia;
+	}
+	
+	set ajustarColumnas(ajustarColumnas)
+	{
+		this._ajustarColumnas = ajustarColumnas;
+	}
+	
+	set paginacion(paginacion)
+	{
+		this._paginacion = paginacion;
+	}
+	
+	set buscar(buscar)
+	{
+		this._buscar = buscar;
 	}
 	
 	set alto(alto)
@@ -62,6 +83,7 @@ class Tabla
 	{
 		this._registros = registros;
 		this.renderizar();
+		setTimeout(function(){$($.fn.dataTable.tables(true)).DataTable().columns.adjust();}, 1000);
 	}
 	
 	get registros()
@@ -75,16 +97,11 @@ class Tabla
 //		var html="";
 		this.renderizarTabla();
 		this.renderizarRegistros();
-
-
+//		$(this._id).html(html);
 		$('[data-toggle="tooltip"]').tooltip({
 		    trigger : 'hover',
 		    container: 'body'
-		});
-		
-		$('[rel="tooltip"]').on('click', function () {
-		    $(this).tooltip('hide');
-		})
+		}) 
 		
 		$(".paginate_button").attr("href","#");
 		
@@ -125,12 +142,7 @@ class Tabla
 				alineacion ="dt-body-center";
 			else if(columna.alineacion=="D")
 				alineacion ="dt-body-right";
-			
-			var clase = "";
-			if(columna.clase!=null)
-				clase = columna.clase;
-			
-			var columnaDataTable = {orderable: false, targets : i, className : alineacion + " "+ clase};
+			var columnaDataTable = {orderable: false, targets : i, className : alineacion +" forceWidth"};
 			
 			if(columna.longitud!=undefined)
 				columnaDataTable.width = columna.longitud +"px";
@@ -155,45 +167,29 @@ class Tabla
 		return $('#'+this._id+"Table");	
 	}
 	
-	set textoTablaVacia(textoTablaVacia)
-	{
-		this._textoTablaVacia = textoTablaVacia;
-	}
-	
 	renderizarRegistros()
 	{
-		var _this = this;
+	
 		
 		
 		$('#'+this._id+"Table").DataTable( {
-				stateSave: true,
 			  data: this._registros,
 			  "drawCallback": function( settings ) {
 				  $(".paginate_button").attr("href","#");
-				  
-				  if(_this._ocultarEncabezados)
-				  {
-					  $(".dataTable thead").hide();
-				  }
-					  
-				  
 			    },
-			    "pageLength": this._registrosPagina,
-			    "fnInitComplete":function()
-			    {
-//	                $('.dataTables_scrollBody').slimscroll();
-	            },
 			    "info":true,
-		        "searching":true,
+		        "searching":this._buscar,
+		        "pageLength": 25,
 				"destroy":true,
 				"responsive":{details: true},
 			    "select":true,
-			    "paging":true,
+			    "paging":this._paginacion,
 			    scrollY: this._alto,
 			    "autoWidth":true,
 			    "ordering":false,
 				columns: this.columnasDataTable,
 				columnDefs: this.definicionColumnasDataTable,
+				fixedColumns: this._ajustarColumnas,
 			    "language": {	         	 
 					"sProcessing":     "Procesando...",
 					"sLengthMenu":     "Mostrar _MENU_ registros",
@@ -225,6 +221,7 @@ class Tabla
 			   $($.fn.dataTable.tables(true)).DataTable()
 			      .columns.adjust();
 			});
+	
 //		$('#'+this._id+"Table").on( 'page.dt', function () 
 //		{
 //			$(".paginate_button").attr("href","#");

@@ -18,7 +18,7 @@ include '../clases/AdministradorConexion.php';
 include '../clases/AdministradorArchivos.php';
 include '../clases/AdministradorCorreo.php';
 include '../repositorios/EvidenciasRepositorio.php';
-include '../repositorios/UsuariosProcedimientosRepositorio.php';
+require_once('../repositorios/UsuariosProcedimientosRepositorio.php');
 
 $origin = "*";
 if(isset($_SERVER['HTTP_ORIGIN']))

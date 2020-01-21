@@ -35,7 +35,20 @@ class GraficaEvidenciasAreaPresentador extends CatalogoPresentador
 		 },null,true);
 	 }
 	 
-	
+	 consultarDepartamentosCriterio()	
+	 {
+		 var repositorio = new DepartamentosRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.departamentosCriterio = resultado.valor;
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },null,true);
+	 }
 	 
 	 
 	 consultarAnos()
@@ -70,17 +83,17 @@ class GraficaEvidenciasAreaPresentador extends CatalogoPresentador
 	 
 	 consultarAreasCriterio()	
 	 {
-		 var repositorio = new AreasRepositorio(this);		
-		 repositorio.consultarPorEmpresaSede(this, function(resultado)
-		 {
-			if(resultado.mensajeError=="")
-			{
-				this.vista.areasCriterio = resultado.valor;			
-			}
-			else
-				this.vista.mostrarMensaje("Error",resultado.mensajeError);
-		 }
-		,this.vista.criteriosSeleccion.empresaId,this.vista.criteriosSeleccion.sedeId,true);
+//		 var repositorio = new AreasRepositorio(this);		
+//		 repositorio.consultarPorEmpresaSede(this, function(resultado)
+//		 {
+//			if(resultado.mensajeError=="")
+//			{
+//				this.vista.areasCriterio = resultado.valor;			
+//			}
+//			else
+//				this.vista.mostrarMensaje("Error",resultado.mensajeError);
+//		 }
+//		,this.vista.criteriosSeleccion.empresaId,this.vista.criteriosSeleccion.sedeId,true);
 	 }
 	 
 	

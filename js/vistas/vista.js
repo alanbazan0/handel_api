@@ -9,7 +9,10 @@ class Vista
 	{
 		$("body").data("_this",this);
 		if($("#enviarMensajeLink").length>0)
-			$("#enviarMensajeLink").click(this.enviarMensajeLinkClick)
+			$("#enviarMensajeLink").click(this.enviarMensajeLinkClick);
+		this.toastr = null;
+		this.toastrData = null;
+			
 	}
 	salir()
 	{
@@ -207,9 +210,9 @@ class Vista
 	    });
 	}
 	
-	mostrarMensajeAdvertencia(titulo,mensaje)
+	mostrarMensajeAdvertencia(titulo,mensaje,data)
 	{
-		 toastr.warning(mensaje,titulo,{
+		this.toastr = toastr.warning(mensaje,titulo,{
 		        "positionClass": "toast-bottom-right",
 		        timeOut: 5000,
 		        "closeButton": true,
@@ -225,9 +228,17 @@ class Vista
 		        "hideEasing": "linear",
 		        "showMethod": "fadeIn",
 		        "hideMethod": "fadeOut",
-		        "tapToDismiss": false
+		        "tapToDismiss": false,
+		        onclick: this.clickNotificacion,
+		        data : data
 
 		    });
+		this.toastrData = data;
+	}
+	
+	clickNotificacion(event)
+	{
+		
 	}
 	
 	get fotoPerfil()
@@ -344,7 +355,7 @@ class Vista
 						});
 						
 						_this.consultarEmpresasMensaje();
-						
+						_this.consultarDepartamentosMensaje();
 						
 					});
 				
@@ -419,7 +430,7 @@ class Vista
 			{
 				empresaId : $("#empresaSelectMensaje").val(),
 				sedeId : $("#sedeSelectMensaje").val(),
-				areaId : $("#areaSelectMensaje").val(),
+				departamentoId : $("#departamentoSelectMensaje").val(),
 				usuarioId : $("#usuarioSelectMensaje").val(),
 				asunto: $("#asuntoInput").val(),
 				mensaje: $("#mensajeInput").val()
@@ -437,14 +448,24 @@ class Vista
 		{
 			this.cargandoOpciones("#empresaSelectMensaje");
 			this.cargandoOpciones("#sedeSelectMensaje");
-			this.cargandoOpciones("#areaeSelectMensaje");
 			this.cargandoOpciones("#usuarioSelect");
 			this.presentador.consultarEmpresasMensaje();
+		}
+		
+		consultarDepartamentosMensaje()
+		{
+			this.cargandoOpciones("#departamentoSelectMensaje");
+			this.presentador.consultarDepartamentosMensaje();
 		}
 		
 		set empresasMensaje(registros)
 		{		
 			this.cargarOpciones('#empresaSelectMensaje', registros);
+		}
+		
+		set departamentosMensaje(registros)
+		{		
+			this.cargarOpciones('#departamentoSelectMensaje', registros);
 		}
 		
 		set sedesMensaje(registros)
@@ -476,6 +497,12 @@ class Vista
 			this.cargandoOpciones("#areaSelectMensaje");
 			this.cargandoOpciones("#usuarioSelectMensaje");
 			this.consultarSedesMensaje();
+		}
+		
+		cambiarDepartamentoMensaje()
+		{
+			this.cargandoOpciones("#usuarioSelectMensaje");
+			this.consultarUsuariosMensaje();
 		}
 		
 		cambiarSedeMensaje()
@@ -516,7 +543,7 @@ class Vista
 			 {				    
 				empresaId: $('#empresaSelectMensaje').val(),
 				sedeId: $('#sedeSelectMensaje').val(),
-				areaId: $('#areaSelectMensaje').val(),
+				departamentoId: $('#departamentoSelectMensaje').val(),
 				usuarioId: $('#usuarioSelectMensaje').val()
 			 }
 			 return criteriosSeleccion;

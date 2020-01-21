@@ -18,7 +18,7 @@ class UsuariosPresentador extends CatalogoPresentador
 		 else
 		 {
 			 if(resultado.codigoError==1451)
-				 this.vista.mostrarMensajeError("Error","No se puede eliminar el registro porque esta relacionado con otro catálogo. ") ;
+				 this.vista.mostrarMensajeAdvertencia("Error","No se puede eliminar el registro esta relacionado con otro catálogo. Más información...", resultado) ;
 			 else
 				 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar el registro. " + resultado.mensajeError);
 		 }
@@ -135,9 +135,11 @@ class UsuariosPresentador extends CatalogoPresentador
 	 
 	 consultarSupervisores()	
 	 {
-		// this.vista.mostrarIndicador();
+		if(this.vista.modelo.empresaId!="")
+		{
 		 var repositorio = new UsuariosRepositorio(this);	
 		 repositorio.consultarSupervisoresPorEmpresa(this,this.consultarSupervisoresPorEmpresaResultado,this.vista.modelo.empresaId,this.vista.modelo.id);
+		}
 	 }
 	 
 	 consultarSupervisoresPorEmpresaResultado(resultado)

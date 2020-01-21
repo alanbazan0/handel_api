@@ -31,8 +31,8 @@
               	</div>
               	<div class="form-group col-sm-6">
 					<div>
-                  	 	<label for="areaSelectMensaje" class="control-label mb-1">Area</label>
-                  	 	<select name="areaSelectMensaje" id="areaSelectMensaje" class="form-control" onchange="vista.cambiarAreaMensaje();"><option value="">Cargando...</option></select>
+                  	 	<label for="departamentoSelectMensaje" class="control-label mb-1">Departamento</label>
+                  	 	<select name="departamentoSelectMensaje" id="departamentoSelectMensaje" class="form-control" onchange="vista.cambiarDepartamentoMensaje();"><option value="">Cargando...</option></select>
                   	 </div> 
               	</div>
               	<div class="form-group col-sm-6">

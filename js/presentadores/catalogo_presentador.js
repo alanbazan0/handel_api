@@ -128,7 +128,7 @@ class CatalogoPresentador
 		 else
 		 {
 			 if(resultado.codigoError==1451)
-				 this.vista.mostrarMensajeError("Error","No se puede eliminar el registro porque esta relacionado con otro catálogo. ") ;
+				 this.vista.mostrarMensajeAdvertencia("Error","No se puede eliminar el registro porque esta relacionado con otro catálogo. ") ;
 			 else
 				 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar el registro. " + resultado.mensajeError);
 		 }
@@ -178,6 +178,24 @@ class CatalogoPresentador
 		
 	 }
 	 
+	 consultarDepartamentosMensaje()	
+	 {
+		 var repositorio = new DepartamentosRepositorio(this);		
+		 repositorio.consultar(this,function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.departamentosMensaje = resultado.valor;
+				this.vista.cambiarDepartamentoMensaje();
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },null,true);
+	 }
+	 
+	 
+	 
 	 consultarSedesMensaje()	
 	 {
 		 var repositorio = new SedesRepositorio(this);		
@@ -215,7 +233,7 @@ class CatalogoPresentador
 	 consultarUsuariosMensaje()	
 	 {
 		 var repositorio = new UsuariosRepositorio(this);	
-		 repositorio.consultarPorEmpresaSedeArea(this,this.consultarUsuariosMensajeResultado,this.vista.criteriosSeleccionMensaje.empresaId,this.vista.criteriosSeleccionMensaje.sedeId,this.vista.criteriosSeleccionMensaje.areaId,true);
+		 repositorio.consultarPorEmpresaSedeDepartamento(this,this.consultarUsuariosMensajeResultado,this.vista.criteriosSeleccionMensaje.empresaId,this.vista.criteriosSeleccionMensaje.sedeId,this.vista.criteriosSeleccionMensaje.departamentoId,true);
 	 }
 	 
 	 consultarUsuariosMensajeResultado(resultado)

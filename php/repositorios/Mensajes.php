@@ -50,7 +50,16 @@ try
                 {
                     $modelo->id = $resultado->valor;
                     $usuariosRepositorio = new UsuariosRepositorio($conexion);
-                    $resultado = $usuariosRepositorio->consultar($modelo,null,false);
+                    $criteriosSeleccion = (object) ['permisoSAHA' => 1];
+                    if($modelo->empresaId!=null && $modelo->empresaId!="")
+                        $criteriosSeleccion->empresaId = $modelo->empresaId;
+                    if($modelo->sedeId!=null && $modelo->sedeId!="")
+                        $criteriosSeleccion->sedeId = $modelo->sedeId;
+                    if($modelo->departamentoId!=null && $modelo->departamentoId!="")
+                        $criteriosSeleccion->departamentoId = $modelo->departamentoId;
+                    if($modelo->usuarioId!=null && $modelo->usuarioId!="")
+                        $criteriosSeleccion->usuarioId = $modelo->usuarioId;
+                    $resultado = $usuariosRepositorio->consultar($modelo,$criteriosSeleccion,false);
                     if($resultado->correcto())
                     {
                         $administrador_correo = new AdministradorCorreo();

@@ -43,7 +43,7 @@ class AdministradorCorreo
             
             if($resultadoMail)
             {
-                $resultado->valor=$mensaje;
+                $resultado->valor=$usuario->id;
             }
             else
                 $resultado->mensajeError="No se pudo enviar el correo electrónico, intente mas tarde.";
@@ -219,9 +219,9 @@ class AdministradorCorreo
     
     public function enviarNotificacionMensaje($usuario, $usuarios, $modeloMensaje)
     {
-        $usuarios = array();
-        array_push($usuarios,(object) ['nombreUsuario' => 'alanbazan@apps-handel.com','nombreCompleto' => 'Alan Bazán']);
-        array_push($usuarios,(object) ['nombreUsuario' => 'eduardo@handel-sce.com','nombreCompleto' => 'Eduardo']);
+//         $usuarios = array();
+//         array_push($usuarios,(object) ['nombreUsuario' => 'alanbazan@apps-handel.com','nombreCompleto' => 'Alan Bazán']);
+//         array_push($usuarios,(object) ['nombreUsuario' => 'eduardo@handel-sce.com','nombreCompleto' => 'Eduardo']);
         
         $mensaje= file_get_contents('../plantillas_correo/tema_nuevo.html');
         
@@ -234,17 +234,6 @@ class AdministradorCorreo
         $mensaje=  str_replace("@mensajeId",$modeloMensaje->id,$mensaje);
         $mensaje=  str_replace("@mensaje",$modeloMensaje->mensaje,$mensaje);
         $mensaje=  str_replace("@caricatura",$caricatura,$mensaje);
-      
-//         $contenido = $modeloMensaje->mensaje;
-//         $contenido.="<br>";
-//         $contenido.="<table>";
-//         $contenido.="<tr>";
-//         $contenido.="<td width='auto' valign='middle' align='left' bgcolor='#ffc000' style='text-align: center; font-weight: normal; padding: 6px; padding-left: 18px; padding-right: 18px; background-color: #ffc000; color: #3f3f3f; font-size: 13px; font-family: Arial, Helvetica, sans-serif; border-radius: 4px;'><a style='text-decoration: none; font-weight: normal; color: #3f3f3f; font-size: 13px; font-family: Arial, Helvetica, sans-serif;' target='_new' href='https://saha.apps-handel.com/mensajes.php?mensajeId=$modeloMensaje->id'><strong>Ingresar</strong></a></td>";
-//         $contenido.="</tr>";
-//         $contenido.="</table>";
-        
-  
-      
         
         return  $this->enviarCorreoUsuarios($usuarios,utf8_decode("SAHA: " . $usuario->nombreCompleto . ": " . $modeloMensaje->asunto), $mensaje);
     }

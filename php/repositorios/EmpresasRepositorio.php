@@ -202,7 +202,7 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
     {
         $resultado = new Resultado();
         $consulta = $this->consultaBase .
-        " WHERE E.id != ?";
+        " WHERE E.id != ? order by E.nombre";
         $registros = array(); 
         if($sentencia = $this->conexion->prepare($consulta))
         {

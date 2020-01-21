@@ -302,10 +302,22 @@ try
                 $areaId = REQUEST('areaId');
                 $opcional = REQUEST('opcional');
                 $resultado = $repositorio->consultarPorEmpresaSedeArea($empresaId,$sedeId,$areaId,$opcional,$usuario);
+            break;
+            case 'consultarPorEmpresaSedeDepartamento':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $empresaId = REQUEST('empresaId');
+                $sedeId = REQUEST('sedeId');
+                $departamentoId = REQUEST('departamentoId');
+                $opcional = REQUEST('opcional');
+                $resultado = $repositorio->consultarPorEmpresaSedeDepartamento($empresaId,$sedeId,$departamentoId,$opcional,$usuario);
+            break;
             case 'consultarEstructura':
                 $empresaId = REQUEST('empresaId');
                 $resultado = $repositorio->consultarEstructura($empresaId);
-            break;
+           
             break;
 //             case 'enviarNotificacion':
 //                 session_start();

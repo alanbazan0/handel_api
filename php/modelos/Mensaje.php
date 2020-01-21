@@ -5,7 +5,7 @@ class Mensaje
 {
   public $empresaId;
   public $sedeId;
-  public $areaId;
+  public $departamentoId;
   public $usuarioId;
   public $mensaje;
   public $asunto;

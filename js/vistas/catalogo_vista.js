@@ -420,9 +420,9 @@ class CatalogoVista extends Vista
 	mostrarFormularioHTML(url,contexto,funcionConsultarPorLlaves, functionConsultarCombos,functionInicializarValidacionesHTML,id, formulario, guardarButton)
 	{
 		var modal = id;
-		if(modal==undefined)
+		if(modal==undefined || modal=="")
 			modal = "modalAlta";
-		if(formulario==undefined)
+		if(formulario==undefined || modal =="")
 			formulario="formulario";
 		if(guardarButton==undefined)
 			guardarButton="guardarButton";

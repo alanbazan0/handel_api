@@ -19,7 +19,7 @@ include '../modelos/Usuario.php';
 require_once('../clases/TipoUsuario.php');
 include '../repositorios/UsuariosRepositorio.php';
 include '../repositorios/EvidenciasRepositorio.php';
-include '../repositorios/UsuariosProcedimientosRepositorio.php';
+require_once('../repositorios/UsuariosProcedimientosRepositorio.php');
 
 
 $origin = "*";
@@ -47,31 +47,58 @@ try
         $supervisores = array();
         $coordinadores= array();
         
-        $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::USUARIO, 'permisoSAHA' => 1],false);
-        if($resultado->correcto())
-            $asociados = $resultado->valor;
-        else
-            mensajeLog("error",$resultado->mensajeError);
-        
+        $tipoUsuario = REQUEST("tipoUsuario");
+        if($tipoUsuario==null)
+        {
+            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::USUARIO, 'permisoSAHA' => 1],false);
+            if($resultado->correcto())
+                $asociados = $resultado->valor;
+            else
+                mensajeLog("error",$resultado->mensajeError);
+                    
             $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::SUPERVISOR, 'permisoSAHA' => 1],false);
-        if($resultado->correcto())
-            $supervisores = $resultado->valor;
-        else
-            mensajeLog("error",$resultado->mensajeError);
-        
+            if($resultado->correcto())
+                $supervisores = $resultado->valor;
+            else
+                mensajeLog("error",$resultado->mensajeError);
+                
             $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::COORDINADOR, 'permisoSAHA' => 1],false);
-        if($resultado->correcto())
-            $coordinadores = $resultado->valor;
-        else
-            mensajeLog("error",$resultado->mensajeError);
+            if($resultado->correcto())
+                $coordinadores = $resultado->valor;
+            else
+                mensajeLog("error",$resultado->mensajeError);
+            
+            $usuarios = array_merge($asociados, $supervisores,$coordinadores);
+        }
+        else 
+        {
+            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  $tipoUsuario, 'permisoSAHA' => 1],false);
+            if($resultado->correcto())
+                $asociados = $resultado->valor;
+            else
+                mensajeLog("error",$resultado->mensajeError);
+            
+            $usuarios = $asociados;
+        }
+        
+        
         
         $resultado->valor = "";
         
-        $usuarios = array_merge($asociados, $supervisores,$coordinadores);
-        
+      
+        $parametroDebug= REQUEST("debug");
+        if($parametroDebug=="true")
+            $debug=true;
         if($debug)
         {
-            
+            $nombreUsuario= REQUEST("nombreUsuario");
+            if($nombreUsuario!="")
+            {
+                $resultado = $usuariosRepositorio->consultar(null,(object) ['nombreUsuario' =>  $nombreUsuario, 'permisoSAHA' => 1],false);
+                if($resultado->correcto())
+                    $usuarios = $resultado->valor;
+            }
+          
             for ($i = 0; $i < count($usuarios); $i++) 
             {
                 $usuario = $usuarios[$i];
@@ -82,6 +109,7 @@ try
             }
             
             $usuarios = array_slice($usuarios,0,$numeroUsuarios);
+          
             
 //             $usuarios = array();
 //             $resultado = $usuariosRepositorio->consultarPorLLaves((object) ['id'=>8]);
@@ -254,14 +282,24 @@ function getCaricatura($caricatura,$width)
 
 function getContenido(UsuariosRepositorio $usuariosRepositorio,UsuariosProcedimientosRepositorio $usuariosProcedimientosRepositorio,EvidenciasRepositorio $evidenciasRepositorio,$usuario,$dia)
 {
+//     $contenido ="";
+//     if($usuario->tipoUsuarioId == TipoUsuario::COORDINADOR)
+//         $contenido = getContenidoCoordinador($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia,);
+//     if($usuario->tipoUsuarioId == TipoUsuario::SUPERVISOR)
+//         $contenido = getContenidoSupervisor($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
+//     else if($usuario->tipoUsuarioId == TipoUsuario::USUARIO)
+//         $contenido = getContenidoUsuario($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
+   
+//     return $contenido;
+
     $contenido ="";
     if($usuario->tipoUsuarioId == TipoUsuario::COORDINADOR)
-        $contenido = getContenidoCoordinador($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
+        $contenido = getContenidoSupervisor($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
     if($usuario->tipoUsuarioId == TipoUsuario::SUPERVISOR)
         $contenido = getContenidoSupervisor($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
     else if($usuario->tipoUsuarioId == TipoUsuario::USUARIO)
         $contenido = getContenidoUsuario($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
-   
+            
     return $contenido;
    
 }

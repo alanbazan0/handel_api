@@ -26,7 +26,7 @@ class DepartamentosRepositorio extends RepositorioBase implements IDepartamentos
         if($resultado->mensajeError=='')
         {
             $id = $resultado->valor;
-            $consulta = "INSERT INTO departamentos(id, nombre,estatus)VALUES(?, ?, ?)";
+            $consulta = "INSERT INTO departamentos(id, nombre,estatus, fecha_alta, fecha_modificacion)VALUES(?, ?, ?, NOW(), NOW())";
             if($sentencia = $this->conexion->prepare($consulta))
             {
                 if($sentencia->bind_param('isi', $id, $modelo->nombre, $modelo->estatus))
@@ -49,7 +49,8 @@ class DepartamentosRepositorio extends RepositorioBase implements IDepartamentos
         $consulta = "UPDATE departamentos
                      SET 
                          nombre = ?,
-                         estatus = ?
+                         estatus = ?,
+                        fecha_modificacion = NOW()
                      WHERE id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -70,7 +71,7 @@ class DepartamentosRepositorio extends RepositorioBase implements IDepartamentos
         return $resultado;
     }
 
-    public function consultar($criteriosSeleccion)
+    public function consultar($criteriosSeleccion,$opcional)
     {
         $resultado = new Resultado();
         $registros = array();
@@ -100,6 +101,14 @@ class DepartamentosRepositorio extends RepositorioBase implements IDepartamentos
                         {
                             $registro = $this->crearRegistro($id, $nombre,$fechaAlta, $fechaModificacion, $estatus);
                             array_push($registros,$registro);
+                        }
+                        if($opcional=="true")
+                        {
+//                             if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
+//                             {
+                            $registro = $this->crearRegistro("", "Todos los departamentos","",null, null, null);
+                            array_unshift($registros, $registro);
+                           // }
                         }
                         $resultado->valor = $registros;
                     }

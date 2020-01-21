@@ -34,15 +34,15 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
                 $modelo->empresaId=null;
             if($modelo->sedeId=="")
                 $modelo->sedeId=null;
-            if($modelo->areaId=="")
-                $modelo->areaId=null;
+            if($modelo->departamentoId=="")
+                $modelo->departamentoId=null;
             if($modelo->usuarioId=="")
                 $modelo->usuarioId=null;
             
-            $consulta = "INSERT INTO mensajes(id, mensaje, usuario_id,fecha,asunto, compartir_empresa_id, compartir_sede_id, compartir_area_id, compartir_usuario_id)VALUES(?, ?, ?,NOW(),?,?,?,?,?)";
+            $consulta = "INSERT INTO mensajes(id, mensaje, usuario_id,fecha,asunto, compartir_empresa_id, compartir_sede_id, compartir_departamento_id, compartir_usuario_id)VALUES(?, ?, ?,NOW(),?,?,?,?,?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param('isisiiii', $id, $modelo->mensaje,$usuario->id,$modelo->asunto,$modelo->empresaId,$modelo->sedeId,$modelo->areaId,$modelo->usuarioId))
+                if($sentencia->bind_param('isisiiii', $id, $modelo->mensaje,$usuario->id,$modelo->asunto,$modelo->empresaId,$modelo->sedeId,$modelo->departamentoId,$modelo->usuarioId))
                 {
                     if($sentencia->execute())
                         $resultado->valor = $id;
@@ -143,21 +143,13 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
     public function consultarNumeroMensajesNoLeidos($usuario)
     {
         $resultado = new Resultado();
-//         $consulta = "SELECT COUNT(*)
-//                     FROM mensajes
-//                     WHERE id NOT IN(SELECT mensaje_id FROM mensajes_leidos WHERE usuario_id = ?) 
-//                             and usuario_id != ?
-//                             AND (compartir_empresa_id is null OR compartir_empresa_id = ?)
-//                         	AND (compartir_sede_id is null OR compartir_sede_id = ?)
-//                             AND (compartir_area_id is null OR compartir_area_id = ?)
-//                             AND (compartir_usuario_id is null OR compartir_usuario_id = ?)"; 
         
         $consulta = "SELECT COUNT(*)
                     FROM mensajes
                     WHERE id NOT IN(SELECT mensaje_id FROM mensajes_leidos WHERE usuario_id = ?)
                             AND (compartir_empresa_id is null OR compartir_empresa_id = ?)
                         	AND (compartir_sede_id is null OR compartir_sede_id = ?)
-                            AND (compartir_area_id is null OR compartir_area_id = ?)
+                            AND (compartir_departamento_id is null OR compartir_departamento_id = ?)
                             AND (compartir_usuario_id is null OR compartir_usuario_id = ? or usuario_id=?)";
         
         
@@ -165,7 +157,7 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("iiiiii", $usuario->id,$usuario->empresaId,$usuario->sedeId,$usuario->areaId,$usuario->id,$usuario->id))
+            if($sentencia->bind_param("iiiiii", $usuario->id,$usuario->empresaId,$usuario->sedeId,$usuario->departamentoId,$usuario->id,$usuario->id))
             {
                 if($sentencia->execute())
                 {
@@ -199,7 +191,7 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
         //$filtros = array();
         $where= "WHERE (compartir_empresa_id is null OR compartir_empresa_id = ?)
             	AND (compartir_sede_id is null OR compartir_sede_id = ?)
-                AND (compartir_area_id is null OR compartir_area_id = ?)
+                AND (compartir_departamento_id is null OR compartir_departamento_id = ?)
                 AND (compartir_usuario_id is null OR compartir_usuario_id = ? OR usuario_id= ?)"; 
                     
       
@@ -211,7 +203,7 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
         $consulta = $this->consultaBase . $where . ' ORDER BY fecha DESC';
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param('iiiiii',$usuario->id,$usuario->empresaId,$usuario->sedeId,$usuario->areaId,$usuario->id,$usuario->id))
+            if($sentencia->bind_param('iiiiii',$usuario->id,$usuario->empresaId,$usuario->sedeId,$usuario->departamentoId,$usuario->id,$usuario->id))
             {
                 if($sentencia->execute())
                 {

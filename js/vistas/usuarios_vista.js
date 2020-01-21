@@ -14,6 +14,38 @@ class UsuariosVista extends CatalogoVista
 		this.consultarEmpresasCriterio();
 	}
 	
+	clickNotificacion(event)
+	{	
+		if(vista.toastrData!=null)
+		{
+			 if(vista.toastrData.codigoError==1451)
+			 {
+				vista.mostrarFormularioHTML(HANDEL_API+"/html/modales/usuario_relaciones.php",this, null, 
+				function()
+				{
+					 var catalogos = vista.toastrData.valor.valor;
+					 
+					 var relaciones =  [];
+					 
+					 for(var i= 0; i < catalogos.length;  i++)
+					 {
+						 var catalogo = catalogos[i];
+						 relaciones.push({catalogo: catalogo.nombre, numeroRegistros: catalogo.registros.length});
+					 }
+					 
+					 this._relacionesTabla = new Tabla("relacionesTabla");
+					 this._relacionesTabla.buscar = false;
+					 this._relacionesTabla.paginacion = false;
+					 this._relacionesTabla.columnas = [
+						{longitud:50, 	titulo:"Catálogo",   alias:"catalogo", alineacion:"C"} ,
+						{longitud:300, 	titulo:"Número de registros",   alias:"numeroRegistros", alineacion:"I" } ,
+					]
+					this._relacionesTabla.textoTablaVacia = "";
+					this._relacionesTabla.registros = relaciones;
+				});
+			 }
+		}
+	}
 	
 	
 	crearColumnasGrid()
