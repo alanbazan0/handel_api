@@ -8,6 +8,7 @@ use php\modelos\Resultado;
 include '../interfaces/IUsuariosProcedimientosRepositorio.php';
 include '../modelos/UsuarioProcedimiento.php';
 require_once('RepositorioBase.php');
+require_once('EvidenciasRepositorio.php');
 require_once('UsuariosRepositorio.php');
 require_once("../clases/TipoUsuario.php");
 require_once('../clases/Resultado.php');
@@ -238,7 +239,14 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
         $ultimoDiaMes = date("Y-m-t", strtotime($primerDiaMes));
         
         $consulta = $this->consultaBase .
-        " WHERE U.estatus = 1 AND ((UP.estatus = 1 AND UP.fecha_alta  <=  '$ultimoDiaMes') OR (UP.estatus = 0 AND MONTH(UP.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP.fecha_alta) <= $criteriosSeleccion->ano AND MONTH(UP.fecha_cancelacion) > $criteriosSeleccion->mes AND  YEAR(UP.fecha_cancelacion) >= $criteriosSeleccion->ano))
+        " WHERE UP.estatus = 1 
+                AND U.estatus = 1 
+                AND S.estatus = 1 
+                AND EM.estatus = 1 
+                AND A.estatus = 1 
+                AND D.estatus = 1 
+                AND U.permiso_saha = 1
+                AND ((UP.estatus = 1 AND UP.fecha_alta  <=  '$ultimoDiaMes') OR (UP.estatus = 0 AND MONTH(UP.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP.fecha_alta) <= $criteriosSeleccion->ano AND MONTH(UP.fecha_cancelacion) > $criteriosSeleccion->mes AND  YEAR(UP.fecha_cancelacion) >= $criteriosSeleccion->ano))
                 AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " " .
                 "ORDER BY TU.orden, U.nombre, P.nombre";
         
@@ -272,39 +280,39 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
             return $resultado;
     }
     
-    private function getFiltroEstructura($usuario)
-    {
+//     private function getFiltroEstructura($usuario)
+//     {
         
-        $and = "";
-        switch ($usuario->tipoUsuarioId)
-        {
-            case \TipoUsuario::USUARIO:
-                $and =" AND U.id = $usuario->id";
-                break;
-            case \TipoUsuario::SUPERVISOR:
-                $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
-                $resultado = $usuariosRepositorio->consultarIdsUsuarios($usuario);
-                if($resultado->correcto())
-                {
-                    $usuariosIds = implode(",", $resultado->valor);
-                    $and =" AND U.id IN($usuariosIds)";
-                }
-                break;
-            case \TipoUsuario::COORDINADOR:
-                $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
-                $resultado = $usuariosRepositorio->consultarIdsEmpresasCorporativo($usuario->empresaId);
-                if($resultado->correcto())
-                {
-                    $empresasIds = implode(",", $resultado->valor);
-                    $and =" AND EM.id IN($empresasIds)";
-                }
-                break;
-            case \TipoUsuario::ADMINISTRADOR:
-                break;
-        }
+//         $and = "";
+//         switch ($usuario->tipoUsuarioId)
+//         {
+//             case \TipoUsuario::USUARIO:
+//                 $and =" AND U.id = $usuario->id";
+//                 break;
+//             case \TipoUsuario::SUPERVISOR:
+//                 $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+//                 $resultado = $usuariosRepositorio->consultarIdsUsuarios($usuario);
+//                 if($resultado->correcto())
+//                 {
+//                     $usuariosIds = implode(",", $resultado->valor);
+//                     $and =" AND U.id IN($usuariosIds)";
+//                 }
+//                 break;
+//             case \TipoUsuario::COORDINADOR:
+//                 $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+//                 $resultado = $usuariosRepositorio->consultarIdsEmpresasCorporativo($usuario->empresaId);
+//                 if($resultado->correcto())
+//                 {
+//                     $empresasIds = implode(",", $resultado->valor);
+//                     $and =" AND EM.id IN($empresasIds)";
+//                 }
+//                 break;
+//             case \TipoUsuario::ADMINISTRADOR:
+//                 break;
+//         }
         
-        return $and;
-    }
+//         return $and;
+//     }
     public function consultarProcedimientosPendientes($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
@@ -314,20 +322,33 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
         
         $filtros = array();
         
-        $and = $this->getFiltroEstructura($usuario) ." ";
+        
+        
+        $evidenciasRepositorio = new EvidenciasRepositorio($this->conexion);
+        $filtros = $evidenciasRepositorio->getFiltrosN($usuario,$criteriosSeleccion,false);
+        $and = $this->and($filtros);
+        
+       
         
         
         $primerDiaMes = "$criteriosSeleccion->ano-$criteriosSeleccion->mes-1";
         $ultimoDiaMes = date("Y-m-t", strtotime($primerDiaMes));
         
         $consulta = $this->consultaBase .
-        " WHERE UP.estatus = 1 AND U.estatus = 1 AND S.estatus = 1 AND EM.estatus = 1 AND A.estatus = 1 AND D.estatus = 1 AND ((UP.estatus = 1 AND UP.fecha_alta  <=  '$ultimoDiaMes') OR (UP.estatus = 0 AND MONTH(UP.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP.fecha_alta) <= $criteriosSeleccion->ano AND MONTH(UP.fecha_cancelacion) > $criteriosSeleccion->mes AND  YEAR(UP.fecha_cancelacion) >= $criteriosSeleccion->ano))
+        " WHERE UP.estatus = 1 
+                AND U.estatus = 1 
+                AND S.estatus = 1 
+                AND EM.estatus = 1 
+                AND A.estatus = 1 
+                AND D.estatus = 1 
+                AND U.permiso_saha = 1
+                AND ((UP.estatus = 1 AND UP.fecha_alta  <=  '$ultimoDiaMes') OR (UP.estatus = 0 AND MONTH(UP.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP.fecha_alta) <= $criteriosSeleccion->ano AND MONTH(UP.fecha_cancelacion) > $criteriosSeleccion->mes AND  YEAR(UP.fecha_cancelacion) >= $criteriosSeleccion->ano))
                 AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " ";
         
         if($usuario->tipoUsuarioId==\TipoUsuario::ADMINISTRADOR)
-            $consulta.="ORDER BY TU.orden, U.nombre, P.nombre";
+            $consulta.=" ORDER BY TU.orden, U.nombre, P.nombre";
         else
-            $consulta.="ORDER BY FIELD(U.id,$usuario->id) DESC,U.nombre, P.nombre";
+            $consulta.=" ORDER BY FIELD(U.id,$usuario->id) DESC,U.nombre, P.nombre";
         
         
         

@@ -1090,6 +1090,40 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         return $resultado;
     }
     
+    
+    public function consultarIdsEmpresas($nodoId)
+    {
+        $resultado = new Resultado();
+        $ids = array();
+        if($nodoId!="")
+        {
+            $empresasRepositorio = new EmpresasRepositorio($this->conexion);
+            $resultado = $empresasRepositorio->consultarEstructura(true);
+            if($resultado->correcto())
+            {
+                $estructura = $resultado->valor;
+                $nodo = $this->buscarNodo($nodoId,$estructura);
+                if($nodo!=null)
+                {
+                    array_push($ids, $nodo->nodeId);
+                    $this->agregarEmpresasId($ids,$nodo);
+                    $resultado->valor = $ids;
+                }
+                else
+                {
+                    $resultado->mensajeError="No se encontró la raiz de la empresa $nodo->text";
+                    $resultado->valor = null;
+                }
+            }
+        }
+        else
+        {
+            $resultado->mensajeError="No se encontró la empresa $nodoId";
+            $resultado->valor = null;
+        }
+        return $resultado;
+    }
+    
     private function agregarEmpresasId(&$ids,$nodo)
     {
         if(isset($nodo->nodes))

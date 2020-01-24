@@ -76,19 +76,40 @@ class RepositorioBase
                     if(isset($filtro->tabla))
                         $tabla = $filtro->tabla . ".";
                     if($this->esCadena($filtro->tipoDato))
-                    {                       
-                        $texto .= trim($tabla) . trim($filtro->campo) . " LIKE CONCAT('%',?,'%') ";
+                    {                   
+                        if(isset($filtro->operador))
+                        {
+                            if($filtro->operador=="IN")
+                                $texto .= trim($tabla) . trim($filtro->campo) . " IN (" . $filtro->valor.") ";
+                            else
+                                $texto .= trim($tabla) . trim($filtro->campo) . " " . $filtro->operador . " ? ";
+                        }
+                        else
+                            $texto .= trim($tabla) . trim($filtro->campo) . " LIKE CONCAT('%',?,'%') ";
                     }
                     else if($this->esFecha($filtro->tipoDato))
                     {
                         if(isset($filtro->operador))
-                            $texto .= trim($tabla) . trim($filtro->campo) . " " . $filtro->operador . " ? ";
+                        {
+                            if($filtro->operador=="IN")
+                                $texto .= trim($tabla) . trim($filtro->campo) . " IN (" . $filtro->valor.") ";
+                            else
+                                $texto .= trim($tabla) . trim($filtro->campo) . " " . $filtro->operador . " ? ";
+                        }
                         else
                             $texto .= trim($tabla) . trim($filtro->campo) . " = ? ";
                     }
                     else
                     {
-                        $texto .= trim($tabla) . trim($filtro->campo) . " = ? ";
+                        if(isset($filtro->operador))
+                        {
+                            if($filtro->operador=="IN")
+                                $texto .= trim($tabla) . trim($filtro->campo) . " IN (" . $filtro->valor.") ";
+                            else
+                                $texto .= trim($tabla) . trim($filtro->campo) . " " . $filtro->operador . " ? ";
+                        }
+                        else       
+                            $texto .= trim($tabla) . trim($filtro->campo) . " = ? ";
                     }
                     if($i < count($filtros) - 1)
                         $texto .= " AND ";
@@ -116,18 +137,39 @@ class RepositorioBase
                         $tabla = $filtro->tabla . ".";
                         if($this->esCadena($filtro->tipoDato))
                         {
-                            $texto .= trim($tabla) . trim($filtro->campo) . " LIKE CONCAT('%',?,'%') ";
+                            if(isset($filtro->operador))
+                            {
+                                if($filtro->operador=="IN")
+                                    $texto .= trim($tabla) . trim($filtro->campo) . " IN (" . $filtro->valor.") ";
+                                    else
+                                        $texto .= trim($tabla) . trim($filtro->campo) . " " . $filtro->operador . " ? ";
+                            }
+                            else
+                                $texto .= trim($tabla) . trim($filtro->campo) . " LIKE CONCAT('%',?,'%') ";
                         }
                         else if($this->esFecha($filtro->tipoDato))
                         {
                             if(isset($filtro->operador))
-                                $texto .= trim($tabla) . trim($filtro->campo) . " " . $filtro->operador . " ? ";
-                                else
-                                    $texto .= trim($tabla) . trim($filtro->campo) . " = ? ";
+                            {
+                                if($filtro->operador=="IN")
+                                    $texto .= trim($tabla) . trim($filtro->campo) . " IN (" . $filtro->valor.") ";
+                                    else
+                                        $texto .= trim($tabla) . trim($filtro->campo) . " " . $filtro->operador . " ? ";
+                            }
+                            else
+                                $texto .= trim($tabla) . trim($filtro->campo) . " = ? ";
                         }
                         else
                         {
-                            $texto .= trim($tabla) . trim($filtro->campo) . " = ? ";
+                            if(isset($filtro->operador))
+                            {
+                                if($filtro->operador=="IN")
+                                    $texto .= trim($tabla) . trim($filtro->campo) . " IN (" . $filtro->valor.") ";
+                                    else
+                                        $texto .= trim($tabla) . trim($filtro->campo) . " " . $filtro->operador . " ? ";
+                            }
+                            else
+                                $texto .= trim($tabla) . trim($filtro->campo) . " = ? ";
                         }
                         if($i < count($filtros) - 1)
                             $texto .= " AND ";
@@ -141,6 +183,7 @@ class RepositorioBase
     public function bind_param($sentencia, $filtros)
     {
         $bind = false;
+        $filtros = $this->eliminarFiltrosIN($filtros);
         if(count($filtros)>0)
         {
             $types = $this->types($filtros);
@@ -157,6 +200,29 @@ class RepositorioBase
             $bind = true;
        return $bind;
     }
+    
+    private function eliminarFiltrosIN($filtros)
+    {
+        $filtrosIN = array();
+        for ($i=0; $i<count($filtros);$i++)
+        {   
+           $filtro = $filtros[$i];
+           if(isset($filtro->operador))
+           {
+               if($filtro->operador=="IN")
+               {
+                   
+               }
+               else
+                   array_push($filtrosIN, $filtro);
+               
+           }
+           else
+               array_push($filtrosIN, $filtro);
+        }
+        return $filtrosIN;
+    }
+    
     
     public function get_result($sentencia)
     {

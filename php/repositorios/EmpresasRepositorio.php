@@ -10,6 +10,7 @@ include "../modelos/Empresa.php";
 require_once("RepositorioBase.php");
 require_once("../clases/TipoUsuario.php");
 require_once("../clases/Resultado.php");
+require_once("UsuariosRepositorio.php");
 
 class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositorio
 {
@@ -112,14 +113,26 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
         }
         if($usuario!=null)
         {
+//             if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
+//                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','valor'=>$usuario->empresaId]);
             if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','valor'=>$usuario->empresaId]);
+            {
+                $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+                if($resultado->correcto())
+                {
+                    $empresasIds = implode(",", $resultado->valor);
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','operador'=>'IN','valor'=>$empresasIds]);
+                }
+            }
         }
         
         $where = $this->where($filtros);
         
         $consulta = $this->consultaBase .
                  $where . " order by E.nombre";      
+        
+      //  echo $consulta;
         
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -138,11 +151,11 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
                         }
                         if($opcional=="true")
                         {
-                            if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
-                            {
+                            //if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
+                            //{
                                 $registro = $this->crearRegistro("", "Todas las empresas","",null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,null,null,null);
                                 array_unshift($registros, $registro);
-                            }
+                            //}
                         }
                         $resultado->valor = $registros; 
                     }           

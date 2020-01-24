@@ -376,6 +376,10 @@ class PDF extends FPDF
     {
         $this->conexion = $conexion;
         
+        ini_set('max_execution_time', 1000);
+        ini_set('memory_limit', '50M');
+        set_time_limit(0);
+        
         $repositorio = new UsuariosRepositorio($conexion);
        
         

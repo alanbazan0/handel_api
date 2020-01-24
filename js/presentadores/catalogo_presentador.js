@@ -180,18 +180,30 @@ class CatalogoPresentador
 	 
 	 consultarDepartamentosMensaje()	
 	 {
+//		 var repositorio = new DepartamentosRepositorio(this);		
+//		 repositorio.consultar(this,function(resultado)
+//		 {
+//			if(resultado.mensajeError=="")
+//			{
+//				this.vista.departamentosMensaje = resultado.valor;
+//				this.vista.cambiarDepartamentoMensaje();
+//			}
+//			else
+//				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+//			
+//		 },null,true);
 		 var repositorio = new DepartamentosRepositorio(this);		
-		 repositorio.consultar(this,function(resultado)
+		 repositorio.consultarPorEmpresaSede(this, function(resultado)
 		 {
 			if(resultado.mensajeError=="")
 			{
-				this.vista.departamentosMensaje = resultado.valor;
+				this.vista.departamentosMensaje = resultado.valor;		
 				this.vista.cambiarDepartamentoMensaje();
 			}
 			else
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-			
-		 },null,true);
+		 }
+		,{empresaId:this.vista.modeloMensaje.empresaId,sedeId:this.vista.modeloMensaje.sedeId},true);
 	 }
 	 
 	 
@@ -213,22 +225,22 @@ class CatalogoPresentador
 			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 	 }
 	 
-	 consultarAreasMensaje()	
-	 {
-		 var repositorio = new AreasRepositorio(this);	
-		 repositorio.consultarPorEmpresaSede(this,this.consultarAreasMensajeResultado,this.vista.criteriosSeleccionMensaje.empresaId,this.vista.criteriosSeleccionMensaje.sedeId,true);
-	 }
-	 
-	 consultarAreasMensajeResultado(resultado)
-	 {
-		if(resultado.mensajeError=="")
-		{
-			this.vista.areasMensaje = resultado.valor;
-			this.vista.cambiarAreaMensaje();
-		}
-		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-	 }
+//	 consultarAreasMensaje()	
+//	 {
+//		 var repositorio = new AreasRepositorio(this);	
+//		 repositorio.consultarPorEmpresaSede(this,this.consultarAreasMensajeResultado,this.vista.criteriosSeleccionMensaje.empresaId,this.vista.criteriosSeleccionMensaje.sedeId,true);
+//	 }
+//	 
+//	 consultarAreasMensajeResultado(resultado)
+//	 {
+//		if(resultado.mensajeError=="")
+//		{
+//			this.vista.areasMensaje = resultado.valor;
+//			this.vista.cambiarAreaMensaje();
+//		}
+//		else
+//			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+//	 }
 	 
 	 consultarUsuariosMensaje()	
 	 {

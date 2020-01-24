@@ -144,6 +144,7 @@ class ReportesEvidenciasVista extends CatalogoVista
 		 {				    
 			empresaId: $('#empresaSelectCriterio').val(),
 			sedeId: $('#sedeSelectCriterio').val(),
+			usuarioId: $('#usuarioSelectCriterio').val()
 		 }
 		 return criteriosSeleccion;
 	}		

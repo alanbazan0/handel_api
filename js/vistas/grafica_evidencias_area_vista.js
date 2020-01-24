@@ -48,7 +48,7 @@ class GraficaEvidenciasAreaVista extends CatalogoVista
 		
 		
 		this.consultarEmpresasCriterio();
-		this.consultarDepartamentosCriterio();
+		
 		//this.consultar();
 		
 	}
@@ -60,7 +60,7 @@ class GraficaEvidenciasAreaVista extends CatalogoVista
 
 	cambiarSedeCriterio()
 	{
-		//this.consultarAreasCriterio();
+		this.consultarDepartamentosCriterio();
 	}
 
 	
@@ -78,6 +78,7 @@ class GraficaEvidenciasAreaVista extends CatalogoVista
 	
 	consultarSedesCriterio()
 	{
+		this.cargandoOpciones("#departamentoSelectCriterio");
 		this.cargandoOpciones("#sedeSelectCriterio");
 		this.presentador.consultarSedesCriterio();
 	}
@@ -91,11 +92,7 @@ class GraficaEvidenciasAreaVista extends CatalogoVista
 	set sedesCriterio(registros)
 	{		
 		this.cargarOpciones('#sedeSelectCriterio', registros);
-		if(this.consultoGrid==false)
-		{
-			this.consultar();
-			this.consultoGrid=true;
-		}
+		
 	}
 	
 	set areasCriterio(registros)
@@ -115,6 +112,11 @@ class GraficaEvidenciasAreaVista extends CatalogoVista
 	set departamentosCriterio(registros)
 	{		
 		this.cargarOpciones('#departamentoSelectCriterio', registros);
+		if(this.consultoGrid==false)
+		{
+			this.consultar();
+			this.consultoGrid=true;
+		}
 	}
 	
 	get criteriosSeleccion()

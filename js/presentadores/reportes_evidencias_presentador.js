@@ -18,7 +18,7 @@ class ReportesEvidenciasPresentador extends CatalogoPresentador
 			}
 			else
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-		 });
+		 },this.vista.criteriosSeleccion);
 	 }
 	 
 	 validarMeses(anoMes)

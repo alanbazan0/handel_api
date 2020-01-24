@@ -53,6 +53,15 @@ try
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->consultarPorLlaves($llaves);
             break;
+            case 'consultarPorEmpresaSede':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $opcional = REQUEST('opcional');
+                $resultado = $repositorio->consultarPorEmpresaSede($usuario,$criteriosSeleccion,$opcional);
+            break;
             case 'eliminar':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);

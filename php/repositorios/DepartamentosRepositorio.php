@@ -17,7 +17,7 @@ class DepartamentosRepositorio extends RepositorioBase implements IDepartamentos
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = "SELECT id, nombre,IFNULL(DATE_FORMAT(fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,IFNULL(DATE_FORMAT(fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') fecha_modificacion,estatus FROM departamentos D";
+        $this->consultaBase = "SELECT D.id, D.nombre,IFNULL(DATE_FORMAT(D.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,IFNULL(DATE_FORMAT(D.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') fecha_modificacion,D.estatus FROM departamentos D";
     }
 
     public function insertar(Departamento $modelo)
@@ -84,6 +84,7 @@ class DepartamentosRepositorio extends RepositorioBase implements IDepartamentos
                 if($criteriosSeleccion->nombre!="" && $criteriosSeleccion->nombre!=null)
                    array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'D','campo'=>'nombre','valor'=>$criteriosSeleccion->nombre]);
             }
+            
             $where = $this->where($filtros);
         }
         $consulta = $this->consultaBase .
@@ -123,6 +124,67 @@ class DepartamentosRepositorio extends RepositorioBase implements IDepartamentos
         }
         else
             $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        return $resultado;
+    }
+    
+    public function consultarPorEmpresaSede($usuario,$criteriosSeleccion, $opcional)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = array();
+        $where="";
+        
+        if($criteriosSeleccion!=null)
+        {
+            if(isset($criteriosSeleccion->empresaId))
+            {
+                if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+            }
+            if(isset($criteriosSeleccion->sedeId))
+            {
+                if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+            }
+            
+            $where = $this->where($filtros);
+        }
+            
+        $consulta = str_replace("SELECT","SELECT DISTINCT",$this->consultaBase) .
+                "  INNER JOIN usuarios U ON U.departamento_id = D.id ".            
+        $where . "order by D.nombre";
+            
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $nombre,$fechaAlta, $fechaModificacion, $estatus))
+                    {
+                        while($row = $sentencia->fetch())
+                        {
+                            $registro = $this->crearRegistro($id, $nombre,$fechaAlta, $fechaModificacion, $estatus);
+                            array_push($registros,$registro);
+                        }
+                        if($opcional=="true")
+                        {
+                            $registro = $this->crearRegistro("", "Todas los departamentos",null, null,null);
+                            array_unshift($registros, $registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
         return $resultado;
     }
 

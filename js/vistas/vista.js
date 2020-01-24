@@ -355,7 +355,7 @@ class Vista
 						});
 						
 						_this.consultarEmpresasMensaje();
-						_this.consultarDepartamentosMensaje();
+					
 						
 					});
 				
@@ -507,9 +507,10 @@ class Vista
 		
 		cambiarSedeMensaje()
 		{
-			this.cargandoOpciones("#areaSelectMensaje");
+			this.cargandoOpciones("#departamentoSelectMensaje");
 			this.cargandoOpciones("#usuarioSelectMensaje");
-			this.consultarAreasMensaje();
+			this.consultarDepartamentosMensaje();
+			//this.consultarAreasMensaje();
 		}
 		
 		cambiarAreaMensaje()

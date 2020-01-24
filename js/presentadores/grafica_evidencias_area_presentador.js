@@ -38,16 +38,16 @@ class GraficaEvidenciasAreaPresentador extends CatalogoPresentador
 	 consultarDepartamentosCriterio()	
 	 {
 		 var repositorio = new DepartamentosRepositorio(this);		
-		 repositorio.consultar(this, function(resultado)
+		 repositorio.consultarPorEmpresaSede(this, function(resultado)
 		 {
 			if(resultado.mensajeError=="")
 			{
-				this.vista.departamentosCriterio = resultado.valor;
+				this.vista.departamentosCriterio = resultado.valor;			
 			}
 			else
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-			
-		 },null,true);
+		 }
+		,{empresaId:this.vista.criteriosSeleccion.empresaId,sedeId:this.vista.criteriosSeleccion.sedeId},true);
 	 }
 	 
 	 

@@ -63,24 +63,24 @@ class GraficaEvidenciasUsuarioPresentador extends CatalogoPresentador
 				this.vista.cambiarSedeCriterio();
 			}
 			else
-				this.vista.mostrarMensaje("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		 }
 		,this.vista.criteriosSeleccion.empresaId,true);
 	 }
 	 
-	 consultarAreasCriterio()	
+	 consultarDepartamentosCriterio()	
 	 {
-		 var repositorio = new AreasRepositorio(this);		
+		 var repositorio = new DepartamentosRepositorio(this);		
 		 repositorio.consultarPorEmpresaSede(this, function(resultado)
 		 {
 			if(resultado.mensajeError=="")
 			{
-				this.vista.areasCriterio = resultado.valor;			
+				this.vista.departamentosCriterio = resultado.valor;			
 			}
 			else
-				this.vista.mostrarMensaje("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		 }
-		,this.vista.criteriosSeleccion.empresaId,this.vista.criteriosSeleccion.sedeId,true);
+		,{empresaId:this.vista.criteriosSeleccion.empresaId,sedeId:this.vista.criteriosSeleccion.sedeId},true);
 	 }
 	 
 	
