@@ -149,12 +149,12 @@ try
                 $resultado = $repositorio->consultarPorcentajesUsuarios($usuario,$criteriosSeleccion);
                 break;
             case 'consultarAnosMeses':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
+//                 session_start();
+//                 $usuario = null;
+//                 if(isset($_SESSION['usuario']))
+//                     $usuario = $_SESSION['usuario'];
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarAnosMeses($usuario,$criteriosSeleccion);
+                $resultado = $repositorio->consultarAnosMeses($criteriosSeleccion);
             break;
             case 'consultarAnos':
                 session_start();
@@ -267,10 +267,13 @@ function insertar($modelo,$conexion,$repositorio,$diaLimite)
                         $nombreArchivo = "evidencia".$id."_" .$nombreArchivoSubido;
                         
                         $resultado=$adminstradorArchivos->subirArchivo($carpeta,$archivo,$nombreArchivo);
-                        if($resultado->valor==$nombreArchivo)
+                        if($resultado->valor==true)
                             $conexion->commit();
-                            else
-                                $conexion->rollback();
+                        else
+                        {
+                            $resultado->mensajeError="No se pudo subir el archivo. Intente de nuevo mas tarde.";
+                            $conexion->rollback();
+                        }
                     }
                     else
                         $conexion->commit();
@@ -385,10 +388,14 @@ function actualizar($modelo,$conexion,$repositorio,$diaLimite)
                 $nombreArchivo = "evidencia".$modelo->id."_" .$nombreArchivoSubido;
                 
                 $resultado=$adminstradorArchivos->subirArchivo($carpeta,$archivo,$nombreArchivo);
-                if($resultado->valor==$nombreArchivo)
+                if($resultado->valor==true)
                     $conexion->commit();
                 else
+                {
+                    $resultado->mensajeError="No se pudo subir el archivo. Intente de nuevo mas tarde.";
                     $conexion->rollback();
+                }
+                    
             }
             else
                 $conexion->commit();

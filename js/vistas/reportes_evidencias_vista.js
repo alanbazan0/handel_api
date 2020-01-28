@@ -143,9 +143,13 @@ class ReportesEvidenciasVista extends CatalogoVista
 		 var criteriosSeleccion = 
 		 {				    
 			empresaId: $('#empresaSelectCriterio').val(),
-			sedeId: $('#sedeSelectCriterio').val(),
-			usuarioId: $('#usuarioSelectCriterio').val()
+			sedeId: $('#sedeSelectCriterio').val()
 		 }
+		 
+		 if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
+			 criteriosSeleccion.supervisorCoordinadorId= $('#usuarioSelectCriterio').val();
+		 else
+			 criteriosSeleccion.supervisorCoordinadorId= this.usuario.id;
 		 return criteriosSeleccion;
 	}		
 	

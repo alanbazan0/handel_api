@@ -17,8 +17,8 @@ include '../clases/AdministradorConexion.php';
 include '../clases/AdministradorCorreo.php';
 include '../modelos/Usuario.php';
 require_once('../clases/TipoUsuario.php');
-include '../repositorios/UsuariosRepositorio.php';
-include '../repositorios/EvidenciasRepositorio.php';
+require_once('../repositorios/UsuariosRepositorio.php');
+require_once('../repositorios/EvidenciasRepositorio.php');
 require_once('../repositorios/UsuariosProcedimientosRepositorio.php');
 //require_once('../reportes/reporte_evidencias.php');
 
@@ -331,7 +331,9 @@ function getContenidoCoordinador($conexion,UsuariosRepositorio $usuariosReposito
 //             $pdf->AliasNbPages();
 //             $pdf->generar($conexion,$usuarioId,$mes,$ano);
 //             $pdf->guardar();
-            
+            $ano=  date("Y");
+            $mes = date("m");
+            $contenido .="<br>" .getImageLink("Descargar","https://api.apps-handel.com/php/reportes/reporte_evidencias.php?usuarioId=$usuario->id&mes=$mes&ano=$ano");
            
             $contenido .= "<br>".getCaricatura("https://api.apps-handel.com/images/caricatura/Little_Business_Girl-78.png",160);
             $contenido .= "<br>".getGracias();
@@ -342,6 +344,14 @@ function getContenidoCoordinador($conexion,UsuariosRepositorio $usuariosReposito
             
     }
     return $contenido;
+}
+
+function getImageLink($titulo, $link)
+{
+    $html ="<div style='text-align:center; display: inline-block; width:90%'>";
+    $html .= "<a href='$link'><button style='width:120px;height:40px;color:white;border-radius:20px;background-color:#3c8dbc;border: none;font-weight:bold'>$titulo</button></a>";
+    $html .="</div>";
+    return $html;
 }
 
 function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,UsuariosProcedimientosRepositorio $usuariosProcedimientosRepositorio,EvidenciasRepositorio $evidenciasRepositorio,$usuario,$dia)
@@ -780,6 +790,11 @@ function getContenidoSupervisor($conexion,UsuariosRepositorio $usuariosRepositor
             
             $contenido.="<div style='text-align:center;width:100%'>
                         <div style='text-align:left; display: inline-block; width:90%'>";
+            
+            $ano=  date("Y");
+            $mes = date("m");
+            $contenido .="<br>" .getImageLink("Descargar","https://api.apps-handel.com/php/reportes/reporte_evidencias.php?usuarioId=$usuario->id&mes=$mes&ano=$ano");
+            
             
             $contenido .= "<br>".getCaricatura("https://api.apps-handel.com/images/caricatura/Little_Business_Girl-78.png",160);
             $contenido .= "<br>".getGracias();

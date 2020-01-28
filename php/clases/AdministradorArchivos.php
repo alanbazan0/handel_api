@@ -90,8 +90,11 @@ class AdministradorArchivos
 //                 {
                     
                     $dirpath = dirname(getcwd());
-                    move_uploaded_file($file_tmp,$dirpath.'/'.$carpeta.'/'.$nombreArchivo);
-                    $resultado->valor =$nombreArchivo;
+                    $path = $dirpath.'/'.$carpeta.'/'.$nombreArchivo;
+                    move_uploaded_file($file_tmp,$path);
+                    
+                    if(file_exists($path))
+                        $resultado->valor =true;
                     
                    
                 //}

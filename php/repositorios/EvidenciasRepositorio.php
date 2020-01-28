@@ -939,59 +939,67 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
 //             return $resultado;
 //     }
     
-    public function consultarAnosMeses($usuario,$criteriosSeleccion)
+    public function consultarAnosMeses($criteriosSeleccion)
     {
         $resultado = new Resultado();
         $registros = array();
         
-        $filtros = $this->getFiltrosN($usuario,$criteriosSeleccion,false);
-        $where = $this->where($filtros);
-        
-        $consulta = "SELECT YEAR(E.fecha_alta) ano, MONTH(E.fecha_alta) mes
+        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+        $resultado = $usuariosRepositorio->consultarPorLLaves((object) ["id"=>$criteriosSeleccion->supervisorCoordinadorId]);
+        if($resultado->correcto())
+        {
+            $usuario = $resultado->valor;
+            $filtros = $this->getFiltrosN($usuario,$criteriosSeleccion,false);
+            $where = $this->where($filtros);
+            
+            $consulta = "SELECT YEAR(E.fecha_alta) ano, MONTH(E.fecha_alta) mes
                     FROM evidencias E
-                        INNER JOIN  usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
+                        INNER JOIN usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
                         INNER JOIN usuarios U ON U.id = UP.usuario_id
                         INNER JOIN sedes S ON S.id = U.sede_id
-                        INNER JOIN empresas EM ON EM.id = S.empresa_id 
+                        INNER JOIN empresas EM ON EM.id = S.empresa_id
                         INNER JOIN departamentos D ON D.id = U.departamento_id";
-
-        $consulta .= $where;
-        
-        $consulta.=" GROUP BY ano, mes
+            
+            $consulta .= $where;
+            
+            $consulta.=" GROUP BY ano, mes
                     ORDER BY ano desc, mes desc";
-        
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if($this->bind_param($sentencia, $filtros))
+            
+            
+            if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->execute())
+                if($this->bind_param($sentencia, $filtros))
                 {
-                    if($sentencia->bind_result($ano, $mes))
+                    if($sentencia->execute())
                     {
-                        while($sentencia->fetch())
+                        if($sentencia->bind_result($ano, $mes))
                         {
-                            $mesNombre = $this->getNombreMes($mes);
-                            $registro= (object) [
-                                'ano' =>  $ano,
-                                'mes' =>  $mes,
-                                'mesNombre' =>  $mesNombre
-                            ];
-                            array_push($registros,$registro);
+                            while($sentencia->fetch())
+                            {
+                                $mesNombre = $this->getNombreMes($mes);
+                                $registro= (object) [
+                                    'ano' =>  $ano,
+                                    'mes' =>  $mes,
+                                    'mesNombre' =>  $mesNombre
+                                ];
+                                array_push($registros,$registro);
+                            }
+                            $resultado->valor = $registros;
                         }
-                        $resultado->valor = $registros;
+                        else
+                            $resultado->mensajeError = 'Falló el enlace del resultado.';
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = 'Falló el enlace de parámetros';
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
         }
-        else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
-            return $resultado;
+        
+        return $resultado;
     }
     
     public function consultarAnos($usuario,$criteriosSeleccion)
