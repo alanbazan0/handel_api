@@ -23,6 +23,7 @@ class Usuario
     public $permisoSIVAH;
     public $permiso10y7;
     public $departamentoId;
+    public $corporativo;
     
 }
 

@@ -10,7 +10,7 @@ include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/AuditoriasRepositorio.php';
 include '../repositorios/EmpresasRepositorio.php';
-
+require_once('../highcharts/highchartutils.php');
 
 class VariableStream
 {
@@ -430,17 +430,23 @@ class PDF extends FPDF
                      $this->SetFont($this->font, '', 10);
                      $this->Cell($w2, 10, $this->texto($pregunta->valor), $borde, 0, 'L');
                      
-                     list($lat, $lng) = explode(",", $pregunta->valor);
-                     $lat =   str_replace('lat:','',$lat);
-                     $lng =   str_replace('lng:','',$lng);
+                     if($pregunta->valor!="")
+                     {
+                         list($lat, $lng) = explode(",", $pregunta->valor);
+                         $lat =   str_replace('lat:','',$lat);
+                         $lng =   str_replace('lng:','',$lng);
+                         
+                         $imagen = "http://maps.googleapis.com/maps/api/staticmap?zoom=13&size=400x200&maptype=roadmap&markers=color:red|label:Ubicación|$lat,$lng&key=AIzaSyB7dydU6J78km_U76v44CHP5M3vol2igM8";
+                         
+                         
+                         $this->setY($this->GetY() + 15,$altoFoto,null);
+                         $logo = file_get_contents($imagen);
+                         
+                         if($logo!=null)
+                            $this->MemImage($logo, 50, null);
+                     }  
                      
-                     $imagen = "http://maps.googleapis.com/maps/api/staticmap?zoom=13&size=400x200&maptype=roadmap&markers=color:red|label:Ubicación|$lat,$lng&key=AIzaSyDkJzWNXPN2NUF2xD_OaAuVOqbJRx8dlQ4";
-                     $logo = file_get_contents($imagen);
-                     
-                     
-                     $this->setY($this->GetY() + 15,$altoFoto,null);
-                     
-                     $this->MemImage($logo, 50, null);
+                   
                  }
                  else if($pregunta->tipo=="ft")
                  {

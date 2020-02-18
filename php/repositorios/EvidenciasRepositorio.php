@@ -432,7 +432,14 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         if($registro->total!=0)
         {
             $registro->porcentajeCumplimiento = $registro->cumplidas  * 100 / $registro->total;
-            $registro->porcentajeCumplimiento = number_format($registro->porcentajeCumplimiento, 1, '.', '');
+            //$registro->porcentajeCumplimiento = number_format($registro->porcentajeCumplimiento, 1, '.', '');
+            
+            $registro->porcentajeCumplimiento = bcdiv($registro->porcentajeCumplimiento, '1', 1);
+            
+            list($enteros, $decimales) = explode(".", $registro->porcentajeCumplimiento);
+            if($decimales=="0")
+                $registro->porcentajeCumplimiento = str_replace(".$decimales","",$registro->porcentajeCumplimiento);
+            
         }
     }
     
@@ -1574,14 +1581,14 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         else
             $registro->administradorFotoPerfil =  "php/fotos/default.jpg";
     
-        if($registro->validada==1) 
-        {
+//         if($registro->validada==1) 
+//         {
             if($registro->validadorId==null || $registro->validadorId=="")
             {
                 $registro->validadorId = $registro->administradorId;
                 $registro->validadorNombre = $registro->administradorNombre;
                 $registro->validadorApellido = $registro->administradorApellido;
-                $registro->validadorNombreCompleto = $registro->administradorNombre . " " . $registro->administradorApellido;
+                $registro->validadorNombreCompleto = $registro->validadorNombre . " " . $registro->validadorApellido;
                 $registro->validadorFotoPerfil =  "../fotos/usuario". $registro->administradorId .".jpg";
                 if(file_exists($registro->validadorFotoPerfil))
                     $registro->validadorFotoPerfil =  "php/fotos/usuario". $registro->administradorId .".jpg";
@@ -1598,7 +1605,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     else
                         $registro->validadorFotoPerfil =  "php/fotos/default.jpg";
             }
-        }
+       // }
        
              
             
@@ -1761,3 +1768,4 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
     }
     
 }
+?>

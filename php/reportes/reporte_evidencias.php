@@ -395,6 +395,11 @@ class PDF extends FPDF
         if($resultado->mensajeError=="")
         {
             $this->usuario =  $resultado->valor;
+            
+            $this->usuario->corporativo = $repositorio->esCoordinadorCorporativo($this->usuario);
+            
+            
+            
             $this->mes = $mes;
             $this->ano = $ano;
             $this->SetFont($this->font,'',20);
@@ -438,30 +443,99 @@ class PDF extends FPDF
         $nombreMes = ucfirst($this->getNombreMes($this->mes));
         $nombreMesAnterior = ucfirst($this->getNombreMes($mesAnterior));
         
-        $chartWidth = 120;
+       
       
         
         $repositorio = new EvidenciasRepositorio($this->conexion);
         
-        $resultado = $repositorio->consultarPorcentajesEvidencias($this->usuario, $criteriosSeleccion);
-        if($resultado->correcto())
+        if($this->usuario->corporativo)
         {
-            $porcentajes = $resultado->valor;
-            $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
-            $image = toPieChart("Cumplimiento global del área <br>($nombreMes)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
-            if($image!='')
-                $this->Image($image,0 ,40, $chartWidth);
+            $chartWidth = 80;
+            $resultado= $repositorio->consultarPorcentajesEvidencias($this->usuario, $criteriosSeleccion);
+            if($resultado->correcto())
+            {
+                $porcentajesMes = $resultado->valor;
+                $resultado= $repositorio->consultarPorcentajesEvidencias($this->usuario, $criteriosSeleccionAnterior);
+                if($resultado->correcto())
+                {
+                    $porcentajesMesAnterior = $resultado->valor;
+                    $meses = array();
+                    
+                    $mes = (object) [];
+                    $mes->mes = $criteriosSeleccion->mes;
+                    $mes->nombreMes = $this->getNombreMes($criteriosSeleccion->mes);
+                    $mes->enviadas = $porcentajesMes[0]->valor;
+                    $mes->pendientes = $porcentajesMes[1]->valor;
+                    $mes->justificadas = $porcentajesMes[2]->valor;
+                    $mes->total =  $mes->enviadas +  $mes->pendientes + $mes->justificadas;
+                    $mes->porcentajeEnviadas = format($mes->enviadas * 100 /  $mes->total);
+                    $mes->porcentajePendientes = format($mes->pendientes * 100 /  $mes->total);
+                    $mes->porcentajeJustificadas = format($mes->justificadas * 100 /  $mes->total);
+                    array_push($meses, $mes);
+                    
+                    $mes = (object) [];
+                    $mes->mes = $criteriosSeleccionAnterior->mes;
+                    $mes->nombreMes = $this->getNombreMes($criteriosSeleccionAnterior->mes);
+                    $mes->enviadas = $porcentajesMesAnterior[0]->valor;
+                    $mes->pendientes = $porcentajesMesAnterior[1]->valor;
+                    $mes->justificadas = $porcentajesMesAnterior[2]->valor;
+                    $mes->total =  $mes->enviadas +  $mes->pendientes + $mes->justificadas;
+                    $mes->porcentajeEnviadas = format($mes->enviadas * 100 /  $mes->total);
+                    $mes->porcentajePendientes = format($mes->pendientes * 100 /  $mes->total);
+                    $mes->porcentajeJustificadas = format($mes->justificadas * 100 /  $mes->total);
+                    array_push($meses, $mes);
+                    
+                    //var_dump($meses);
+                    
+                    $image = graficaBarrasMesActualAnterior("Cumplimiento global del área",'','Cumplimiento global',$meses,"nombreMes","porcentajeCumplimiento",true,100);
+                    if($image!='')
+                        $this->Image($image,20 ,40, $chartWidth);
+                }
+                
+            }
+            
+            
+            $resultado = $repositorio->consultarPorcentajesEmpresas($this->usuario, $criteriosSeleccion);
+            if($resultado->correcto())
+            {
+                $porcentajes = $resultado->valor;
+                $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
+                $image = toColumnChart("Cumplimiento por empresa <br>($nombreMes)",'','Areas',$porcentajes,"nombre","porcentajeCumplimiento",$colores,false,100);
+                if($image!='')
+                    $this->Image($image,110, 40, $chartWidth);
+            }
+        }
+        else 
+        {
+            $chartWidth = 120;
+            $resultado = $repositorio->consultarPorcentajesEvidencias($this->usuario, $criteriosSeleccion);
+            if($resultado->correcto())
+            {
+                $porcentajes = $resultado->valor;
+                $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
+                $image = toPieChart("Cumplimiento global del área <br>($nombreMes)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
+                if($image!='')
+                    $this->Image($image,0 ,40, $chartWidth);
+            }
+            
+            $resultado = $repositorio->consultarPorcentajesEvidencias($this->usuario, $criteriosSeleccionAnterior);
+            if($resultado->correcto())
+            {
+                $porcentajes = $resultado->valor;
+                $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
+                $image = toPieChart("Cumplimiento global del área <br>($nombreMesAnterior)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
+                if($image!='')
+                    $this->Image($image, 95 ,40,$chartWidth);
+            }
         }
         
-        $resultado = $repositorio->consultarPorcentajesEvidencias($this->usuario, $criteriosSeleccionAnterior);
-        if($resultado->correcto())
-        {
-            $porcentajes = $resultado->valor;
-            $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
-            $image = toPieChart("Cumplimiento global del área <br>($nombreMesAnterior)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
-            if($image!='')
-                $this->Image($image, 95 ,40,$chartWidth);
-        }
+       
+        
+        $this->SetX(0);
+        $this->SetY(120);
+        $this->SetFont($this->font,'I',9);
+        $this->Cell(0, 10, $this->texto("Es aconsejable mantener el porcentaje de justificaciones (gráfica amarilla) en no más del 15%"),0,1,'C',1);
+        
         
         $chartWidth= 150;
         $resultado = $repositorio->consultarPorcentajesAreas($this->usuario, $criteriosSeleccion);
@@ -584,7 +658,13 @@ class PDF extends FPDF
                 $this->Image($image, 95 ,40,$chartWidth);
         }
         
-        $chartWidth= 110;
+        $this->SetX(0);
+        $this->SetY(120);
+        $this->SetFont($this->font,'I',9);
+        $this->Cell(0, 10, $this->texto("Es aconsejable mantener el porcentaje de justificaciones (gráfica amarilla) en no más del 15%"),0,1,'C',1);
+        
+        
+        $chartWidth= 100;
         $resultado = $repositorio->consultarPorcentajesUsuarios($this->usuario, $criteriosSeleccion);
         if($resultado->correcto())
         {
@@ -592,7 +672,7 @@ class PDF extends FPDF
             $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
             $image = toColumnChart("Porcentaje de cumplimiento <br>($nombreMes)",'','Usuarios',$porcentajes,"nombreCompleto","porcentajeCumplimiento",$colores,false,100);
             if($image!='')
-                $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,120, $chartWidth);
+                $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,130, $chartWidth);
         }
         
         $resultado = $repositorio->consultarPorcentajesUsuarios($this->usuario, $criteriosSeleccionAnterior);
@@ -732,10 +812,9 @@ class PDF extends FPDF
         $filename ="../reportes_evidencia/";
         $filename.=$this->calcularFolio();
         $filename.=".pdf";
-        
-        if (file_exists($filename))
+        if(file_exists($filename))
         {
-            header('Location:'. $filename);
+           header('Location: '.$filename);
         }
     }
     
@@ -1163,7 +1242,11 @@ class PDF extends FPDF
         
         $titulo="";
         if($this->usuario->tipoUsuarioId==TipoUsuario::COORDINADOR)
+        {
             $titulo = "REPORTE DE COORDINADOR";
+            if($this->usuario->corporativo)
+                $titulo.= " CORPORATIVO";
+        }
         else  if($this->usuario->tipoUsuarioId==TipoUsuario::SUPERVISOR)
             $titulo = "REPORTE DE SUPERVISOR";
         $this->Cell(0, 15, $this->texto($titulo),0,1,'C',1);       
@@ -1174,7 +1257,7 @@ class PDF extends FPDF
         
         $tipoUsuario = "";
         if($this->usuario->tipoUsuarioId == TipoUsuario::SUPERVISOR)
-         $tipoUsuario = "Supervisor";
+            $tipoUsuario = "Supervisor";
         else
             $tipoUsuario = "Coordinador";
         //Coordinador
@@ -1243,15 +1326,31 @@ class PDF extends FPDF
             if($total!=0)
                 $porcentajeCumplimiento = $cumplimiento * 100 / $total;
             
-            $porcentajeCumplimiento=    number_format($porcentajeCumplimiento, 1, '.', '');
+            //$porcentajeCumplimiento=    number_format($porcentajeCumplimiento, 1, '.', '');
+            $porcentajeCumplimiento = bcdiv($porcentajeCumplimiento, '1', 1);
+            
+            list($enteros, $decimales) = explode(".", $porcentajeCumplimiento);
+            if($decimales=="0")
+                $porcentajeCumplimiento = str_replace(".$decimales","",$porcentajeCumplimiento);
             
             $this->SetY(200);
             $this->SetFont($this->font, 'B', 15);
             $this->Cell(0, 10, $this->texto("$porcentajeCumplimiento% de cumplimiento en el mes"), $borde, 0, 'C');
         }
         
-      
-        
+        $this->SetFont($this->font, '', 12);
+        $resultado = $repositorio->consultarPorcentajesEmpresas($this->usuario, $criteriosSeleccion);
+        if($resultado->correcto())
+        {
+            $empresas = $resultado->valor;
+            
+            for($i = 0; $i < count($empresas); $i++)
+            {
+                $empresa = $empresas[$i];
+                $this->Ln();
+                $this->Cell(0, 10, $this->texto($empresa->nombre." ".$empresa->porcentajeCumplimiento ."%"), $borde, 0, 'C');
+            }
+        }
        
     }
     
@@ -1302,6 +1401,151 @@ class PDF extends FPDF
     }
 }
 
+function graficaBarrasMesActualAnterior($title, $yTitle, $serieTitle, $rows, $xField, $yField, $showInLegend,$max)
+{
+    $categories = array();
+    $data = array();
+    
+    $data = array();
+    
+    $data1 = array();
+    $data2 = array();
+    $data3 = array();
+    
+    $fecha = new DateTime();
+    $mesActual = (int)$fecha->format("m");
+    
+    for ($i = 0; $i < count($rows); $i++)
+    {
+        $row = $rows[$i];
+        
+//         $newRow= (object) [
+//             'name' =>  $row->$xField,
+//             'y' => (float)$row->cumplidas,
+//             'color' => "#00a1ff"
+            
+//         ];
+        
+        $newRow1= (object) [
+            'name' =>  $row->$xField,
+            'y' => (float)$row->porcentajeEnviadas,
+            'color' => "#00a65a"
+        ];
+        
+        $newRow2= (object) [
+            'name' =>  $row->$xField,
+            'y' => (float)$row->porcentajePendientes,
+            'color' => "#dd4b39"
+            
+        ];
+        
+        $newRow3= (object) [
+            'name' =>  $row->$xField,
+            'y' => (float)$row->porcentajeJustificadas,
+            'color' => "#f39c12"
+            
+            
+        ];
+        
+        array_push($categories, $row->$xField);
+        array_push($data1, $newRow1);
+        array_push($data2, $newRow2);
+        array_push($data3, $newRow3);
+    }
+    
+    $yAxis = (object) [ 'title' => (object) [ 'text'=> $yTitle]];
+    if($max>0)
+    {
+        $yAxis->min= 0;
+        $yAxis->max= $max;
+        $yAxis->tickInterval= 10;
+    }
+    
+    
+    
+    
+    $highchart = (object)
+    [
+        'chart' => (object) [ 'type' => "column"],
+        'title' => (object) [ 'text'=> $title],
+        'credits' => (object) ['enabled' => false],
+        'xAxis' => (object) [ 'categories' => $categories],
+        'plotOptions' => (object)
+        [
+            'column'=> (object)[
+                'dataLabels'=>(object)
+                [
+                    'enabled'=>true,
+                    'crop'=>false,
+                    'overflow' =>'none',
+                    "inside"=> true,
+                    'color'=> 'black',
+                    'style'=> (object)
+                    [
+                        'fontSize' => 10,
+                        'textOutline' => '0px'
+                    ]
+                ]
+            ]
+        ],
+        'yAxis' => $yAxis,
+        'series' => array(
+            (object) ['name' => "Enviadas", 'data' => $data1,  'showInLegend' => $showInLegend, "color"=>"#60d836"],
+            (object) ['name' => "Pendientes", 'data' => $data2,  'showInLegend' => $showInLegend, "color"=>"#f9c320"],
+            (object) ['name' => "Justificadas", 'data' => $data3,  'showInLegend' => $showInLegend, "color"=>"#fe2500"]
+        )
+    ];
+    
+    $data= (object) [
+        'async' =>  true,
+        'type' => 'image/jpeg',
+        'width' => 1080,
+        'options' => $highchart
+    ];
+    
+    $options = array(
+        'http' => array(
+            'method'  => 'POST',
+            'content' => json_encode( $data ),
+            'header'=>  "Content-Type: application/json\r\n" .
+            "Accept: application/json\r\n"
+        )
+    );
+    
+    $url = 'http://export.highcharts.com/';
+    
+    $context  = stream_context_create( $options );
+    
+    
+    
+    $result = file_get_contents( $url, false, $context );
+    
+    $charturl='';
+    if ($result === FALSE)
+    {
+        
+    }
+    else
+    {
+        $charturl = $url . $result;
+        
+    }
+    return $charturl;
+    
+    //  return 'ok';
+    
+}
+
+function format($valor)
+{
+    $valor = bcdiv($valor, '1', 1);
+    
+    list($enteros, $decimales) = explode(".", $valor);
+    if($decimales=="0")
+        $valor = str_replace(".$decimales","",$valor);
+    return $valor;
+}
+
 
 $administrador_conexion = new AdministradorConexion();
 try
@@ -1312,12 +1556,17 @@ try
         $usuarioId = REQUEST('usuarioId');
         $mes =(int) REQUEST('mes');
         $ano =(int) REQUEST('ano');
-         $pdf = new PDF();
-         $pdf->AliasNbPages();
-         $pdf->generar($conexion,$usuarioId,$mes,$ano);
-         $pdf->guardar();
-         $pdf->abrir();
-            
+        if($usuarioId!="")
+        {
+            if($mes!=0 && $ano!=0)
+            {
+                 $pdf = new PDF();
+                 $pdf->AliasNbPages();
+                 $pdf->generar($conexion,$usuarioId,$mes,$ano);
+                 $pdf->guardar();
+                  $pdf->abrir();
+            }
+        }
     }
 }
 catch(Exception $e)
@@ -1328,5 +1577,4 @@ finally
 {
     $administrador_conexion->cerrar($conexion);
 }
-
-
+?>

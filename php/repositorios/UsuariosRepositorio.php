@@ -1056,6 +1056,26 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         return $resultado;
     }
     
+    public function esCoordinadorCorporativo($usuario)
+    {
+        $empresasRepositorio = new EmpresasRepositorio($this->conexion);
+        $resultado = $empresasRepositorio->consultarEstructura(true);
+        if($resultado->correcto())
+        {
+            $estructura = $resultado->valor;
+            $nodo = $this->buscarNodo($usuario->empresaId,$estructura);
+            if($nodo!=null)
+            {
+                if($nodo->parent==null && isset($nodo->nodes))
+                {
+                    if(count($nodo->nodes)>0)
+                        return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     public function consultarIdsEmpresasCorporativo($nodoId)
     {
         $resultado = new Resultado();
@@ -1215,4 +1235,4 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
     
     
 }
-
+?>

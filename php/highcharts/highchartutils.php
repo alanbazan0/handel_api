@@ -1,5 +1,4 @@
 <?php
-
 function getMes($mes)
 {
   $nombre ="";
@@ -503,3 +502,4 @@ function getImage($highchart)
  
   return $charturl;
 }
+?>

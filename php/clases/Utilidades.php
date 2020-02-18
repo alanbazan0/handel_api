@@ -80,3 +80,4 @@ function reArrayFiles($file)
     }
     return $file_ary;
 }
+?>
