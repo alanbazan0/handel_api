@@ -1435,14 +1435,14 @@ function graficaBarrasMesActualAnterior($title, $yTitle, $serieTitle, $rows, $xF
         $newRow2= (object) [
             'name' =>  $row->$xField,
             'y' => (float)$row->porcentajePendientes,
-            'color' => "#dd4b39"
+            'color' => "#f39c12"
             
         ];
         
         $newRow3= (object) [
             'name' =>  $row->$xField,
             'y' => (float)$row->porcentajeJustificadas,
-            'color' => "#f39c12"
+            'color' => "#dd4b39"
             
             
         ];
@@ -1491,8 +1491,8 @@ function graficaBarrasMesActualAnterior($title, $yTitle, $serieTitle, $rows, $xF
         'yAxis' => $yAxis,
         'series' => array(
             (object) ['name' => "Enviadas", 'data' => $data1,  'showInLegend' => $showInLegend, "color"=>"#60d836"],
-            (object) ['name' => "Pendientes", 'data' => $data2,  'showInLegend' => $showInLegend, "color"=>"#f9c320"],
-            (object) ['name' => "Justificadas", 'data' => $data3,  'showInLegend' => $showInLegend, "color"=>"#fe2500"]
+            (object) ['name' => "Pendientes", 'data' => $data2,  'showInLegend' => $showInLegend, "color"=>"#fe2500"],
+            (object) ['name' => "Justificadas", 'data' => $data3,  'showInLegend' => $showInLegend, "color"=>"#f9c320"]
         )
     ];
     
