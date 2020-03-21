@@ -29,8 +29,13 @@ class AuditoriasVista extends CatalogoVista
 		
 		
 		this.crearFecha();
+		
+		
+	
 
 	}
+
+	
 	
 	inicializarEventosTabla(tbody, table)
 	{

@@ -26,6 +26,7 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
     
     public function insertar(Plantilla $modelo)
     {
+        $this->conexion->autocommit(FALSE);
         $resultado =  $this->calcularId("id","plantillas");
         if($resultado->mensajeError=="")
         {
@@ -53,9 +54,12 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
                     {
                         $sentencia->close();
                         
-                        $resultado = $this->insertarDatosPlantilla($modelo);
-                        if($resultado->mensajeError=="")
+                         $resultado = $this->insertarSeccion($modelo->id,"Sección 1");
+                         if($resultado->mensajeError=="")
+                         {
                             $resultado->valor = $modelo->id;
+                            $this->conexion->commit();
+                         }
                     }
                     else
                     {
@@ -72,6 +76,81 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
            
         }
             
+        return $resultado;
+    }
+    
+    
+    public function insertarPregunta($plantillaId, $seccionId, $tipo)
+    {
+        $resultado =  $this->calcularIdPregunta($plantillaId, $seccionId,"id");
+        if($resultado->correcto())
+        {
+            $id =  $resultado->valor;
+            $resultado =  $this->calcularIdPregunta($plantillaId, $seccionId,"orden");
+            if($resultado->correcto())
+            {
+                $orden =  $resultado->valor;
+                $consulta = "INSERT INTO preguntas(plantilla_id, seccion_id, id, orden, tipo, texto, hallazgo, recomendacion, colapsado, practicas, observaciones, peso) " .
+                    "VALUE(?, ?, ?, ?, ?, '', '', '', 0,'','','')";
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if($sentencia->bind_param("iiiis",$plantillaId,$seccionId, $id, $orden, $tipo))
+                    {
+                        if($sentencia->execute())
+                        {
+                            $sentencia->close();
+                            $resultado->valor = $id;
+                        }
+                        else
+                        {
+                            $resultado->mensajeError = "Falló la ejecución insertar(" . $this->conexion->errno . ") " . $this->conexion->error;
+                        }
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace de parámetros";
+                }
+                else
+                    $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+        }
+        
+        return $resultado;
+    }
+    
+    public function insertarSeccion($plantillaId, $texto)
+    {
+        $resultado =  $this->calcularIdSeccion($plantillaId, "id");
+        if($resultado->correcto())
+        {
+            $id =  $resultado->valor;
+            $resultado =  $this->calcularIdSeccion($plantillaId,"orden");
+            if($resultado->correcto())
+            {
+                $orden =  $resultado->valor;
+                $consulta = "INSERT INTO secciones(plantilla_id, id, orden, texto) " .
+                    "VALUE(?, ?, ?, ?)";
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if($sentencia->bind_param("iiis",$plantillaId, $id, $orden, $texto))
+                    {
+                        if($sentencia->execute())
+                        {
+                            $sentencia->close();
+                            $resultado->valor = $id;
+                        }
+                        else
+                        {
+                            $resultado->mensajeError = "Falló la ejecución insertar(" . $this->conexion->errno . ") " . $this->conexion->error;
+                        }
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace de parámetros";
+                }
+                else
+                    $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+        }
+        
         return $resultado;
     }
     
@@ -133,6 +212,70 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
         {
             $resultado->codigoError = $this->conexion->errno;
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
+    private function eliminarRespuestasSiSeccion($plantillaId,$seccionId)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM respuestas_si WHERE plantilla_id = ? AND seccion_id = ?";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("ii",$plantillaId, $seccionId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
+    private function eliminarRespuestasNoSeccion($plantillaId,$seccionId)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM respuestas_no WHERE plantilla_id = ? AND seccion_id = ?";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("ii",$plantillaId, $seccionId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
         }
         return $resultado;
@@ -388,6 +531,48 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
         }
+        return $resultado;
+    }
+    
+    private function eliminarPreguntasSeccion($plantillaId,$seccionId)
+    {
+        $resultado = new Resultado();
+        
+        $resultado = $this->eliminarRespuestasSiSeccion($plantillaId,$seccionId);
+        if($resultado->correcto())
+        {
+            $resultado = $this->eliminarRespuestasNoSeccion($plantillaId,$seccionId);
+            if($resultado->correcto())
+            {
+                $consulta ="DELETE FROM preguntas WHERE plantilla_id = ? and seccion_id = ?";
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if($sentencia->bind_param("ii",$plantillaId,$seccionId))
+                    {
+                        if($sentencia->execute())
+                        {
+                            $sentencia->close();
+                        }
+                        else
+                        {
+                            $resultado->codigoError = $this->conexion->errno;
+                            $resultado->mensajeError = __FUNCTION__ ." Falló la ejecución eliminarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
+                        }
+                        
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    
+                }
+            }
+        }
+        
+        
         return $resultado;
     }
     
@@ -927,6 +1112,114 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
         return $resultado;
     }
     
+    public function actualizarValor($plantillaId, $campo, $valor)
+    {
+        $resultado = new Resultado();
+        if($campo=="fecha_programada")
+        {
+            if($valor!=null)
+            {
+                $elementos = explode('/', $valor);
+                if(count($elementos)==3)
+                {
+                    $dia = $elementos[0];
+                    $mes = $elementos[1];
+                    $ano = $elementos[2];
+                    $valor = date("Y-m-d H:i:s", mktime(10, 30, 0, $mes, $dia, $ano));
+                }
+            }
+        } 
+//         else if($campo=="estatus")
+//         {
+//             if($valor=="on")
+//                 $valor = 1;
+//             else
+//                 $valor = 0;
+//         }
+        
+        
+        $consulta = " UPDATE plantillas " .
+            "SET $campo = ?, " .
+            "  fecha_modificacion= NOW() " .
+            "WHERE id = ? ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("si", $valor, $plantillaId))
+            {
+                if($sentencia->execute())
+                {
+                    $resultado->valor=true;
+                    $sentencia->close();
+                }
+                else
+                    $resultado->mensajeError =__FUNCTION__." Falló la ejecución actualizar(" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
+    public function actualizarValorPregunta($plantillaId, $seccionId, $preguntaId, $campo, $valor)
+    {
+        $resultado = new Resultado();
+        $consulta = " UPDATE preguntas " .
+            "SET $campo = ? " .
+            "WHERE plantilla_id = ? AND seccion_id = ? AND id = ? ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("siii", $valor, $plantillaId, $seccionId, $preguntaId ))
+            {
+                if($sentencia->execute())
+                {
+                    $resultado->valor=true;
+                    $sentencia->close();
+                }
+                else
+                    $resultado->mensajeError =__FUNCTION__." Falló la ejecución actualizar(" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
+    public function actualizarValorSeccion($plantillaId, $seccionId, $campo, $valor)
+    {
+        $resultado = new Resultado();
+        $consulta = " UPDATE secciones " .
+            "SET $campo = ? " .
+            "WHERE plantilla_id = ? AND id = ? ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("sii", $valor, $plantillaId, $seccionId))
+            {
+                if($sentencia->execute())
+                {
+                    $resultado->valor=true;
+                    $sentencia->close();
+                }
+                else
+                    $resultado->mensajeError =__FUNCTION__." Falló la ejecución actualizar(" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
     public function insertarDatosPlantilla($modelo)
     {
         $resultado = $this->eliminarRespuestasNoCategorias($modelo->id);
@@ -1030,7 +1323,7 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
             $where = $this->where($filtros);
         }
         $consulta = $this->consultaBase .
-        $where;
+        $where . " order by UNIX_TIMESTAMP(P.fecha_alta) desc";
         
       
         
@@ -1122,7 +1415,7 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
         $consulta = "SELECT id, RTRIM(texto) texto, IFNULL(hallazgo,'') hallazgo, IFNULL(recomendacion,'') recomendacion, tipo, IFNULL(colapsado,0) colapsado,IFNULL(practicas,'') practicas,IFNULL(observaciones,'') observaciones, IFNULL(peso,0) peso  " .
                      "FROM preguntas " .        
                     " WHERE plantilla_id  = ? AND seccion_id = ? ".
-                    "ORDER BY id";
+                    "ORDER BY orden";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             
@@ -1218,7 +1511,7 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
         $consulta = "SELECT id, RTRIM(texto) texto " .
             "FROM secciones " .
             " WHERE plantilla_id  = ? ".
-            "ORDER BY id";
+            "ORDER BY orden";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param("i",$plantillaId))
@@ -1546,6 +1839,80 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
         return $registro;
     }
     
+    public function eliminarPregunta($llaves)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM preguntas WHERE plantilla_id = ? AND seccion_id = ? AND id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("iii",$llaves->plantillaId,$llaves->seccionId,$llaves->preguntaId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución eliminarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
+    public function eliminarSeccion($llaves)
+    {
+        ini_set('max_execution_time', 300);
+        $resultado = new Resultado();
+        $this->conexion->autocommit(FALSE);
+        
+        $resultado = $this->eliminarPreguntasSeccion($llaves->plantillaId,$llaves->seccionId);
+        if($resultado->correcto())
+        {
+            $consulta ="DELETE FROM secciones WHERE plantilla_id = ? AND id = ?";
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($sentencia->bind_param("ii",$llaves->plantillaId,$llaves->seccionId))
+                {
+                    if($sentencia->execute())
+                    {
+                        $sentencia->close();
+                    }
+                    else
+                    {
+                        $resultado->codigoError = $this->conexion->errno;
+                        $resultado->mensajeError = __FUNCTION__." Falló la ejecución eliminarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
+                    }
+                    
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+            }
+            else
+            {
+                $resultado->codigoError = $this->conexion->errno;
+                $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                
+            }
+        }
+        if($resultado->correcto())
+            $this->conexion->commit();
+        else
+            $this->conexion->rollback();
+       
+        return $resultado;
+    }
+    
     public function eliminar($llaves)
     {
         $resultado = $this->eliminarRespuestasNoCategorias($llaves->id);
@@ -1766,6 +2133,195 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
             
             return $resultado;
     }
+    
+    public function ordenarPreguntas($plantillaId, $seccionId, $seleccion)
+    {
+        $resultado = new Resultado();
+        
+        $registros = explode("&", $seleccion);
+        
+        $this->conexion->autocommit(FALSE);
+        
+        $i = 1;
+        foreach ($registros as $key => $value) 
+        {
+            $ides = explode("=", $value);
+            //$database->SQLUpdate("bookmarks", "orden", $i, "id",(int)$ides[1]);
+            
+            $id = str_replace("preguntaDiv","",$ides[1]);
+            
+            //echo "valor=$id;";
+            
+            $consulta = " UPDATE preguntas " .
+                "SET orden = ? " .
+                "WHERE plantilla_id = ? AND seccion_id = ? AND id = ? ";
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if( $sentencia->bind_param("iiii", $i,$plantillaId, $seccionId,$id))
+                {
+                    if($sentencia->execute())
+                    {
+                        $sentencia->close();
+                    }
+                    else
+                    {
+                        $resultado->mensajeError = "Falló la ejecución actualizar(" . $this->conexion->errno . ") " . $this->conexion->error;
+                        
+                        break;
+                    }
+                }
+                else
+                {
+                    $resultado->mensajeError = "Falló el enlace de parámetros";
+                    break;
+                }
+            }
+            else
+            {
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                break;
+            }
+            
+            $i++;
+        }
+        if($resultado->correcto())
+            $this->conexion->commit();
+         else
+            $this->conexion->rollback();
+                
+        return $resultado;
+    }
+    
+  
+    public function calcularIdPregunta($plantillaId, $seccionId, $campo)
+    {
+        $resultado = new Resultado();
+        $consulta =  "SELECT IFNULL(MAX($campo),0)+1 AS id FROM preguntas WHERE plantilla_id = ? AND seccion_id = ? ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("ii", $plantillaId, $seccionId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $resultado->valor = $id;
+                        }
+                        else
+                            $resultado->mensajeError =  __FUNCTION__. " No se encontró ningún resultado";
+                    }
+                    else
+                        $resultado->mensajeError =  __FUNCTION__. " Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError =  __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+            {
+                $resultado->mensajeError =  __FUNCTION__. " Falló el enlace de parámetros";
+            }
+        }
+        else
+            $resultado->mensajeError =  __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            return $resultado;
+    }
+    
+    public function calcularIdSeccion($plantillaId, $campo)
+    {
+        $resultado = new Resultado();
+        $consulta =  "SELECT IFNULL(MAX($campo),0)+1 AS id FROM secciones WHERE plantilla_id = ? ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("i", $plantillaId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $resultado->valor = $id;
+                        }
+                        else
+                            $resultado->mensajeError =  __FUNCTION__. " No se encontró ningún resultado";
+                    }
+                    else
+                        $resultado->mensajeError =  __FUNCTION__. " Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError =  __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+            {
+                $resultado->mensajeError =  __FUNCTION__. " Falló el enlace de parámetros";
+            }
+        }
+        else
+            $resultado->mensajeError =  __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            return $resultado;
+    }
+    
+    public function ordenarSecciones($plantillaId, $seleccion)
+    {
+        $resultado = new Resultado();
+        
+        $registros = explode("&", $seleccion);
+        
+        $this->conexion->autocommit(FALSE);
+        
+        $i = 1;
+        foreach ($registros as $key => $value)
+        {
+            $ides = explode("=", $value);
+            
+            $id = str_replace("seccionDiv","",$ides[1]);
+            
+            $consulta = " UPDATE secciones " .
+                "SET orden = ? " .
+                "WHERE plantilla_id = ? AND id = ? ";
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if( $sentencia->bind_param("iii", $i,$plantillaId,$id))
+                {
+                    if($sentencia->execute())
+                    {
+                        $sentencia->close();
+                    }
+                    else
+                    {
+                        $resultado->mensajeError = __FUNCTION__." Falló la ejecución(" . $this->conexion->errno . ") " . $this->conexion->error;
+                        
+                        break;
+                    }
+                }
+                else
+                {
+                    $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+                    break;
+                }
+            }
+            else
+            {
+                $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                break;
+            }
+            
+            $i++;
+        }
+        if($resultado->correcto())
+            $this->conexion->commit();
+        else
+            $this->conexion->rollback();
+            
+        return $resultado;
+    }
+    
     
 }
 

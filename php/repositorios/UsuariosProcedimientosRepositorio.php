@@ -458,6 +458,7 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
             'usuarioApellido' => $usuarioApellido,
             'procedimientoId' => $procedimientoId,
             'nombre' => $procedimientoNombre,
+            'procedimientoNombre' => $procedimientoNombre,
             'codigo' => $codigo,
             'fechaAlta' => $fechaAlta,
             'fechaCancelacion' => $fechaCancelacion,
@@ -467,7 +468,8 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
             'empresaId' => $empresaId,
             'usuarioSedeId' => $usuarioSedeId,
             'procedimientoSedeId' => $procedimientoSedeId,
-            'fechaModificacion' => $fechaModificacion
+            'fechaModificacion' => $fechaModificacion,
+            'tipo' => "pendiente"
         ];
         
         $registro->usuarioNombreCompleto = $registro->usuarioNombre ;

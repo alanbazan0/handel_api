@@ -27,7 +27,7 @@ class CatalogoPresentador
 	 {
 		 this.vista.guardando = true;
 		 this.vista.mostrarIndicador();	
-		 this._repositorio.insertar(this,this.insertarResultado,this.vista.modelo, this.vista.logo);	
+		 this._repositorio.insertar(this,this.insertarResultado,this.vista.modelo, this.vista.logoAlta);	
 	 }
 	 
 	 insertarResultado(resultado)

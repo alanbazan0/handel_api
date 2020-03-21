@@ -54,7 +54,11 @@ try
             case 'consultarPorLlaves':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->consultarPorLlaves($llaves);
-            break;       
+            break;    
+            case 'consultarPlantillaId':
+                $llaves = json_decode(REQUEST('llaves'));
+                $resultado = $repositorio->consultarPorLlaves($llaves);
+                break;
             case 'consultarValoresSeccion':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->consultarValoresSeccion($llaves);
@@ -63,6 +67,10 @@ try
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->consultarValoresSecciones($llaves);
                 break;     
+            case 'consultarPorcentajesCumplimientoSeccion':
+                $auditoriaId = REQUEST('auditoriaId');
+                $resultado = $repositorio->consultarPorcentajesCumplimientoSeccion($auditoriaId);
+            break;     
             case 'eliminar':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);

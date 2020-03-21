@@ -72,10 +72,49 @@ try
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 $resultado = $repositorio->consultar($criteriosSeleccion);               
             break;
+            case 'ordenarPreguntas':
+                $plantillaId = REQUEST('plantillaId');
+                $seccionId = REQUEST('seccionId');
+                $seleccion = REQUEST("seleccion");
+                $resultado = $repositorio->ordenarPreguntas($plantillaId,$seccionId,$seleccion);        
+            break;
             case 'consultarPorLlaves':
+                
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->consultarPorLlaves($llaves);
-            break;            
+            break;          
+            case 'eliminarPregunta':
+                $llaves = json_decode(REQUEST('llaves'));
+                $resultado = $repositorio->eliminarPregunta($llaves);
+                if($resultado->mensajeError=="")
+                {
+                   //TODO: Eliminar valores de preguntas en la ejecucion
+                }
+            break;
+            case 'eliminarSeccion':
+                $llaves = json_decode(REQUEST('llaves'));
+                $resultado = $repositorio->eliminarSeccion($llaves);
+                if($resultado->mensajeError=="")
+                {
+                    //TODO: Eliminar valores de seccion en la ejecucion
+                }
+                break;
+            case 'insertarPregunta':
+                $plantillaId = REQUEST('plantillaId');
+                $seccionId = REQUEST('seccionId');
+                $tipo = REQUEST('tipo');
+                $resultado = $repositorio->insertarPregunta($plantillaId, $seccionId,  $tipo);
+            break;
+            case 'actualizarValor':
+                $plantillaId = REQUEST('plantillaId');
+                $campo = REQUEST('campo');
+                $valor = REQUEST('valor');
+                $resultado = $repositorio->actualizarValor($plantillaId, $campo,  $valor);
+            break;
+            case 'insertarSeccion':
+                $plantillaId = REQUEST('plantillaId');
+                $resultado = $repositorio->insertarSeccion($plantillaId,"");
+           break;
             case 'eliminar':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);
@@ -104,7 +143,27 @@ try
                 $mapper = new JsonMapper();
                 $respuestas = $mapper->mapArray($json, array());
                 $resultado = $repositorio->guardarRespuestasNo($plantillaId,$seccionId,$preguntaId,$respuestas);
-                break;
+            break;
+            case 'ordenarSecciones':
+                $plantillaId = REQUEST('plantillaId');
+                $seleccion = REQUEST("seleccion");
+                $resultado = $repositorio->ordenarSecciones($plantillaId,$seleccion);
+            break;
+            case 'actualizarValorPregunta':
+                $plantillaId = REQUEST('plantillaId');
+                $seccionId = REQUEST('seccionId');
+                $preguntaId = REQUEST('preguntaId');
+                $campo = REQUEST('campo');
+                $valor = REQUEST('valor');
+                $resultado = $repositorio->actualizarValorPregunta($plantillaId, $seccionId, $preguntaId, $campo,  $valor);
+            break;
+            case 'actualizarValorSeccion':
+                $plantillaId = REQUEST('plantillaId');
+                $seccionId = REQUEST('seccionId');
+                $campo = REQUEST('campo');
+                $valor = REQUEST('valor');
+                $resultado = $repositorio->actualizarValorSeccion($plantillaId, $seccionId, $campo,  $valor);
+            break;
             default:
                 $resultado->mensajeError = "Acción no válida";
             break;

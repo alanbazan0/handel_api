@@ -4,6 +4,14 @@ use php\modelos\Resultado;
 
 class AdministradorArchivos
 {
+    
+    public function eliminar($carpeta, $nombreArchivo)
+    {
+        $archivo = "../".$carpeta . "/" . $nombreArchivo;
+        if(file_exists($archivo)) 
+            unlink($archivo); 
+    }
+    
     public function crearBase64($base64, $carpeta, $nombreArchivo)
     {
         $resultado = new Resultado();

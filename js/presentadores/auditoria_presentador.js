@@ -105,20 +105,32 @@ class AuditoriaPresentador extends CatalogoPresentador
 	 {
 		 this.vista.mostrarIndicador();	
 		 var repositorio = new PlantillasRepositorio();
-		 repositorio.consultarPorLlaves(this,this.consultarPorLlavesResultado,this.vista.llaves);
+		 repositorio.consultarPorLlaves(this, function(resultado)
+				 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.modelo = resultado.valor;
+			 }
+			 else
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError);
+		 },this.vista.llaves);
 	 }
 	 
-	 consultarPorLlavesResultado(resultado)
-	 {		
-		 this.vista.ocultarIndicador();	
-		 if(resultado.mensajeError=="")
-		 {
-			 this.vista.modelo = resultado.valor;
-		 }
-		 else
-			 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError);
-	 }
 	
-
+	
+	 consultarPlantillaId()
+	 {
+		 this.vista.mostrarIndicador();	
+		 var repositorio = new AuditoriasRepositorio();
+		 repositorio.consultarPorLlaves(this,function(resultado)
+		 {
+			 if(resultado.mensajeError=="")
+				 this.vista.plantillaId = resultado.valor.plantillaId;
+			 else
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError);
+		 },{id:this.vista.auditoriaId});
+	 }
+	 
 	 
 }

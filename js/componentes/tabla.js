@@ -17,7 +17,14 @@ class Tabla
 		this._paginacion = true;
 		this._textoTablaVacia = "Ning&uacute;n dato disponible en esta tabla";
 		this._ajustarColumnas = false;
+		this._botones = [];
 	}
+	
+	set botones(botones)
+	{
+		this._botones = botones;
+	}
+	
 	
 	refrescar()
 	{
@@ -177,6 +184,7 @@ class Tabla
 			  "drawCallback": function( settings ) {
 				  $(".paginate_button").attr("href","#");
 			    },
+			    dom: 'Bfrtip',
 			    "info":true,
 		        "searching":this._buscar,
 		        "pageLength": 25,
@@ -188,6 +196,7 @@ class Tabla
 			    "autoWidth":true,
 			    "ordering":false,
 				columns: this.columnasDataTable,
+				buttons :this._botones,
 				columnDefs: this.definicionColumnasDataTable,
 				fixedColumns: this._ajustarColumnas,
 			    "language": {	         	 

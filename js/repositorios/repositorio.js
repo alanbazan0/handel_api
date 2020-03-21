@@ -142,23 +142,6 @@ class Repositorio
 	
 	eliminar(contexto,funcion,llaves)
 	{				
-//		this.contexto = contexto;
-//		this.functionRetorno = functionRetorno;
-//		
-//		var parametros;
-//		parametros = "accion=eliminar";
-//		parametros += "&llaves=" + encodeURIComponent(JSON.stringify(llaves));
-//		var contextHandler = new AjaxContextHandler();
-//		var url = HANDEL_API + "/" + this.servicio;
-//		var ai = new Ajaxv2( url, this, this.eliminarResultado, "POST", parametros, contextHandler);		
-//		contextHandler.AddAjaxv2Object(ai); 		
-//		ai.GetPost(true);
-//		var url = HANDEL_API + "/" + this.servicio;
-//		$.post(url, {accion : "eliminar", llaves: encodeURIComponent(JSON.stringify(llaves))}, function(resultado) 
-//		{
-//			funcion.call(contexto,resultado);
-//		});
-		
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
           url: url,

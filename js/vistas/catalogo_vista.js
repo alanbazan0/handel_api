@@ -112,6 +112,7 @@ class CatalogoVista extends Vista
 		    if ( $(tr).hasClass('child') ) {
 		      tr = $(tr).prev();  
 		    }
+		    
 
 			_this._registroSeleccionado  = table.row( tr ).data();
 			if (_this._registroSeleccionado != undefined)
@@ -274,7 +275,7 @@ class CatalogoVista extends Vista
 		if(renglon.estatus==1)
 			contenido += "<center><span class='fa fa-check fa-lg text-success'></span></center>";
 		else
-			contenido += "<center><span class='fa fa-close fa-lg text-danger'></span></center>";
+			contenido += "<center><span class='fa fa-times fa-lg text-danger'></span></center>";
 	    return contenido;
 	}
 	
@@ -417,7 +418,7 @@ class CatalogoVista extends Vista
 		}
 	}
 
-	mostrarFormularioHTML(url,contexto,funcionConsultarPorLlaves, functionConsultarCombos,functionInicializarValidacionesHTML,id, formulario, guardarButton)
+	mostrarFormularioHTML(url,contexto,funcionConsultarPorLlaves, functionConsultarCombos,functionInicializarValidacionesHTML,id, formulario, guardarButton, funcionGuardar)
 	{
 		var modal = id;
 		if(modal==undefined || modal=="")
@@ -428,7 +429,7 @@ class CatalogoVista extends Vista
 			guardarButton="guardarButton";
 		if($("#"+modal).length ==0)
 		{
-			this.renderizarFormularioHTML(url,contexto,funcionConsultarPorLlaves, functionConsultarCombos,functionInicializarValidacionesHTML,modal,formulario, guardarButton);
+			this.renderizarFormularioHTML(url,contexto,funcionConsultarPorLlaves, functionConsultarCombos,functionInicializarValidacionesHTML,modal,formulario, guardarButton,funcionGuardar);
 		}
 		else
 		{
@@ -437,7 +438,7 @@ class CatalogoVista extends Vista
 		}
 	}
 	
-	renderizarFormularioHTML(url,contexto,funcionConsultarPorLlaves, functionConsultarCombos,functionInicializarValidacionesHTML,modal,formulario,guardarButton)
+	renderizarFormularioHTML(url,contexto,funcionConsultarPorLlaves, functionConsultarCombos,functionInicializarValidacionesHTML,modal,formulario,guardarButton, funcionGuardar)
 	{
 		//var url = this._urlFormulario;
 		this.mostrarIndicador();
@@ -466,9 +467,10 @@ class CatalogoVista extends Vista
 				functionInicializarValidacionesHTML.call(contexto);
 			
 			
-//			$("#"+guardarButton).click(function () {
-//				 $("#"+formulario).submit();
-//			});
+			$("#"+guardarButton).click(function () {
+				if(funcionGuardar!=null)
+					funcionGuardar.call(contexto);
+			});
 			
 			$("#"+modal).modal({backdrop: 'static', keyboard: false});
 		});

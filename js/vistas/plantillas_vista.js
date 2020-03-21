@@ -7,7 +7,11 @@ class PlantillasVista extends CatalogoVista
 		this.presentador = new PlantillasPresentador(this);
 
 		this.listaSecciones = new ListaSecciones("listaSecciones");
+		
 		this.listaPreguntas = new ListaPreguntas("listaPreguntas");
+		this.listaPreguntas.contexto = this; 
+		this.listaPreguntas.funcionCambiarCampo = this.cambiarCampoPregunta;
+		
 		this.listaRespuestas = new ListaRespuestas("listaRespuestas");
 		this._categorias = [];
 		this._estandares = [];
@@ -34,15 +38,24 @@ class PlantillasVista extends CatalogoVista
 		    cursor: "move",
 		   // items: "div",
 		    tolerance: "pointer",
+		    update: function( event, ui ) {
+		    	var seleccion = $( "#listaSecciones" ).sortable( "serialize", { key: "sort" });
+				_this.presentador.ordenarSecciones(seleccion);
+			}
 		});
 	    $( "#listaPreguntas" ).disableSelection();
 		
+	    var _this = this;
 		$("#listaPreguntas").sortable({
 		    axis: "y",
 		    containment: "parent",
 		    cursor: "move",
 		   // items: "div",
 		    tolerance: "pointer",
+		    update: function( event, ui ) {
+		    	var seleccion = $( "#listaPreguntas" ).sortable( "serialize", { key: "sort" });
+				_this.presentador.ordenarPreguntas(seleccion);
+			}
 		});
 	    $( "#listaPreguntas" ).disableSelection();
 	    
@@ -55,13 +68,44 @@ class PlantillasVista extends CatalogoVista
 		});
 	    $( "#listaRespuestas" ).disableSelection();
 	    
-	    
+		this.crearEventosActualizacion();
 	}
 	
-	inicializarValidacionesFormulario()
+	
+	crearEventosActualizacion()
+	{
+		$("#nombreInput").change(this.cambiarCampo);
+		$("#descripcionInput").change(this.cambiarCampo);
+		$("#fechaProgramadaInput").change(this.cambiarCampo);
+		$("#estatusRadio").change(this.cambiarCampo);
+	}
+	
+	cambiarCampo(event)
+	{
+		var campo = $(event.currentTarget).attr("data-campo");
+		var valor = $(event.currentTarget).val();
+		if(campo=="estatus")
+		{
+			valor = $(event.currentTarget).is(':checked')?1:0;
+		}
+		
+		vista.presentador.actualizarValor(campo,valor);
+	}
+	
+	cambiarCampoPregunta(preguntaId,campo,valor)
+	{
+		vista.presentador.actualizarValorPregunta(preguntaId,campo,valor);
+	}
+	
+	cambiarCampoSeccion(seccionId,campo,valor)
+	{
+		vista.presentador.actualizarValorSeccion(seccionId,campo,valor);
+	}
+	
+	inicializarValidacionesFormulario(formulario)
 	{
 		var _this = this;
-		jQuery("#formulario").validate({
+		jQuery("#" +formulario).validate({
             ignore: [],
             errorClass: "invalid-feedback animated fadeInDown",
             errorElement: "div",
@@ -94,6 +138,8 @@ class PlantillasVista extends CatalogoVista
             }
         });
 	}
+	
+	
 	
 	crearFecha()
 	{
@@ -189,17 +235,51 @@ class PlantillasVista extends CatalogoVista
 		});
 	}
 
+//	agregar()
+//	{
+//		
+//		this.modo = "ALTA";
+//		this.ocultarIndicador();
+//		this.limpiarFormulario();	
+//		this.mostrarFormulario();
+//		$('#nombreInput').focus();
+//		this.inicializarValidacionesFormulario();
+//		this.presentador.consultarCategorias();
+//		$('#logoImage').attr("src",HANDEL_API + "/php/iconos_plantillas/default.png");
+//	}
+	
 	agregar()
 	{
-		
-		this.modo = "ALTA";
+		this.modo = Modo.ALTA;
 		this.ocultarIndicador();
-		this.limpiarFormulario();	
-		this.mostrarFormulario();
-		$('#nombreInput').focus();
-		this.inicializarValidacionesFormulario();
-		this.presentador.consultarCategorias();
-		$('#logoImage').attr("src",HANDEL_API + "/php/iconos_plantillas/default.png");
+		this.mostrarFormularioAlta();
+		//$('#nombreInput').focus();
+		//this.inicializarValidacionesFormulario();
+	}
+	
+	mostrarFormularioAlta()
+	{
+		var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/formularios/plantillas.php",this, null, function()
+		{
+			//mostrar
+			 setTimeout(function(){
+					$('#nombreInputAlta').focus();
+					$('#logoImageAlta').show();
+					$('#logoImageAlta').attr('src', HANDEL_API + "/php/iconos_plantillas/default.png");
+					$("#fechaProgramadaInputAlta").datepicker();
+					_this.inicializarValidacionesFormulario("formularioAlta");
+	            }, 1000);
+			 
+			 
+			
+		},null,"","","guardarButtonAlta",function()
+		{
+			//guardar
+			$("#formularioAlta").submit();
+			//_this.insertar();
+			
+		});
 	}
 	
 //	btnAlta_onClick()
@@ -252,6 +332,7 @@ class PlantillasVista extends CatalogoVista
 	btnSalirFormulario_onClick()
 	{		
 		this.salirFormulario();
+		this.consultar();
 	}	
 
 	mostrarFormulario()
@@ -266,6 +347,11 @@ class PlantillasVista extends CatalogoVista
 	{
 		$('#principalDiv').show()	
 		$('#formularioDiv').hide();
+	}
+	
+	salirFormularioAlta()
+	{
+		$('#modalAlta').modal('hide')
 	}
 
 //	btnCambio_onClick()
@@ -385,7 +471,10 @@ class PlantillasVista extends CatalogoVista
 		$('#nombreInput').val(this.modeloEdicion.nombre);
 		$('#descripcionInput').val(this.modeloEdicion.descripcion);
 		$('#fechaProgramadaInput').val(this.modeloEdicion.fechaProgramada);
-		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
+		if(this.modeloEdicion.estatus)
+			$("#estatusRadio").prop('checked', true);
+		else
+			$("#estatusRadio").prop('checked', false);
 		$('#logoImage').attr('src', HANDEL_API + "/php/iconos_plantillas/" + this.modeloEdicion.icono);
 		
 		this.presentador.consultarCategorias();
@@ -393,14 +482,31 @@ class PlantillasVista extends CatalogoVista
 	
 	get modelo()
 	{
-		 var modelo = 
-		 {		
-			 nombre:$('#nombreInput').val(),		
-			 descripcion:$('#descripcionInput').val(),	
-			 fechaProgramada:$('#fechaProgramadaInput').val(),	
-			 estatus:$('#estatusRadio').is(':checked')?1:0,
-			 secciones: this.listaSecciones.secciones
-		 };
+		 var modelo =  null;
+		if(this.modo==Modo.ALTA)
+		{
+			 modelo = 
+			 {		
+				 nombre:$('#nombreInputAlta').val(),		
+				 descripcion:$('#descripcionInputAlta').val(),	
+				 fechaProgramada:$('#fechaProgramadaInputAlta').val(),	
+				 estatus:$('#estatusRadioAlta').is(':checked')?1:0// ,
+				 // secciones: this.listaSecciones.secciones
+			 };
+		}
+		 else
+		{
+			 modelo = 
+			 {		
+				 nombre:$('#nombreInput').val(),		
+				 descripcion:$('#descripcionInput').val(),	
+				 fechaProgramada:$('#fechaProgramadaInput').val(),	
+				 estatus:$('#estatusRadio').is(':checked')?1:0// ,
+				 // secciones: this.listaSecciones.secciones
+			 };
+		}
+		 
+		
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
 		 return modelo;
@@ -441,12 +547,14 @@ class PlantillasVista extends CatalogoVista
 	
 	agregarSeccion()
 	{
-		this.listaSecciones.agregarSeccion("");
+		//this.listaSecciones.agregarSeccion("");
+		this.presentador.insertarSeccion();
 	}
 	
-	agregarPregunta()
+	agregarPregunta(tipo)
 	{
-		this.listaPreguntas.agregarPregunta();
+		this.presentador.insertarPregunta(tipo);
+		//this.listaPreguntas.agregarPregunta();
 	}
 	
 	agregarTexto()
@@ -489,16 +597,50 @@ class PlantillasVista extends CatalogoVista
 		if(this.listaSecciones.secciones.length>1)
 		{
 			//this.listaSecciones.eliminarSeccion(seccionId);
-			this.confirmar("¿Desea eliminar esta sección?",this.listaSecciones,this.listaSecciones.eliminarSeccion,seccionId);
+			//this.confirmar("¿Desea eliminar esta sección?",this.listaSecciones,this.listaSecciones.eliminarSeccion,seccionId);
+			var _this = this;d
+			this.confirmar("¿Desea eliminar esta sección?",this,function(seccionId)
+			{
+				_this._llavesSeccion = {plantillaId : _this.plantillaId, seccionId: seccionId};
+				_this.eliminarSeccionBaseDatos();
+				
+			},seccionId);
 		}
 		else
-			this.mostrarMensaje("Error","Es necesario contar al menos con una sección. ");		
+			this.mostrarMensajeAdvertencia("Error","Es necesario contar al menos con una sección. ");		
 	}
 	
 	eliminarPregunta(event, preguntaId)
 	{
-		this.confirmar("¿Desea eliminar esta pregunta?",this.listaPreguntas,this.listaPreguntas.eliminarPregunta,preguntaId);
-		//this.listaPreguntas.eliminarPregunta(preguntaId);
+		//this.confirmar("¿Desea eliminar esta pregunta?",this.listaPreguntas,this.listaPreguntas.eliminarPregunta,preguntaId);
+		var _this = this;
+		this.confirmar("¿Desea eliminar esta pregunta?",this,function(preguntaId)
+		{
+			_this._llavesPregunta = {plantillaId : _this.plantillaId, seccionId: _this.seccionIdSeleccionada, preguntaId : preguntaId};
+			_this.eliminarPreguntaBaseDatos();
+			
+		},preguntaId);
+	}
+	
+	get llavesPregunta()
+	{
+		return this._llavesPregunta;
+	}
+	
+	get llavesSeccion()
+	{
+		return this._llavesSeccion;
+	}
+	
+	
+	eliminarPreguntaBaseDatos()
+	{
+		this.presentador.eliminarPregunta();
+	}
+	
+	eliminarSeccionBaseDatos()
+	{
+		this.presentador.eliminarSeccion();
 	}
 	
 	eliminarRespuesta(event, respuestaId)
@@ -511,41 +653,6 @@ class PlantillasVista extends CatalogoVista
 //	
 	confirmar(textoDialogo,contexto,funcion,parametro)
 	{
-//		$('#dialogo').prop('title', 'Confirmación');
-//		$('#dialogo').html(textoDialogo);
-//		$('#dialogo').data('contexto', contexto);
-//		$('#dialogo').data('funcion', funcion);	
-//		$('#dialogo').data('parametro', parametro);
-//		
-//		$('#dialogo').dialog({			
-//			autoOpen: false,			
-//			modal: true,				
-//			width: 340,			
-//			height: 140,
-//			//dialogClass: 'dialogo',				
-//			buttons:[{
-//			        text: "Cancelar",				       
-//			        click: function () {
-//			            $(this).dialog( "close" );
-//			        },
-//			
-//			    }, 
-//			    {
-//			        text: "Aceptar",
-//			        click: function () 
-//			        {
-//			        	var contexto = $(this).data('contexto');
-//			           	var funcion = $(this).data('funcion');
-//			           	var parametro = $(this).data('parametro');
-//			           	funcion.call(contexto,parametro);
-////			           	 escenario.consultaPanelesConLimite(1000);
-//			        	
-//			           	  $(this).dialog( "close" );
-//			        },
-//			    }]
-//		});
-//		$('#dialogo').dialog('open');
-		
 		var _this = this;
 		swal({
 	            title: "",
@@ -700,7 +807,7 @@ class PlantillasVista extends CatalogoVista
 		this.limpiarFormulario();	
 		this.mostrarFormulario();
 		$('#nombreInput').focus();				
-		this.inicializarValidacionesFormulario();
+		this.inicializarValidacionesFormulario("formulario");
 		this.presentador.consultarPorLlaves();
 		//this._plantillaId =id;
 	}
@@ -747,6 +854,20 @@ class PlantillasVista extends CatalogoVista
         }
 	}
 	
+	cambiarLogoAlta(input)
+	{
+		if (input.files && input.files[0]) 
+		{
+            var reader = new FileReader();
+
+            reader.onload = function (e)
+            {
+                $('#logoImageAlta').attr('src', e.target.result);
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+	}
+	
 	get logo()
 	{
 		var contenedorArchivos = $("#file") ;
@@ -755,8 +876,22 @@ class PlantillasVista extends CatalogoVista
 			if(contenedorArchivos[0].files.length>0)
 				return contenedorArchivos[0].files[0];
 		}
-		return null;
+		return null;	
+		
 	}
+	
+	get logoAlta()
+	{
+		var contenedorArchivos = $("#fileAlta") ;
+		if(contenedorArchivos.length>0)
+		{
+			if(contenedorArchivos[0].files.length>0)
+				return contenedorArchivos[0].files[0];
+		}
+		return null;	
+		
+	}
+	
 	
 }
 var vista = new PlantillasVista(this);

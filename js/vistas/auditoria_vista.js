@@ -51,15 +51,27 @@ class AuditoriaVista extends Vista
 	inicializar()
 	{	
 		
-		this.presentador.consultarPorLlaves();
+		this.consultarPlantillaId();
+	
 		//this.presentador.consultar();
 		
-		
+	}
+	
+	consultarPlantillaId()
+	{
+		//this.presentador.consultarPorLlaves();
+		this.presentador.consultarPlantillaId();
+	}
+	
+	set plantillaId(plantillaId)
+	{
+		this._plantillaId = plantillaId;
+		this.presentador.consultarPorLlaves();
 	}
 	
 	get plantillaId()
 	{
-		return $("#plantillaId").val();
+		return this._plantillaId;
 	}
 	
 	get auditoriaId()
@@ -126,7 +138,7 @@ class AuditoriaVista extends Vista
 	{
 		var llaves =
 		{
-			id:$("#plantillaId").val()	
+			id:this._plantillaId	
 		}
 		return llaves;
 	}
@@ -170,7 +182,6 @@ class AuditoriaVista extends Vista
 		});
 		
 		
-		this.calcularPorcentajes();
 		
 		if(this._modo==Modo.CAMBIO)
 		{
@@ -289,17 +300,41 @@ class AuditoriaVista extends Vista
 	set modeloDatos(modeloDatos)
 	{
 		$("#referenciaDiv").show();
-		$("#referenciaLabel").html(modeloDatos.referencia);
-		for(var i=0; i < modeloDatos.preguntas.length; i++)
+		if(modeloDatos!=null)
 		{
-			var pregunta = modeloDatos.preguntas[i];
-			this.listaPreguntas.setValor(pregunta.seccionId, pregunta.preguntaId, pregunta.valor);
-			this.listaPreguntas.setValoresRespuestas(pregunta.seccionId, pregunta.preguntaId, pregunta.respuestas);
+			$("#referenciaLabel").html(modeloDatos.referencia);
+			if( modeloDatos.preguntas!=null)
+			{
+				for(var i=0; i < modeloDatos.preguntas.length; i++)
+				{
+					var pregunta = modeloDatos.preguntas[i];
+					this.listaPreguntas.setValor(pregunta.seccionId, pregunta.preguntaId, pregunta.valor);
+		//			if(pregunta.tipo="sn")
+		//			{
+		//				//if(pregunta.valor=="S")
+						this.listaPreguntas.setValoresRespuestasSi(pregunta.seccionId, pregunta.preguntaId, pregunta.respuestas_si);
+						//else if(pregunta.valor=="N")
+						this.listaPreguntas.setValoresRespuestasNo(pregunta.seccionId, pregunta.preguntaId, pregunta.respuestas_no);
+					//}
+				}
+			}
+			
+			this.listaPreguntas.empresaId = modeloDatos.empresaId;
+			this.listaPreguntas.tipoAuditoriaId = modeloDatos.tipoAuditoriaId;
 		}
-		
-		this.listaPreguntas.empresaId = modeloDatos.empresaId;
-		this.listaPreguntas.tipoAuditoriaId = modeloDatos.tipoAuditoriaId;
-		
+
+		this.calcularPorcentajes();
+	}
+	
+	get seccionSeleccionada()
+	{
+		var seccionIndice = $("#secciones").prop("selectedIndex");
+		if(seccionIndice>=0 && seccionIndice<   this.listaPreguntas.secciones.length)
+		{
+			var seccion = this.listaPreguntas.secciones[seccionIndice];
+			return seccion;
+		}
+		return null;
 	}
 	
 	get preguntas()
@@ -314,8 +349,13 @@ class AuditoriaVista extends Vista
 			for(var i=0;  i  < componentesPreguntas.length;i++ )
 			{
 				var componente = componentesPreguntas[i];
-				var pregunta = componente.pregunta;
-				pregunta.respuestas = componente.respuestas;
+				var pregunta =  Object.assign({}, componente.pregunta);
+//				pregunta.respuestas_si = [];
+//				pregunta.respuestas_no = [];
+				//if(pregunta.valor=="S")
+				pregunta.respuestas_si = componente.respuestasSi;
+				//else if(pregunta.valor=="N")
+				pregunta.respuestas_no = componente.respuestasNo;
 				//pregunta.respuestasNo = componente.respuestasNo;
 				pregunta.valor = componente.valor;
 				preguntas.push(pregunta);
@@ -338,7 +378,13 @@ class AuditoriaVista extends Vista
 				var componente = componentesPreguntas[i];
 				if(componente.pregunta.tipo!="cat")
 				{
-					var pregunta ={ id: componente.pregunta.id, valor:  componente.valor, respuestas: componente.respuestas}; ;
+					var pregunta ={ id: componente.pregunta.id, 
+									valor:  componente.valor,
+									puntos : componente.pregunta.puntos,
+									puntosTotal : componente.pregunta.puntosTotal,
+									porcentaje : componente.pregunta.porcentaje,
+									respuestas_si: componente.respuestasSi,
+									respuestas_no: componente.respuestasNo}; ;
 					preguntas.push(pregunta);
 				}
 			}
@@ -513,20 +559,20 @@ class AuditoriaVista extends Vista
 		this.listaRespuestas.respuestas = this.preguntaEdicion.respuestas_no;
 	}
 	
-	guardarRespuestas()
-	{
-		if(this.preguntaEdicion!=null)
-		{
-			var tipo = $('#ventanaRespuestasContenedor').data("tipo");
-			if(tipo=="SI")
-				this.preguntaEdicion.respuestas_si = this.listaRespuestas.respuestas;
-			else
-				this.preguntaEdicion.respuestas_no = this.listaRespuestas.respuestas;
-		}
-			
-			
-		$('#ventanaRespuestasContenedor').fadeOut(this.velocidadAnimacion);
-	}
+//	guardarRespuestas()
+//	{
+//		if(this.preguntaEdicion!=null)
+//		{
+//			var tipo = $('#ventanaRespuestasContenedor').data("tipo");
+//			if(tipo=="SI")
+//				this.preguntaEdicion.respuestas_si = this.listaRespuestas.respuestas;
+//			else
+//				this.preguntaEdicion.respuestas_no = this.listaRespuestas.respuestas;
+//		}
+//			
+//			
+//		$('#ventanaRespuestasContenedor').fadeOut(this.velocidadAnimacion);
+//	}
 	
 	editarSecciones()
 	{
@@ -583,7 +629,7 @@ class AuditoriaVista extends Vista
 		for(var i=0; i < indicesEncabezados.length; i++)
 		{
 			var indice = indicesEncabezados[i];
-			var puntuacion = this.calcularPorcenjateEncabezado(indice);
+			var puntuacion = this.calcularPorcenjateEncabezado(indice,this.seccionSeleccionada);
 			puntuaciones.push(puntuacion);
 		}
 		
@@ -618,11 +664,14 @@ class AuditoriaVista extends Vista
 		
 		var indice = $("#secciones").prop('selectedIndex');
 		var seccionId = this.listaPreguntas.secciones[indice].id;
-		$("#listaPreguntas_labelPuntuacion"  +seccionId).html(puntuacionTexto);
+		if(indice!=0)
+			$("#listaPreguntas_labelPuntuacion"  +seccionId).html(puntuacionTexto);
+		else
+			$("#listaPreguntas_labelPuntuacion"  +seccionId).html("");
 		
 	}
 	
-	calcularPorcenjateEncabezado(indice)
+	calcularPorcenjateEncabezado(indice, seccion)
 	{
 		var x = 0;
 		var y = 0;
@@ -640,10 +689,11 @@ class AuditoriaVista extends Vista
 					if(pregunta.valor=="S")
 					{
 						y+= pregunta.peso;
-						var pesoRespuestas = pregunta.peso - this.listaPreguntas.getPesoRespuestas(pregunta.id);
+						var pesoRespuestasSeleccionadas = this.listaPreguntas.getPesoRespuestas(seccion,pregunta.id);
+						var pesoRespuestas = pregunta.peso - pesoRespuestasSeleccionadas;
 						x+= pesoRespuestas;
 					}
-					else if(pregunta.valor=="N")
+					else if(pregunta.valor=="N" || pregunta.valor=="" || pregunta.valor==undefined)
 					{
 						y+= pregunta.peso;
 					}
@@ -666,7 +716,17 @@ class AuditoriaVista extends Vista
 		
 		var puntuacionTexto = x + "/" + y + " (" +  textoPorcentaje + "%)";
 		if(encabezado.tipo=="e")
+		{
+			//var encabezado = ArrayUtils.searchWithValues("seccionId, id",[this.seccionId, encabezado.id], this.listaPreguntas.preguntas);
+			var pregunta = this.listaPreguntas.getPregunta(this.seccionId, encabezado.id);
+			if(pregunta!=null)
+			{
+				pregunta.puntos = x;
+				pregunta.puntosTotal = y;
+				pregunta.porcentaje = porcentaje;
+			}
 			this.listaPreguntas.setValor(this.seccionId,encabezado.id,puntuacionTexto);
+		}
 		
 		var puntuacion = {x: x, y : y, porcentaje : porcentaje};
 		return puntuacion;

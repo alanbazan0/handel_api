@@ -267,9 +267,7 @@ class AdministradorCorreo
     public function enviarCorreoUsuarios($usuarios, $asunto, $mensaje)
     {
         $resultado = new Resultado();
-        $cabecera = "From:  SAHA <noreply@apps-handel.com>\r\n";
-       // $cabecera .= "Bcc: contacto@gmail.com\r\n"; 
-        $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";
+       
         
         $correos="";
         for ($i = 0; $i < count($usuarios); $i++) 
@@ -278,8 +276,11 @@ class AdministradorCorreo
             $correos.= $usuario->nombreUsuario;
             if($i <  count($usuarios) -1 )
                 $correos.=", ";
-        
         }
+        
+        $cabecera = "From:  SAHA <noreply@apps-handel.com>\r\n";
+        $cabecera .= "Bcc: $correos\r\n";
+        $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";
         
         
         
@@ -287,7 +288,7 @@ class AdministradorCorreo
         
         $errLevel = error_reporting(E_ALL ^ E_WARNING);
         $resultadoMail = true;
-        $resultadoMail= mail($correos, $asunto, $mensaje, $cabecera);
+        $resultadoMail= mail("noreply@apps-handel.com", $asunto, $mensaje, $cabecera);
         error_reporting($errLevel);
         
         $error = error_get_last();
