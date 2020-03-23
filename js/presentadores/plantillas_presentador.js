@@ -244,6 +244,23 @@ class PlantillasPresentador extends CatalogoPresentador
 		}
 	 }
 	 
+	 actualizarCategoriasPregunta(preguntaId,categorias)
+	 {
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.actualizarCategoriasPregunta(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.mostrarMensaje("","Guardado.");
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+			 }
+		 },this.vista.plantillaId, this.vista.seccionIdSeleccionada, preguntaId, categorias);
+	 }
+	 
 	 actualizarValorSeccion(seccionId,campo,valor)
 	 {
 		 if(campo!=undefined)

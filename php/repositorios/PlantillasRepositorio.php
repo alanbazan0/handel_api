@@ -473,6 +473,38 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
         return $resultado;
     }
     
+    private function eliminarCategoriasPregunta($plantillaId,$seccionId, $preguntaId)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM preguntas_categorias WHERE plantilla_id = ? AND seccion_id = ? AND pregunta_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("iii",$plantillaId, $seccionId, $preguntaId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                    
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__ ." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
     private function eliminarRespuestasNoCategorias($plantillaId)
     {
         $resultado = new Resultado();
@@ -1062,6 +1094,49 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
         return $resultado;
     }
     
+    private function insertarCategoriasPregunta($plantillaId,$seccionId, $preguntaId, $categorias)
+    {
+        $resultado = new Resultado();
+        
+        for ($l = 0; $l< count($categorias); $l++)
+        {
+            $categoria = $categorias[$l];
+            
+            $consulta = "INSERT INTO preguntas_categorias(plantilla_id, seccion_id, pregunta_id, id, categoria_id) " .
+                "VALUE(?, ?, ?, ?, ?)";
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($sentencia->bind_param("iiiii",$plantillaId,$seccionId, $preguntaId,$categoria->id, $categoria->categoriaId))
+                {
+                    if($sentencia->execute())
+                    {
+                        $sentencia->close();
+                    }
+                    else
+                    {
+                        $resultado->codigoError = $this->conexion->errno;
+                        $resultado->mensajeError = __FUNCTION__ ." Falló la ejecución: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                        break;
+                    }
+                }
+                else
+                {
+                    $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+                    break;
+                }
+            }
+            else
+            {
+                $resultado->codigoError = $this->conexion->errno;
+                $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                break;
+            }
+        }
+        
+        return $resultado;
+    }
+    
+    
     
     public function actualizar(Plantilla $modelo)
     {
@@ -1190,6 +1265,23 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
             $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
             return $resultado;
+    }
+    
+    public function actualizarCategoriasPregunta($plantillaId, $seccionId, $preguntaId, $categorias)
+    {
+        ini_set('max_execution_time', 300);
+        $resultado = new Resultado();
+        $this->conexion->autocommit(FALSE);
+        $resultado = $this->eliminarCategoriasPregunta($plantillaId, $seccionId, $preguntaId);
+        if($resultado->correcto())
+        {
+            $resultado = $this->insertarCategoriasPregunta($plantillaId, $seccionId, $preguntaId, $categorias);
+        }
+        if($resultado->correcto())
+            $this->conexion->commit();
+        else
+            $this->conexion->rollback();
+        
     }
     
     public function actualizarValorSeccion($plantillaId, $seccionId, $campo, $valor)

@@ -288,6 +288,31 @@ class PlantillasRepositorio extends Repositorio
       });
 	}
 	
+	actualizarCategoriasPregunta(contexto,funcion,plantillaId, seccionId, preguntaId, categorias)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "actualizarCategoriasPregunta",plantillaId: plantillaId, seccionId: seccionId, preguntaId, preguntaId, categorias:  JSON.stringify(categorias)},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
 	actualizarValorSeccion(contexto,funcion,plantillaId, seccionId, campo, valor)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;

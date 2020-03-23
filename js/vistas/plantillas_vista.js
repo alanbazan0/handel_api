@@ -97,6 +97,12 @@ class PlantillasVista extends CatalogoVista
 		vista.presentador.actualizarValorPregunta(preguntaId,campo,valor);
 	}
 	
+	cambiarCategoriasPregunta(preguntaId,categorias)
+	{
+		vista.presentador.actualizarCategoriasPregunta(preguntaId,categorias);
+	}
+	
+	
 	cambiarCampoSeccion(seccionId,campo,valor)
 	{
 		vista.presentador.actualizarValorSeccion(seccionId,campo,valor);

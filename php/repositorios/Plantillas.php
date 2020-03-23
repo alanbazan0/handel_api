@@ -157,6 +157,14 @@ try
                 $valor = REQUEST('valor');
                 $resultado = $repositorio->actualizarValorPregunta($plantillaId, $seccionId, $preguntaId, $campo,  $valor);
             break;
+            case 'actualizarCategoriasPregunta':
+                $plantillaId = REQUEST('plantillaId');
+                $seccionId = REQUEST('seccionId');
+                $preguntaId = REQUEST('preguntaId');
+                $mapper = new JsonMapper();
+                $categorias = $mapper->mapArray(json_decode(REQUEST('categorias')), array());
+                $resultado = $repositorio->actualizarCategoriasPregunta($plantillaId, $seccionId, $preguntaId, $categorias);
+            break;
             case 'actualizarValorSeccion':
                 $plantillaId = REQUEST('plantillaId');
                 $seccionId = REQUEST('seccionId');

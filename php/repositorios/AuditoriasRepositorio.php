@@ -98,6 +98,45 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
        return $resultado;
     }
     
+    function consultarPuntuacionAuditoria($auditoriaId)
+    {
+        $resultado = new Resultado();
+        $consulta =  "SELECT SUM(AP.puntos)/SUM(AP.puntos_total)*100 porcentaje
+                    FROM auditoria_preguntas AP
+                    	INNER JOIN preguntas P ON P.plantilla_id = AP.plantilla_id AND P.seccion_id = AP.seccion_id AND P.id = AP.pregunta_id
+                    WHERE P.tipo='e' AND auditoria_id = ?";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$auditoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($porcentaje))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $resultado->valor = $porcentaje;
+                            $sentencia->close();
+                        }
+                        else
+                            $resultado->mensajeError = __FUNCTION__. " No se encontró ningún resultado";
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__. " Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__. " Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. " Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__. " Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        return $resultado;
+    }
+    
     public function insertar(Auditoria $modelo)
     {
         $resultado = new Resultado();

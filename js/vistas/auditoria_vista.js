@@ -59,8 +59,10 @@ class AuditoriaVista extends Vista
 	
 	consultarPlantillaId()
 	{
-		//this.presentador.consultarPorLlaves();
-		this.presentador.consultarPlantillaId();
+		if(this._modo==Modo.CAMBIO)
+			this.presentador.consultarPlantillaId();
+		else
+			this.plantillaId = $("#plantillaId").val();
 	}
 	
 	set plantillaId(plantillaId)

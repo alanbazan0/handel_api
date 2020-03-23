@@ -69,6 +69,7 @@ class PDF extends FPDF
     private $modelo;
     private $empresa;
     private $secciones;
+    private $conexion;
     
     function __construct($orientation='P', $unit='mm', $format='A4')
     {
@@ -113,6 +114,11 @@ class PDF extends FPDF
     public function setSecciones($secciones)
     {
         $this->secciones = $secciones;
+    }
+    
+    public function setConexion($conexion)
+    {
+        $this->conexion = $conexion;
     }
     
     
@@ -326,7 +332,7 @@ class PDF extends FPDF
     
     public function imprimir()
     {
-        $filename ="../reportes_inspeccion/";
+        $filename ="../reportes_auditoria/";
         $filename.=$this->calcularFolio();
         $filename.=".pdf";
         
@@ -759,13 +765,23 @@ class PDF extends FPDF
         $this->Line(30, $y, 210-30, $y);
         
         //Puntuacion
+        $repositorio  = new AuditoriasRepositorio($this->conexion);
         $puntuacion = 0;
+        $resultado = $repositorio->consultarPuntuacionAuditoria($this->modelo->id);
+        if($resultado->correcto())
+        {
+            $puntuacion = bcdiv($resultado->valor, '1', 1);
+            list($enteros, $decimales) = explode(".", $puntuacion);
+            if($decimales=="0")
+                $puntuacion = str_replace(".$decimales","",$puntuacion);
+        }
+        
         $this->Ln();
         $this->Ln();
         $this->SetLeftMargin(30);
         $this->SetFont($this->font, '', 10);
         $this->Cell($w1, 10,$this->texto("Puntuación total: "), $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
+        $this->SetFont($this->font, 'B', 10);
         $this->Cell($w2, 10, $this->texto($puntuacion  . "%"), $borde, 0, 'L');
         
        
@@ -845,10 +861,10 @@ try
     if($conexion)
     {
         $repositorio = new AuditoriasRepositorio($conexion);
-        $inspeccionId = REQUEST('auditoriaId');
+        $auditoriaId = REQUEST('auditoriaId');
         
         $llaves= (object) [
-            'id' =>  $inspeccionId
+            'id' =>  $auditoriaId
         ];
         
         
@@ -888,6 +904,7 @@ try
              $pdf->setEmpresa($empresa);
              $pdf->setModelo($auditoria);
              $pdf->setSecciones($secciones);
+             $pdf->setConexion($conexion);
              $pdf->AliasNbPages();
              $pdf->generar();
              $pdf->imprimir();
