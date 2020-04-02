@@ -617,20 +617,17 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                                     {
                                         $resultado->codigoError = $this->conexion->errno;
                                         $resultado->mensajeError = __FUNCTION___. "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
-                                        break;
                                     }
                                 }
                                 else
                                 {
                                     $resultado->mensajeError = __FUNCTION___. "Falló el enlace de parámetros";
-                                    break;
                                 }
                             }
                             else
                             {
                                 $resultado->codigoError = $this->conexion->errno;
                                 $resultado->mensajeError = __FUNCTION___. "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-                                break;
                             }
                         }
                         
@@ -641,21 +638,18 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 else
                 {
                     $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = "Falló la ejecución update insertarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
-                    break;
+                    $resultado->mensajeError =  __FUNCTION___. "Falló la ejecución update (" . $this->conexion->errno . ") " . $this->conexion->error;
                 }
             }
             else
             {
-                $resultado->mensajeError = "Falló el enlace de parámetros update";
-                break;
+                $resultado->mensajeError =  __FUNCTION___. "Falló el enlace de parámetros update";
             }
         }
         else
         {
             $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-            break;
+            $resultado->mensajeError =  __FUNCTION___. "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
         }
             
             
