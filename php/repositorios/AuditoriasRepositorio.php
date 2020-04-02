@@ -98,6 +98,42 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
        return $resultado;
     }
     
+    function numeroRegistrosSecciones($plantillaId, $auditoriaId, $seccionId)
+    {
+        $resultado = new Resultado();
+        $consulta =  "SELECT COUNT(*) id FROM auditoria_secciones WHERE auditoria_id=? AND plantilla_id = ? AND seccion_id = ? ";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("iii",$auditoriaId,$plantillaId,$seccionId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($count))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $resultado->valor = $count;
+                            $sentencia->close();
+                        }
+                        else
+                            $resultado->mensajeError = __FUNCTION_." No se encontró ningún resultado";
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION_." Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION_." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION_." Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION_." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            return $resultado;
+    }
+    
     function consultarPuntuacionAuditoria($auditoriaId)
     {
         $resultado = new Resultado();
@@ -438,55 +474,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         return $resultado;
     }
     
-//     private function insertarSecciones($plantillaId,$secciones)
-//     {
-        
-//         $resultado = new Resultado();
-      
-        
-//         for ($i = 0; $i <  count($secciones); $i++)
-//         {
-//             $seccion= $secciones[$i];
-          
-//             $consulta = "INSERT INTO secciones(plantilla_id, id, texto ) " .
-//                 "VALUE(?, ?, ?)";
-//             if($sentencia = $this->conexion->prepare($consulta))
-//             {
-              
-//                 if($sentencia->bind_param("iis",$plantillaId,$seccion->id, $seccion->texto))
-//                 {
-//                     if($sentencia->execute())
-//                     {
-//                         $resultado->valor =$seccion->id;
-//                         $sentencia->close();
-                        
-//                     }
-//                     else
-//                     {
-//                         $resultado->codigoError = $this->conexion->errno;
-//                         $resultado->mensajeError = "Falló la ejecución insertarSecciones(" . $this->conexion->errno . ") " . $this->conexion->error;
-//                         break;
-//                     }
-                    
-//                 }
-//                 else
-//                 {
-//                     $resultado->mensajeError = "Falló el enlace de parámetros";
-//                     break;
-//                 }
-//             }
-//             else
-//             {
-//                 $resultado->codigoError = $this->conexion->errno;
-//                 $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-//                 break;
-//             }
-//         }
-        
-        
-//         return $resultado;
-//     }
-    
+
     private function insertarPreguntas($auditoriaId,$plantillaId,$seccionId,$preguntas)
     {
         $resultado = new Resultado();
@@ -505,7 +493,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
 //             if(substr( $pregunta->valor, 0, 10 ) === "data:image")
 //             {
 //                 $carpeta = "fotos_auditorias";
-//                 $nombreArchivo = "foto_".$auditoriaId."_".$pregunta->id.".jpg";
+//                 $nombreArchivo = "foto_".$auditoriaId."_".$seccionId."_".$pregunta->id.".jpg";
 //                 $administradorArchivos->crearBase64($pregunta->valor,$carpeta,$nombreArchivo);
 //             }
             
@@ -586,6 +574,92 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             
             
         }
+        return $resultado;
+    }
+    
+    private function insertarSeccion($auditoriaId,$plantillaId,$seccion)
+    {
+        $resultado = new Resultado();
+    
+        
+        $consulta = "UPDATE auditoria_secciones " .
+            "SET hallazgo = ?,  recomendacion = ?,  responsable = ?, puntos = ?, puntos_total = ?, porcentaje = ? ".
+            "WHERE auditoria_id=? AND plantilla_id = ? AND seccion_id = ?";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("ssiisiii",$seccion->hallazgo,$seccion->recomendacion, $seccion->responsable, $seccion->puntos, $seccion->puntosTotal, $seccion->porcentaje,$auditoriaId,$plantillaId,$seccion->id))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                    
+                    $resultado = $this->numeroRegistrosSecciones($plantillaId,$auditoriaId,$seccion->id);
+                    if($resultado->mensajeError=="")
+                    {
+                        $count = $resultado->valor;
+                        
+                        
+                        if($count==0)
+                        {
+                            $consulta = "INSERT INTO auditoria_secciones(auditoria_id, plantilla_id, seccion_id, hallazgo, recomendacion, responsable,puntos, puntos_total, porcentaje) " .
+                                "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                            if($sentencia = $this->conexion->prepare($consulta))
+                            {
+                                if($sentencia->bind_param("iiissiiis",$auditoriaId,$plantillaId,$seccion->id, $seccion->hallazgo, $seccion->recomendacion, $seccion->responsable,$seccion->puntos, $seccion->puntosTotal, $seccion->porcentaje))
+                                {
+                                    if($sentencia->execute())
+                                    {
+                                        $sentencia->close();
+                                    }
+                                    else
+                                    {
+                                        $resultado->codigoError = $this->conexion->errno;
+                                        $resultado->mensajeError = __FUNCTION___. "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    $resultado->mensajeError = __FUNCTION___. "Falló el enlace de parámetros";
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                $resultado->codigoError = $this->conexion->errno;
+                                $resultado->mensajeError = __FUNCTION___. "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                                break;
+                            }
+                        }
+                        
+                    }
+                    
+                    
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = "Falló la ejecución update insertarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
+                    break;
+                }
+            }
+            else
+            {
+                $resultado->mensajeError = "Falló el enlace de parámetros update";
+                break;
+            }
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            break;
+        }
+            
+            
+            
         return $resultado;
     }
     
@@ -996,20 +1070,18 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                     $sentencia->close();
                     
                     $resultado = $this->insertarDatosAuditoria($modelo);
-                    if($resultado->mensajeError=="")
+                    if($resultado->correcto())
                     {
                         $resultado = $this->actualizarUltimoUso($modelo->plantillaId);
-                        if($resultado->mensajeError=="")
+                        if($resultado->correcto())
                         {
                             $resultado = $this->consultarEncabezado($modelo->id);
-                            if($resultado->mensajeError=="")
+                            if($resultado->correcto())
                             {
-                                $this->conexion->commit();
+                                
                             }
                             
                         }
-                        else
-                            $this->conexion->rollback();
                             
                     }
                 }
@@ -1022,28 +1094,36 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         else
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
         
+        if($resultado->correcto())
+            $this->conexion->commit();
+        else
+           $this->conexion->rollback();
         return $resultado;
     }
     
     public function insertarDatosAuditoria($modelo)
     {
         ini_set('max_execution_time', 300);
-        $resultado =  $this->eliminarRespuestasSi($modelo->id,$modelo->plantillaId, $modelo->seccionId);
+        $resultado =  $this->eliminarRespuestasSi($modelo->id,$modelo->plantillaId, $modelo->seccion->id);
         if($resultado->mensajeError=="")
         {
-            $resultado =  $this->eliminarRespuestasNo($modelo->id,$modelo->plantillaId, $modelo->seccionId);
+            $resultado =  $this->eliminarRespuestasNo($modelo->id,$modelo->plantillaId, $modelo->seccion->id);
             if($resultado->mensajeError=="")
             {
-                $resultado =  $this->insertarPreguntas($modelo->id,$modelo->plantillaId, $modelo->seccionId,$modelo->preguntas);
-                if($resultado->mensajeError=="")
+                $resultado = $this->insertarSeccion($modelo->id,$modelo->plantillaId, $modelo->seccion);
+                if($resultado->correcto())
                 {
-                    $resultado =  $this->insertarRespuestasSi($modelo->id,$modelo->plantillaId, $modelo->seccionId,$modelo->preguntas);
+                    $resultado =  $this->insertarPreguntas($modelo->id,$modelo->plantillaId, $modelo->seccion->id,$modelo->seccion->preguntas);
                     if($resultado->mensajeError=="")
                     {
-                        $resultado =  $this->insertarRespuestasNo($modelo->id,$modelo->plantillaId, $modelo->seccionId,$modelo->preguntas);
+                        $resultado =  $this->insertarRespuestasSi($modelo->id,$modelo->plantillaId, $modelo->seccion->id,$modelo->seccion->preguntas);
                         if($resultado->mensajeError=="")
                         {
-                            
+                            $resultado =  $this->insertarRespuestasNo($modelo->id,$modelo->plantillaId, $modelo->seccion->id,$modelo->seccion->preguntas);
+                            if($resultado->mensajeError=="")
+                            {
+                                
+                            }
                         }
                     }
                 }

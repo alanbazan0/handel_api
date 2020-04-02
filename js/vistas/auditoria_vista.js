@@ -206,7 +206,45 @@ class AuditoriaVista extends Vista
 	{
 		this.funcion = "siguente";
 		this.guardar();
+	}
 	
+	mostrarObservaciones()
+	{
+		var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/formularios/observaciones_seccion.php",this, null, function()
+		{
+			var seccionActual = _this.listaPreguntas.seccionActual;
+			$("#hallazgoInput").val(seccionActual.hallazgo);
+			$("#recomendacionInput").val(seccionActual.recomendacion);
+			//$("#responsableSelect").val(seccionActual.responsable);
+			if(seccionActual.reporte)
+				$("#reporteCheck").prop('checked', true);
+			else
+				$("#reporteCheck").prop('checked', false);
+			if(seccionActual.notificacion)
+				$("#notificacionCheck").prop('checked', true);
+			else
+				$("#notificacionCheck").prop('checked', false);
+			
+			_this.consultarUsuariosSeccion();
+			 
+			
+		},null,"","","guardarButton",function()
+		{
+			var seccionActual = _this.listaPreguntas.seccionActual;
+			seccionActual.hallazgo = $("#hallazgoInput").val();
+			seccionActual.recomendacion = $("#recomendacionInput").val();
+			seccionActual.responsable = $("#responsableSelect").val();
+			seccionActual.reporte =  $("#reporteCheck").is(':checked')?1:0;
+			seccionActual.notificacion =  $("#notificacionCheck").is(':checked')?1:0;
+			$("#modalAlta").modal('hide');
+		});
+	}
+	
+	consultarUsuariosSeccion()
+	{
+		this.cargandoOpciones("#responsableSelect");
+		this.presentador.consultarUsuariosSeccion();
 		
 	}
 	
@@ -408,12 +446,31 @@ class AuditoriaVista extends Vista
 			 tipoAuditoriaId: this.tipoAuditoriaId,		
 			 seccionId:this.seccionId,	
 			 plantillaId:this.plantillaId,	
-			 preguntas: this.preguntasAuditoria
+			 seccion: this.seccionActual
+			 //preguntas: this.preguntasAuditoria
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
 		 return modelo;
 	 }
+	
+	get seccionActual()
+	{
+		var seccionActual = this.listaPreguntas.seccionActual;;
+		var seccion =  {
+			id : seccionActual.id,
+			hallazgo : seccionActual.hallazgo,
+			recomendacion: seccionActual.recomendacion,
+			responsable :  seccionActual.responsable,
+			notificacion :  seccionActual.notificacion,
+			reporte :  seccionActual.reporte,
+			puntos :  seccionActual.puntos,
+			puntosTotal :  seccionActual.puntosTotal,
+			porcentaje :  seccionActual.porcentaje,
+			preguntas : this.preguntasAuditoria
+		}
+		return seccion;
+	}
 	
 	mostrarReferencia()
 	{
@@ -666,10 +723,14 @@ class AuditoriaVista extends Vista
 		
 		var indice = $("#secciones").prop('selectedIndex');
 		var seccionId = this.listaPreguntas.secciones[indice].id;
-		if(indice!=0)
-			$("#listaPreguntas_labelPuntuacion"  +seccionId).html(puntuacionTexto);
-		else
-			$("#listaPreguntas_labelPuntuacion"  +seccionId).html("");
+		//if(indice!=0)
+		$("#listaPreguntas_labelPuntuacion"  +seccionId).html(puntuacionTexto);
+		
+		this.listaPreguntas.secciones[indice].puntos = x;
+		this.listaPreguntas.secciones[indice].puntosTotal = y;
+		this.listaPreguntas.secciones[indice].porcentaje = textoPorcentaje;
+		//else
+		//	$("#listaPreguntas_labelPuntuacion"  +seccionId).html("");
 		
 	}
 	
@@ -732,6 +793,16 @@ class AuditoriaVista extends Vista
 		
 		var puntuacion = {x: x, y : y, porcentaje : porcentaje};
 		return puntuacion;
+	}
+	
+	set usuariosSeccion(usuarios)
+	{
+		//this.cargarOpciones("#resposableSelect", usuarios,null,"usuarioId");	
+		this.cargarOpciones("#responsableSelect", usuarios,Modo.CAMBIO, this.listaPreguntas.seccionActual, "responsable", "", "nombreCompleto")
+//		var responsableId =this.listaPreguntas.seccionActual.responsable;
+//		if(responsableId!=null)
+//			if(responsableId!="")
+//				$("#resposableSelect").val(responsableId);
 	}
 	
 }

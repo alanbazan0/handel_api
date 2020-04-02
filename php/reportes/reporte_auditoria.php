@@ -415,6 +415,10 @@ class PDF extends FPDF
                  $pregunta = $seccion->preguntas[$i];
                  if($pregunta->tipo=="e")
                  {
+                     if(!$this->cabeComponente(10))
+                     {
+                         $this->AddPage();
+                     }
                      $this->Ln();
                      $this->SetTextColor(0, 0, 0);
                      $this->SetFillColor(242, 242, 242);
@@ -470,25 +474,47 @@ class PDF extends FPDF
                      $this->SetFont($this->font, '', 10);
                      $this->Cell($w2, 10, "", $borde, 0, 'L');
                      
-                     $dataPieces = explode(',',$pregunta->valor);
-                     $encodedImg = $dataPieces[1];
-                     $decodedImg = base64_decode($encodedImg);
-                     if( $decodedImg!==false )
+                     if($pregunta->valor!="")
                      {
-                         $x = (210/2) - ($altoFoto/2);
-                         $this->SetY($this->GetY()+15);
-                         $this->MemImage($decodedImg, $x, null, $altoFoto,$altoFoto);
+                         $dataPieces = explode(',',$pregunta->valor);
+                         $encodedImg = $dataPieces[1];
+                         $decodedImg = base64_decode($encodedImg);
+                         if( $decodedImg!==false )
+                         {
+                             $x = (210/2) - ($altoFoto/2);
+                             $this->SetY($this->GetY()+15);
+                             $this->MemImage($decodedImg, $x, null, $altoFoto,$altoFoto);
+                         }
                      }
                  }
                  else
                  {
+                     if(!$this->cabeComponente(10))
+                     {
+                         $this->AddPage();
+                     }
+                     
+                     $valor ="";
+                     if($pregunta->tipo=="sn")
+                     {
+                         if($pregunta->tipo=="S")
+                             $valor = "Si";
+                         else   if($pregunta->tipo=="N")
+                             $valor = "No";
+                         else
+                             $valor = "NA";
+                     }
+                     else
+                         $valor = $pregunta->valor;
+                     
                      $this->Ln();
                      $this->SetTextColor(0, 0, 0);
                      $this->SetFont($this->font, 'B', 10);
                      $this->Cell($w1, 10,$this->texto($pregunta->texto), $borde, 0, 'L');
                      $this->SetFont($this->font, '', 10);
-                     $this->Cell($w2, 10, $this->texto($pregunta->valor), $borde, 0, 'L');
+                     $this->Cell($w2, 10, $this->texto($valor), $borde, 0, 'L');
                  }
+                 
             }
        }
         

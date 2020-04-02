@@ -12,6 +12,6 @@ class Auditoria
     public $fechaUltimaEjecucion;
     public $referencia;
     public $tipoAuditoriaId;
-    public $preguntas;
+    public $seccion;
 }
 

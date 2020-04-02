@@ -132,5 +132,29 @@ class AuditoriaPresentador extends CatalogoPresentador
 		 },{id:this.vista.auditoriaId});
 	 }
 	 
+	 consultarUsuariosSeccion()
+	 {
+		 var repositorio = new UsuariosRepositorio(this);		
+		repositorio.consultar(this,function(resultado)
+		{
+			this.vista.usuariosSeccion = resultado.valor;
+		},{empresaId: this.vista.empresaId, permisoSIVAH: "1"});
+	 }
 	 
+	 consultarUsuariosResultado(resultado)
+	 {
+		this.usuarios = resultado.valor;	
+		for(var i=0; i< this._pregunta.respuestas_si.length; i++)
+		{
+			var respuesta = this._pregunta.respuestas_si[i];
+			var idRespuesta = this.viewport + "Pregunta"+ this._pregunta.id+"Respuesta"+ respuesta.id;
+			var select = idRespuesta+"selectResponsable";
+			this.cargarOpcionesUsuario("#"+select, resultado.valor,null,"usuarioId");	
+			var responsableId = $("#"+select).data("responsableId");
+			if(responsableId!=null)
+				if(responsableId!="")
+					$("#"+select).val(responsableId);
+				
+		}
+	 }
 }
