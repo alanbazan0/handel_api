@@ -34,26 +34,7 @@ class CatalogoVista extends Vista
 		this.consultar();
 	}
 	
-	actualizarSesion()
-	{
-		var _this = this;
-		var time = 600000; // 10 mins
-		//var time = 10000; 
-		 setTimeout(
-		        function ()
-		        {
-		        $.ajax({
-		           url:  HANDEL_API  + '/php/actualizar_sesion.php',
-		           cache: false,
-		           complete: function (respuesta) 
-		           {
-		        	   _this.actualizarSesion();
-		           }
-		        });
-		    },
-		    time
-		);
-	}
+	
 	
 	inicializarFechas()
 	{
@@ -232,12 +213,14 @@ class CatalogoVista extends Vista
 		
 	}
 	
-	eliminar()
+	eliminar(texto)
 	{ 
+		if(texto==undefined)
+			texto ="Se eliminar\u00e1 este registro !!";
 		var _this = this;
 		swal({
 	            title: "\u00bfEst\u00E1 seguro de eliminar?",
-	            text: "Se eliminar\u00e1 este registro !!",
+	            text: texto,
 	            type: "warning",
 	            showCancelButton: true,
 	            confirmButtonColor: "#DD6B55",

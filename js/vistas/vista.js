@@ -673,4 +673,25 @@ class Vista
 			}
 		}
 		
+		actualizarSesion()
+		{
+			var _this = this;
+			var minutos = 5;
+			var time = minutos * 60000;
+			 setTimeout(
+			        function ()
+			        {
+			        $.ajax({
+			           url:  HANDEL_API  + '/php/actualizar_sesion.php',
+			           cache: false,
+			           complete: function (respuesta) 
+			           {
+			        	   _this.actualizarSesion();
+			           }
+			        });
+			    },
+			    time
+			);
+		}
+		
 }

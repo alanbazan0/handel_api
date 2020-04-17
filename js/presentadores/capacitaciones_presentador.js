@@ -1,14 +1,14 @@
-class CursosPresentador extends CatalogoPresentador
+class CapacitacionesPresentador extends CatalogoPresentador
 {
 	 constructor(vista)
 	 {
-		 super(vista, new CursosRepositorio());
+		 super(vista, new CapacitacionesRepositorio());
 	 }
 	 
 	 guardarRespuestasSi()
 	 {
 		 this.vista.mostrarIndicador();
-		 var repositorio = new CursosRepositorio(this);		
+		 var repositorio = new CapacitacionesRepositorio(this);		
 		 repositorio.guardarRespuestasSi(this,this.guardarRespuestasSiResultado,this.vista.plantillaId,this.vista.seccionIdSeleccionada,this.vista.preguntaIdSeleccionada,this.vista.respuestas);
 	 }
 	 
@@ -27,7 +27,7 @@ class CursosPresentador extends CatalogoPresentador
 	 guardarRespuestasNo()
 	 {
 		 this.vista.mostrarIndicador();
-		 var repositorio = new CursosRepositorio(this);		
+		 var repositorio = new CapacitacionesRepositorio(this);		
 		 repositorio.guardarRespuestasNo(this,this.guardarRespuestasNoResultado,this.vista.plantillaId,this.vista.seccionIdSeleccionada,this.vista.preguntaIdSeleccionada,this.vista.respuestas);
 	 }
 	 
@@ -43,22 +43,22 @@ class CursosPresentador extends CatalogoPresentador
 		
 	 }
 	 
-	 consultarCategorias()
+	 consultarPerfiles()
 	 {
 		 this.vista.mostrarIndicador();
-		 var repositorio = new CategoriasRepositorio(this);		
-		 repositorio.consultar(this,this.consultarCategoriasResultado,null);
+		 var repositorio = new PerfilesRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.perfiles = resultado.valor;
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		
+		 },null);
 	 }
 	 
-	 consultarCategoriasResultado(resultado)
-	 {
-		this.vista.ocultarIndicador();	
-		if(resultado.mensajeError=="")
-			this.vista.categorias = resultado.valor;
-		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-		
-	 }
+	
 	 
 	 consultarEstandares()
 	 {
@@ -80,7 +80,7 @@ class CursosPresentador extends CatalogoPresentador
 	 ordenarPreguntas(seleccion)
 	 {
 		 this.vista.mostrarIndicador();
-		 var repositorio = new CursosRepositorio(this);		
+		 var repositorio = new CapacitacionesRepositorio(this);		
 		 repositorio.ordenarPreguntas(this, function(resultado)
 		 {
 				this.vista.ocultarIndicador();	
@@ -119,29 +119,43 @@ class CursosPresentador extends CatalogoPresentador
 		 },this.vista.llavesPregunta);
 	 }
 	 
-	 eliminarSeccion()
+	 eliminarLeccion()
 	 {
 		 this.vista.mostrarIndicador();	
-		 var seccionId = this.vista.llavesSeccion.seccionId;
-		 this._repositorio.eliminarSeccion(this,function(resultado)
+		 var leccionId = this.vista.llavesLeccion.leccionId;
+		 this._repositorio.eliminarLeccion(this,function(resultado)
 		 {		
 			 this.vista.ocultarIndicador();	
 			 this.vista.cerrarConfirmacionEliminar();
 			 if(resultado.mensajeError=="")
 			 {
 				 this.vista.mostrarMensaje("","Guardado.");
-				 this.vista.listaSecciones.eliminarSeccion(seccionId);
+				 var lecciones =  this.vista.listaLecciones.lecciones;
+				 var indice = this.vista.listaLecciones.getIndice(leccionId);
+				
+				 this.vista.listaLecciones.eliminarLeccion(leccionId);
+				 if(indice==0)
+				 {
+					 var seccionSeleccionada =  this.vista.listaLecciones.lecciones[indice+1];
+					 this.vista.seleccionarLeccion(null,seccionSeleccionada.id);
+				 }
+				 else
+				 {
+					 var seccionSeleccionada =  this.vista.listaLecciones.lecciones[indice-1];
+					 this.vista.seleccionarLeccion(null,seccionSeleccionada.id);
+				 }
+				
 				 //TODO: consultar seccion
 				 //this.consultar();
 			 }
 			 else
 			 {
 				 if(resultado.codigoError==1451)
-					 this.vista.mostrarMensajeAdvertencia("Error","No se puede eliminar la sección porque esta relacionada con otro catálogo. ") ;
+					 this.vista.mostrarMensajeAdvertencia("Error","No se puede eliminar la lección porque esta relacionada con otro catálogo. ") ;
 				 else
-					 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar la sección. " + resultado.mensajeError);
+					 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar la lección. " + resultado.mensajeError);
 			 }
-		 },this.vista.llavesSeccion);
+		 },this.vista.llavesLeccion);
 	 }
 	 
 	 insertarPregunta(tipo)
@@ -173,6 +187,7 @@ class CursosPresentador extends CatalogoPresentador
 			this.vista.salirFormularioAlta();
 			this.vista._llaves = {id : resultado.valor};
 			this.vista.editar();
+//			this.vista.consultar();
 		}
 		else
 			this.vista.mostrarMensajeError("Error","Ocurrió un error al guardar el registro. " + resultado.mensajeError);	
@@ -184,22 +199,24 @@ class CursosPresentador extends CatalogoPresentador
 	 }	
 	
 	 
-	 insertarSeccion()
+	 insertarLeccion()
 	 {
+		 var titulo = "Sin título";
 		 this.vista.mostrarIndicador();	
-		 this._repositorio.insertarSeccion(this,function(resultado)
+		 this._repositorio.insertarLeccion(this,function(resultado)
 		 {		
 			 this.vista.ocultarIndicador();	
 			 if(resultado.mensajeError=="")
 			 {
 				 this.vista.mostrarMensaje("","Guardado.");
-				 this.vista.listaSecciones.agregarSeccion("",resultado.valor);
+				 this.vista.listaLecciones.agregarSeccion(titulo,resultado.valor);
+				 this.vista.seleccionarLeccion(null, resultado.valor);
 			 }
 			 else
 			 {
 				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
 			 }
-		 },this.vista.plantillaId);
+		 },this.vista.cursoId, titulo);
 	 }
 	 
 	 actualizarValor(campo,valor)
@@ -220,7 +237,28 @@ class CursosPresentador extends CatalogoPresentador
 				 {
 					 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
 				 }
-			 },this.vista.plantillaId, campo, valor);
+			 },this.vista.cursoId, campo, valor);
+		}
+	 }
+	 
+	 actualizarLogo()
+	 {
+		 if(this.vista.logo!=null)
+		{
+			 this.vista.mostrarIndicador();	
+			 this._repositorio.actualizarLogo(this,function(resultado)
+			 {		
+				 this.vista.ocultarIndicador();	
+				 //this.vista.cerrarConfirmacionEliminar();
+				 if(resultado.mensajeError=="")
+				 {
+					 this.vista.mostrarMensaje("","Guardado.");
+				 }
+				 else
+				 {
+					 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+				 }
+			 },this.vista.cursoId, vista.logo);
 		}
 	 }
 	 
@@ -261,12 +299,12 @@ class CursosPresentador extends CatalogoPresentador
 		 },this.vista.plantillaId, this.vista.seccionIdSeleccionada, preguntaId, categorias);
 	 }
 	 
-	 actualizarValorSeccion(seccionId,campo,valor)
+	 actualizarValorLeccion(seccionId,campo,valor)
 	 {
 		 if(campo!=undefined)
 		{
 			 this.vista.mostrarIndicador();	
-			 this._repositorio.actualizarValorSeccion(this,function(resultado)
+			 this._repositorio.actualizarValorLeccion(this,function(resultado)
 			 {		
 				 this.vista.ocultarIndicador();	
 				 if(resultado.mensajeError=="")
@@ -277,15 +315,32 @@ class CursosPresentador extends CatalogoPresentador
 				 {
 					 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
 				 }
-			 },this.vista.plantillaId, seccionId, campo, valor);
+			 },this.vista.cursoId, seccionId, campo, valor);
 		}
 	 }
+	 
+	 actualizarPerfiles()
+	 {
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.actualizarPerfiles(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.mostrarMensaje("","Guardado.");
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+			 }
+		 },this.vista.cursoId, this.vista.perfiles);
+	 }
 	
-	 ordenarSecciones(seleccion)
+	 ordenarLecciones(seleccion)
 	 {
 		 this.vista.mostrarIndicador();
-		 var repositorio = new CursosRepositorio(this);		
-		 repositorio.ordenarSecciones(this, function(resultado)
+		 var repositorio = new CapacitacionesRepositorio(this);		
+		 repositorio.ordenarLecciones(this, function(resultado)
 		 {
 				this.vista.ocultarIndicador();	
 				if(resultado.mensajeError=="")
@@ -295,7 +350,26 @@ class CursosPresentador extends CatalogoPresentador
 				else
 					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 				
-		 },this.vista.plantillaId,seleccion);
+		 },this.vista.cursoId,seleccion);
+	 }
+	 
+	 eliminarResultado(resultado)
+	 {		
+		 this.vista.ocultarIndicador();	
+		 this.vista.cerrarConfirmacionEliminar();
+		 if(resultado.mensajeError=="")
+		 {
+			 this.vista.mostrarMensaje("Notificación","La capacitación se eliminó correctamente.");
+			 this.vista.eliminarCapacitacion(resultado.valor);
+			 //this.consultar();
+		 }
+		 else
+		 {
+			 if(resultado.codigoError==1451)
+				 this.vista.mostrarMensajeAdvertencia("Error","No se puede eliminar la capacitación porque esta relacionado con otro catálogo. ") ;
+			 else
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar la capacitación. " + resultado.mensajeError);
+		 }
 	 }
 	 
 }

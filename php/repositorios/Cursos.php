@@ -37,18 +37,25 @@ try
         switch ($accion)
         {           
             case 'insertar':               
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
                 $modelo = $mapper->map($json, new Curso());                   
-                $resultado = $repositorio->insertar($modelo);         
+                $resultado = $repositorio->insertar($usuario,$modelo);         
                 if($resultado->mensajeError=="")
                 {
                     $id =  $resultado->valor;
                     $adminstradorArchivos = new AdministradorArchivos();
                     $archivo = FILES("file");
-                    $carpeta = "iconos_plantillas";
-                    $nombreArchivo = "plantilla".$modelo->id.".png";
-                    $resultado=$adminstradorArchivos->subirImagen($carpeta,$archivo,$nombreArchivo);
+                    if($archivo!=null)
+                    {
+                        $carpeta = "portadas_cursos";
+                        $nombreArchivo = "curso".$modelo->id.".png";
+                        $resultado=$adminstradorArchivos->subirImagen($carpeta,$archivo,$nombreArchivo);
+                    }
                     $resultado->valor = $id;
                 }
             break;
@@ -62,8 +69,8 @@ try
                     $id =  $resultado->valor;
                     $adminstradorArchivos = new AdministradorArchivos();
                     $archivo = FILES("file");
-                    $carpeta = "iconos_plantillas";
-                    $nombreArchivo = "plantilla".$modelo->id.".png";
+                    $carpeta = "portadas_cursos";
+                    $nombreArchivo = "curso".$modelo->id.".png";
                     $resultado=$adminstradorArchivos->subirImagen($carpeta,$archivo,$nombreArchivo);
                     $resultado->valor = $id;
                 }
@@ -91,9 +98,9 @@ try
                    //TODO: Eliminar valores de preguntas en la ejecucion
                 }
             break;
-            case 'eliminarSeccion':
+            case 'eliminarLeccion':
                 $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->eliminarSeccion($llaves);
+                $resultado = $repositorio->eliminarLeccion($llaves);
                 if($resultado->mensajeError=="")
                 {
                     //TODO: Eliminar valores de seccion en la ejecucion
@@ -106,25 +113,40 @@ try
                 $resultado = $repositorio->insertarPregunta($plantillaId, $seccionId,  $tipo);
             break;
             case 'actualizarValor':
-                $plantillaId = REQUEST('plantillaId');
+                $cursoId = REQUEST('cursoId');
                 $campo = REQUEST('campo');
                 $valor = REQUEST('valor');
-                $resultado = $repositorio->actualizarValor($plantillaId, $campo,  $valor);
+                $resultado = $repositorio->actualizarValor($cursoId, $campo,  $valor);
             break;
-            case 'insertarSeccion':
-                $plantillaId = REQUEST('plantillaId');
-                $resultado = $repositorio->insertarSeccion($plantillaId,"");
+            case 'actualizarLogo':
+                $cursoId = REQUEST('cursoId');
+                $adminstradorArchivos = new AdministradorArchivos();
+                $archivo = FILES("file");
+                if($archivo!=null)
+                {
+                    $carpeta = "portadas_cursos";
+                    $nombreArchivo = "curso".$cursoId.".png";
+                    $resultado=$adminstradorArchivos->subirImagen($carpeta,$archivo,$nombreArchivo);
+                    $resultado->valor = $cursoId;
+                }
+            break;
+            case 'insertarLeccion':
+                $cursoId = REQUEST('cursoId');
+                $titulo = REQUEST('titulo');
+                $resultado = $repositorio->insertarLeccion($cursoId,$titulo);
            break;
             case 'eliminar':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);
+               
                 if($resultado->mensajeError=="")
                 {
                     $adminstradorArchivos = new AdministradorArchivos();
-                    $carpeta = "iconos_plantillas";
-                    $nombreArchivo = "plantilla".$llaves->id.".png";
-                    $resultado=$adminstradorArchivos->eliminar($carpeta,$nombreArchivo);
+                    $carpeta = "portadas_cursos";
+                    $nombreArchivo = "curso".$llaves->id.".png";
+                    $adminstradorArchivos->eliminar($carpeta,$nombreArchivo);
                 }
+               
             break;
             case 'guardarRespuestasSi':
                 $plantillaId = REQUEST('plantillaId');
@@ -144,10 +166,10 @@ try
                 $respuestas = $mapper->mapArray($json, array());
                 $resultado = $repositorio->guardarRespuestasNo($plantillaId,$seccionId,$preguntaId,$respuestas);
             break;
-            case 'ordenarSecciones':
-                $plantillaId = REQUEST('plantillaId');
+            case 'ordenarLecciones':
+                $cursoId = REQUEST('cursoId');
                 $seleccion = REQUEST("seleccion");
-                $resultado = $repositorio->ordenarSecciones($plantillaId,$seleccion);
+                $resultado = $repositorio->ordenarLecciones($cursoId,$seleccion);
             break;
             case 'actualizarValorPregunta':
                 $plantillaId = REQUEST('plantillaId');
@@ -165,12 +187,18 @@ try
                 $categorias = $mapper->mapArray(json_decode(REQUEST('categorias')), array());
                 $resultado = $repositorio->actualizarCategoriasPregunta($plantillaId, $seccionId, $preguntaId, $categorias);
             break;
-            case 'actualizarValorSeccion':
-                $plantillaId = REQUEST('plantillaId');
-                $seccionId = REQUEST('seccionId');
+            case 'actualizarValorLeccion':
+                $cursoId = REQUEST('cursoId');
+                $leccionId = REQUEST('leccionId');
                 $campo = REQUEST('campo');
                 $valor = REQUEST('valor');
-                $resultado = $repositorio->actualizarValorSeccion($plantillaId, $seccionId, $campo,  $valor);
+                $resultado = $repositorio->actualizarValorLeccion($cursoId, $leccionId, $campo,  $valor);
+            break;
+            case 'actualizarPerfiles':
+                $cursoId = REQUEST('cursoId');
+                $mapper = new JsonMapper();
+                $perfiles = $mapper->mapArray(json_decode(REQUEST('perfiles')), array());
+                $resultado = $repositorio->actualizarPerfiles($cursoId, $perfiles);
             break;
             default:
                 $resultado->mensajeError = "Acción no válida";
@@ -188,7 +216,7 @@ finally
 {
     if($resultado!=null)
     {
-        $json = json_encode($resultado, JSON_UNESCAPED_UNICODE);
+        $json = json_encode($resultado, JSON_PRETTY_PRINT);
         if (FALSE === $json)
             echo '{"mensajeError":"' .json_last_error_msg() . '"}';
             else

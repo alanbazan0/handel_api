@@ -4,10 +4,9 @@ namespace php\modelos;
 class Curso
 {
     public $id;
-    public $nombre; 
+    public $titulo; 
     public $descripcion;
-    public $fechaProgramada;
-    public $estatus;
+    public $publicado;
     public $secciones;
 }
 

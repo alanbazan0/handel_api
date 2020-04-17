@@ -5,7 +5,7 @@ use php\modelos\Curso;
 
 interface ICursosRepositorio
 {
-    public function insertar(Curso $modelo);
+    public function insertar($usuario,Curso $modelo);
     public function actualizar(Curso $modelo);  
     
     public function consultarPorLlaves($id); 

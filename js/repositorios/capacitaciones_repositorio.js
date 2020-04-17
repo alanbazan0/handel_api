@@ -1,4 +1,4 @@
-class CursosRepositorio extends Repositorio
+class CapacitacionesRepositorio extends Repositorio
 {	
 	constructor()
 	{
@@ -51,24 +51,63 @@ class CursosRepositorio extends Repositorio
 	    });
 	}
 	
-	insertar(contexto,funcionResultado, modelo, logo)
+	insertar(contexto,funcion, modelo, logo)
 	{		
+	//		var data = new FormData();
+	//		data.append("accion", "insertar");
+	//		data.append("modelo", JSON.stringify(modelo));
+	//    	data.append("file", logo );
+	//    	var url = HANDEL_API + "/" + this.servicio;
+//        var xhr = new XMLHttpRequest();
+//        xhr.widthCredentials = true;
+//        xhr.open( 'POST', url, true );
+//        xhr.onreadystatechange = function ( resultado ) 
+//		{
+//		    if (this.readyState == 4 && this.status == 200) 
+//		    {
+//		    	var datos = null;
+//		    	try 
+//		    	{
+//		    		datos = JSON.parse(resultado.target.response);
+//		    		funcionResultado.call(contexto,datos);
+//				} 
+//		    	catch (e) 
+//				{
+//		    		datos = new Object();
+//		    		datos.mensajeError = resultado.target.response;
+//		    		funcionResultado.call(contexto,datos);
+//				}
+//		    
+//		    	
+//		    }
+//		};
+//
+//		xhr.send( data );  
+		
 		var data = new FormData();
 		data.append("accion", "insertar");
 		data.append("modelo", JSON.stringify(modelo));
-    	data.append("file", logo );
+		data.append("file", logo );
     	var url = HANDEL_API + "/" + this.servicio;
-        var xhr = new XMLHttpRequest();
-        xhr.open( 'POST', url, true );
-		xhr.onreadystatechange = function ( resultado ) 
-		{
-		    if (this.readyState == 4 && this.status == 200) 
-		    {
-		    	var datos = JSON.parse(resultado.target.response);
-		    	funcionResultado.call(contexto,datos);
-		    }
-		};
-		xhr.send( data );  
+    	$.ajax({
+            url: url,
+            data: data,
+            processData: false,
+            contentType: false,
+            type: 'POST',
+            success: function( data, textStatus, jQxhr )
+	        {
+	            funcion.call(contexto,data);
+	        },
+	        error: function( jqXhr, textStatus, errorThrown )
+	        {
+	       	 funcion.call(contexto,{ mensajeError : textStatus});
+	        },
+	        fail: function( jqXhr, textStatus, errorThrown )
+	        {
+	       	 funcion.call(contexto,{ mensajeError : textStatus});
+	        }
+          });
 	}
 	
 	actualizar(contexto,funcionResultado, modelo, logo)
@@ -165,13 +204,13 @@ class CursosRepositorio extends Repositorio
 	}
 	
 
-	insertarSeccion(contexto,funcion,plantillaId)
+	insertarLeccion(contexto,funcion,cursoId, titulo)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
           url: url,
           type: 'POST',
-          data: {accion : "insertarSeccion",plantillaId: plantillaId},
+          data: {accion : "insertarLeccion",cursoId: cursoId, titulo: titulo},
           success: function( data, textStatus, jQxhr )
           {
               funcion.call(contexto,data);
@@ -190,13 +229,13 @@ class CursosRepositorio extends Repositorio
       });
 	}
 	
-	eliminarSeccion(contexto,funcion,llaves)
+	eliminarLeccion(contexto,funcion,llaves)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
           url: url,
           type: 'POST',
-          data: {accion : "eliminarSeccion",llaves: JSON.stringify(llaves)},
+          data: {accion : "eliminarLeccion",llaves: JSON.stringify(llaves)},
           success: function( data, textStatus, jQxhr )
           {
               funcion.call(contexto,data);
@@ -215,13 +254,13 @@ class CursosRepositorio extends Repositorio
       });
 	}
 	
-	actualizarValor(contexto,funcion,plantillaId, campo, valor)
+	actualizarValor(contexto,funcion,cursoId, campo, valor)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
           url: url,
           type: 'POST',
-          data: {accion : "actualizarValor",plantillaId: plantillaId, campo: campo, valor: valor},
+          data: {accion : "actualizarValor",cursoId: cursoId, campo: campo, valor: valor},
           success: function( data, textStatus, jQxhr )
           {
               funcion.call(contexto,data);
@@ -240,15 +279,20 @@ class CursosRepositorio extends Repositorio
       });
 	}
 	
-	ordenarSecciones(contexto,funcion,plantillaId, seleccion)
-	{		
-		var respuestasString =  JSON.stringify(seleccion);
-		var url = HANDEL_API + "/" + this.servicio;
-		 $.ajax({
-	        url: url,
-	        type: 'POST',
-	        data: {accion : "ordenarSecciones", 'plantillaId':plantillaId,'seleccion':seleccion},
-	        success: function( data, textStatus, jQxhr )
+	actualizarLogo(contexto,funcion,cursoId,logo)
+	{				
+		var data = new FormData();
+		data.append("accion", "actualizarLogo");
+		data.append("cursoId", cursoId);
+		data.append("file", logo );
+    	var url = HANDEL_API + "/" + this.servicio;
+    	$.ajax({
+            url: url,
+            data: data,
+            processData: false,
+            contentType: false,
+            type: 'POST',
+            success: function( data, textStatus, jQxhr )
 	        {
 	            funcion.call(contexto,data);
 	        },
@@ -259,6 +303,36 @@ class CursosRepositorio extends Repositorio
 	        fail: function( jqXhr, textStatus, errorThrown )
 	        {
 	       	 funcion.call(contexto,{ mensajeError : textStatus});
+	        }
+          });
+	}
+	
+	
+	ordenarLecciones(contexto,funcion,cursoId, seleccion)
+	{		
+		var respuestasString =  JSON.stringify(seleccion);
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+	        url: url,
+	        type: 'POST',
+	        data: {accion : "ordenarLecciones", 'cursoId':cursoId,'seleccion':seleccion},
+	        success: function( data, textStatus, jQxhr )
+	        {
+	            funcion.call(contexto,data);
+	        },
+	        error: function( jqXhr, textStatus, errorThrown )
+	        {
+	        	 if(textStatus=="parsererror")
+	      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+	         		else
+	         			funcion.call(contexto,{ mensajeError : textStatus});
+	        },
+	        fail: function( jqXhr, textStatus, errorThrown )
+	        {
+	        	 if(textStatus=="parsererror")
+	      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+	         		else
+	         			funcion.call(contexto,{ mensajeError : textStatus});
 	        }
 	    });
 	}
@@ -313,13 +387,38 @@ class CursosRepositorio extends Repositorio
       });
 	}
 	
-	actualizarValorSeccion(contexto,funcion,plantillaId, seccionId, campo, valor)
+	actualizarValorLeccion(contexto,funcion,cursoId, leccionId, campo, valor)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
           url: url,
           type: 'POST',
-          data: {accion : "actualizarValorSeccion",plantillaId: plantillaId, seccionId: seccionId, campo: campo, valor: valor},
+          data: {accion : "actualizarValorLeccion",cursoId: cursoId, leccionId: leccionId, campo: campo, valor: valor},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	actualizarPerfiles(contexto,funcion,cursoId, perfiles)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "actualizarPerfiles",cursoId: cursoId, perfiles:JSON.stringify(perfiles)},
           success: function( data, textStatus, jQxhr )
           {
               funcion.call(contexto,data);
