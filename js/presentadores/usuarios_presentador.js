@@ -46,6 +46,21 @@ class UsuariosPresentador extends CatalogoPresentador
 		 },null);
 	 }
 	 
+	 consultarPerfiles()	
+	 {
+		 var repositorio = new PerfilesRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.perfiles = resultado.valor;
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },null);
+	 }
+	 
 	 consultarEmpresasResultado(resultado)
 	 {
 		//this.vista.ocultarIndicador();	
@@ -139,6 +154,13 @@ class UsuariosPresentador extends CatalogoPresentador
 		{
 		 var repositorio = new UsuariosRepositorio(this);	
 		 repositorio.consultarSupervisoresPorEmpresa(this,this.consultarSupervisoresPorEmpresaResultado,this.vista.modelo.empresaId,this.vista.modelo.id);
+		}
+		else
+		{
+			var supervisores = [];
+			this.vista.supervisores1 = supervisores;
+			this.vista.supervisores2 = supervisores;
+			this.vista.supervisores3 = supervisores;
 		}
 	 }
 	 

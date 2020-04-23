@@ -4,6 +4,7 @@ namespace php\repositorios;
 use php\interfaces\IEvidenciasRepositorio;
 use php\modelos\Evidencia;
 use php\modelos\Resultado;
+use php\modelos\EvidenciaComentario;
 
 require_once('../interfaces/IEvidenciasRepositorio.php');
 require_once('../modelos/Evidencia.php');
@@ -11,6 +12,7 @@ require_once('RepositorioBase.php');
 require_once('UsuariosRepositorio.php');
 require_once("../clases/TipoUsuario.php");
 require_once('../clases/Resultado.php');
+require_once('../repositorios/EvidenciasComentariosRepositorio.php');
 
 class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasRepositorio
 {
@@ -1304,7 +1306,11 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                             if($registro->total!=0)
                             {
                                $registro->porcentajeCumplimiento = $cumplimieto * 100 / $registro->total;
-                               $registro->porcentajeCumplimiento = number_format($registro->porcentajeCumplimiento, 1, '.', '');
+                               $registro->porcentajeCumplimiento = bcdiv($registro->porcentajeCumplimiento, '1', 1);
+                               list($enteros, $decimales) = explode(".", $registro->porcentajeCumplimiento);
+                               if($decimales=="0")
+                                   $registro->porcentajeCumplimiento = str_replace(".$decimales","",$registro->porcentajeCumplimiento);
+                               //$registro->porcentajeCumplimiento = number_format($registro->porcentajeCumplimiento, 1, '.', '');
                             }
                                
                             
@@ -1437,6 +1443,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         if($modelo->justificacionId=="")
             $modelo->justificacionId=null;
         $resultado = new Resultado();
+      
         $consulta = "UPDATE evidencias
                      SET 
                          realizo_actividad = ?,
@@ -1451,7 +1458,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             {
                 if($sentencia->execute())
                 {
-                    $resultado->valor=true;
+                        $resultado->valor=true;
                 }
                 else
                     $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
@@ -1461,11 +1468,17 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         }
         else
             $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        
+      
+            
         return $resultado;
     }
     
     public function validarEvidencia($usuario,Evidencia $modelo)
     {
+        ini_set('max_execution_time', 300);
+        $this->conexion->autocommit(FALSE);
+        
         if($modelo->justificacionId=="")
             $modelo->justificacionId=null;
             $resultado = new Resultado();
@@ -1482,18 +1495,33 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                 {
                     if($sentencia->execute())
                     {
-                        $resultado->valor=$modelo->id;
-                       
+                        
+                        $comentariosRepositorio = new EvidenciasComentariosRepositorio($this->conexion);
+                        $comentario= new EvidenciaComentario();
+                        $comentario->usuarioId = $usuario->id;
+                        $comentario->evidenciaId = $modelo->id;
+                        $comentario->comentario =  $modelo->comentariosValidacion;
+                        
+                        $resultado = $comentariosRepositorio->insertar($usuario,$comentario);
+                        if($resultado->correcto())
+                        {
+                            $resultado->valor=$modelo->id;
+                        }
                     }
                     else
-                        $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                        $resultado->mensajeError = __FUNCTION__ .' Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 }
                 else
-                    $resultado->mensajeError = 'Falló el enlace de parámetros';
+                    $resultado->mensajeError = __FUNCTION__ .' Falló el enlace de parámetros';
             }
             else
-                $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
-                return $resultado;
+                $resultado->mensajeError = __FUNCTION__ .' Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+           
+        if($resultado->correcto())
+            $this->conexion->commit();
+        else
+            $this->conexion->rollback();
+        return $resultado;
     }
 
     public function consultar($criteriosSeleccion)

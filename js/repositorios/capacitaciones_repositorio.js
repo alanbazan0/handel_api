@@ -130,14 +130,14 @@ class CapacitacionesRepositorio extends Repositorio
 		xhr.send( data );  
 	}
 	
-	ordenarPreguntas(contexto,funcion,plantillaId, seccionId, seleccion)
+	ordenarPreguntas(contexto,funcion,cursoId, leccionId, seleccion)
 	{		
 		var respuestasString =  JSON.stringify(seleccion);
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
 	        url: url,
 	        type: 'POST',
-	        data: {accion : "ordenarPreguntas", 'plantillaId':plantillaId,'seccionId':seccionId,'seleccion':seleccion},
+	        data: {accion : "ordenarPreguntas", 'cursoId':cursoId,'leccionId':leccionId,'seleccion':seleccion},
 	        success: function( data, textStatus, jQxhr )
 	        {
 	            funcion.call(contexto,data);
@@ -337,13 +337,13 @@ class CapacitacionesRepositorio extends Repositorio
 	    });
 	}
 	
-	actualizarValorPregunta(contexto,funcion,plantillaId, seccionId, preguntaId, campo, valor)
+	actualizarValorPregunta(contexto,funcion,cursoId, leccionId, preguntaId, campo, valor)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
           url: url,
           type: 'POST',
-          data: {accion : "actualizarValorPregunta",plantillaId: plantillaId, seccionId: seccionId, preguntaId, preguntaId, campo: campo, valor: valor},
+          data: {accion : "actualizarValorPregunta",cursoId: cursoId, leccionId: leccionId, preguntaId, preguntaId, campo: campo, valor: valor},
           success: function( data, textStatus, jQxhr )
           {
               funcion.call(contexto,data);

@@ -24,6 +24,8 @@ class Usuario
     public $permiso10y7;
     public $departamentoId;
     public $corporativo;
+    public $permisoCAVIH;
+    public $perfilId;
     
 }
 

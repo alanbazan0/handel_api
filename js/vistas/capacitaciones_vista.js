@@ -855,7 +855,7 @@ class CapacitacionesVista extends CatalogoVista
 	
 	get leccionIdSeleccionada()
 	{
-		return this._leccionIdSeleccionada.id;
+		return this._leccionSeleccionada.id;
 	}
 	
 	get cursoId()

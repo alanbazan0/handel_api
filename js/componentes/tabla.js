@@ -18,6 +18,7 @@ class Tabla
 		this._textoTablaVacia = "Ning&uacute;n dato disponible en esta tabla";
 		this._ajustarColumnas = false;
 		this._botones = [];
+		this._campoId = "id";
 	}
 	
 	set botones(botones)
@@ -174,9 +175,14 @@ class Tabla
 		return $('#'+this._id+"Table");	
 	}
 	
+	set campoId(campoId)
+	{
+		this._campoId = campoId;
+	}
+	
 	renderizarRegistros()
 	{
-	
+		var _this = this;
 		
 		
 		$('#'+this._id+"Table").DataTable( {
@@ -184,6 +190,10 @@ class Tabla
 			  "drawCallback": function( settings ) {
 				  $(".paginate_button").attr("href","#");
 			    },
+			    "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+			    	$(nRow).attr('data-id',aData[_this._campoId]);
+			    	return nRow;
+			    	},
 			    dom: 'Bfrtip',
 			    "info":true,
 		        "searching":this._buscar,

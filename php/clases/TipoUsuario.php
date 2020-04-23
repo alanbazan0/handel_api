@@ -6,5 +6,5 @@ abstract class TipoUsuario
     const COORDINADOR = 2;
     const USUARIO = 4;
     const INSPECTOR = 3;
-    const COORDINADOR_CORPORATIVO = 6;
+    const CAPACITADO = 6;
 }

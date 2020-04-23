@@ -12,7 +12,7 @@ class Vista
 			$("#enviarMensajeLink").click(this.enviarMensajeLinkClick);
 		this.toastr = null;
 		this.toastrData = null;
-			
+		this.actualizarSesion();	
 	}
 	salir()
 	{
@@ -572,7 +572,7 @@ class Vista
 				modal = "modalAlta";
 			if(formulario==undefined || modal =="")
 				formulario="formulario";
-			if(guardarButton==undefined)
+			if(guardarButton==undefined || guardarButton=="")
 				guardarButton="guardarButton";
 			if($("#"+modal).length ==0)
 			{
@@ -692,6 +692,16 @@ class Vista
 			    },
 			    time
 			);
+		}
+		
+		get aplicacionId()
+		{
+			return $("body").attr("data-aplicacionId");
+		}
+		
+		get aplicacionVersion()
+		{
+			return $("body").attr("data-aplicacionVersion");
 		}
 		
 }

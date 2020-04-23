@@ -334,6 +334,17 @@ class PDF extends FPDF
         $this->SetFont($this->font, '', 10);
         $this->Cell(55, 8, $this->texto($selloViajero), $borde, 0, 'L');
         
+        $this->Ln();
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(110, 8, $this->texto("La caja o contenedor está libre de contaminantes agrícolas:"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 8, $this->texto($this->inspeccion->tieneSelloImpreso), $borde, 0, 'L');
+        $this->Ln();
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(110, 8, $this->texto("La unidad está libre de contaminantes agrícolas:"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 8, $this->texto($this->inspeccion->cajaLibreObjetosOrganicos), $borde, 0, 'L');
+        
         $this->SetLeftMargin(10);
         $this->SetFont($this->font, 'B', 13);
         $this->Ln();
@@ -456,6 +467,16 @@ class PDF extends FPDF
         $this->SetFont($this->font, '', 10);
         $this->Cell(55, 8, $this->texto(""), $borde, 0, 'L');
         
+        $this->Ln();
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(110, 8, $this->texto("La tarima tiene impreso el sello de tratamiento de fumigación:"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 8, $this->texto($this->inspeccion->tieneSelloImpreso), $borde, 0, 'L');
+        $this->Ln();
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(110, 8, $this->texto("La caja o contenedor está libre de contaminantes agrícolas:"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 8, $this->texto($this->inspeccion->cajaLibreObjetosOrganicos), $borde, 0, 'L');
         
         $this->SetLeftMargin(10);
         $this->SetFont($this->font, 'B', 13);
@@ -481,7 +502,7 @@ class PDF extends FPDF
         $this->Cell(28.33, 8, $this->texto($profundidad), $borde, 0, 'L');
         
         $this->SetDrawColor(0,0,0);
-        $y = 128;
+        $y = 144;
         $this->Line(10, $y, 210-10, $y);
         
         $this->Ln();
@@ -568,6 +589,11 @@ class PDF extends FPDF
         $this->Cell(30, 8, "Color Tractor:", $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
         $this->Cell(55, 8, $this->texto($colorTractor), $borde, 0, 'L');
+        $this->Ln();
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(110, 8, $this->texto("La unidad está libre de contaminantes agrícolas:"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(55, 8, $this->texto($this->inspeccion->cajaLibreObjetosOrganicos), $borde, 0, 'L');
         
 //         $this->SetLeftMargin(10);
 //         $this->SetFont($this->font, 'B', 13);

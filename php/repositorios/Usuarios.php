@@ -155,25 +155,33 @@ try
                 $resultado = $repositorio->consultarUsuario($nombreUsuario,$contrasena);
                 if($resultado->valor!=null)
                 {
-                    $validarSeguridad = false;
+                    $validarSeguridad = true;
                     if($validarSeguridad)
                     {
                         $tienePermiso = false;
-                        switch($aplicacionId)
+                        if($resultado->valor->tipoUsuarioId == TipoUsuario::ADMINISTRADOR)
+                            $tienePermiso = true;
+                        else
                         {
-                            case "SAHA":
-                                $tienePermiso =  $resultado->valor->permisoSAHA==1?true:false;
+                            switch($aplicacionId)
+                            {
+                                case "SAHA":
+                                    $tienePermiso =  $resultado->valor->permisoSAHA==1?true:false;
+                                    break;
+                                case "SIVAH":
+                                    $tienePermiso =  $resultado->valor->permisoSIVAH==1?true:false;
+                                    break;
+                                case "10y7":
+                                    $tienePermiso =  $resultado->valor->permiso10y7==1?true:false;
                                 break;
-                            case "SIVAH":
-                                $tienePermiso =  $resultado->valor->permisoSIVAH==1?true:false;
+                                case "CAVIH":
+                                    $tienePermiso =  $resultado->valor->permisoCAVIH==1?true:false;
                                 break;
-                            case "10y7":
-                                $tienePermiso =  $resultado->valor->permiso10y7==1?true:false;
-                                break;
+                            }
                         }
+                       
                         if($tienePermiso)
                         {
-                           
                                 switch($aplicacionId)
                                 {
                                     case "SAHA":
@@ -240,6 +248,26 @@ try
                                             }
                                         }
                                             
+                                    break;
+                                    case "CAVIH":
+                                        if($resultado->valor->tipoUsuarioId == TipoUsuario::ADMINISTRADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::COORDINADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::SUPERVISOR ||  $resultado->valor->tipoUsuarioId == TipoUsuario::CAPACITADO)
+                                        {
+                                            $_SESSION['usuario']=$resultado->valor;
+                                            
+                                            $historialAccesoRepositorio = new HistorialAccesoRepositorio($conexion);
+                                            $historialAccesoRepositorio->insertar($nombreUsuario,$aplicacionId,$aplicacionVersion);
+                                        }
+                                        else
+                                        {
+                                            $resultado->valor = null;
+                                            $resultado->mensajeError="El acceso a la plataforma en linea esta restringido a usuarios autorizados, si necesita ingresar para realizar cambios por favor solicite los cambios con su supervisor autorizado.";
+                                            unset($_SESSION['usuario']);
+                                        }
+                                      break;
+                                    default:
+                                        $resultado->valor = null;
+                                        $resultado->mensajeError="El acceso a la plataforma en linea esta restringido a usuarios autorizados, si necesita ingresar para realizar cambios por favor solicite los cambios con su supervisor autorizado.";
+                                        unset($_SESSION['usuario']);
                                     break;
                                 }
                             

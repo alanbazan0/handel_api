@@ -11,7 +11,10 @@ class InicioSesionVista extends Vista
 	inicializar()
 	{
 		$("#olvideContrasenaLink").click(this.olvideContrasena);
-		this.inicializarValidacionesCuenta();
+		if(this.aplicacionId=="CAVIH")
+			this.inicializarValidacionesCuentaCAVIH();
+		else
+			this.inicializarValidacionesCuenta();
 	}
 	
 	olvideContrasena(event)
@@ -54,15 +57,7 @@ class InicioSesionVista extends Vista
 		return $("body").attr("data-url");
 	}
 	
-	get aplicacionId()
-	{
-		return $("body").attr("data-aplicacionId");
-	}
 	
-	get aplicacionVersion()
-	{
-		return $("body").attr("data-aplicacionVersion");
-	}
 	
 	inicializarValidacionesCuenta()
 	{
@@ -99,6 +94,41 @@ class InicioSesionVista extends Vista
             }
         });
 	}
+	inicializarValidacionesCuentaCAVIH()
+	{
+        jQuery("#inicioSesionForm").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+                "nombreUsuarioInput": {
+                    required: !0,
+                },
+                "contrasenaInput": {
+                    required: !0
+                }
+            },
+            messages: {
+                "nombreUsuarioInput": "Por favor ingrese un nombre de usuario v\xE1lido",
+                "contrasenaInput": {
+                    required: "Por favor ingrese una contrase\xF1a"
+                }
+            },
+            submitHandler:function (form) {
+            	 vista.iniciarSesion();
+            }
+        });
+	}
+	
 	
 	iniciarSesion()
 	{

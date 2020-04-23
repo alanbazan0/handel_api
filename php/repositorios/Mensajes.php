@@ -15,14 +15,14 @@ include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/UsuariosRepositorio.php';
 include '../repositorios/MensajesRepositorio.php';
-include '../clases/AdministradorCorreo.php';
+require_once('../clases/AdministradorCorreo.php');
 
 $origin = "*";
 if(isset($_SERVER['HTTP_ORIGIN']))
-  $origin =$_SERVER['HTTP_ORIGIN'];
-header('Access-Control-Allow-Origin: '.$origin);
-header('Content-Type: application/json; charset=UTF-8');
-header('Access-Control-Allow-Credentials: true');
+    $origin =$_SERVER['HTTP_ORIGIN'];
+    header('Access-Control-Allow-Origin: '.$origin);
+    header('Content-Type: application/json; charset=UTF-8');
+    header('Access-Control-Allow-Credentials: true');
 
 $administrador_conexion = new AdministradorConexion();
 $resultado = new Resultado();
@@ -46,26 +46,26 @@ try
                 if(isset($_SESSION['usuario']))
                     $usuario = $_SESSION['usuario'];
                 $resultado = $repositorio->insertar($modelo,$usuario);
-                if($resultado->correcto())
-                {
-                    $modelo->id = $resultado->valor;
-                    $usuariosRepositorio = new UsuariosRepositorio($conexion);
-                    $criteriosSeleccion = (object) ['permisoSAHA' => 1];
-                    if($modelo->empresaId!=null && $modelo->empresaId!="")
-                        $criteriosSeleccion->empresaId = $modelo->empresaId;
-                    if($modelo->sedeId!=null && $modelo->sedeId!="")
-                        $criteriosSeleccion->sedeId = $modelo->sedeId;
-                    if($modelo->departamentoId!=null && $modelo->departamentoId!="")
-                        $criteriosSeleccion->departamentoId = $modelo->departamentoId;
-                    if($modelo->usuarioId!=null && $modelo->usuarioId!="")
-                        $criteriosSeleccion->usuarioId = $modelo->usuarioId;
-                    $resultado = $usuariosRepositorio->consultar($modelo,$criteriosSeleccion,false);
-                    if($resultado->correcto())
-                    {
-                        $administrador_correo = new AdministradorCorreo();
-                        $resultado = $administrador_correo->enviarNotificacionMensaje($usuario,$resultado->valor,$modelo);
-                    }
-                }
+//                 if($resultado->correcto())
+//                 {
+//                     $modelo->id = $resultado->valor;
+//                     $usuariosRepositorio = new UsuariosRepositorio($conexion);
+//                     $criteriosSeleccion = (object) ['permisoSAHA' => 1];
+//                     if($modelo->empresaId!=null && $modelo->empresaId!="")
+//                         $criteriosSeleccion->empresaId = $modelo->empresaId;
+//                     if($modelo->sedeId!=null && $modelo->sedeId!="")
+//                         $criteriosSeleccion->sedeId = $modelo->sedeId;
+//                     if($modelo->departamentoId!=null && $modelo->departamentoId!="")
+//                         $criteriosSeleccion->departamentoId = $modelo->departamentoId;
+//                     if($modelo->usuarioId!=null && $modelo->usuarioId!="")
+//                         $criteriosSeleccion->usuarioId = $modelo->usuarioId;
+//                     $resultado = $usuariosRepositorio->consultar($modelo,$criteriosSeleccion,false);
+//                     if($resultado->correcto())
+//                     {
+//                         $administrador_correo = new AdministradorCorreo();
+//                         $resultado = $administrador_correo->enviarNotificacionMensaje($usuario,$resultado->valor,$modelo);
+//                     }
+//                 }
                 
             break;
             case 'actualizar':

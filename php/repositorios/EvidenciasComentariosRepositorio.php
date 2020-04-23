@@ -4,11 +4,14 @@ namespace php\repositorios;
 use php\interfaces\IEvidenciasComentariosRepositorio;
 use php\modelos\EvidenciaComentario;
 use php\modelos\Resultado;
+use php\clases\AdministradorCorreo;
 
-include '../interfaces/IEvidenciasComentariosRepositorio.php';
-include '../modelos/EvidenciaComentario.php';
-include 'RepositorioBase.php';
+require_once('../interfaces/IEvidenciasComentariosRepositorio.php');
+require_once('../modelos/EvidenciaComentario.php');
+require_once('RepositorioBase.php');
+require_once('../repositorios/EvidenciasRepositorio.php');
 require_once('../clases/Resultado.php');
+require_once('../clases/AdministradorCorreo.php');
 
 class EvidenciasComentariosRepositorio extends RepositorioBase implements IEvidenciasComentariosRepositorio
 {
@@ -22,26 +25,118 @@ class EvidenciasComentariosRepositorio extends RepositorioBase implements IEvide
                     	INNER JOIN usuarios U ON U.id = EC.usuario_id ";
                    
     }
+    
+    public function consultaUsuariosComentario($evidenciaId)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $consulta = "SELECT U.id, U.nombre, U.apellido, U.nombre_usuario 
+            FROM evidencias_comentarios EC 
+                INNER JOIN usuarios U ON U.id = EC.usuario_id 
+        WHERE evidencia_id = ?
+        GROUP BY   U.id, U.nombre, U.apellido, U.nombre_usuario ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$evidenciaId))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id, $nombre, $apellido, $nombreUsuario))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro= (object)
+                            [
+                                "id" => $id,
+                                "nombre" => $nombre,
+                                "apellido" => $apellido,
+                                "nombreUsuario" => $nombreUsuario
+                            ];
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
+    }
 
-    public function insertar(EvidenciaComentario $modelo)
+    public function insertar($usuario,EvidenciaComentario $modelo)
     {
         $resultado = $this->calcularId('id','evidencias_comentarios');
-        if($resultado->mensajeError=='')
+        if($resultado->correcto())
         {
-            $id = $resultado->valor;
+            $modelo->id = $resultado->valor;
             $consulta = "INSERT INTO evidencias_comentarios(id, evidencia_id, usuario_id, comentario, fecha)VALUES(?, ?, ?, ?, NOW())";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param('iiis', $id, $modelo->evidenciaId, $modelo->usuarioId, $modelo->comentario))
+                if($sentencia->bind_param('iiis',  $modelo->id, $modelo->evidenciaId, $modelo->usuarioId, $modelo->comentario))
                 {
-                    if(!$sentencia->execute())
-                        $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    if($sentencia->execute())
+                    {
+                        $llaves= (object)
+                        [
+                            'id'=> $modelo->evidenciaId
+                        ];
+                        $repositorio = new EvidenciasRepositorio($this->conexion);
+                        $resultado = $repositorio->consultarPorLlaves($llaves);
+                        if($resultado->correcto())
+                        {
+                            $evidencia =  $resultado->valor;
+                            $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                            $resultado = $this->consultaUsuariosComentario($evidencia->id);
+                            if($resultado->correcto())
+                            {
+                                $usuarios = $resultado->valor;
+                                
+                                if(!$usuariosRepositorio->existeUsuarioArreglo($evidencia->usuarioId,$usuarios))
+                                {
+                                    $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$evidencia->usuarioId]);
+                                    if($resultado->correcto())
+                                        array_push($usuarios, $resultado->valor);
+                                }
+                                if(!$usuariosRepositorio->existeUsuarioArreglo($evidencia->administradorId,$usuarios))
+                                {
+                                    $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$evidencia->administradorId]);
+                                    if($resultado->correcto())
+                                        array_push($usuarios, $resultado->valor);
+                                }
+                                
+                                $usuariosRepositorio->eliminarUsuarioArreglo($usuario->id,$usuarios);
+                                    
+                                $administrador_correo = new AdministradorCorreo();
+                                $titulo = "El usuario $usuario->nombreCompleto ha comentado en la conversación sobre la evidencia: <label style='font-weight:bold'> $evidencia->nombre</label>";
+                                $url = "https://saha.apps-handel.com/panel.php?comentarioId= $modelo->id";
+                                $asunto  = "SAHA: " . $usuario->nombreCompleto . ": hizo un comentario en evidencia " . $evidencia->nombre;
+                                //$asuntoCorreo = utf8_decode($asunto);
+                                $asuntoCorreo = html_entity_decode($asunto);
+                               // $asuntoCorreo = "=?ISO-8859-1?B?".base64_encode($asunto)."=?=";
+                                $resultado = $administrador_correo->enviarNotificacionMensaje($usuario,$usuarios,$asuntoCorreo,$titulo,$modelo->comentario,$url);
+                                if($resultado->correcto())
+                                    $resultado->valor = $modelo->id;
+                            }
+                        }
+                        
+                    }
+                    else
+                        $resultado->mensajeError =  __FUNCTION__ . ' Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 }
                 else
-                    $resultado->mensajeError = 'Falló el enlace de parámetros';
+                    $resultado->mensajeError = __FUNCTION__ . ' Falló el enlace de parámetros';
             }
             else
-                $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' .$this->conexion->error;
+                $resultado->mensajeError = __FUNCTION__ . ' Falló la preparación: (' . $this->conexion->errno . ') ' .$this->conexion->error;
         }
         return $resultado;
     }

@@ -3,6 +3,7 @@
 namespace php\clases;
 use Exception;
 use php\modelos\Resultado;
+use php\repositorios\UsuariosRepositorio;
 
 class AdministradorCorreo
 {
@@ -217,26 +218,64 @@ class AdministradorCorreo
         return $resultado;
     }
     
-    public function enviarNotificacionMensaje($usuario, $usuarios, $modeloMensaje)
+//     public function enviarNotificacionMensaje($usuario, $usuarios, $modeloMensaje)
+//     {
+// //         $usuarios = array();
+// //         array_push($usuarios,(object) ['nombreUsuario' => 'alanbazan@apps-handel.com','nombreCompleto' => 'Alan Bazán']);
+// //         array_push($usuarios,(object) ['nombreUsuario' => 'eduardo@handel-sce.com','nombreCompleto' => 'Eduardo']);
+        
+//         $mensaje= file_get_contents('../plantillas_correo/tema_nuevo.html');
+        
+//        // $mensaje=  str_replace("@nombre",$usuario->nombreCompleto . ": " . $modeloMensaje->asunto,$mensaje);
+       
+//         $texto = "El usuario $usuario->nombreCompleto ha creado un nuevo tema de discusión en SAHA, el nuevo tema es: <label style='font-weight:bold'> $modeloMensaje->asunto</label>";
+//         $caricatura = "https://api.apps-handel.com/images/caricatura/Bonus_Shapes_and_Backgounds-12.png";
+        
+//         $mensaje=  str_replace("@texto",$texto,$mensaje);
+//         $mensaje=  str_replace("@mensajeId",$modeloMensaje->id,$mensaje);
+//         $mensaje=  str_replace("@mensaje",$modeloMensaje->mensaje,$mensaje);
+//         $mensaje=  str_replace("@caricatura",$caricatura,$mensaje);
+        
+//         return  $this->enviarCorreoUsuarios($usuarios,utf8_decode("SAHA: " . $usuario->nombreCompleto . ": " . $modeloMensaje->asunto), $mensaje);
+//     }
+
+    public function enviarNotificacionMensaje($usuario, $usuarios, $asuntoCorreo, $titulo, $contenido, $url)
     {
-//         $usuarios = array();
-//         array_push($usuarios,(object) ['nombreUsuario' => 'alanbazan@apps-handel.com','nombreCompleto' => 'Alan Bazán']);
-//         array_push($usuarios,(object) ['nombreUsuario' => 'eduardo@handel-sce.com','nombreCompleto' => 'Eduardo']);
+       // $usuarios = array();
+        //array_push($usuarios,(object) ['nombreUsuario' => 'alanbazan@apps-handel.com','nombreCompleto' => 'Alan Bazán']);
         
         $mensaje= file_get_contents('../plantillas_correo/tema_nuevo.html');
         
-       // $mensaje=  str_replace("@nombre",$usuario->nombreCompleto . ": " . $modeloMensaje->asunto,$mensaje);
-       
-        $texto = "El usuario $usuario->nombreCompleto ha creado un nuevo tema de discusión en SAHA, el nuevo tema es: <label style='font-weight:bold'> $modeloMensaje->asunto</label>";
+        
         $caricatura = "https://api.apps-handel.com/images/caricatura/Bonus_Shapes_and_Backgounds-12.png";
         
-        $mensaje=  str_replace("@texto",$texto,$mensaje);
-        $mensaje=  str_replace("@mensajeId",$modeloMensaje->id,$mensaje);
-        $mensaje=  str_replace("@mensaje",$modeloMensaje->mensaje,$mensaje);
+        $mensaje=  str_replace("@texto",$titulo,$mensaje);
+        $mensaje=  str_replace("@url",$url,$mensaje);
+        $mensaje=  str_replace("@mensaje",$contenido,$mensaje);
         $mensaje=  str_replace("@caricatura",$caricatura,$mensaje);
         
-        return  $this->enviarCorreoUsuarios($usuarios,utf8_decode("SAHA: " . $usuario->nombreCompleto . ": " . $modeloMensaje->asunto), $mensaje);
+        return  $this->enviarCorreoUsuarios($usuarios,$asuntoCorreo, $mensaje);
     }
+    
+//     public function enviarNotificacionComentario($usuario, $usuarios, $evidencia, $comentario)
+//     {
+//         $mensaje= file_get_contents('../plantillas_correo/notificacion_comentario.html');
+        
+        
+//         $texto = "Recibiste un mensaje de $usuario->nombreCompleto en conversación sobre la evidencia: <label style='font-weight:bold'> $evidencia->nombre</label>";
+//         $caricatura = "https://api.apps-handel.com/images/caricatura/Bonus_Shapes_and_Backgounds-12.png";
+        
+//         $mensaje=  str_replace("@texto",$texto,$mensaje);
+//         $mensaje=  str_replace("@evidenciaId",$evidencia->id,$mensaje);
+//         $mensaje=  str_replace("@mensaje",$comentario,$mensaje);
+//         $mensaje=  str_replace("@caricatura",$caricatura,$mensaje);
+        
+// //         $usuarios = array(); 
+// //         array_push($usuarios, $usuarioDestino);
+        
+        
+//         return  $this->enviarCorreoUsuarios($usuarios,utf8_decode("SAHA: " . $usuario->nombreCompleto . ": hizo un comentario en evidencia " . $evidencia->nombre), $mensaje);
+//     }
     
     public function enviarCorreoNotificacion($correo,$asunto,$mensaje)
     {
@@ -280,6 +319,7 @@ class AdministradorCorreo
         
         $cabecera = "From:  SAHA <noreply@apps-handel.com>\r\n";
         $cabecera .= "Bcc: $correos\r\n";
+        //$cabecera .= "MIME-Version: 1.0\r\n";
         $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";
         
         
@@ -302,6 +342,8 @@ class AdministradorCorreo
         {
             $resultado->valor="OK";
         }
+        
+       // var_dump($resultado);
         
         
         return $resultado;

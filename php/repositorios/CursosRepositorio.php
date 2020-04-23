@@ -68,21 +68,22 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     }
     
     
-    public function insertarPregunta($plantillaId, $seccionId, $tipo)
+    public function insertarPregunta($cursoId, $leccionId, $tipo)
     {
-        $resultado =  $this->calcularIdPregunta($plantillaId, $seccionId,"id");
+        $resultado =  $this->calcularIdPregunta($cursoId, $leccionId, "id");
         if($resultado->correcto())
         {
             $id =  $resultado->valor;
-            $resultado =  $this->calcularIdPregunta($plantillaId, $seccionId,"orden");
+            var_dump($leccionId);
+            $resultado =  $this->calcularIdPregunta($cursoId, $leccionId,"orden");
             if($resultado->correcto())
             {
                 $orden =  $resultado->valor;
-                $consulta = "INSERT INTO preguntas(plantilla_id, seccion_id, id, orden, tipo, texto, hallazgo, recomendacion, colapsado, practicas, observaciones, peso) " .
-                    "VALUE(?, ?, ?, ?, ?, '', '', '', 0,'','','')";
+                $consulta = "INSERT INTO cursos_preguntas(curso_id, leccion_id, id, orden,texto,tipo) " .
+                            "VALUE(?, ?, ?, ?, '','om')";
                 if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    if($sentencia->bind_param("iiiis",$plantillaId,$seccionId, $id, $orden, $tipo))
+                    if($sentencia->bind_param("iiii",$cursoId,$leccionId, $id, $orden))
                     {
                         if($sentencia->execute())
                         {
@@ -91,14 +92,14 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                         }
                         else
                         {
-                            $resultado->mensajeError = "Falló la ejecución insertar(" . $this->conexion->errno . ") " . $this->conexion->error;
+                            $resultado->mensajeError = __FUNCTION__ ." Falló la ejecución insertar(" . $this->conexion->errno . ") " . $this->conexion->error;
                         }
                     }
                     else
-                        $resultado->mensajeError = "Falló el enlace de parámetros";
+                        $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
                 }
                 else
-                    $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             }
         }
         
@@ -173,14 +174,14 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function eliminarRespuestasSiPregunta($plantillaId,$seccionId,$preguntaId)
+    private function eliminarRespuestasSiPregunta($cursoId,$leccionId,$preguntaId)
     {
         $resultado = new Resultado();
         $consulta ="DELETE FROM respuestas_si WHERE plantilla_id = ? AND seccion_id = ? AND pregunta_id = ?";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("iii",$plantillaId, $seccionId, $preguntaId))
+            if($sentencia->bind_param("iii",$cursoId, $leccionId, $preguntaId))
             {
                 if($sentencia->execute())
                 {
@@ -205,14 +206,14 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function eliminarRespuestasSiSeccion($plantillaId,$seccionId)
+    private function eliminarRespuestasSiSeccion($cursoId,$leccionId)
     {
         $resultado = new Resultado();
         $consulta ="DELETE FROM respuestas_si WHERE plantilla_id = ? AND seccion_id = ?";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("ii",$plantillaId, $seccionId))
+            if($sentencia->bind_param("ii",$cursoId, $leccionId))
             {
                 if($sentencia->execute())
                 {
@@ -237,14 +238,14 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function eliminarRespuestasNoSeccion($plantillaId,$seccionId)
+    private function eliminarRespuestasNoSeccion($cursoId,$leccionId)
     {
         $resultado = new Resultado();
         $consulta ="DELETE FROM respuestas_no WHERE plantilla_id = ? AND seccion_id = ?";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("ii",$plantillaId, $seccionId))
+            if($sentencia->bind_param("ii",$cursoId, $leccionId))
             {
                 if($sentencia->execute())
                 {
@@ -269,14 +270,14 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function eliminarRespuestasNoPregunta($plantillaId,$seccionId,$preguntaId)
+    private function eliminarRespuestasNoPregunta($cursoId,$leccionId,$preguntaId)
     {
         $resultado = new Resultado();
         $consulta ="DELETE FROM respuestas_no WHERE plantilla_id = ? AND seccion_id = ? AND pregunta_id = ?";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("iii",$plantillaId, $seccionId, $preguntaId))
+            if($sentencia->bind_param("iii",$cursoId, $leccionId, $preguntaId))
             {
                 if($sentencia->execute())
                 {
@@ -301,13 +302,13 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function eliminarRespuestasNo($plantillaId)
+    private function eliminarRespuestasNo($cursoId)
     {
         $resultado = new Resultado();
         $consulta ="DELETE FROM respuestas_no WHERE plantilla_id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("i",$plantillaId))
+            if($sentencia->bind_param("i",$cursoId))
             {
                 if($sentencia->execute())
                 {
@@ -332,13 +333,13 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function eliminarRespuestasSiCategorias($plantillaId)
+    private function eliminarRespuestasSiCategorias($cursoId)
     {
         $resultado = new Resultado();
         $consulta ="DELETE FROM respuestas_si_categorias WHERE plantilla_id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("i",$plantillaId))
+            if($sentencia->bind_param("i",$cursoId))
             {
                 if($sentencia->execute())
                 {
@@ -364,13 +365,13 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function eliminarRespuestasSiCategoriasPregunta($plantillaId, $seccionId, $preguntaId)
+    private function eliminarRespuestasSiCategoriasPregunta($cursoId, $leccionId, $preguntaId)
     {
         $resultado = new Resultado();
         $consulta ="DELETE FROM respuestas_si_categorias WHERE plantilla_id = ? AND seccion_id = ? AND pregunta_id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("iii",$plantillaId, $seccionId, $preguntaId))
+            if($sentencia->bind_param("iii",$cursoId, $leccionId, $preguntaId))
             {
                 if($sentencia->execute())
                 {
@@ -396,13 +397,13 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function eliminarRespuestasNoCategoriasPregunta($plantillaId, $seccionId, $preguntaId)
+    private function eliminarRespuestasNoCategoriasPregunta($cursoId, $leccionId, $preguntaId)
     {
         $resultado = new Resultado();
         $consulta ="DELETE FROM respuestas_no_categorias WHERE plantilla_id = ? AND seccion_id = ? AND pregunta_id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("iii",$plantillaId, $seccionId, $preguntaId))
+            if($sentencia->bind_param("iii",$cursoId, $leccionId, $preguntaId))
             {
                 if($sentencia->execute())
                 {
@@ -428,13 +429,13 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function eliminarPreguntasCategorias($plantillaId)
+    private function eliminarPreguntasCategorias($cursoId)
     {
         $resultado = new Resultado();
         $consulta ="DELETE FROM preguntas_categorias WHERE plantilla_id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("i",$plantillaId))
+            if($sentencia->bind_param("i",$cursoId))
             {
                 if($sentencia->execute())
                 {
@@ -492,13 +493,13 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function eliminarRespuestasNoCategorias($plantillaId)
+    private function eliminarRespuestasNoCategorias($cursoId)
     {
         $resultado = new Resultado();
         $consulta ="DELETE FROM respuestas_no_categorias WHERE plantilla_id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("i",$plantillaId))
+            if($sentencia->bind_param("i",$cursoId))
             {
                 if($sentencia->execute())
                 {
@@ -522,13 +523,13 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function eliminarPreguntas($plantillaId)
+    private function eliminarPreguntas($cursoId)
     {
         $resultado = new Resultado();
         $consulta ="DELETE FROM cursos_preguntas WHERE curso_id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("i",$plantillaId))
+            if($sentencia->bind_param("i",$cursoId))
             {
                 if($sentencia->execute())
                 {
@@ -626,7 +627,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function insertarSecciones($plantillaId,$secciones)
+    private function insertarSecciones($cursoId,$secciones)
     {
         
         $resultado = new Resultado();
@@ -641,7 +642,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             if($sentencia = $this->conexion->prepare($consulta))
             {
               
-                if($sentencia->bind_param("iis",$plantillaId,$seccion->id, $seccion->texto))
+                if($sentencia->bind_param("iis",$cursoId,$seccion->id, $seccion->texto))
                 {
                     if($sentencia->execute())
                     {
@@ -675,7 +676,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function insertarPreguntas($plantillaId,$secciones)
+    private function insertarPreguntas($cursoId,$secciones)
     {
        
         $resultado = new Resultado();
@@ -691,7 +692,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                     "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    if($sentencia->bind_param("iiisssisssi",$plantillaId,$seccion->id, $pregunta->id, $pregunta->texto, $pregunta->hallazgo, $pregunta->recomendacion, $pregunta->colapsado, $pregunta->tipo,$pregunta->practicas, $pregunta->observaciones, $pregunta->peso))
+                    if($sentencia->bind_param("iiisssisssi",$cursoId,$seccion->id, $pregunta->id, $pregunta->texto, $pregunta->hallazgo, $pregunta->recomendacion, $pregunta->colapsado, $pregunta->tipo,$pregunta->practicas, $pregunta->observaciones, $pregunta->peso))
                     {
                         if($sentencia->execute())
                         {
@@ -726,7 +727,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function insertarRespuestasSi($plantillaId,$secciones)
+    private function insertarRespuestasSi($cursoId,$secciones)
     {
         $resultado = new Resultado();
         
@@ -746,7 +747,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                         "VALUE(?, ?, ?, ?, ?, ?, ?, ?)";
                     if($sentencia = $this->conexion->prepare($consulta))
                     {
-                        if($sentencia->bind_param("iiiisiss",$plantillaId,$seccion->id, $pregunta->id,$respuesta->id, $respuesta->texto,$respuesta->peso,$respuesta->hallazgo,$respuesta->recomendacion))
+                        if($sentencia->bind_param("iiiisiss",$cursoId,$seccion->id, $pregunta->id,$respuesta->id, $respuesta->texto,$respuesta->peso,$respuesta->hallazgo,$respuesta->recomendacion))
                         {
                             if($sentencia->execute())
                             {
@@ -779,7 +780,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function insertarRespuestasNo($plantillaId,$secciones)
+    private function insertarRespuestasNo($cursoId,$secciones)
     {
         $resultado = new Resultado();
         
@@ -799,7 +800,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                         "VALUE(?, ?, ?, ?, ?, ?, ?, ?)";
                     if($sentencia = $this->conexion->prepare($consulta))
                     {
-                        if($sentencia->bind_param("iiiisiss",$plantillaId,$seccion->id, $pregunta->id,$respuesta->id, $respuesta->texto,$respuesta->peso,$respuesta->hallazgo,$respuesta->recomendacion))
+                        if($sentencia->bind_param("iiiisiss",$cursoId,$seccion->id, $pregunta->id,$respuesta->id, $respuesta->texto,$respuesta->peso,$respuesta->hallazgo,$respuesta->recomendacion))
                         {
                             if($sentencia->execute())
                             {
@@ -832,7 +833,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function insertarRespuestasSiCategorias($plantillaId,$secciones)
+    private function insertarRespuestasSiCategorias($cursoId,$secciones)
     {
         $resultado = new Resultado();
         
@@ -853,7 +854,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                             "VALUE(?, ?, ?, ?, ?, ?)";
                         if($sentencia = $this->conexion->prepare($consulta))
                         {
-                            if($sentencia->bind_param("iiiiii",$plantillaId,$seccion->id, $pregunta->id,$respuesta->id, $categoria->id, $categoria->categoriaId))
+                            if($sentencia->bind_param("iiiiii",$cursoId,$seccion->id, $pregunta->id,$respuesta->id, $categoria->id, $categoria->categoriaId))
                             {
                                 if($sentencia->execute())
                                 {
@@ -885,7 +886,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function insertarRespuestasSiCategoriasPregunta($plantillaId,$seccionId, $preguntaId,$respuestas)
+    private function insertarRespuestasSiCategoriasPregunta($cursoId,$leccionId, $preguntaId,$respuestas)
     {
         $resultado = new Resultado();
         
@@ -900,7 +901,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                     "VALUE(?, ?, ?, ?, ?, ?)";
                 if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    if($sentencia->bind_param("iiiiii",$plantillaId,$seccionId, $preguntaId,$respuesta->id, $categoria->id, $categoria->categoriaId))
+                    if($sentencia->bind_param("iiiiii",$cursoId,$leccionId, $preguntaId,$respuesta->id, $categoria->id, $categoria->categoriaId))
                     {
                         if($sentencia->execute())
                         {
@@ -930,7 +931,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function insertarRespuestasNoCategoriasPregunta($plantillaId,$seccionId, $preguntaId,$respuestas)
+    private function insertarRespuestasNoCategoriasPregunta($cursoId,$leccionId, $preguntaId,$respuestas)
     {
         $resultado = new Resultado();
         
@@ -945,7 +946,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                     "VALUE(?, ?, ?, ?, ?, ?)";
                 if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    if($sentencia->bind_param("iiiiii",$plantillaId,$seccionId, $preguntaId,$respuesta->id, $categoria->id, $categoria->categoriaId))
+                    if($sentencia->bind_param("iiiiii",$cursoId,$leccionId, $preguntaId,$respuesta->id, $categoria->id, $categoria->categoriaId))
                     {
                         if($sentencia->execute())
                         {
@@ -975,7 +976,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function insertarRespuestasNoCategorias($plantillaId,$secciones)
+    private function insertarRespuestasNoCategorias($cursoId,$secciones)
     {
         $resultado = new Resultado();
         
@@ -996,7 +997,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                             "VALUE(?, ?, ?, ?, ?, ?)";
                         if($sentencia = $this->conexion->prepare($consulta))
                         {
-                            if($sentencia->bind_param("iiiiii",$plantillaId,$seccion->id, $pregunta->id,$respuesta->id, $categoria->id, $categoria->categoriaId))
+                            if($sentencia->bind_param("iiiiii",$cursoId,$seccion->id, $pregunta->id,$respuesta->id, $categoria->id, $categoria->categoriaId))
                             {
                                 if($sentencia->execute())
                                 {
@@ -1028,7 +1029,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function insertarPreguntasCategorias($plantillaId,$secciones)
+    private function insertarPreguntasCategorias($cursoId,$secciones)
     {
         $resultado = new Resultado();
         
@@ -1048,7 +1049,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                             "VALUE(?, ?, ?, ?, ?)";
                         if($sentencia = $this->conexion->prepare($consulta))
                         {
-                            if($sentencia->bind_param("iiiii",$plantillaId,$seccion->id, $pregunta->id,$categoria->id, $categoria->categoriaId))
+                            if($sentencia->bind_param("iiiii",$cursoId,$seccion->id, $pregunta->id,$categoria->id, $categoria->categoriaId))
                             {
                                 if($sentencia->execute())
                                 {
@@ -1123,7 +1124,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     }
     
     
-    private function insertarCategoriasPregunta($plantillaId,$seccionId, $preguntaId, $categorias)
+    private function insertarCategoriasPregunta($cursoId,$leccionId, $preguntaId, $categorias)
     {
         $resultado = new Resultado();
         
@@ -1135,7 +1136,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 "VALUE(?, ?, ?, ?, ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param("iiiii",$plantillaId,$seccionId, $preguntaId,$categoria->id, $categoria->categoriaId))
+                if($sentencia->bind_param("iiiii",$cursoId,$leccionId, $preguntaId,$categoria->id, $categoria->categoriaId))
                 {
                     if($sentencia->execute())
                     {
@@ -1255,7 +1256,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             return $resultado;
     }
     
-    public function actualizarValorPregunta($plantillaId, $seccionId, $preguntaId, $campo, $valor)
+    public function actualizarValorPregunta($cursoId, $leccionId, $preguntaId, $campo, $valor)
     {
         $resultado = new Resultado();
         $consulta = " UPDATE preguntas " .
@@ -1264,7 +1265,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if( $sentencia->bind_param("siii", $valor, $plantillaId, $seccionId, $preguntaId ))
+            if( $sentencia->bind_param("siii", $valor, $cursoId, $leccionId, $preguntaId ))
             {
                 if($sentencia->execute())
                 {
@@ -1283,15 +1284,15 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             return $resultado;
     }
     
-    public function actualizarCategoriasPregunta($plantillaId, $seccionId, $preguntaId, $categorias)
+    public function actualizarCategoriasPregunta($cursoId, $leccionId, $preguntaId, $categorias)
     {
         ini_set('max_execution_time', 300);
         $resultado = new Resultado();
         $this->conexion->autocommit(FALSE);
-        $resultado = $this->eliminarPerfiles($plantillaId, $seccionId, $preguntaId);
+        $resultado = $this->eliminarPerfiles($cursoId, $leccionId, $preguntaId);
         if($resultado->correcto())
         {
-            $resultado = $this->insertarCategoriasPregunta($plantillaId, $seccionId, $preguntaId, $categorias);
+            $resultado = $this->insertarCategoriasPregunta($cursoId, $leccionId, $preguntaId, $categorias);
         }
         if($resultado->correcto())
             $this->conexion->commit();
@@ -1545,7 +1546,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         
         $resultado = new Resultado();
         $preguntas = array();
-        $consulta = "SELECT id, RTRIM(texto) texto " .
+        $consulta = "SELECT id, RTRIM(texto) texto, tipo " .
                      "FROM cursos_preguntas " .        
                     " WHERE curso_id  = ? AND leccion_id = ? ".
                     "ORDER BY orden";
@@ -1556,7 +1557,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $texto))
+                    if ($sentencia->bind_result($id, $texto, $tipo))
                     {
                        
                         while($sentencia->fetch())
@@ -1564,7 +1565,8 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                            
                             $pregunta= (object) [
                                 'id' =>  $id,
-                                'texto' => $texto
+                                'texto' => $texto,
+                                'tipo' => $tipo
                                 
                             ];
                             array_push($preguntas,$pregunta);
@@ -1709,7 +1711,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
       return $resultado;
     }
     
-    private function consultarRespuestasSiCategorias($plantillaId,$seccionId,$preguntaId,$respuestaId)
+    private function consultarRespuestasSiCategorias($cursoId,$leccionId,$preguntaId,$respuestaId)
     {
         $resultado = new Resultado();
         $categorias = array();
@@ -1720,7 +1722,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         if($sentencia = $this->conexion->prepare($consulta))
         {
             
-            if($sentencia->bind_param("iiii",$plantillaId,$seccionId,$preguntaId,$respuestaId))
+            if($sentencia->bind_param("iiii",$cursoId,$leccionId,$preguntaId,$respuestaId))
             {
                 if($sentencia->execute())
                 {
@@ -1795,7 +1797,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function consultarRespuestasNo($plantillaId,$seccionId,$preguntaId)
+    private function consultarRespuestasNo($cursoId,$leccionId,$preguntaId)
     {
         
         $resultado = new Resultado();
@@ -1806,7 +1808,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             "ORDER BY id";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("iii",$plantillaId,$seccionId,$preguntaId))
+            if($sentencia->bind_param("iii",$cursoId,$leccionId,$preguntaId))
             {
                 if($sentencia->execute())
                 {
@@ -1829,7 +1831,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                         for($i=0; $i < count($respuestas);$i++)
                         {
                             $respuesta = $respuestas[$i];
-                            $resultadoRespuestas = $this->consultarRespuestasNoCategorias($plantillaId,$seccionId,$preguntaId,$respuesta->id);
+                            $resultadoRespuestas = $this->consultarRespuestasNoCategorias($cursoId,$leccionId,$preguntaId,$respuesta->id);
                             if($resultadoRespuestas->mensajeError=="")
                             {
                                 $respuesta->categorias = $resultadoRespuestas->valor;
@@ -1856,7 +1858,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             return $resultado;
     }
     
-    private function consultarRespuestasNoCategorias($plantillaId,$seccionId,$preguntaId,$respuestaId)
+    private function consultarRespuestasNoCategorias($cursoId,$leccionId,$preguntaId,$respuestaId)
     {
         $resultado = new Resultado();
         $categorias = array();
@@ -1867,7 +1869,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         if($sentencia = $this->conexion->prepare($consulta))
         {
             
-            if($sentencia->bind_param("iiii",$plantillaId,$seccionId,$preguntaId,$respuestaId))
+            if($sentencia->bind_param("iiii",$cursoId,$leccionId,$preguntaId,$respuestaId))
             {
                 if($sentencia->execute())
                 {
@@ -1940,7 +1942,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         $consulta ="DELETE FROM preguntas WHERE plantilla_id = ? AND seccion_id = ? AND id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("iii",$llaves->plantillaId,$llaves->seccionId,$llaves->preguntaId))
+            if($sentencia->bind_param("iii",$llaves->cursoId,$llaves->leccionId,$llaves->preguntaId))
             {
                 if($sentencia->execute())
                 {
@@ -2065,24 +2067,24 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    public function guardarRespuestasSi($plantillaId, $seccionId, $preguntaId, $respuestas)
+    public function guardarRespuestasSi($cursoId, $leccionId, $preguntaId, $respuestas)
     {
         ini_set('max_execution_time', 300);
         $resultado = new Resultado();
         $this->conexion->autocommit(FALSE);
         
-        //echo $plantillaId."-".$seccionId."-".$preguntaId;
+        //echo $cursoId."-".$leccionId."-".$preguntaId;
         
-        $resultado = $this->eliminarRespuestasSiCategoriasPregunta($plantillaId,$seccionId,$preguntaId);
+        $resultado = $this->eliminarRespuestasSiCategoriasPregunta($cursoId,$leccionId,$preguntaId);
         if($resultado->mensajeError=="")
         {
-            $resultado = $this->eliminarRespuestasSiPregunta($plantillaId,$seccionId,$preguntaId);
+            $resultado = $this->eliminarRespuestasSiPregunta($cursoId,$leccionId,$preguntaId);
             if($resultado->mensajeError=="")
             {
-                $resultado =  $this->insertarRespuestasSiPregunta($plantillaId,$seccionId,$preguntaId,$respuestas);
+                $resultado =  $this->insertarRespuestasSiPregunta($cursoId,$leccionId,$preguntaId,$respuestas);
                 if($resultado->mensajeError=="")
                 {
-                    $resultado =  $this->insertarRespuestasSiCategoriasPregunta($plantillaId,$seccionId,$preguntaId,$respuestas);
+                    $resultado =  $this->insertarRespuestasSiCategoriasPregunta($cursoId,$leccionId,$preguntaId,$respuestas);
                     if($resultado->mensajeError=="")
                     {
                        $this->conexion->commit();
@@ -2100,7 +2102,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function insertarRespuestasSiPregunta($plantillaId,$seccionId, $preguntaId,$respuestas)
+    private function insertarRespuestasSiPregunta($cursoId,$leccionId, $preguntaId,$respuestas)
     {
         $resultado = new Resultado();
        
@@ -2114,7 +2116,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 "VALUE(?, ?, ?, ?, ?, ?, ?, ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param("iiiisiss",$plantillaId,$seccionId, $preguntaId,$respuesta->id, $respuesta->texto,$respuesta->peso,$respuesta->hallazgo,$respuesta->recomendacion))
+                if($sentencia->bind_param("iiiisiss",$cursoId,$leccionId, $preguntaId,$respuesta->id, $respuesta->texto,$respuesta->peso,$respuesta->hallazgo,$respuesta->recomendacion))
                 {
                     if($sentencia->execute())
                     {
@@ -2147,7 +2149,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function insertarRespuestasNoPregunta($plantillaId,$seccionId, $preguntaId,$respuestas)
+    private function insertarRespuestasNoPregunta($cursoId,$leccionId, $preguntaId,$respuestas)
     {
         $resultado = new Resultado();
         
@@ -2161,7 +2163,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 "VALUE(?, ?, ?, ?, ?, ?, ?, ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param("iiiisiss",$plantillaId,$seccionId, $preguntaId,$respuesta->id, $respuesta->texto,$respuesta->peso,$respuesta->hallazgo,$respuesta->recomendacion))
+                if($sentencia->bind_param("iiiisiss",$cursoId,$leccionId, $preguntaId,$respuesta->id, $respuesta->texto,$respuesta->peso,$respuesta->hallazgo,$respuesta->recomendacion))
                 {
                     if($sentencia->execute())
                     {
@@ -2194,24 +2196,24 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    public function guardarRespuestasNo($plantillaId, $seccionId, $preguntaId, $respuestas)
+    public function guardarRespuestasNo($cursoId, $leccionId, $preguntaId, $respuestas)
     {
         ini_set('max_execution_time', 300);
         $resultado = new Resultado();
         $this->conexion->autocommit(FALSE);
         
-        //echo $plantillaId."-".$seccionId."-".$preguntaId;
+        //echo $cursoId."-".$leccionId."-".$preguntaId;
         
-        $resultado = $this->eliminarRespuestasNoCategoriasPregunta($plantillaId,$seccionId,$preguntaId);
+        $resultado = $this->eliminarRespuestasNoCategoriasPregunta($cursoId,$leccionId,$preguntaId);
         if($resultado->mensajeError=="")
         {
-            $resultado = $this->eliminarRespuestasNoPregunta($plantillaId,$seccionId,$preguntaId);
+            $resultado = $this->eliminarRespuestasNoPregunta($cursoId,$leccionId,$preguntaId);
             if($resultado->mensajeError=="")
             {
-                $resultado =  $this->insertarRespuestasNoPregunta($plantillaId,$seccionId,$preguntaId,$respuestas);
+                $resultado =  $this->insertarRespuestasNoPregunta($cursoId,$leccionId,$preguntaId,$respuestas);
                 if($resultado->mensajeError=="")
                 {
-                    $resultado =  $this->insertarRespuestasNoCategoriasPregunta($plantillaId,$seccionId,$preguntaId,$respuestas);
+                    $resultado =  $this->insertarRespuestasNoCategoriasPregunta($cursoId,$leccionId,$preguntaId,$respuestas);
                     if($resultado->mensajeError=="")
                     {
                         $this->conexion->commit();
@@ -2229,7 +2231,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             return $resultado;
     }
     
-    public function ordenarPreguntas($plantillaId, $seccionId, $seleccion)
+    public function ordenarPreguntas($cursoId, $leccionId, $seleccion)
     {
         $resultado = new Resultado();
         
@@ -2247,13 +2249,13 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             
             //echo "valor=$id;";
             
-            $consulta = " UPDATE preguntas " .
+            $consulta = " UPDATE cursos_preguntas " .
                 "SET orden = ? " .
-                "WHERE plantilla_id = ? AND seccion_id = ? AND id = ? ";
+                "WHERE curso_id = ? AND leccion_id = ? AND id = ? ";
             
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if( $sentencia->bind_param("iiii", $i,$plantillaId, $seccionId,$id))
+                if( $sentencia->bind_param("iiii", $i,$cursoId, $leccionId, $id))
                 {
                     if($sentencia->execute())
                     {
@@ -2262,7 +2264,6 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                     else
                     {
                         $resultado->mensajeError = "Falló la ejecución actualizar(" . $this->conexion->errno . ") " . $this->conexion->error;
-                        
                         break;
                     }
                 }
@@ -2289,14 +2290,14 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     }
     
   
-    public function calcularIdPregunta($plantillaId, $seccionId, $campo)
+    public function calcularIdPregunta($cursoId, $leccionId, $campo)
     {
         $resultado = new Resultado();
-        $consulta =  "SELECT IFNULL(MAX($campo),0)+1 AS id FROM preguntas WHERE plantilla_id = ? AND seccion_id = ? ";
+        $consulta =  "SELECT IFNULL(MAX($campo),0)+1 AS id FROM cursos_preguntas WHERE curso_id = ? AND leccion_id = ? ";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if( $sentencia->bind_param("ii", $plantillaId, $seccionId))
+            if( $sentencia->bind_param("ii", $cursoId, $leccionId))
             {
                 if($sentencia->execute())
                 {

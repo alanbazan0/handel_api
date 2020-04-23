@@ -9,7 +9,7 @@ class CapacitacionesPresentador extends CatalogoPresentador
 	 {
 		 this.vista.mostrarIndicador();
 		 var repositorio = new CapacitacionesRepositorio(this);		
-		 repositorio.guardarRespuestasSi(this,this.guardarRespuestasSiResultado,this.vista.plantillaId,this.vista.seccionIdSeleccionada,this.vista.preguntaIdSeleccionada,this.vista.respuestas);
+		 repositorio.guardarRespuestasSi(this,this.guardarRespuestasSiResultado,this.vista.cursoId,this.vista.leccionIdSeleccionada,this.vista.preguntaIdSeleccionada,this.vista.respuestas);
 	 }
 	 
 	 guardarRespuestasSiResultado(resultado)
@@ -28,7 +28,7 @@ class CapacitacionesPresentador extends CatalogoPresentador
 	 {
 		 this.vista.mostrarIndicador();
 		 var repositorio = new CapacitacionesRepositorio(this);		
-		 repositorio.guardarRespuestasNo(this,this.guardarRespuestasNoResultado,this.vista.plantillaId,this.vista.seccionIdSeleccionada,this.vista.preguntaIdSeleccionada,this.vista.respuestas);
+		 repositorio.guardarRespuestasNo(this,this.guardarRespuestasNoResultado,this.vista.cursoId,this.vista.leccionIdSeleccionada,this.vista.preguntaIdSeleccionada,this.vista.respuestas);
 	 }
 	 
 	 guardarRespuestasNoResultado(resultado)
@@ -91,7 +91,7 @@ class CapacitacionesPresentador extends CatalogoPresentador
 				else
 					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 				
-		 },this.vista.plantillaId, this.vista.seccionIdSeleccionada,seleccion);
+		 },this.vista.cursoId, this.vista.leccionIdSeleccionada,seleccion);
 	 }
 	 
 	 eliminarPregunta()
@@ -175,7 +175,7 @@ class CapacitacionesPresentador extends CatalogoPresentador
 			 {
 				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
 			 }
-		 },this.vista.plantillaId, this.vista.seccionIdSeleccionada, tipo);
+		 },this.vista.cursoId, this.vista.leccionIdSeleccionada, tipo);
 	 }
 	 
 	 insertarResultado(resultado)
@@ -278,7 +278,7 @@ class CapacitacionesPresentador extends CatalogoPresentador
 				 {
 					 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
 				 }
-			 },this.vista.plantillaId, this.vista.seccionIdSeleccionada, preguntaId, campo, valor);
+			 },this.vista.cursoId, this.vista.leccionIdSeleccionada, preguntaId, campo, valor);
 		}
 	 }
 	 
@@ -296,10 +296,10 @@ class CapacitacionesPresentador extends CatalogoPresentador
 			 {
 				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
 			 }
-		 },this.vista.plantillaId, this.vista.seccionIdSeleccionada, preguntaId, categorias);
+		 },this.vista.cursoId, this.vista.leccionIdSeleccionada, preguntaId, categorias);
 	 }
 	 
-	 actualizarValorLeccion(seccionId,campo,valor)
+	 actualizarValorLeccion(leccionId,campo,valor)
 	 {
 		 if(campo!=undefined)
 		{
@@ -315,7 +315,7 @@ class CapacitacionesPresentador extends CatalogoPresentador
 				 {
 					 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
 				 }
-			 },this.vista.cursoId, seccionId, campo, valor);
+			 },this.vista.cursoId, leccionId, campo, valor);
 		}
 	 }
 	 

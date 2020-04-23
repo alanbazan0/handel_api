@@ -4,6 +4,7 @@ namespace php\repositorios;
 use php\interfaces\IMensajesRepositorio;
 use php\modelos\Mensaje;
 use php\modelos\Resultado;
+use php\clases\AdministradorCorreo;
 
 include '../interfaces/IMensajesRepositorio.php';
 include '../modelos/Mensaje.php';
@@ -45,7 +46,38 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
                 if($sentencia->bind_param('isisiiii', $id, $modelo->mensaje,$usuario->id,$modelo->asunto,$modelo->empresaId,$modelo->sedeId,$modelo->departamentoId,$modelo->usuarioId))
                 {
                     if($sentencia->execute())
+                    {
+                        if($resultado->correcto())
+                        {
+                            $modelo->id = $resultado->valor;
+                            $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                            $criteriosSeleccion = (object) ['permisoSAHA' => 1];
+                            if($modelo->empresaId!=null && $modelo->empresaId!="")
+                                $criteriosSeleccion->empresaId = $modelo->empresaId;
+                            if($modelo->sedeId!=null && $modelo->sedeId!="")
+                                $criteriosSeleccion->sedeId = $modelo->sedeId;
+                            if($modelo->departamentoId!=null && $modelo->departamentoId!="")
+                                $criteriosSeleccion->departamentoId = $modelo->departamentoId;
+                            if($modelo->usuarioId!=null && $modelo->usuarioId!="")
+                                $criteriosSeleccion->usuarioId = $modelo->usuarioId;
+                            $resultado = $usuariosRepositorio->consultar($modelo,$criteriosSeleccion,false);
+                            if($resultado->correcto())
+                            {
+                                $usuarios = $resultado->valor;
+                                
+                               
+                                
+                                $administrador_correo = new AdministradorCorreo();
+                                $titulo = "El usuario $usuario->nombreCompleto ha creado un nuevo tema de discusión en SAHA, el nuevo tema es: <label style='font-weight:bold'> $modelo->asunto</label>";
+                                $url = "https://saha.apps-handel.com/mensajes.php?mensajeId=$modelo->id";
+                                $asuntoCorreo = utf8_decode("SAHA: " . $usuario->nombreCompleto . ": " . $modelo->asunto);
+                                
+                                $resultado = $administrador_correo->enviarNotificacionMensaje($usuario,$usuarios,$asuntoCorreo,$titulo,$modelo->mensaje,$url);
+                            }
+                        }
+                        
                         $resultado->valor = $id;
+                    }
                     else
                         $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 }
@@ -55,6 +87,11 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
             else
                 $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' .$this->conexion->error;
         }
+        if($resultado->correcto())
+            $this->conexion->commit(); 
+        else    
+            $this->conexion->rollback();
+       
         return $resultado;
     }
 

@@ -24,4 +24,9 @@ class TipoUsuario
 	{
 		return  5;
 	}
+	
+	static get CAPACITADO()
+	{
+		return  6;
+	}
 }

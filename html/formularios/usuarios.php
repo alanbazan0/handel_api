@@ -100,7 +100,7 @@
 						<label class="control-label mb-1">Acceso a SAHA</label> <label
 							class="switch switch-3d switch-success mr-3"> <input
 							id="permisoSAHARadio" name="permisoSAHA" type="checkbox"
-							class="switch-input" checked="true"> <span
+							class="switch-input" > <span
 							class="switch-label"></span> <span class="switch-handle"></span>
 						</label>
 					</div>
@@ -108,7 +108,7 @@
 						<label class="control-label mb-1">Acceso a SIVAH</label> <label
 							class="switch switch-3d switch-success mr-3"> <input
 							id="permisoSIVAHRadio" name="permisoSIVAH" type="checkbox"
-							class="switch-input" checked="true"> <span
+							class="switch-input" > <span
 							class="switch-label"></span> <span class="switch-handle"></span>
 						</label>
 					</div>
@@ -116,9 +116,23 @@
 						<label class="control-label mb-1">Acceso a 10 y 7</label> <label
 							class="switch switch-3d switch-success mr-3"> <input
 							id="permiso10y7Radio" name="permiso10y7" type="checkbox"
-							class="switch-input" checked="true"> <span
+							class="switch-input" > <span
 							class="switch-label"></span> <span class="switch-handle"></span>
 						</label>
+					</div>
+					<div class="form-group">
+						<label class="control-label mb-1">Acceso a CAVIH</label> <label
+							class="switch switch-3d switch-success mr-3"> <input
+							id="permisoCAVIHRadio" name="permisoCAVIH" type="checkbox"   onchange="vista.cambiarPermisoCAVIH();"
+							class="switch-input" > <span
+							class="switch-label"></span> <span class="switch-handle"></span>
+						</label>
+					</div>
+					<div id='perfilGroup' class="form-group" style='display:none'>
+						<div>
+							<label for="perfilSelect" class="control-label mb-1">Perfil</label> 
+							<select name="perfilSelect" id="perfilSelect" class="form-control"></select>
+						</div>
 					</div>
 					<div class="form-group">
 						<label class="control-label mb-1">Activo</label> <label

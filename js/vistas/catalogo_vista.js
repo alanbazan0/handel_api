@@ -15,7 +15,7 @@ class CatalogoVista extends Vista
 	{
 		super.inicializar();
 		
-		this.actualizarSesion();
+	
 		
 		this.inicializarFechas();
 				

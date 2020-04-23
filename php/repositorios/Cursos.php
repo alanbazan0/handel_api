@@ -80,10 +80,10 @@ try
                 $resultado = $repositorio->consultar($criteriosSeleccion);               
             break;
             case 'ordenarPreguntas':
-                $plantillaId = REQUEST('plantillaId');
-                $seccionId = REQUEST('seccionId');
+                $cursoId = REQUEST('cursoId');
+                $leccionId = REQUEST('leccionId');
                 $seleccion = REQUEST("seleccion");
-                $resultado = $repositorio->ordenarPreguntas($plantillaId,$seccionId,$seleccion);        
+                $resultado = $repositorio->ordenarPreguntas($cursoId,$leccionId,$seleccion);        
             break;
             case 'consultarPorLlaves':
                 
@@ -107,10 +107,10 @@ try
                 }
                 break;
             case 'insertarPregunta':
-                $plantillaId = REQUEST('plantillaId');
-                $seccionId = REQUEST('seccionId');
+                $cursoId = REQUEST('cursoId');
+                $leccionId = REQUEST('leccionId');
                 $tipo = REQUEST('tipo');
-                $resultado = $repositorio->insertarPregunta($plantillaId, $seccionId,  $tipo);
+                $resultado = $repositorio->insertarPregunta($cursoId, $leccionId,  $tipo);
             break;
             case 'actualizarValor':
                 $cursoId = REQUEST('cursoId');
@@ -149,22 +149,22 @@ try
                
             break;
             case 'guardarRespuestasSi':
-                $plantillaId = REQUEST('plantillaId');
-                $seccionId = REQUEST('seccionId');
+                $cursoId = REQUEST('cursoId');
+                $leccionId = REQUEST('leccionId');
                 $preguntaId = REQUEST('preguntaId');
                 $json = json_decode(REQUEST('respuestas'));
                 $mapper = new JsonMapper();
                 $respuestas = $mapper->mapArray($json, array());
-                $resultado = $repositorio->guardarRespuestasSi($plantillaId,$seccionId,$preguntaId,$respuestas);
+                $resultado = $repositorio->guardarRespuestasSi($cursoId,$leccionId,$preguntaId,$respuestas);
             break;
             case 'guardarRespuestasNo':
-                $plantillaId = REQUEST('plantillaId');
-                $seccionId = REQUEST('seccionId');
+                $cursoId = REQUEST('cursoId');
+                $leccionId = REQUEST('leccionId');
                 $preguntaId = REQUEST('preguntaId');
                 $json = json_decode(REQUEST('respuestas'));
                 $mapper = new JsonMapper();
                 $respuestas = $mapper->mapArray($json, array());
-                $resultado = $repositorio->guardarRespuestasNo($plantillaId,$seccionId,$preguntaId,$respuestas);
+                $resultado = $repositorio->guardarRespuestasNo($cursoId,$leccionId,$preguntaId,$respuestas);
             break;
             case 'ordenarLecciones':
                 $cursoId = REQUEST('cursoId');
@@ -172,20 +172,20 @@ try
                 $resultado = $repositorio->ordenarLecciones($cursoId,$seleccion);
             break;
             case 'actualizarValorPregunta':
-                $plantillaId = REQUEST('plantillaId');
-                $seccionId = REQUEST('seccionId');
+                $cursoId = REQUEST('cursoId');
+                $leccionId = REQUEST('leccionId');
                 $preguntaId = REQUEST('preguntaId');
                 $campo = REQUEST('campo');
                 $valor = REQUEST('valor');
-                $resultado = $repositorio->actualizarValorPregunta($plantillaId, $seccionId, $preguntaId, $campo,  $valor);
+                $resultado = $repositorio->actualizarValorPregunta($cursoId, $leccionId, $preguntaId, $campo,  $valor);
             break;
             case 'actualizarCategoriasPregunta':
-                $plantillaId = REQUEST('plantillaId');
-                $seccionId = REQUEST('seccionId');
+                $cursoId = REQUEST('cursoId');
+                $leccionId = REQUEST('leccionId');
                 $preguntaId = REQUEST('preguntaId');
                 $mapper = new JsonMapper();
                 $categorias = $mapper->mapArray(json_decode(REQUEST('categorias')), array());
-                $resultado = $repositorio->actualizarCategoriasPregunta($plantillaId, $seccionId, $preguntaId, $categorias);
+                $resultado = $repositorio->actualizarCategoriasPregunta($cursoId, $leccionId, $preguntaId, $categorias);
             break;
             case 'actualizarValorLeccion':
                 $cursoId = REQUEST('cursoId');

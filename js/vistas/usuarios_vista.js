@@ -72,7 +72,9 @@ class UsuariosVista extends CatalogoVista
 			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus},
 			{longitud:100, 	titulo:"SAHA",   alias:"permisoSAHA", alineacion:"D", itemRenderer:this.renderPermisoSAHA},
 			{longitud:100, 	titulo:"SIVAH",   alias:"permisoSIVAH", alineacion:"D", itemRenderer:this.renderPermisoSIVAH},
-			{longitud:100, 	titulo:"10 Y 7",   alias:"permiso10y7", alineacion:"D", itemRenderer:this.renderPermiso10y7}
+			{longitud:100, 	titulo:"10 Y 7",   alias:"permiso10y7", alineacion:"D", itemRenderer:this.renderPermiso10y7},
+			{longitud:100, 	titulo:"CAVIH",   alias:"permisoCAVIH", alineacion:"D", itemRenderer:this.renderPermisoCAVIH},
+			{longitud:100, 	titulo:"Perfil",   alias:"perfilNombre", alineacion:"I" }	
 	
 		]
 		
@@ -266,6 +268,52 @@ class UsuariosVista extends CatalogoVista
             }
         });
 	}
+	
+	inicializarValidacionesFormularioCapacitado()
+	{
+		var _this = this;
+		jQuery("#formulario").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+            	 "tipoUsuarioSelect": {required: !0},
+                "contrasenaInput": {required: !0},
+                "nombreInput": {required: !0},
+                "apellidoInput": {required: !0},
+                "empresaSelect": {required: !0},
+                "sedeSelect": {required: !0},
+                "puestoSelect": {required: !0},
+                "perfilSelect": {required: !0}
+               
+            },
+            messages: {
+            	 "tipoUsuarioSelect": "Por favor seleccione un tipo de usuario",
+            	 "contrasenaInput": "Por favor ingrese una contraseña",
+                "nombreInput": "Por favor ingrese un nombre",
+                "apellidoInput": "Por favor ingrese un apellido",
+                "empresaSelect": "Por favor seleccione una empresa",
+                "sedeSelect": "Por favor seleccione una sede",
+                "puestoSelect": "Por favor seleccione un puesto",
+                "perfilSelect": "Por favor seleccione un perfil"
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.guardar();
+            }
+        });
+	}
+
 
 	renderLogo(renglon, type, set)
 	{    
@@ -314,11 +362,20 @@ class UsuariosVista extends CatalogoVista
 	    return contenido;
 	}
 	
+	renderPermisoCAVIH(renglon, type, set)
+	{    
+		var contenido = "";
+		if(renglon.permisoCAVIH==1)
+			contenido += "<center><span class='fa fa-check fa-lg text-success'></span></center>";
+		else
+			contenido += "<center><span class='fa fa-close fa-lg text-danger'></span></center>";
+	    return contenido;
+	}
+	
 	agregar()
 	{
 		super.agregar();
-		//$('#nombreUsuarioInput').focus();
-		
+	
 		
 	}
 	
@@ -327,6 +384,20 @@ class UsuariosVista extends CatalogoVista
 		this.consultarTiposUsuario();
 		this.consultarEmpresas();
 		this.consultarDepartamentos();
+		this.consultarPerfiles();
+		
+//		if(this.modo==Modo.ALTA)
+//		{
+//			if(this.aplicacionId=="SAHA")
+//				$("#permisoSAHARadio").prop('checked', true);
+//			if(this.aplicacionId=="SIVAH")
+//				$("#permisoSIVAHRadio").prop('checked', true);
+//			if(this.aplicacionId=="10y7")
+//				$("#permiso10y7Radio").prop('checked', true);
+//			if(this.aplicacionId=="CAVIH")
+//				$("#permisoCAVIHRadio").prop('checked', true);
+//		}
+		
 	}
 	
 	editar(id)
@@ -356,6 +427,13 @@ class UsuariosVista extends CatalogoVista
 		else
 			$("#permiso10y7Radio").prop('checked', false);
 		this.consultarCombos();
+		
+		if(this.modeloEdicion.permisoCAVIH)
+			$("#permisoCAVIHRadio").prop('checked', true);
+		else
+			$("#permisoCAVIHRadio").prop('checked', false);
+		
+		this.cambiarPermisoCAVIH();
 	}
 	
 	get modelo()
@@ -378,7 +456,9 @@ class UsuariosVista extends CatalogoVista
 			 estatus:$('#estatusRadio').is(':checked')?1:0,
 			 permisoSAHA:$('#permisoSAHARadio').is(':checked')?1:0,
 			 permisoSIVAH:$('#permisoSIVAHRadio').is(':checked')?1:0,
-		 	 permiso10y7:$('#permiso10y7Radio').is(':checked')?1:0
+		 	 permiso10y7:$('#permiso10y7Radio').is(':checked')?1:0,
+		 	 permisoCAVIH:$('#permisoCAVIHRadio').is(':checked')?1:0,
+		     perfilId:$('#perfilSelect').val()
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
@@ -466,6 +546,12 @@ class UsuariosVista extends CatalogoVista
 		this.cargandoOpciones("#departamentoSelect");
 		this.presentador.consultarDepartamentos();
 	}
+	
+	consultarPerfiles()
+	{
+		this.cargandoOpciones("#perfilSelect");
+		this.presentador.consultarPerfiles();
+	}
 
 	consultarTiposUsuario()
 	{
@@ -492,6 +578,11 @@ class UsuariosVista extends CatalogoVista
 //			$("#empresaSelect").val($("#empresaSelectCriterio").val());
 	}
 	
+	set perfiles(registros)
+	{		
+		this.cargarOpciones('#perfilSelect', registros, this.modo, this.modeloEdicion, 'perfilId',"");
+	}
+	
 	cambiarEmpresa()
 	{
 		this.cargandoOpciones("#sedeSelect");
@@ -508,6 +599,15 @@ class UsuariosVista extends CatalogoVista
 		
 	}
 	
+	cambiarPermisoCAVIH()
+	{
+		 var permisoCAVIH=$('#permisoCAVIHRadio').is(':checked')?1:0;
+		if(permisoCAVIH)
+			$('#perfilGroup').fadeIn();
+		else
+			$('#perfilGroup').fadeOut();
+	}
+	
 	cambiarTipoUsuario()
 	{
 		var tipo = $('#tipoUsuarioSelect').val();
@@ -517,6 +617,10 @@ class UsuariosVista extends CatalogoVista
 		
 		if(tipo==TipoUsuario.INSPECTOR)
 		{
+//			if(this.modo==Modo.ALTA)
+//			{
+//				$("#permiso10y7Radio").prop('checked', true);
+//			}
 			$('#nombreUsuarioDiv').hide();
 			if($('#contrasenaInput').val()=="")
 			{
@@ -524,6 +628,20 @@ class UsuariosVista extends CatalogoVista
 				$('#contrasenaInput').val(contrasena);
 			}
 			this.inicializarValidacionesFormularioInspector();
+		}
+		else if(tipo==TipoUsuario.CAPACITADO)
+		{
+//			if(this.modo==Modo.ALTA)
+//			{
+//				$("#permisoCAVIHRadio").prop('checked', true);
+//			}
+			//$('#nombreUsuarioDiv').hide();
+			if($('#contrasenaInput').val()=="")
+			{
+				var contrasena = this.generarContrasenaNumerica(4);
+				$('#contrasenaInput').val(contrasena);
+			}
+			this.inicializarValidacionesFormularioCapacitado();
 		}
 		else
 		{
@@ -535,9 +653,11 @@ class UsuariosVista extends CatalogoVista
 			}
 			this.inicializarValidacionesFormulario();
 		}
+		
+		
 		var ayudaTipoUsuario = this.getAyudaTipoUsuario(tipo);
 		$("#tipoUsuarioSelect").attr("data-original-title",ayudaTipoUsuario);
-		$('[data-toggle="tooltip"]').tooltip("hide");
+		$("#tipoUsuarioSelect").tooltip();
 	}
 	
 	clearValidation(formElement){
@@ -555,21 +675,21 @@ class UsuariosVista extends CatalogoVista
 	getAyudaTipoUsuario(tipo)
 	{
 		var ayuda="";
-		if(tipo==TipoUsuario.ADMINISTRADOR_CORPORATIVO)
+		if(tipo==TipoUsuario.ADMINISTRADOR)
 		{
-			ayuda = "El administrador corporativo es un usuario que puede ver información de todas las sedes de la compañia."
-		}
-		else if(tipo==TipoUsuario.ADMINISTRADOR)
-		{
-			ayuda  ="El administrador es responsable de una sede o equipo de trabajo y puede añadir o eliminar inspectores en la plataforma web.";
+			ayuda  ="El administrador tiene el control completo de la plataforma.";
 		}
 		else if(tipo==TipoUsuario.USUARIO)
 		{
-			ayuda  ="El usuario aplicación se define para abrir la aplicación directamente en la tablet e indica en que area estará la tablet (como por ejemplo caseta de vigilancia, embarques, etc.)";
+			ayuda  ="Un usuario es el trabajador que subirá las evidencias en SAHA";
 		}
 		else if(tipo==TipoUsuario.INSPECTOR)
 		{
-			ayuda  ="Un inspector es el trabajador que realizará las inspecciones.";
+			ayuda  ="Un inspector es el trabajador que realizará las inspecciones en 10y7.";
+		}
+		else if(tipo==TipoUsuario.CAPACITADO)
+		{
+			ayuda  ="Un capacitado es el trabajador que tomará las capacitaciones en CAVIH.";
 		}
 		return ayuda;
 	}

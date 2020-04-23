@@ -7,6 +7,7 @@ use php\modelos\Resultado;
 use php\clases\AdministradorArchivos;
 use php\clases\AdministradorCorreo;
 use php\repositorios\UsuariosProcedimientosRepositorio;
+use php\repositorios\UsuariosRepositorio;
 
 
 error_reporting(E_ALL);
@@ -63,6 +64,32 @@ try
                 $mapper = new JsonMapper();
                 $modelo = $mapper->map($json, new Evidencia());
                 $resultado = $repositorio->validarEvidencia($usuario,$modelo);
+                if($resultado->correcto())
+                {
+//                     $llaves= (object)
+//                     [
+//                         'id'=> $modelo->id
+//                     ];
+//                     $resultado = $repositorio->consultarPorLlaves($llaves);
+//                     if($resultado->correcto())
+//                     {
+//                         $evidencia =  $resultado->valor;
+//                         $usuariosRepositorio = new UsuariosRepositorio($conexion);
+//                         $llaves= (object)
+//                         [
+//                             'id'=> $evidencia->usuarioId
+//                         ];
+//                         $resultado = $usuariosRepositorio->consultarPorLLaves($llaves);
+//                         if($resultado->correcto())
+//                         {
+//                             $usuarioDestino = $resultado->valor;
+//                             $administradorCorreo = new AdministradorCorreo(); 
+//                             $resultado = $administradorCorreo->enviarNotificacionComentario($usuario, $usuarioDestino, $evidencia);
+//                             if($resultado->correcto())
+//                                 $resultado->valor = $modelo->id;
+//                         }
+//                     }
+                }
                 break;
             case 'consultar':
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
