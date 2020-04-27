@@ -604,6 +604,60 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         return $resultado;     
     }   
     
+    public function consultarPorPermiso($usuario,$criteriosSeleccion,$opcional)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $filtros = $this->getFiltrosN($usuario, $criteriosSeleccion);
+        $where = $this->where($filtros);
+        
+        $consulta =  $this->consultaBase .
+        $where .
+        " ORDER BY U.nombre";
+        
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            //if($sentencia->bind_param("ss",$criteriosSeleccion->nombre,$criteriosSeleccion->apellido))
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVIH, $perfilId, $perfilNombre)  )
+                    {
+                        while($row = $sentencia->fetch())
+                        {
+                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre,$permisoCAVIH, $perfilId, $perfilNombre);
+                            array_push($registros,$registro);
+                        }
+                        if($opcional=="true")
+                        {
+                            if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
+                            {
+                                $registro = $this->crearRegistro("", "Todos los usuarios", null, null, null,null, null, null, null, null, null, null, null, null, null, null, null,null, null,null, null,null, null, null, null,null, null,null, null, null,null,null,null);
+                                array_unshift($registros, $registro);
+                            }
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado.";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            
+            return $resultado;
+    }   
+    
     public function consultarAdministradores()
     {
         $resultado = new Resultado();
@@ -1032,6 +1086,68 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         }
         return $resultado;
     }
+    
+    public function getFiltrosN($usuario, $criteriosSeleccion)
+    {
+        $filtros = array();
+        switch ($usuario->tipoUsuarioId)
+        {
+            case \TipoUsuario::USUARIO:
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','operador'=>'IN','valor'=>$usuario->id]);
+            break;
+            case \TipoUsuario::SUPERVISOR:
+                if(isset($criteriosSeleccion->usuarioId) && $criteriosSeleccion->usuarioId!="")
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','valor'=>$criteriosSeleccion->usuarioId]);
+                    else
+                    {
+                        //$usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                        $resultado = $this->consultarIdsUsuarios($usuario);
+                        if($resultado->correcto())
+                        {
+                            $usuariosIds = implode(",", $resultado->valor);
+                            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','operador'=>'IN','valor'=>$usuariosIds]);
+                        }
+                    }
+                    if(isset($criteriosSeleccion->usuarioId) && $criteriosSeleccion->usuarioId!="")
+                        array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','valor'=> $criteriosSeleccion->usuarioId]);
+            break;
+            case \TipoUsuario::COORDINADOR:
+                    if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+                        array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','valor'=>$criteriosSeleccion->empresaId]);
+                    else
+                    {
+                       // $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                        $resultado = $this->consultarIdsEmpresas($usuario->empresaId);
+                        if($resultado->correcto())
+                        {
+                            $empresasIds = implode(",", $resultado->valor);
+                            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','operador'=>'IN','valor'=>$empresasIds]);
+                        }
+                    }
+                    if(isset($criteriosSeleccion->usuarioId) && $criteriosSeleccion->usuarioId!="")
+                        array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','valor'=> $criteriosSeleccion->usuarioId]);
+            break;
+            case \TipoUsuario::ADMINISTRADOR:
+                if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','valor'=>$criteriosSeleccion->empresaId]);
+                if(isset($criteriosSeleccion->usuarioId) && $criteriosSeleccion->usuarioId!="")
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','valor'=> $criteriosSeleccion->usuarioId]);
+            break;
+        }
+        if(isset($criteriosSeleccion->sedeId) && $criteriosSeleccion->sedeId!="")
+            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'S', 'campo'=>'id','valor'=> $criteriosSeleccion->sedeId]);
+        if(isset($criteriosSeleccion->departamentoId) && $criteriosSeleccion->departamentoId!="")
+            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'D', 'campo'=>'id','valor'=> $criteriosSeleccion->departamentoId]);
+        if(isset($criteriosSeleccion->tipoUsuarioId) && $criteriosSeleccion->tipoUsuarioId!="" && $criteriosSeleccion->tipoUsuarioId!=null)
+            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'tipo_usuario_id','valor'=>$criteriosSeleccion->tipoUsuarioId]);
+        if(isset($criteriosSeleccion->permisoSAHA) && $criteriosSeleccion->permisoSAHA!="" && $criteriosSeleccion->permisoSAHA!=null)
+           array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'permiso_saha','valor'=>$criteriosSeleccion->permisoSAHA]);
+        if(isset($criteriosSeleccion->permisoSIVAH) && $criteriosSeleccion->permisoSIVAH!="" && $criteriosSeleccion->permisoSIVAH!=null)
+           array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'permiso_sivah','valor'=>$criteriosSeleccion->permisoSIVAH]);
+            
+        return $filtros;
+    }
+    
     
     public function consultarIdsUsuarios($usuario)
     {

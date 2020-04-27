@@ -20,8 +20,12 @@ class AdministradorConexion
         {
             $mysqli = new mysqli($this->servidor,$this->usuario,$this->contrasena,$this->basedatos);
             if($mysqli)
+            {
                 $mysqli->set_charset("utf8");
+                ini_set('max_execution_time', 300);
                 return $mysqli;
+                
+            }
         }
         catch (mysqli_sql_exception $e)
         {

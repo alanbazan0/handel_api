@@ -121,7 +121,7 @@
 						</label>
 					</div>
 					<div class="form-group">
-						<label class="control-label mb-1">Acceso a CAVIH</label> <label
+						<label class="control-label mb-1">Acceso a CAVI</label> <label
 							class="switch switch-3d switch-success mr-3"> <input
 							id="permisoCAVIHRadio" name="permisoCAVIH" type="checkbox"   onchange="vista.cambiarPermisoCAVIH();"
 							class="switch-input" > <span

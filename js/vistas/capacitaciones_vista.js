@@ -519,7 +519,7 @@ class CapacitacionesVista extends CatalogoVista
 	ejecutar()
 	{
 		var submitForm = getNewSubmitForm("auditoria.php","post");
-		createNewFormElement(submitForm, "plantillaId", this._llaves.id);
+		createNewFormElement(submitForm, "cursoId", this._llaves.id);
 		submitForm.target= "auditoria" + Math.floor(Math.random()*10000);
 		submitForm.submit();
 	}
@@ -699,6 +699,7 @@ class CapacitacionesVista extends CatalogoVista
 	
 	agregarPregunta(tipo)
 	{
+		var tipo = "om";
 		this.presentador.insertarPregunta(tipo);
 		//this.listaPreguntas.agregarPregunta();
 	}
@@ -760,7 +761,7 @@ class CapacitacionesVista extends CatalogoVista
 		var _this = this;
 		this.confirmar("¿Desea eliminar esta pregunta?",this,function(preguntaId)
 		{
-			_this._llavesPregunta = {plantillaId : _this.plantillaId, seccionId: _this.seccionIdSeleccionada, preguntaId : preguntaId};
+			_this._llavesPregunta = {cursoId : _this.cursoId, leccionId: _this.leccionIdSeleccionada, preguntaId : preguntaId};
 			_this.eliminarPreguntaBaseDatos();
 			
 		},preguntaId);
@@ -958,7 +959,7 @@ class CapacitacionesVista extends CatalogoVista
 		$('#tituloInput').focus();				
 		//this.inicializarValidacionesFormulario("formulario");
 		this.presentador.consultarPorLlaves();
-		//this._plantillaId =id;
+		//this._cursoId =id;
 	}
 
 	cambiarLogo(input)

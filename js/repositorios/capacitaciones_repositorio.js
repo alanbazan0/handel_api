@@ -5,14 +5,14 @@ class CapacitacionesRepositorio extends Repositorio
 		super("/php/repositorios/Cursos.php");
 	}
 	
-	guardarRespuestasSi(contexto,funcion,plantillaId, seccionId, preguntaId, respuestas)
+	guardarRespuestasSi(contexto,funcion,cursoId, leccionId, preguntaId, respuestas)
 	{		
 		var respuestasString =  JSON.stringify(respuestas);
 		var url =  HANDEL_API + "/" +this.servicio;
 		 $.ajax({
 	        url: url,
 	        type: 'POST',
-	        data: {accion : "guardarRespuestasSi", plantillaId: plantillaId, seccionId: seccionId, preguntaId : preguntaId, respuestas:respuestasString},
+	        data: {accion : "guardarRespuestasSi", cursoId: cursoId, leccionId: leccionId, preguntaId : preguntaId, respuestas:respuestasString},
 	        success: function( data, textStatus, jQxhr )
 	        {
 	            funcion.call(contexto,data);
@@ -28,14 +28,14 @@ class CapacitacionesRepositorio extends Repositorio
 	    });
 	}
 	
-	guardarRespuestasNo(contexto,funcion,plantillaId, seccionId, preguntaId, respuestas)
+	guardarRespuestasNo(contexto,funcion,cursoId, leccionId, preguntaId, respuestas)
 	{		
 		var respuestasString =  JSON.stringify(respuestas);
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
 	        url: url,
 	        type: 'POST',
-	        data: {accion : "guardarRespuestasNo", plantillaId: plantillaId, seccionId: seccionId, preguntaId : preguntaId, respuestas:respuestasString},
+	        data: {accion : "guardarRespuestasNo", cursoId: cursoId, leccionId: leccionId, preguntaId : preguntaId, respuestas:respuestasString},
 	        success: function( data, textStatus, jQxhr )
 	        {
 	            funcion.call(contexto,data);
@@ -178,13 +178,13 @@ class CapacitacionesRepositorio extends Repositorio
       });
 	}
 	
-	insertarPregunta(contexto,funcion,plantillaId, seccionId, tipo)
+	insertarPregunta(contexto,funcion,cursoId, leccionId, tipo)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
           url: url,
           type: 'POST',
-          data: {accion : "insertarPregunta",plantillaId: plantillaId,seccionId: seccionId,tipo: tipo},
+          data: {accion : "insertarPregunta",cursoId: cursoId,leccionId: leccionId,tipo: tipo},
           success: function( data, textStatus, jQxhr )
           {
               funcion.call(contexto,data);
@@ -362,13 +362,13 @@ class CapacitacionesRepositorio extends Repositorio
       });
 	}
 	
-	actualizarCategoriasPregunta(contexto,funcion,plantillaId, seccionId, preguntaId, categorias)
+	actualizarCategoriasPregunta(contexto,funcion,cursoId, leccionId, preguntaId, categorias)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
           url: url,
           type: 'POST',
-          data: {accion : "actualizarCategoriasPregunta",plantillaId: plantillaId, seccionId: seccionId, preguntaId, preguntaId, categorias:  JSON.stringify(categorias)},
+          data: {accion : "actualizarCategoriasPregunta",cursoId: cursoId, leccionId: leccionId, preguntaId, preguntaId, categorias:  JSON.stringify(categorias)},
           success: function( data, textStatus, jQxhr )
           {
               funcion.call(contexto,data);

@@ -74,7 +74,6 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         if($resultado->correcto())
         {
             $id =  $resultado->valor;
-            var_dump($leccionId);
             $resultado =  $this->calcularIdPregunta($cursoId, $leccionId,"orden");
             if($resultado->correcto())
             {
@@ -1259,9 +1258,9 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     public function actualizarValorPregunta($cursoId, $leccionId, $preguntaId, $campo, $valor)
     {
         $resultado = new Resultado();
-        $consulta = " UPDATE preguntas " .
+        $consulta = " UPDATE cursos_preguntas " .
             "SET $campo = ? " .
-            "WHERE plantilla_id = ? AND seccion_id = ? AND id = ? ";
+            "WHERE curso_id = ? AND leccion_id = ? AND id = ? ";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -1939,7 +1938,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     public function eliminarPregunta($llaves)
     {
         $resultado = new Resultado();
-        $consulta ="DELETE FROM preguntas WHERE plantilla_id = ? AND seccion_id = ? AND id = ?";
+        $consulta ="DELETE FROM cursos_preguntas WHERE curso_id = ? AND leccion_id = ? AND id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param("iii",$llaves->cursoId,$llaves->leccionId,$llaves->preguntaId))

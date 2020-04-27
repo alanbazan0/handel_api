@@ -125,6 +125,15 @@ try
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 $resultado = $repositorio->consultar($usuario,$criteriosSeleccion,$opcional);               
             break;
+            case 'consultarPorPermiso':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $opcional = REQUEST('opcional');
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarPorPermiso($usuario,$criteriosSeleccion,$opcional);
+            break;
             case 'consultarAdministradores':
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 $resultado = $repositorio->consultarAdministradores($criteriosSeleccion);
@@ -374,7 +383,7 @@ finally
 {
     if($resultado!=null)
     {
-        $json = json_encode($resultado, JSON_UNESCAPED_UNICODE);
+        $json = json_encode($resultado, JSON_PRETTY_PRINT);
         if (FALSE === $json)
             echo '{"mensajeError":"' .json_last_error_msg() . '"}';
             else

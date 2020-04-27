@@ -26,6 +26,7 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
 
     public function insertar(Mensaje $modelo,$usuario)
     {
+        $this->conexion->autocommit(FALSE);
         $resultado = $this->calcularId('id','mensajes');
         if($resultado->mensajeError=='')
         {
@@ -60,19 +61,20 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
                                 $criteriosSeleccion->departamentoId = $modelo->departamentoId;
                             if($modelo->usuarioId!=null && $modelo->usuarioId!="")
                                 $criteriosSeleccion->usuarioId = $modelo->usuarioId;
-                            $resultado = $usuariosRepositorio->consultar($modelo,$criteriosSeleccion,false);
+                            //$resultado = $usuariosRepositorio->consultar($modelo,$criteriosSeleccion,false);
+                            $resultado = $usuariosRepositorio->consultarPorPermiso($usuario,$criteriosSeleccion,false);
                             if($resultado->correcto())
                             {
                                 $usuarios = $resultado->valor;
                                 
-                               
+                                $info = "";// var_export($criteriosSeleccion, true);
                                 
                                 $administrador_correo = new AdministradorCorreo();
                                 $titulo = "El usuario $usuario->nombreCompleto ha creado un nuevo tema de discusión en SAHA, el nuevo tema es: <label style='font-weight:bold'> $modelo->asunto</label>";
                                 $url = "https://saha.apps-handel.com/mensajes.php?mensajeId=$modelo->id";
                                 $asuntoCorreo = utf8_decode("SAHA: " . $usuario->nombreCompleto . ": " . $modelo->asunto);
-                                
-                                $resultado = $administrador_correo->enviarNotificacionMensaje($usuario,$usuarios,$asuntoCorreo,$titulo,$modelo->mensaje,$url);
+                                $tipo = "mensaje" .$modelo->id;
+                                $resultado = $administrador_correo->enviarNotificacionMensaje($tipo,$usuario,$usuarios,$asuntoCorreo,$titulo,$modelo->mensaje,$url,$info);
                             }
                         }
                         

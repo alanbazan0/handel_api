@@ -74,70 +74,81 @@ class EvidenciasComentariosRepositorio extends RepositorioBase implements IEvide
 
     public function insertar($usuario,EvidenciaComentario $modelo)
     {
-        $resultado = $this->calcularId('id','evidencias_comentarios');
-        if($resultado->correcto())
+        $resultado = new Resultado();
+        if(isset($modelo->comentario) && $modelo->comentario!="" )
         {
-            $modelo->id = $resultado->valor;
-            $consulta = "INSERT INTO evidencias_comentarios(id, evidencia_id, usuario_id, comentario, fecha)VALUES(?, ?, ?, ?, NOW())";
-            if($sentencia = $this->conexion->prepare($consulta))
+            $resultado = $this->calcularId('id','evidencias_comentarios');
+            if($resultado->correcto())
             {
-                if($sentencia->bind_param('iiis',  $modelo->id, $modelo->evidenciaId, $modelo->usuarioId, $modelo->comentario))
+                $modelo->id = $resultado->valor;
+                $consulta = "INSERT INTO evidencias_comentarios(id, evidencia_id, usuario_id, comentario, fecha)VALUES(?, ?, ?, ?, NOW())";
+                if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    if($sentencia->execute())
+                    if($sentencia->bind_param('iiis',  $modelo->id, $modelo->evidenciaId, $modelo->usuarioId, $modelo->comentario))
                     {
-                        $llaves= (object)
-                        [
-                            'id'=> $modelo->evidenciaId
-                        ];
-                        $repositorio = new EvidenciasRepositorio($this->conexion);
-                        $resultado = $repositorio->consultarPorLlaves($llaves);
-                        if($resultado->correcto())
+                        if($sentencia->execute())
                         {
-                            $evidencia =  $resultado->valor;
-                            $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
-                            $resultado = $this->consultaUsuariosComentario($evidencia->id);
+                            $llaves= (object)
+                            [
+                                'id'=> $modelo->evidenciaId
+                            ];
+                            $repositorio = new EvidenciasRepositorio($this->conexion);
+                            $resultado = $repositorio->consultarPorLlaves($llaves);
                             if($resultado->correcto())
                             {
-                                $usuarios = $resultado->valor;
-                                
-                                if(!$usuariosRepositorio->existeUsuarioArreglo($evidencia->usuarioId,$usuarios))
-                                {
-                                    $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$evidencia->usuarioId]);
-                                    if($resultado->correcto())
-                                        array_push($usuarios, $resultado->valor);
-                                }
-                                if(!$usuariosRepositorio->existeUsuarioArreglo($evidencia->administradorId,$usuarios))
-                                {
-                                    $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$evidencia->administradorId]);
-                                    if($resultado->correcto())
-                                        array_push($usuarios, $resultado->valor);
-                                }
-                                
-                                $usuariosRepositorio->eliminarUsuarioArreglo($usuario->id,$usuarios);
-                                    
-                                $administrador_correo = new AdministradorCorreo();
-                                $titulo = "El usuario $usuario->nombreCompleto ha comentado en la conversación sobre la evidencia: <label style='font-weight:bold'> $evidencia->nombre</label>";
-                                $url = "https://saha.apps-handel.com/panel.php?comentarioId= $modelo->id";
-                                $asunto  = "SAHA: " . $usuario->nombreCompleto . ": hizo un comentario en evidencia " . $evidencia->nombre;
-                                //$asuntoCorreo = utf8_decode($asunto);
-                                $asuntoCorreo = html_entity_decode($asunto);
-                               // $asuntoCorreo = "=?ISO-8859-1?B?".base64_encode($asunto)."=?=";
-                                $resultado = $administrador_correo->enviarNotificacionMensaje($usuario,$usuarios,$asuntoCorreo,$titulo,$modelo->comentario,$url);
+                                $evidencia =  $resultado->valor;
+                                $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                                $resultado = $this->consultaUsuariosComentario($evidencia->id);
                                 if($resultado->correcto())
-                                    $resultado->valor = $modelo->id;
+                                {
+                                    $usuarios = $resultado->valor;
+                                    
+                                    if(!$usuariosRepositorio->existeUsuarioArreglo($evidencia->usuarioId,$usuarios))
+                                    {
+                                        $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$evidencia->usuarioId]);
+                                        if($resultado->correcto())
+                                            array_push($usuarios, $resultado->valor);
+                                    }
+                                    if(!$usuariosRepositorio->existeUsuarioArreglo($evidencia->administradorId,$usuarios))
+                                    {
+                                        $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$evidencia->administradorId]);
+                                        if($resultado->correcto())
+                                            array_push($usuarios, $resultado->valor);
+                                    }
+                                    
+                                    $usuariosRepositorio->eliminarUsuarioArreglo($usuario->id,$usuarios);
+                                    
+                                    $info =  "";//var_export($evidencia, true);
+                                        
+                                    $administrador_correo = new AdministradorCorreo();
+                                    $titulo = "El usuario $usuario->nombreCompleto ha comentado en la conversación sobre la evidencia: <label style='font-weight:bold'> $evidencia->nombre</label>";
+                                    $url = "https://saha.apps-handel.com/panel.php?comentarioId= $modelo->id";
+                                    $asunto  = "SAHA: " . $usuario->nombreCompleto . ": hizo un comentario en evidencia " . $evidencia->nombre;
+                                    //$asuntoCorreo = utf8_decode($asunto);
+                                    $asuntoCorreo = html_entity_decode($asunto);
+                                   // $asuntoCorreo = "=?ISO-8859-1?B?".base64_encode($asunto)."=?=";
+                                    $tipo = "comentario" . $modelo->id;
+                                    $resultado = $administrador_correo->enviarNotificacionMensaje($tipo,$usuario,$usuarios,$asuntoCorreo,$titulo,$modelo->comentario,$url, $info);
+                                    if($resultado->correcto())
+                                    {
+                                        $resultado->valor = $modelo->id;
+                                    }
+                                }
                             }
+                            
                         }
-                        
+                        else
+                            $resultado->mensajeError =  __FUNCTION__ . ' Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                     }
                     else
-                        $resultado->mensajeError =  __FUNCTION__ . ' Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                        $resultado->mensajeError = __FUNCTION__ . ' Falló el enlace de parámetros';
                 }
                 else
-                    $resultado->mensajeError = __FUNCTION__ . ' Falló el enlace de parámetros';
+                    $resultado->mensajeError = __FUNCTION__ . ' Falló la preparación: (' . $this->conexion->errno . ') ' .$this->conexion->error;
             }
-            else
-                $resultado->mensajeError = __FUNCTION__ . ' Falló la preparación: (' . $this->conexion->errno . ') ' .$this->conexion->error;
         }
+//         else 
+//             $resultado->mensajeError = __FUNCTION__ . "El comnentario esta vacío";
         return $resultado;
     }
     

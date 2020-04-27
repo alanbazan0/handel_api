@@ -283,44 +283,7 @@ class UsuariosVista extends CatalogoVista
 	  for (var i=0; i<longitud; i++) contraseña += caracteres.charAt(Math.floor(Math.random()*caracteres.length));
 	  	return contraseña;
 	}
-//	
-//	datosValidos()
-//	{
-//		var emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-//        
-//		var nombreUsuario = $("#nombreUsuarioInput"),
-//			contrasena = $("#contrasenaInput"),
-//			nombre = $("#nombreInput"),			
-//	        empresa = $("#empresaSelect"),
-//	        area = $("#areaSelect"),
-//	        puesto = $("#puestoSelect"),	       
-//	        tipoUsuario = $("#tipoUsuarioSelect");
-//        
-//        var allFields = $( [] ).add(nombreUsuario).add(contrasena).add(nombre).add(empresa).add(area).add(puesto).add(tipoUsuario);
-//        var tips = $( ".validateTips" );
-//		tips.text("");
-//		
-//		var valid = true;
-//		allFields.removeClass("ui-state-error");
-//		
-//		var tipo = $('#tipoUsuarioSelect').val();
-//		if(tipo!=TipoUsuario.INSPECTOR)
-//		{
-//			valid = valid && this.validaciones.checkValue( nombreUsuario, "nombre de usuario", tips );		
-//			valid = valid && this.validaciones.checkRegexp( nombreUsuario, emailRegex, "ejemplo. contacto@handel-sce.net",tips );
-//		}
-//	    valid = valid && this.validaciones.checkValue( contrasena, "contraseña", tips );
-//	    valid = valid && this.validaciones.checkValue( nombre, "nombre", tips );
-//	    //valid = valid && this.validaciones.checkValue( apellido, "apellido", tips );
-//	    valid = valid && this.validaciones.checkValue( tipoUsuario, "tipo de usuario",tips );
-//	    valid = valid && this.validaciones.checkValue( empresa, "empresa",tips );
-//	   // valid = valid && this.validaciones.checkValue( sede, "sede",tips );
-//	    valid = valid && this.validaciones.checkValue( puesto, "puesto",tips );
-//	    valid = valid && this.validaciones.checkValue( area, "area",tips );
-//	    
-//	    
-//		return valid;
-//	}	
+
 
 	limpiarFormulario()
 	{

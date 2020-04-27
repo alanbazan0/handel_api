@@ -154,27 +154,7 @@ class InicioSesionVista extends Vista
 		
 	}
 	
-//	datosValidos()
-//	{
-//		var emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
-//        
-//		var nombreUsuario = $("#nombreUsuarioInput"),
-//			contrasena = $("#contrasenaInput");
-//        
-//        var allFields = $( [] ).add(nombreUsuario).add(contrasena);
-//        var tips = $( ".validateTips" );
-//		tips.text("");
-//		
-//		var valid = true;
-//		allFields.removeClass("ui-state-error");
-//		
-//		valid = valid && this.validaciones.checkValue( nombreUsuario, "nombre de usuario", tips );		
-//	    valid = valid && this.validaciones.checkRegexp( nombreUsuario, emailRegex, "ejemplo. contacto@handel-sce.net",tips );
-//	    valid = valid && this.validaciones.checkValue( contrasena, "contraseña", tips );
-//		
-//		return valid;
-//	}	
-	
+
 	get nombreUsuario()
 	{
 		return $("#nombreUsuarioInput").val();

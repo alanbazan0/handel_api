@@ -49,9 +49,9 @@ class AdministradorArchivos
                 $file_tmp =$archivo['tmp_name'];
                 $file_type=$archivo['type'];
                 
-                if($file_type!='image/jpeg' && $file_type!='image/png')
+                if($file_type!='image/jpeg' && $file_type!='image/png' && $file_type!='image/gif')
                 {
-                    $resultado->mensajeError = "Extension no permitida, por favor seleccione un archivo JPEG o PNG";
+                    $resultado->mensajeError = "Extension no permitida, por favor seleccione un archivo JPEG, PNG o GIF";
                 }
                 else  if($file_size > 2097152)
                 {
