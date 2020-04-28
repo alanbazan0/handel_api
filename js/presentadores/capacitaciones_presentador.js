@@ -119,6 +119,30 @@ class CapacitacionesPresentador extends CatalogoPresentador
 		 },this.vista.llavesPregunta);
 	 }
 	 
+	 eliminarRespuesta()
+	 {
+		 this.vista.mostrarIndicador();	
+		 var preguntaId = this.vista.llavesRespuesta.preguntaId;
+		 var respuestaId = this.vista.llavesRespuesta.respuestaId;
+		 this._repositorio.eliminarRespuesta(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 this.vista.cerrarConfirmacionEliminar();
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.mostrarMensaje("","Guardado.");
+				 this.vista.listaPreguntas.eliminarRespuesta(preguntaId, respuestaId);
+			 }
+			 else
+			 {
+				 if(resultado.codigoError==1451)
+					 this.vista.mostrarMensajeAdvertencia("Error","No se puede eliminar la respuesta porque esta relacionada con otro catálogo. ") ;
+				 else
+					 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar la respuesta. " + resultado.mensajeError);
+			 }
+		 },this.vista.llavesRespuesta);
+	 }
+	 
 	 eliminarLeccion()
 	 {
 		 this.vista.mostrarIndicador();	

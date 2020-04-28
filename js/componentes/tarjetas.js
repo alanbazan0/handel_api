@@ -26,10 +26,7 @@ class Tarjetas
 		{
 			var registro = this._registros[i];
 			var plantilla = Handlebars.compile(this._plantillaHtml);
-			//html+="<li style='display: inline-block;    vertical-align: top;'>";
-			//html+="<div class='box'>";
 			html+= plantilla(registro);
-			//html+="<div>";
 			//html+="</li>";
 		
 		}

@@ -772,6 +772,11 @@ class CapacitacionesVista extends CatalogoVista
 		return this._llavesPregunta;
 	}
 	
+	get llavesRespuesta()
+	{
+		return this._llavesRespuesta;
+	}
+	
 	get llavesLeccion()
 	{
 		return this._llavesLeccion;
@@ -783,15 +788,26 @@ class CapacitacionesVista extends CatalogoVista
 		this.presentador.eliminarPregunta();
 	}
 	
+	eliminarRespuestaBaseDatos()
+	{
+		this.presentador.eliminarRespuesta();
+	}
+	
+	
 	eliminarLeccionBaseDatos()
 	{
 		this.presentador.eliminarLeccion();
 	}
 	
-	eliminarRespuesta(event, respuestaId)
+	eliminarRespuesta(event, preguntaId, respuestaId)
 	{
-		this.confirmar("¿Desea eliminar esta respuesta?",this.listaRespuestas,this.listaRespuestas.eliminarRespuesta,respuestaId);
-		//this.listaRespuestas.eliminarRespuesta(respuestaId);
+		var _this = this;
+		this.confirmar("¿Desea eliminar esta respuesta?",this,function(respuestaId)
+		{
+			_this._llavesRespuesta = {cursoId : _this.cursoId, leccionId: _this.leccionIdSeleccionada, preguntaId : preguntaId, respuestaId: respuestaId};
+			_this.eliminarRespuestaBaseDatos();
+			
+		},respuestaId);
 	}
 	
 	

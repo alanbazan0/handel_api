@@ -723,6 +723,7 @@ class UsuariosVista extends CatalogoVista
 		 var criteriosSeleccion = 
 		 {				    
 			empresaId: $('#empresaSelectCriterio').val(),
+			sedeId: $('#sedeSelectCriterio').val(),
 			nombre:$('#nombreInputCriterio').val()
 		 }
 		 return criteriosSeleccion;

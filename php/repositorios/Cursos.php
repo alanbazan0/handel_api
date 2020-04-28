@@ -98,6 +98,14 @@ try
                    //TODO: Eliminar valores de preguntas en la ejecucion
                 }
             break;
+            case 'eliminarRespuesta':
+                $llaves = json_decode(REQUEST('llaves'));
+                $resultado = $repositorio->eliminarRespuesta($llaves);
+                if($resultado->mensajeError=="")
+                {
+                    //TODO: Eliminar valores de respuestas en la ejecucion
+                }
+                break;
             case 'eliminarLeccion':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminarLeccion($llaves);
