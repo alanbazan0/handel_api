@@ -1969,10 +1969,12 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     public function eliminarRespuesta($llaves)
     {
         $resultado = new Resultado();
+         
+        
         $consulta ="DELETE FROM cursos_respuestas WHERE curso_id = ? AND leccion_id = ? AND pregunta_id = ? AND id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("iiii",$llaves->cursoId,$llaves->leccionId,$llaves->preguntaId,$llaves->id))
+            if($sentencia->bind_param("iiii",$llaves->cursoId,$llaves->leccionId,$llaves->preguntaId,$llaves->respuestaId))
             {
                 if($sentencia->execute())
                 {
