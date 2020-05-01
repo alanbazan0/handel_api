@@ -67,15 +67,46 @@ class ArrayUtils
 		return true;	
 	}
 	
+//	static getValues(item,fieldsArray)
+//	{
+//		var values = [];
+//		for(var i=0; i< fieldsArray.length;i++)
+//		{
+//			var value = item[fieldsArray[i]];
+//			values.push(value);
+//		}
+//		return values;
+//	}
 	static getValues(item,fieldsArray)
 	{
 		var values = [];
 		for(var i=0; i< fieldsArray.length;i++)
 		{
-			var value = item[fieldsArray[i]];
+			var field = fieldsArray[i];
+			var value = ArrayUtils.getValue(item,field);
 			values.push(value);
 		}
 		return values;
+	}
+	
+	static getValue(item, field)
+	{
+		var fieldsArray = field.split(".");
+		if(fieldsArray.length==1)
+			return item[field];
+		else
+		{
+			if(fieldsArray.length>0)
+			{
+				var obj = item[fieldsArray[0]];
+				for (var i = 1; i < fieldsArray.length; i++) 
+				{
+					var f = fieldsArray[i];
+					obj = obj[f]; 
+				}
+			}
+			return obj;
+		}
 	}
 	
 	static searchWithValues(fields,values,array)

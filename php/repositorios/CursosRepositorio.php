@@ -105,6 +105,43 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
+    public function insertarRespuesta($cursoId, $leccionId, $preguntaId)
+    {
+        $resultado =  $this->calcularIdRespuesta($cursoId, $leccionId, $preguntaId, "id");
+        if($resultado->correcto())
+        {
+            $id =  $resultado->valor;
+            $resultado =  $this->calcularIdRespuesta($cursoId, $leccionId,$preguntaId, "orden");
+            if($resultado->correcto())
+            {
+                $orden =  $resultado->valor;
+                $consulta = "INSERT INTO cursos_respuestas(curso_id, leccion_id, pregunta_id, id, orden,texto) " .
+                    "VALUE(?, ?, ?, ?, ?, '')";
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if($sentencia->bind_param("iiiii",$cursoId,$leccionId, $preguntaId, $id, $orden))
+                    {
+                        if($sentencia->execute())
+                        {
+                            $sentencia->close();
+                            $resultado->valor = $id;
+                        }
+                        else
+                        {
+                            $resultado->mensajeError = __FUNCTION__ ." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                        }
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+        }
+        
+        return $resultado;
+    }
+    
     public function insertarLeccion($cursoId, $texto)
     {
         $resultado =  $this->calcularIdLeccion($cursoId, "id");
@@ -1220,13 +1257,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     {
         $resultado = new Resultado();
 
-//         if($campo=="publicado")
-//         {
-//             if($valor=="on")
-//                 $valor = 1;
-//             else
-//                 $valor = 0;
-//         }
+       
         
         
         $consulta = " UPDATE cursos " .
@@ -1281,6 +1312,94 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
             return $resultado;
+    }
+    
+    public function actualizarValorRespuesta($cursoId, $leccionId, $preguntaId, $respuestaId, $campo, $valor)
+    {
+        $resultado = new Resultado();
+        $consulta = " UPDATE cursos_respuestas " .
+            "SET $campo = ? " .
+            "WHERE curso_id = ? AND leccion_id = ? AND pregunta_id = ? AND id = ? ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("siiii", $valor, $cursoId, $leccionId, $preguntaId, $respuestaId ))
+            {
+                if($sentencia->execute())
+                {
+                    $resultado->valor=true;
+                    $sentencia->close();
+                }
+                else
+                    $resultado->mensajeError =__FUNCTION__." Falló la ejecución actualizar(" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
+    public function actualizarValorRespuestaCorrecta($cursoId, $leccionId, $preguntaId, $respuestaId, $valor)
+    {
+        $resultado = new Resultado();
+        $this->conexion->autocommit(FALSE);
+        
+        $consulta = " UPDATE cursos_respuestas " .
+            "SET correcta = 0 " .
+            "WHERE curso_id = ? AND leccion_id = ? AND pregunta_id = ? ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("iii", $cursoId, $leccionId, $preguntaId ))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                   
+                }
+                else
+                    $resultado->mensajeError =__FUNCTION__." Falló la ejecución actualizar(" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        
+            
+       if($resultado->correcto())
+       {
+           $consulta = " UPDATE cursos_respuestas " .
+               "SET correcta = ? " .
+               "WHERE curso_id = ? AND leccion_id = ? AND pregunta_id = ? AND id = ? ";
+           
+           if($sentencia = $this->conexion->prepare($consulta))
+           {
+               if( $sentencia->bind_param("iiiii",$valor, $cursoId, $leccionId, $preguntaId, $respuestaId ))
+               {
+                   if($sentencia->execute())
+                   {
+                       $resultado->valor=true;
+                       $sentencia->close();
+                   }
+                   else
+                       $resultado->mensajeError =__FUNCTION__." Falló la ejecución actualizar(" . $this->conexion->errno . ") " . $this->conexion->error;
+               }
+               else
+                   $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+           }
+           else
+               $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+       }
+            
+        if($resultado->correcto())
+            $this->conexion->commit();
+        else
+            $this->conexion->rollback();
+        return $resultado;
     }
     
     public function actualizarCategoriasPregunta($cursoId, $leccionId, $preguntaId, $categorias)
@@ -2330,6 +2449,42 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if( $sentencia->bind_param("ii", $cursoId, $leccionId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $resultado->valor = $id;
+                        }
+                        else
+                            $resultado->mensajeError =  __FUNCTION__. " No se encontró ningún resultado";
+                    }
+                    else
+                        $resultado->mensajeError =  __FUNCTION__. " Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError =  __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+            {
+                $resultado->mensajeError =  __FUNCTION__. " Falló el enlace de parámetros";
+            }
+        }
+        else
+            $resultado->mensajeError =  __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            return $resultado;
+    }
+    
+    public function calcularIdRespuesta($cursoId, $leccionId, $preguntaId, $campo)
+    {
+        $resultado = new Resultado();
+        $consulta =  "SELECT IFNULL(MAX($campo),0)+1 AS id FROM cursos_respuestas WHERE curso_id = ? AND leccion_id = ? AND pregunta_id = ? ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("iii", $cursoId, $leccionId,$preguntaId))
             {
                 if($sentencia->execute())
                 {

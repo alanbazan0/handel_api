@@ -228,6 +228,31 @@ class CapacitacionesRepositorio extends Repositorio
       });
 	}
 	
+	insertarRespuesta(contexto,funcion,cursoId, leccionId, preguntaId)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "insertarRespuesta",cursoId: cursoId,leccionId: leccionId,preguntaId: preguntaId},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
 
 	insertarLeccion(contexto,funcion,cursoId, titulo)
 	{				
@@ -369,6 +394,56 @@ class CapacitacionesRepositorio extends Repositorio
           url: url,
           type: 'POST',
           data: {accion : "actualizarValorPregunta",cursoId: cursoId, leccionId: leccionId, preguntaId, preguntaId, campo: campo, valor: valor},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	actualizarValorRespuesta(contexto,funcion,cursoId, leccionId, preguntaId, respuestaId, campo, valor)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "actualizarValorRespuesta",cursoId: cursoId, leccionId: leccionId, preguntaId, preguntaId, respuestaId: respuestaId, campo: campo, valor: valor},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	actualizarValorRespuestaCorrecta(contexto,funcion,cursoId, leccionId, preguntaId, respuestaId, valor)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "actualizarValorRespuestaCorrecta",cursoId: cursoId, leccionId: leccionId, preguntaId, preguntaId, respuestaId: respuestaId, valor: valor},
           success: function( data, textStatus, jQxhr )
           {
               funcion.call(contexto,data);

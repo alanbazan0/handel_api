@@ -202,6 +202,25 @@ class CapacitacionesPresentador extends CatalogoPresentador
 		 },this.vista.cursoId, this.vista.leccionIdSeleccionada, tipo);
 	 }
 	 
+	 insertarRespuesta(preguntaId)
+	 {
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.insertarRespuesta(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.mostrarMensaje("","Guardado.");
+				 this.vista.listaPreguntas.agregarRespuesta(preguntaId,resultado.valor);
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+			 }
+		 },this.vista.cursoId, this.vista.leccionIdSeleccionada, preguntaId);
+	 }
+	 
+	 
 	 insertarResultado(resultado)
 	 {
 		this.vista.ocultarIndicador();	
@@ -304,6 +323,43 @@ class CapacitacionesPresentador extends CatalogoPresentador
 				 }
 			 },this.vista.cursoId, this.vista.leccionIdSeleccionada, preguntaId, campo, valor);
 		}
+	 }
+	 
+	 actualizarValorRespuesta(preguntaId,respuestaId, campo,valor)
+	 {
+		 if(campo!=undefined)
+		{
+			 this.vista.mostrarIndicador();	
+			 this._repositorio.actualizarValorRespuesta(this,function(resultado)
+			 {		
+				 this.vista.ocultarIndicador();	
+				 if(resultado.mensajeError=="")
+				 {
+					 this.vista.mostrarMensaje("","Guardado.");
+				 }
+				 else
+				 {
+					 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+				 }
+			 },this.vista.cursoId, this.vista.leccionIdSeleccionada, preguntaId, respuestaId, campo, valor);
+		}
+	 }
+	 
+	 actualizarValorRespuestaCorrecta(preguntaId,respuestaId,valor)
+	 {
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.actualizarValorRespuestaCorrecta(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.mostrarMensaje("","Guardado.");
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+			 }
+		 },this.vista.cursoId, this.vista.leccionIdSeleccionada, preguntaId, respuestaId, valor);
 	 }
 	 
 	 actualizarCategoriasPregunta(preguntaId,categorias)

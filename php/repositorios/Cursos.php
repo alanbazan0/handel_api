@@ -120,6 +120,12 @@ try
                 $tipo = REQUEST('tipo');
                 $resultado = $repositorio->insertarPregunta($cursoId, $leccionId,  $tipo);
             break;
+            case 'insertarRespuesta':
+                $cursoId = REQUEST('cursoId');
+                $leccionId = REQUEST('leccionId');
+                $preguntaId = REQUEST('preguntaId');
+                $resultado = $repositorio->insertarRespuesta($cursoId, $leccionId,  $preguntaId);
+            break;
             case 'actualizarValor':
                 $cursoId = REQUEST('cursoId');
                 $campo = REQUEST('campo');
@@ -186,6 +192,23 @@ try
                 $campo = REQUEST('campo');
                 $valor = REQUEST('valor');
                 $resultado = $repositorio->actualizarValorPregunta($cursoId, $leccionId, $preguntaId, $campo,  $valor);
+            break;
+            case 'actualizarValorRespuesta':
+                $cursoId = REQUEST('cursoId');
+                $leccionId = REQUEST('leccionId');
+                $preguntaId = REQUEST('preguntaId');
+                $respuestaId = REQUEST('respuestaId');
+                $campo = REQUEST('campo');
+                $valor = REQUEST('valor');
+                $resultado = $repositorio->actualizarValorRespuesta($cursoId, $leccionId, $preguntaId, $respuestaId, $campo,  $valor);
+            break;
+            case 'actualizarValorRespuestaCorrecta':
+                $cursoId = REQUEST('cursoId');
+                $leccionId = REQUEST('leccionId');
+                $preguntaId = REQUEST('preguntaId');
+                $respuestaId = REQUEST('respuestaId');
+                $valor = REQUEST('valor');
+                $resultado = $repositorio->actualizarValorRespuestaCorrecta($cursoId, $leccionId, $preguntaId, $respuestaId, $valor);
             break;
             case 'actualizarCategoriasPregunta':
                 $cursoId = REQUEST('cursoId');
