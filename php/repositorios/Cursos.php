@@ -86,10 +86,13 @@ try
                 $resultado = $repositorio->ordenarPreguntas($cursoId,$leccionId,$seleccion);        
             break;
             case 'consultarPorLlaves':
-                
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->consultarPorLlaves($llaves);
-            break;          
+            break;      
+            case 'consultarPorToken':
+                $token = REQUEST('token');
+                $resultado = $repositorio->consultarPorToken($token);
+             break;   
             case 'eliminarPregunta':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminarPregunta($llaves);
@@ -162,15 +165,15 @@ try
                 }
                
             break;
-            case 'guardarRespuestasSi':
-                $cursoId = REQUEST('cursoId');
-                $leccionId = REQUEST('leccionId');
-                $preguntaId = REQUEST('preguntaId');
-                $json = json_decode(REQUEST('respuestas'));
-                $mapper = new JsonMapper();
-                $respuestas = $mapper->mapArray($json, array());
-                $resultado = $repositorio->guardarRespuestasSi($cursoId,$leccionId,$preguntaId,$respuestas);
-            break;
+//             case 'guardarRespuestasSi':
+//                 $cursoId = REQUEST('cursoId');
+//                 $leccionId = REQUEST('leccionId');
+//                 $preguntaId = REQUEST('preguntaId');
+//                 $json = json_decode(REQUEST('respuestas'));
+//                 $mapper = new JsonMapper();
+//                 $respuestas = $mapper->mapArray($json, array());
+//                 $resultado = $repositorio->guardarRespuestasSi($cursoId,$leccionId,$preguntaId,$respuestas);
+//             break;
             case 'guardarRespuestasNo':
                 $cursoId = REQUEST('cursoId');
                 $leccionId = REQUEST('leccionId');

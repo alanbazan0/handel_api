@@ -1,14 +1,14 @@
-class CapacitacionesVista extends CatalogoVista
+class CapacitacionVista extends CatalogoVista
 {		
 	constructor(ventana)
 	{	
 		super();
 		this.ventana = ventana;
-		this.presentador = new CapacitacionesPresentador(this);
+		this.presentador = new CapacitacionPresentador(this);
 
-		this.listaLecciones = new ListaLecciones("listaLecciones");
+		this.listaLecciones = new ListaLeccionesEjecucion("listaLecciones");
 		
-		this.listaPreguntas = new ListaPreguntas("listaPreguntas");
+		this.listaPreguntas = new ListaPreguntasEjecucion("listaPreguntas");
 		this.listaPreguntas.contexto = this; 
 		this.listaPreguntas.funcionCambiarCampo = this.cambiarCampoPregunta;
 		
@@ -23,8 +23,15 @@ class CapacitacionesVista extends CatalogoVista
 	inicializar()
 	{	
 		var _this = this;
-		super.inicializar();
+		this.actualizarSesion();	
 		
+		this.consultarCursoId();
+		//super.inicializar();
+	
+	}
+	
+	mostrarCapacitaciones()
+	{
 		this._tarjetas = new Tarjetas("tarjetas");
 
 		
@@ -70,110 +77,77 @@ class CapacitacionesVista extends CatalogoVista
          `;
 	
 
-		this.crearFecha();
-		
-		$("#listaLecciones").sortable({
-		    axis: "y",
-		    containment: "parent",
-		    cursor: "move",
-		   // items: "div",
-		    tolerance: "pointer",
-		    update: function( event, ui ) {
-		    	var seleccion = $( "#listaLecciones" ).sortable( "serialize", { key: "sort" });
-				_this.presentador.ordenarLecciones(seleccion);
-			}
-		});
-	    $( "#listaLecciones" ).disableSelection();
-		
-//	    var _this = this;
-//		$("#listaPreguntas").sortable({
+//		
+//		$("#listaLecciones").sortable({
 //		    axis: "y",
 //		    containment: "parent",
 //		    cursor: "move",
 //		   // items: "div",
 //		    tolerance: "pointer",
 //		    update: function( event, ui ) {
-//		    	var seleccion = $( "#listaPreguntas" ).sortable( "serialize", { key: "sort" });
-//				_this.presentador.ordenarPreguntas(seleccion);
+//		    	var seleccion = $( "#listaLecciones" ).sortable( "serialize", { key: "sort" });
+//				_this.presentador.ordenarLecciones(seleccion);
 //			}
 //		});
-//	    $( "#listaPreguntas" ).disableSelection();
-//	    
-//	    $("#listaRespuestas").sortable({
-//		    axis: "y",
-//		    containment: "parent",
-//		    cursor: "move",
-//		   // items: "div",
-//		    tolerance: "pointer",
-//		});
-//	    $( "#listaRespuestas" ).disableSelection();
-	    
-		this.crearEventosActualizacion();
+//	    $( "#listaLecciones" ).disableSelection();
 		
+
 		$("#tituloH").click(function()
 		{
 			_this.salirFormulario();
 		});
-		
-	
 	}
 	
-	
-	crearEventosActualizacion()
+	consultarCursoId()
 	{
-		var _this = this;
-		$("#tituloInput").change(this.cambiarCampo);
-		$("#tituloInput").keyup(function()
-		{
-			$("#tituloH").html($("#tituloInput").val());
-		});
-		$("#descripcionInput").change(this.cambiarCampo);
-		$("#publicadoRadio").change(this.cambiarCampo);
-		
-		
-		$("#tituloLeccionInput").change(this.cambiarCampoLeccion);
-		$("#descripcionLeccionInput").change(this.cambiarCampoLeccion);
-		$("#urlVideoLeccionInput").change(this.cambiarCampoLeccion);
-		$("#tituloLeccionInput").keyup(function()
-		{
-			if(_this._leccionSeleccionada!=null)
-			{
-				_this._leccionSeleccionada.titulo = $("#tituloLeccionInput").val();
-				_this.listaLecciones.actualizarTitulos();
-			}
-		});
-		$("#perfilesSelect").change(this.cambiarCampo);
-		
-	}
-	
-	cambiarCampo(event)
-	{
-		var campo = $(event.currentTarget).attr("data-campo");
-		if(campo=="perfiles")
-		{
-			vista.presentador.actualizarPerfiles();
-		}
+		var ejecucionId = $("body").attr("data-ejecucionId");
+		if(ejecucionId !=undefined &&  ejecucionId!="")
+			this.presentador.consultarToken();
 		else
 		{
-			var valor = $(event.currentTarget).val();
-			if(campo=="publicado")
+			var token = $("body").attr("data-token");
+			if(token!=undefined && token!="")
+				this.token =  token;
+			else
 			{
-				if(valor=="on")
-					valor=1;
-				else
-					valor=0;
+				this.mostrarCapacitacionInvalida();
 			}
-			vista.presentador.actualizarValor(campo,valor);
 		}
+			
 	}
 	
-	cambiarCampoLeccion(event)
+	mostrarCapacitacionInvalida()
 	{
-		var campo = $(event.currentTarget).attr("data-campo");
-		var valor = $(event.currentTarget).val();
-		vista._leccionSeleccionada[campo] = valor;
-		var leccionId = vista._leccionSeleccionada.id;
-		vista.presentador.actualizarValorLeccion(leccionId,campo,valor);
+		swal({
+            title: "Algo salió mal",
+            text: "Ocurrió un error al intentar ingresar a la capacitación.",
+            type: "warning",
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Salir",
+            closeOnConfirm: false,
+            closeOnCancel: true,
+            showLoaderOnConfirm: true,
+        },
+        function(isConfirm)
+        {
+            if (isConfirm) 
+            {
+            	 setTimeout(function(){
+            		window.close();
+ 	            }, 1000);
+            }
+        });
+	}
+	
+	set token(token)
+	{
+		this._token = token;
+		this.presentador.consultarPorToken();
+	}
+	
+	get token()
+	{
+		return this._token;
 	}
 	
 	cambiarCampoPregunta(preguntaId,campo,valor)
@@ -532,7 +506,7 @@ class CapacitacionesVista extends CatalogoVista
 		
 		$("#perfilesSelect_chosen").css("width","100%");
 		
-		if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
+		if(this.modeloEdicion!=null)
 		{
 			this.listaLecciones.lecciones= this.modeloEdicion.lecciones;
 			if(this.listaLecciones.lecciones!=null)
@@ -593,10 +567,18 @@ class CapacitacionesVista extends CatalogoVista
 	
 	set modelo(valor)
 	{		
+		this.mostrarFormulario();
+		
 		this.modeloEdicion = valor;
 		$('#tituloH').html(this.modeloEdicion.titulo);
 		$('#tituloInput').val(this.modeloEdicion.titulo);
-		$('#descripcionInput').val(this.modeloEdicion.descripcion);
+		var title = $(document).prop('title');
+		$(document).prop('title', title + " " + this.modeloEdicion.titulo);
+		
+		var descripcion = this.modeloEdicion.descripcion;
+		descripcion = descripcion.replace(/\r?\n/g, '<br />');
+		
+		$('#descripcionLabel').html(descripcion);
 		if(this.modeloEdicion.publicado)
 			$("#publicadoRadio").prop('checked', true);
 		else
@@ -863,16 +845,40 @@ class CapacitacionesVista extends CatalogoVista
 			this.mostrarLeccion(this._leccionSeleccionada);
 			
 		}
-		$("#tituloLeccionInput").focus();
+		//$("#tituloLeccionInput").focus();
 	}
 	
 	mostrarLeccion(leccion)
 	{
 		this.listaLecciones.seleccionar(leccion.id);
 		
-		$("#tituloLeccionInput").val(leccion.titulo);
-		$("#descripcionLeccionInput").val(leccion.descripcion);
-		$("#urlVideoLeccionInput").val(leccion.video);
+		$("#tituloLeccionLabel").html(leccion.titulo);
+		
+		var descripcion = leccion.descripcion;
+		descripcion = descripcion.replace(/\r?\n/g, '<br />');
+		
+		
+		$("#descripcionLeccionLabel").html(descripcion);
+		//$("#video").val(leccion.video);
+		
+		//$('#video source').attr('src', leccion.video);
+		
+		if(this._player!=null)
+			this._player.stop();
+		
+		var options = {};
+		
+		this._player = videojs('video', options, function onPlayerReady() {
+			  videojs.log('Your player is ready!');
+			 
+			  // In this context, `this` is the player that was created by Video.js.
+			  this.play();
+			 
+			  // How about an event listener?
+			  this.on('ended', function() {
+			    videojs.log('Awww...over so soon?!');
+			  });
+			});
 		
 		this.listaPreguntas.categorias = this._categorias;
 		if(leccion!=null)
@@ -1060,7 +1066,7 @@ class CapacitacionesVista extends CatalogoVista
 	
 	
 }
-var vista = new CapacitacionesVista(this);
+var vista = new CapacitacionVista(this);
 $(document).ready(function() 
 {
 	vista.inicializar();

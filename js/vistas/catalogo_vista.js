@@ -186,6 +186,8 @@ class CatalogoVista extends Vista
 				html+="<li class='header'>Tienes "+numeroMensajesNoLeidos+" mensajes</li>";
 			}
 			
+			html+=" <li class='footer'><a href='mensajes.php'>Ver todos</a></li>";
+			
 			$("#notificacionMensajesUl").html(html);	
 			
 			$("#mensajesLink").click(this.mensajesClick);

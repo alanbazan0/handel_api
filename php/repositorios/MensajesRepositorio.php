@@ -19,7 +19,7 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
     {
         $this->conexion = $conexion;
         $this->consultaBase = "SELECT M.id, mensaje, IFNULL(DATE_FORMAT(fecha,'%m/%d/%Y %H:%i:%s'),'') as fecha, usuario_id, U.nombre as usuarioNombre, U.apellido,
-                                EXISTS(SELECT mensaje_id FROM mensajes_leidos ML WHERE ML.mensaje_id = M.id AND usuario_id = ?) leido, IFNULL(asunto,'')
+                                EXISTS(SELECT mensaje_id FROM mensajes_leidos ML WHERE ML.mensaje_id = M.id AND usuario_id = ?) leido, IFNULL(asunto,'') asunto
                             FROM mensajes M
                                 INNER JOIN usuarios U ON U.id = M.usuario_id ";
     }
@@ -183,43 +183,51 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
     {
         $resultado = new Resultado();
         
-        $consulta = "SELECT COUNT(*)
-                    FROM mensajes
-                    WHERE id NOT IN(SELECT mensaje_id FROM mensajes_leidos WHERE usuario_id = ?)
-                            AND (compartir_empresa_id is null OR compartir_empresa_id = ?)
-                        	AND (compartir_sede_id is null OR compartir_sede_id = ?)
+        
+        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+        $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+        if($resultado->correcto())
+        {
+            $empresasIds = implode(",", $resultado->valor);
+            
+            $consulta = "SELECT COUNT(*)
+                    FROM mensajes M
+                        INNER JOIN usuarios U ON U.id = M.usuario_id 
+                    WHERE M.id NOT IN(SELECT mensaje_id FROM mensajes_leidos ML WHERE ML.usuario_id = ?)
+                            AND ((U.tipo_usuario_id = 1 AND (compartir_empresa_id is null OR compartir_empresa_id = ?)) or (U.tipo_usuario_id != 1 AND U.empresa_id IN ($empresasIds)))
+             	            AND (compartir_sede_id is null OR compartir_sede_id = ?)
                             AND (compartir_departamento_id is null OR compartir_departamento_id = ?)
                             AND (compartir_usuario_id is null OR compartir_usuario_id = ? or usuario_id=?)";
-        
-        
-        $resultado->valor = 0;
-        
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if($sentencia->bind_param("iiiiii", $usuario->id,$usuario->empresaId,$usuario->sedeId,$usuario->departamentoId,$usuario->id,$usuario->id))
+            
+            
+            $resultado->valor = 0;
+            
+            if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->execute())
+                if($sentencia->bind_param("iiiiii", $usuario->id,$usuario->empresaId,$usuario->sedeId,$usuario->departamentoId,$usuario->id,$usuario->id))
                 {
-                    if($sentencia->bind_result($numeroMensajes))
+                    if($sentencia->execute())
                     {
-                        if($sentencia->fetch())
+                        if($sentencia->bind_result($numeroMensajes))
                         {
-                            $resultado->valor = $numeroMensajes;
+                            if($sentencia->fetch())
+                            {
+                                $resultado->valor = $numeroMensajes;
+                            }
                         }
-                      
+                        else
+                            $resultado->mensajeError = 'Falló el enlace del resultado.';
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = 'Falló el enlace de parámetros';
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
         }
-        else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
-            return $resultado;
+        return $resultado;
     }
     
 
@@ -227,45 +235,54 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
     {
         $resultado = new Resultado();
         $registros = array();
-        //$filtros = array();
-        $where= "WHERE (compartir_empresa_id is null OR compartir_empresa_id = ?)
-            	AND (compartir_sede_id is null OR compartir_sede_id = ?)
-                AND (compartir_departamento_id is null OR compartir_departamento_id = ?)
-                AND (compartir_usuario_id is null OR compartir_usuario_id = ? OR usuario_id= ?)"; 
-                    
-      
-        
-//         if($criteriosSeleccion!=null)
-//         {
-//             $where = $this->where($filtros);
-//         }
-        $consulta = $this->consultaBase . $where . ' ORDER BY fecha DESC';
-        if($sentencia = $this->conexion->prepare($consulta))
+//         $where= "WHERE (compartir_empresa_id is null OR compartir_empresa_id = ?)
+//             	AND (compartir_sede_id is null OR compartir_sede_id = ?)
+//                 AND (compartir_departamento_id is null OR compartir_departamento_id = ?)
+//                 AND (compartir_usuario_id is null OR compartir_usuario_id = ? OR usuario_id= ?)";
+
+        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+        $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+        if($resultado->correcto())
         {
-            if($sentencia->bind_param('iiiiii',$usuario->id,$usuario->empresaId,$usuario->sedeId,$usuario->departamentoId,$usuario->id,$usuario->id))
+            $empresasIds = implode(",", $resultado->valor);
+            
+            $where= "WHERE ((tipo_usuario_id = 1 AND (compartir_empresa_id is null OR compartir_empresa_id = ?)) or (tipo_usuario_id != 1 AND U.empresa_id IN ($empresasIds)))
+             	AND (compartir_sede_id is null OR compartir_sede_id = ?)
+                 AND (compartir_departamento_id is null OR compartir_departamento_id = ?)
+                 AND (compartir_usuario_id is null OR compartir_usuario_id = ? OR usuario_id= ?)";
+            
+            
+            $consulta = $this->consultaBase . $where . ' ORDER BY UNIX_TIMESTAMP(fecha) desc';
+            if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->execute())
+                if($sentencia->bind_param('iiiiii',$usuario->id,$usuario->empresaId,$usuario->sedeId,$usuario->departamentoId,$usuario->id,$usuario->id))
                 {
-                    if($sentencia->bind_result($id, $mensaje, $fecha,$usuarioId, $usuarioNombre, $usuarioApellido,$leido,$asunto))
+                    if($sentencia->execute())
                     {
-                        while($row = $sentencia->fetch())
+                        if($sentencia->bind_result($id, $mensaje, $fecha,$usuarioId, $usuarioNombre, $usuarioApellido,$leido,$asunto))
                         {
-                            $registro = $this->crearRegistro($id, $mensaje, $fecha,$usuarioId, $usuarioNombre, $usuarioApellido,$leido,$asunto);
-                            array_push($registros,$registro);
+                            while($row = $sentencia->fetch())
+                            {
+                                $registro = $this->crearRegistro($id, $mensaje, $fecha,$usuarioId, $usuarioNombre, $usuarioApellido,$leido,$asunto);
+                                array_push($registros,$registro);
+                            }
+                            $resultado->valor = $registros;
                         }
-                        $resultado->valor = $registros;
+                        else
+                            $resultado->mensajeError = 'Falló el enlace del resultado.';
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = 'Falló el enlace de parámetros';
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            
         }
-        else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+
+        
         return $resultado;
     }
 

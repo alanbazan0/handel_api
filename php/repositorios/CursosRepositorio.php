@@ -5,11 +5,13 @@ use php\interfaces\ICursosRepositorio;
 use php\modelos\Curso;
 use php\modelos\Resultado;
 use php\clases\AdministradorConexion;
+use php\clases\Token;
 
 include "../interfaces/ICursosRepositorio.php";
 include "../modelos/Curso.php";
 include "RepositorioBase.php";
 require_once("../clases/Resultado.php");
+require_once("../clases/Token.php");
 require_once('../clases/AdministradorConexion.php');
 
 class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
@@ -19,7 +21,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = " SELECT C.id, IFNULL(C.titulo,''), IFNULL(C.descripcion,''), IFNULL(DATE_FORMAT(C.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(C.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, IFNULL(C.publicado,0), U.id, U.nombre, U.apellido " .
+        $this->consultaBase = " SELECT C.id, IFNULL(C.titulo,''), IFNULL(C.descripcion,''), IFNULL(DATE_FORMAT(C.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(C.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, IFNULL(C.publicado,0), U.id, U.nombre, U.apellido, C.token " .
             " FROM cursos C
                 INNER JOIN usuarios U ON C.usuario_id = U.id ";
            
@@ -32,11 +34,12 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         if($resultado->mensajeError=="")
         {
             $modelo->id = $resultado->valor;
-            $consulta = "INSERT INTO cursos(id, titulo, descripcion, fecha_alta, fecha_modificacion, publicado, usuario_id) " .
-                "VALUE(?, ?, ?,  NOW(), NOW(), 0,?)";
+            $consulta = "INSERT INTO cursos(id, titulo, descripcion, fecha_alta, fecha_modificacion, publicado, usuario_id, token) " .
+                "VALUE(?, ?, ?,  NOW(), NOW(), 0, ?, ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if( $sentencia->bind_param("issi", $modelo->id, $modelo->titulo,$modelo->descripcion,$usuario->id))
+                $token = Token::crear();
+                if( $sentencia->bind_param("issis", $modelo->id, $modelo->titulo,$modelo->descripcion,$usuario->id, $token))
                 {
                     if($sentencia->execute())
                     {
@@ -210,42 +213,10 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function eliminarRespuestasSiPregunta($cursoId,$leccionId,$preguntaId)
+    private function eliminarRespuestasLeccion($cursoId,$leccionId)
     {
         $resultado = new Resultado();
-        $consulta ="DELETE FROM respuestas_si WHERE plantilla_id = ? AND seccion_id = ? AND pregunta_id = ?";
-        
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if($sentencia->bind_param("iii",$cursoId, $leccionId, $preguntaId))
-            {
-                if($sentencia->execute())
-                {
-                    $sentencia->close();
-                }
-                else
-                {
-                    $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = "Falló la ejecución eliminarRespuestasSi(" . $this->conexion->errno . ") " . $this->conexion->error;
-                }
-                
-            }
-            else
-                $resultado->mensajeError = "Falló el enlace de parámetros";
-        }
-        else
-        {
-            $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-            
-        }
-        return $resultado;
-    }
-    
-    private function eliminarRespuestasSiSeccion($cursoId,$leccionId)
-    {
-        $resultado = new Resultado();
-        $consulta ="DELETE FROM respuestas_si WHERE plantilla_id = ? AND seccion_id = ?";
+        $consulta ="DELETE FROM cursos_respuestas WHERE curso_id = ? AND leccion_id = ?";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -274,14 +245,14 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function eliminarRespuestasNoSeccion($cursoId,$leccionId)
+    private function eliminarRespuestasPregunta($cursoId,$leccionId,$preguntaId)
     {
         $resultado = new Resultado();
-        $consulta ="DELETE FROM respuestas_no WHERE plantilla_id = ? AND seccion_id = ?";
+        $consulta ="DELETE FROM cursos_respuestas WHERE curso_id = ? AND leccion_id = ? AND pregunta_id = ?";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("ii",$cursoId, $leccionId))
+            if($sentencia->bind_param("iii",$cursoId, $leccionId, $preguntaId))
             {
                 if($sentencia->execute())
                 {
@@ -306,196 +277,10 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function eliminarRespuestasNoPregunta($cursoId,$leccionId,$preguntaId)
-    {
-        $resultado = new Resultado();
-        $consulta ="DELETE FROM respuestas_no WHERE plantilla_id = ? AND seccion_id = ? AND pregunta_id = ?";
-        
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if($sentencia->bind_param("iii",$cursoId, $leccionId, $preguntaId))
-            {
-                if($sentencia->execute())
-                {
-                    $sentencia->close();
-                }
-                else
-                {
-                    $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = "Falló la ejecución eliminarRespuestasNoPregunta(" . $this->conexion->errno . ") " . $this->conexion->error;
-                }
-                
-            }
-            else
-                $resultado->mensajeError = "Falló el enlace de parámetros";
-        }
-        else
-        {
-            $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-            
-        }
-        return $resultado;
-    }
     
-    private function eliminarRespuestasNo($cursoId)
-    {
-        $resultado = new Resultado();
-        $consulta ="DELETE FROM respuestas_no WHERE plantilla_id = ?";
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if($sentencia->bind_param("i",$cursoId))
-            {
-                if($sentencia->execute())
-                {
-                    $sentencia->close();
-                }
-                else
-                {
-                    $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = "Falló la ejecución eliminarRespuestasNo(" . $this->conexion->errno . ") " . $this->conexion->error;
-                }
-                
-            }
-            else
-                $resultado->mensajeError = "Falló el enlace de parámetros";
-        }
-        else
-        {
-            $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-            
-        }
-        return $resultado;
-    }
     
-    private function eliminarRespuestasSiCategorias($cursoId)
-    {
-        $resultado = new Resultado();
-        $consulta ="DELETE FROM respuestas_si_categorias WHERE plantilla_id = ?";
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if($sentencia->bind_param("i",$cursoId))
-            {
-                if($sentencia->execute())
-                {
-                    $sentencia->close();
-                  
-                }
-                else
-                {
-                    $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = "Falló la ejecución eliminarRespuestasSiCategorias(" . $this->conexion->errno . ") " . $this->conexion->error;
-                }
-                
-            }
-            else
-                $resultado->mensajeError = "Falló el enlace de parámetros";
-        }
-        else
-        {
-            $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-            
-        }
-        return $resultado;
-    }
     
-    private function eliminarRespuestasSiCategoriasPregunta($cursoId, $leccionId, $preguntaId)
-    {
-        $resultado = new Resultado();
-        $consulta ="DELETE FROM respuestas_si_categorias WHERE plantilla_id = ? AND seccion_id = ? AND pregunta_id = ?";
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if($sentencia->bind_param("iii",$cursoId, $leccionId, $preguntaId))
-            {
-                if($sentencia->execute())
-                {
-                    $sentencia->close();
-                    
-                }
-                else
-                {
-                    $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = "Falló la ejecución eliminarRespuestasSiCategorias(" . $this->conexion->errno . ") " . $this->conexion->error;
-                }
-                
-            }
-            else
-                $resultado->mensajeError = "Falló el enlace de parámetros";
-        }
-        else
-        {
-            $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-            
-        }
-        return $resultado;
-    }
     
-    private function eliminarRespuestasNoCategoriasPregunta($cursoId, $leccionId, $preguntaId)
-    {
-        $resultado = new Resultado();
-        $consulta ="DELETE FROM respuestas_no_categorias WHERE plantilla_id = ? AND seccion_id = ? AND pregunta_id = ?";
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if($sentencia->bind_param("iii",$cursoId, $leccionId, $preguntaId))
-            {
-                if($sentencia->execute())
-                {
-                    $sentencia->close();
-                    
-                }
-                else
-                {
-                    $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = "Falló la ejecución eliminarRespuestasSiCategorias(" . $this->conexion->errno . ") " . $this->conexion->error;
-                }
-                
-            }
-            else
-                $resultado->mensajeError = "Falló el enlace de parámetros";
-        }
-        else
-        {
-            $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-            
-        }
-        return $resultado;
-    }
-    
-    private function eliminarPreguntasCategorias($cursoId)
-    {
-        $resultado = new Resultado();
-        $consulta ="DELETE FROM preguntas_categorias WHERE plantilla_id = ?";
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if($sentencia->bind_param("i",$cursoId))
-            {
-                if($sentencia->execute())
-                {
-                    $sentencia->close();
-                    
-                }
-                else
-                {
-                    $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = "Falló la ejecución eliminarPreguntasCategorias(" . $this->conexion->errno . ") " . $this->conexion->error;
-                }
-                
-            }
-            else
-                $resultado->mensajeError = "Falló el enlace de parámetros";
-        }
-        else
-        {
-            $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-            
-        }
-        return $resultado;
-    }
     
     private function eliminarPerfiles($cursoId)
     {
@@ -529,35 +314,16 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    private function eliminarRespuestasNoCategorias($cursoId)
-    {
-        $resultado = new Resultado();
-        $consulta ="DELETE FROM respuestas_no_categorias WHERE plantilla_id = ?";
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if($sentencia->bind_param("i",$cursoId))
-            {
-                if($sentencia->execute())
-                {
-                    $sentencia->close();
-                }
-                else
-                {
-                    $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = "Falló la ejecución eliminarRespuestasNoCategorias(" . $this->conexion->errno . ") " . $this->conexion->error;
-                }
-            }
-            else
-                $resultado->mensajeError = "Falló el enlace de parámetros";
-        }
-        else
-        {
-            $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-            
-        }
-        return $resultado;
-    }
+//     private function token()
+//     {
+//         if (function_exists('com_create_token') === true)
+//         {
+//             return trim(com_create_token(), '{}');
+//         }
+        
+//         return sprintf('%04X%04X-%04X-%04X-%04X-%04X%04X%04X', mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535));
+//     }
+    
     
     private function eliminarPreguntas($cursoId)
     {
@@ -594,37 +360,32 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     {
         $resultado = new Resultado();
         
-        $resultado = $this->eliminarRespuestasSiSeccion($cursoId,$leccionId);
+        $resultado = $this->eliminarRespuestasLeccion($cursoId,$leccionId);
         if($resultado->correcto())
         {
-            $resultado = $this->eliminarRespuestasNoSeccion($cursoId,$leccionId);
-            if($resultado->correcto())
+            $consulta ="DELETE FROM cursos_preguntas WHERE curso_id = ? and leccion_id = ?";
+            if($sentencia = $this->conexion->prepare($consulta))
             {
-                $consulta ="DELETE FROM cursos_preguntas WHERE curso_id = ? and leccion_id = ?";
-                if($sentencia = $this->conexion->prepare($consulta))
+                if($sentencia->bind_param("ii",$cursoId,$leccionId))
                 {
-                    if($sentencia->bind_param("ii",$cursoId,$leccionId))
+                    if($sentencia->execute())
                     {
-                        if($sentencia->execute())
-                        {
-                            $sentencia->close();
-                        }
-                        else
-                        {
-                            $resultado->codigoError = $this->conexion->errno;
-                            $resultado->mensajeError = __FUNCTION__ ." Falló la ejecución eliminarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
-                        }
-                        
+                        $sentencia->close();
                     }
                     else
-                        $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+                    {
+                        $resultado->codigoError = $this->conexion->errno;
+                        $resultado->mensajeError = __FUNCTION__ ." Falló la ejecución eliminarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
+                    }
                 }
                 else
-                {
-                    $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-                    
-                }
+                    $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+            }
+            else
+            {
+                $resultado->codigoError = $this->conexion->errno;
+                $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                
             }
         }
         
@@ -1466,91 +1227,6 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    public function insertarDatosPlantilla($modelo)
-    {
-        $resultado = $this->eliminarRespuestasNoCategorias($modelo->id);
-        if($resultado->mensajeError=="")
-        {
-            $resultado = $this->eliminarRespuestasNo($modelo->id);
-            if($resultado->mensajeError=="")
-            {
-                $resultado = $this->eliminarRespuestasSiCategorias($modelo->id);
-                if($resultado->mensajeError=="")
-                {
-                    $resultado = $this->eliminarRespuestas($modelo->id);
-                    if($resultado->mensajeError=="")
-                    {
-                        $resultado = $this->eliminarPreguntasCategorias($modelo->id);
-                        if($resultado->mensajeError=="")
-                        {
-                            $resultado = $this->eliminarPreguntas($modelo->id);
-                            if($resultado->mensajeError=="")
-                            {
-                                $resultado = $this->eliminarLecciones($modelo->id);
-                                if($resultado->mensajeError=="")
-                                {
-                                    $resultado =  $this->insertarSecciones($modelo->id,$modelo->secciones);
-                                    if($resultado->mensajeError=="")
-                                    {
-                                        $resultado =  $this->insertarPreguntas($modelo->id,$modelo->secciones);
-                                        if($resultado->mensajeError=="")
-                                        {
-                                            $resultado =  $this->insertarPreguntasCategorias($modelo->id,$modelo->secciones);
-                                            if($resultado->mensajeError=="")
-                                            {
-                                                $resultado =  $this->insertarRespuestasSi($modelo->id,$modelo->secciones);
-                                                if($resultado->mensajeError=="")
-                                                {
-                                                    $resultado =  $this->insertarRespuestasSiCategorias($modelo->id,$modelo->secciones);
-                                                    if($resultado->mensajeError=="")
-                                                    {
-                                                        $resultado =  $this->insertarRespuestasNo($modelo->id,$modelo->secciones);
-                                                        if($resultado->mensajeError=="")
-                                                        {
-                                                            $resultado =  $this->insertarRespuestasNoCategorias($modelo->id,$modelo->secciones);
-                                                            if($resultado->mensajeError=="")
-                                                                $this->conexion->commit();
-                                                                else
-                                                                    $this->conexion->rollback();
-                                                        }
-                                                       
-                                                    }
-                                                }
-                                                else
-                                                    $this->conexion->rollback();
-                                            }
-                                            else
-                                                $this->conexion->rollback();
-                                        }
-                                        else
-                                            $this->conexion->rollback();
-                                    }
-                                    else
-                                        $this->conexion->rollback();
-                                }
-                                else
-                                    $this->conexion->rollback();
-                            }
-                            else
-                                $this->conexion->rollback();
-                        }
-                        else
-                            $this->conexion->rollback();
-                    }
-                    else
-                        $this->conexion->rollback();
-                }
-                else
-                    $this->conexion->rollback();
-            }
-            else
-                $this->conexion->rollback();
-        }
-        else
-            $this->conexion->rollback();
-       return $resultado;
-    }
-    
     public function consultar($criteriosSeleccion)
     {
         $resultado = new Resultado();
@@ -1579,11 +1255,11 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido))
+                    if ($sentencia->bind_result($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido, $token))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido);
+                            $registro = $this->crearRegistro($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido,$token);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -1615,11 +1291,11 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido))
+                    if ($sentencia->bind_result($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido,$token))
                     {
                         if($sentencia->fetch())
                         {
-                            $curso = $this->crearRegistro($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido);
+                            $curso = $this->crearRegistro($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido, $token);
                             
                             $resultado->valor = $curso;
                             
@@ -1657,6 +1333,62 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         
        return $resultado;
     }
+    
+    public function consultarPorToken($token)
+    {
+        $resultado = new Resultado();
+        ini_set('max_execution_time', 300);
+        $consulta = $this->consultaBase .
+        " WHERE C.token  = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("s",$token))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido,$token))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $curso = $this->crearRegistro($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido, $token);
+                            
+                            $resultado->valor = $curso;
+                            
+                            $sentencia->close();
+                            
+                            $resultadoSecciones = $this->consultarLecciones($curso->id);
+                            if($resultadoSecciones->mensajeError=="")
+                            {
+                                $curso->lecciones = $resultadoSecciones->valor;
+                                $resultadoPerfiles = $this->consultarPerfiles($curso->id);
+                                if($resultadoPerfiles->correcto())
+                                {
+                                    $curso->perfiles = $resultadoPerfiles->valor;
+                                }
+                                else
+                                    $resultado->mensajeError = $resultadoPerfiles->mensajeError;
+                            }
+                            else
+                                $resultado->mensajeError = $resultadoSecciones->mensajeError;
+                        }
+                        else
+                            $resultado->mensajeError = "No se encontró ningún resultado.";
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
     
  
     private function consultarPreguntas($cursoId,$leccionId)
@@ -2019,7 +1751,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             return $resultado;
     }
     
-    private function crearRegistro($id, $titulo, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido)
+    private function crearRegistro($id, $titulo, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido,$token)
     {
 
         $archivoIcono = '../../php/portadas_cursos/curso'.$id.'.png';
@@ -2037,7 +1769,8 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             'publicado' => $publicado,
             'usuarioId' => $usuarioId,
             'usuarioNombre' => $usuarioNombre,
-            'usuarioApellido' => $usuarioApellido
+            'usuarioApellido' => $usuarioApellido,
+            'token'=> $token
         ];
         
         $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
@@ -2057,31 +1790,41 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     public function eliminarPregunta($llaves)
     {
         $resultado = new Resultado();
-        $consulta ="DELETE FROM cursos_preguntas WHERE curso_id = ? AND leccion_id = ? AND id = ?";
-        if($sentencia = $this->conexion->prepare($consulta))
+        $this->conexion->autocommit(FALSE);
+        
+        $resultado = $this->eliminarRespuestasPregunta($llaves->cursoId, $llaves->leccionId, $llaves->preguntaId);
+        if($resultado->correcto())
         {
-            if($sentencia->bind_param("iii",$llaves->cursoId,$llaves->leccionId,$llaves->preguntaId))
+            $consulta ="DELETE FROM cursos_preguntas WHERE curso_id = ? AND leccion_id = ? AND id = ?";
+            if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->execute())
+                if($sentencia->bind_param("iii",$llaves->cursoId,$llaves->leccionId,$llaves->preguntaId))
                 {
-                    $sentencia->close();
+                    if($sentencia->execute())
+                    {
+                        $sentencia->close();
+                    }
+                    else
+                    {
+                        $resultado->codigoError = $this->conexion->errno;
+                        $resultado->mensajeError = __FUNCTION__." Falló la ejecución eliminarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
+                    }
+                    
                 }
                 else
-                {
-                    $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución eliminarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
-                }
-                
+                    $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
             }
             else
-                $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+            {
+                $resultado->codigoError = $this->conexion->errno;
+                $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                
+            }
         }
+        if($resultado->correcto())
+            $this->conexion->commit();
         else
-        {
-            $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-            
-        }
+            $this->conexion->rollback();
         return $resultado;
     }
     
@@ -2217,170 +1960,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             $this->conexion->rollback();
         return $resultado;
     }
-    
-    public function guardarRespuestasSi($cursoId, $leccionId, $preguntaId, $respuestas)
-    {
-        ini_set('max_execution_time', 300);
-        $resultado = new Resultado();
-        $this->conexion->autocommit(FALSE);
-        
-        //echo $cursoId."-".$leccionId."-".$preguntaId;
-        
-        $resultado = $this->eliminarRespuestasSiCategoriasPregunta($cursoId,$leccionId,$preguntaId);
-        if($resultado->mensajeError=="")
-        {
-            $resultado = $this->eliminarRespuestasSiPregunta($cursoId,$leccionId,$preguntaId);
-            if($resultado->mensajeError=="")
-            {
-                $resultado =  $this->insertarRespuestasSiPregunta($cursoId,$leccionId,$preguntaId,$respuestas);
-                if($resultado->mensajeError=="")
-                {
-                    $resultado =  $this->insertarRespuestasSiCategoriasPregunta($cursoId,$leccionId,$preguntaId,$respuestas);
-                    if($resultado->mensajeError=="")
-                    {
-                       $this->conexion->commit();
-                    }
-                }
-                else
-                    $this->conexion->rollback();
-            }
-            else
-                $this->conexion->rollback();
-        }
-        else
-            $this->conexion->rollback();
-       
-        return $resultado;
-    }
-    
-    private function insertarRespuestasSiPregunta($cursoId,$leccionId, $preguntaId,$respuestas)
-    {
-        $resultado = new Resultado();
-       
-     
-                
-        for ($k = 0; $k< count($respuestas); $k++)
-        {
-            $respuesta = $respuestas[$k];
-            
-            $consulta = "INSERT INTO respuestas_si(plantilla_id, seccion_id, pregunta_id, id, texto, peso, hallazgo, recomendacion) " .
-                "VALUE(?, ?, ?, ?, ?, ?, ?, ?)";
-            if($sentencia = $this->conexion->prepare($consulta))
-            {
-                if($sentencia->bind_param("iiiisiss",$cursoId,$leccionId, $preguntaId,$respuesta->id, $respuesta->texto,$respuesta->peso,$respuesta->hallazgo,$respuesta->recomendacion))
-                {
-                    if($sentencia->execute())
-                    {
-                        $sentencia->close();
-                    }
-                    else
-                    {
-                        $resultado->codigoError = $this->conexion->errno;
-                        $resultado->mensajeError = "Falló la ejecución insertarRespuestasSiPregunta(" . $this->conexion->errno . ") " . $this->conexion->error;
-                        break;
-                    }
-                    
-                }
-                else
-                {
-                    $resultado->mensajeError = "Falló el enlace de parámetros";
-                    break;
-                }
-            }
-            else
-            {
-                $resultado->codigoError = $this->conexion->errno;
-                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-                break;
-            }
-        }
-            
-            
-        
-        return $resultado;
-    }
-    
-    private function insertarRespuestasNoPregunta($cursoId,$leccionId, $preguntaId,$respuestas)
-    {
-        $resultado = new Resultado();
-        
-        
-        
-        for ($k = 0; $k< count($respuestas); $k++)
-        {
-            $respuesta = $respuestas[$k];
-            
-            $consulta = "INSERT INTO respuestas_no(plantilla_id, seccion_id, pregunta_id, id, texto, peso, hallazgo, recomendacion) " .
-                "VALUE(?, ?, ?, ?, ?, ?, ?, ?)";
-            if($sentencia = $this->conexion->prepare($consulta))
-            {
-                if($sentencia->bind_param("iiiisiss",$cursoId,$leccionId, $preguntaId,$respuesta->id, $respuesta->texto,$respuesta->peso,$respuesta->hallazgo,$respuesta->recomendacion))
-                {
-                    if($sentencia->execute())
-                    {
-                        $sentencia->close();
-                    }
-                    else
-                    {
-                        $resultado->codigoError = $this->conexion->errno;
-                        $resultado->mensajeError = "Falló la ejecución insertarRespuestasSiPregunta(" . $this->conexion->errno . ") " . $this->conexion->error;
-                        break;
-                    }
-                    
-                }
-                else
-                {
-                    $resultado->mensajeError = "Falló el enlace de parámetros";
-                    break;
-                }
-            }
-            else
-            {
-                $resultado->codigoError = $this->conexion->errno;
-                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-                break;
-            }
-        }
-        
-        
-        
-        return $resultado;
-    }
-    
-    public function guardarRespuestasNo($cursoId, $leccionId, $preguntaId, $respuestas)
-    {
-        ini_set('max_execution_time', 300);
-        $resultado = new Resultado();
-        $this->conexion->autocommit(FALSE);
-        
-        //echo $cursoId."-".$leccionId."-".$preguntaId;
-        
-        $resultado = $this->eliminarRespuestasNoCategoriasPregunta($cursoId,$leccionId,$preguntaId);
-        if($resultado->mensajeError=="")
-        {
-            $resultado = $this->eliminarRespuestasNoPregunta($cursoId,$leccionId,$preguntaId);
-            if($resultado->mensajeError=="")
-            {
-                $resultado =  $this->insertarRespuestasNoPregunta($cursoId,$leccionId,$preguntaId,$respuestas);
-                if($resultado->mensajeError=="")
-                {
-                    $resultado =  $this->insertarRespuestasNoCategoriasPregunta($cursoId,$leccionId,$preguntaId,$respuestas);
-                    if($resultado->mensajeError=="")
-                    {
-                        $this->conexion->commit();
-                    }
-                }
-                else
-                    $this->conexion->rollback();
-            }
-            else
-                $this->conexion->rollback();
-        }
-        else
-            $this->conexion->rollback();
-            
-            return $resultado;
-    }
+ 
     
     public function ordenarPreguntas($cursoId, $leccionId, $seleccion)
     {
