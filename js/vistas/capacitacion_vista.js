@@ -24,9 +24,14 @@ class CapacitacionVista extends CatalogoVista
 	{	
 		var _this = this;
 		this.actualizarSesion();	
-		
+		$("#tituloH").click(function()
+		{
+			_this.salirFormulario();
+		});
 		this.consultarCursoId();
 		//super.inicializar();
+		
+		
 	
 	}
 	
@@ -448,10 +453,10 @@ class CapacitacionVista extends CatalogoVista
 	
 	salirFormulario()
 	{
-		$('#principalDiv').show()	
-		$('#formularioDiv').hide();
-		$('#contenidoFormularioDiv').hide();
-		this.consultar();
+		var submitForm = getNewSubmitForm("capacitaciones.php");
+		submitForm.method = "get"
+		submitForm.target= "_self";
+		submitForm.submit();	
 	}
 	
 	salirFormularioAlta()
@@ -656,7 +661,13 @@ class CapacitacionVista extends CatalogoVista
 		
 		$("#tarjetas").off("click", "button.editar", this.editarCapacitacion);	
 		$("#tarjetas").on("click", "button.editar", this, this.editarCapacitacion);	
+		
+	
+		
+
+		
 	}
+	
 	
 	editarCapacitacion(e)
 	{
@@ -863,22 +874,26 @@ class CapacitacionVista extends CatalogoVista
 		
 		//$('#video source').attr('src', leccion.video);
 		
-		if(this._player!=null)
-			this._player.stop();
-		
+//		if(this._player!=null)
+//			this._player.stop();
+		 
 		var options = {};
 		
+		var _this = this;
 		this._player = videojs('video', options, function onPlayerReady() {
 			  videojs.log('Your player is ready!');
 			 
 			  // In this context, `this` is the player that was created by Video.js.
-			  this.play();
+			  _this.vsgLoadVideo(this,leccion.video);
+			 // this.play();
 			 
 			  // How about an event listener?
 			  this.on('ended', function() {
 			    videojs.log('Awww...over so soon?!');
 			  });
 			});
+		
+		
 		
 		this.listaPreguntas.categorias = this._categorias;
 		if(leccion!=null)
@@ -889,6 +904,55 @@ class CapacitacionVista extends CatalogoVista
 		this._leccionIdSeleccionada = leccion.id;
 		this._leccionSeleccionada = leccion;
 	}
+	
+	ytVidId(url) {
+		  //var p = /^(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?(?=.*v=((\w|-){11}))(?:\S+)?$/;
+		  var p = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+		  return (url.match(p)) ? RegExp.$1 : false;
+		}
+
+		/**/
+	getId(url) {
+		  var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+		  var match = url.match(regExp);
+
+		  if (match && match[2].length == 11) {
+		    return match[2];
+		  } else {
+		    return 'error';
+		  }
+		}
+	
+	vsgLoadVideo(vgsPlayer,vidURL, poster) {
+
+		  if (this.ytVidId(vidURL) !== false) {
+		    ext = "youtube"
+		    console.log('Youtube');
+
+		    // alert(getId(vidURL)) // Youtube video ID
+		    //var yvID = getId(vidURL);
+		    //vidURL = "https://www.youtube.com/watch?v="+yvID;
+
+		  } else {
+
+		    //$("#vid1 iframe, #vid1 .vjs-iframe-blocker").remove();
+
+		    if (!ext) ext = "mp4";
+		    var ext = vidURL.split('.').pop();
+		  }
+
+		  console.log(ext);
+
+		  vgsPlayer.src({
+		    //"techOrder": ['youtube'],
+		    "type": "video/" + ext,
+		    "src": vidURL
+				//"youtube": { "iv_load_policy": 3 }
+		  });
+		  if (poster) vgsPlayer.poster(poster);
+		  //vgsPlayer.play();
+
+		}
 	
 	get leccionIdSeleccionada()
 	{

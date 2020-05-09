@@ -56,7 +56,7 @@ class CapacitacionesVista extends CatalogoVista
             	
             			<div class="btn-group pull-right">
                    
-                   <button type="button" data-id="15" data-titulo="Nueva capacitacion" class="ejecutar btn btn-box-tool"><i class="fa fa-play text-green"></i></button>
+                   <button type="button" data-token="{{token}}" data-titulo="Nueva capacitacion" class="ejecutar btn btn-box-tool"><i class="fa fa-play text-green"></i></button>
                 </div>
             	</div>
             	
@@ -501,13 +501,13 @@ class CapacitacionesVista extends CatalogoVista
 //				
 //	}
 //	
-	ejecutar()
-	{
-		var submitForm = getNewSubmitForm("auditoria.php","post");
-		createNewFormElement(submitForm, "cursoId", this._llaves.id);
-		submitForm.target= "auditoria" + Math.floor(Math.random()*10000);
-		submitForm.submit();
-	}
+//	ejecutar()
+//	{
+//		var submitForm = getNewSubmitForm("auditoria.php","get");
+//		createNewFormElement(submitForm, "cursoId", this._llaves.id);
+//		submitForm.target= "auditoria" + Math.floor(Math.random()*10000);
+//		submitForm.submit();
+//	}
 	
 	
 	set perfiles(perfiles)
@@ -674,6 +674,25 @@ class CapacitacionesVista extends CatalogoVista
 		
 		$("#tarjetas").off("click", "button.editar", this.editarCapacitacion);	
 		$("#tarjetas").on("click", "button.editar", this, this.editarCapacitacion);	
+		
+		$("#tarjetas").off("click", "button.ejecutar", this.ejecutarCapacitacion);	
+		$("#tarjetas").on("click", "button.ejecutar", this, this.ejecutarCapacitacion);	
+	}
+	
+	ejecutarCapacitacion(e)
+	{
+		var current = e.currentTarget;
+		var token =$(current).attr("data-token");
+		e.data.ejecutar(token);
+	}
+	
+	ejecutar(token)
+	{
+		var submitForm = getNewSubmitForm("capacitacion.php");
+		createNewFormElement(submitForm, "token", token);
+		submitForm.method = "get"
+		submitForm.target= "_self";
+		submitForm.submit();
 	}
 	
 	editarCapacitacion(e)

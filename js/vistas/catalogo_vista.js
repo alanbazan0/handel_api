@@ -120,6 +120,7 @@ class CatalogoVista extends Vista
 				_this.eliminar();
 			}
 		});
+		
 	}
 	
 	copiarPropiedadesObjeto(objeto, propiedades)
