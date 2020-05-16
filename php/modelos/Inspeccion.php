@@ -46,5 +46,6 @@ class Inspeccion
     public $fotos;
     public $tieneImpresoSello;
     public $cajaLibreObjetosOrganicos;
+    public $factura;
 }
 
