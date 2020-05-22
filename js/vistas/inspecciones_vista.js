@@ -54,7 +54,15 @@ class InspeccionesVista extends CatalogoVista
 			{longitud:250, 	titulo:"Fecha de inspección",   alias:"fechaInspeccion", alineacion:"I" }
 		]
 		
-		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Reporte'  type='button' class='imprimir btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active' style='background-color:#d62929'><span  data-toggle='tooltip' class='fa fa-file-pdf-o fa-lg'></span></button>";
+		var contenido = "";
+		
+		contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Reporte'  type='button' class='imprimir btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active' style='background-color:#d62929'><span  data-toggle='tooltip' class='fa fa-file-pdf-o fa-lg'></span></button>";
+		
+		
+		if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
+			contenido +="<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+
+		this.tabla.contenidoAdicional = contenido;
 
 		this.tabla.registros = [];
 	}
@@ -437,6 +445,34 @@ class InspeccionesVista extends CatalogoVista
 			}
 		});
 		$('[data-toggle="tooltip"]').tooltip();
+	}
+	
+	eliminar(texto)
+	{ 
+		if(texto==undefined)
+			texto ="Se eliminar\u00e1 esta inspección";
+		var _this = this;
+		swal({
+	            title: "\u00bfEst\u00E1 seguro de eliminar?",
+	            text: texto,
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Si, eliminar!!",
+	            cancelButtonText: "No",
+	            closeOnConfirm: false,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	 setTimeout(function(){
+	            		 _this.presentador.eliminar();
+	 	            }, 1000);
+	            }
+	        });
 	}
 
 	

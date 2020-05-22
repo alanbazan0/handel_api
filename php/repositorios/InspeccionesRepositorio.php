@@ -136,6 +136,38 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
         return $resultado;
     }
     
+    private function eliminarArchivos($inspeccionId)
+    {
+        $carpeta = "../fotos_inspecciones/";
+        $directorio=opendir($carpeta);
+        $archivos=array();
+        while ($archivo = readdir($directorio)) {
+            if(($archivo != '.')&&($archivo != '..')){
+                $archivos[]=$archivo;
+            }
+        }
+        closedir($directorio);
+        for($i=0;$i<count($archivos);$i++)
+        {
+            $archivo = $archivos[$i];
+            $elementos = explode('_',$archivo,0);
+            
+            if(count($elementos)>0)
+            {
+                $id = $elementos[0];
+                if($id==$inspeccionId)
+                {
+                    $path = $carpeta . $archivo;
+                    if(file_exists($path))
+                        unlink($path);
+                }
+            }
+            
+        }
+        
+
+    }
+    
     private function insertarPuntosInspeccion($inspeccion)
     {
         $resultado = new Resultado();
@@ -406,32 +438,76 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
 
     public function eliminar($llaves)
     {
+        $this->conexion->autocommit(FALSE);
         $resultado = new Resultado();
-        $consulta = " DELETE FROM inspecciones "
-            . "  WHERE id  = ? ";
-            if($sentencia = $this->conexion->prepare($consulta))
-            {
-                if($sentencia->bind_param("i",$llaves->id))
+        
+        $resultado = $this->eliminarPuntos($llaves->id);
+        if($resultado->correcto())
+        {
+            $consulta = " DELETE FROM inspecciones "
+                . "  WHERE id  = ? ";
+                if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    if($sentencia->execute())
+                    if($sentencia->bind_param("i",$llaves->id))
                     {
-                        $resultado->valor = $llaves->id;
+                        if($sentencia->execute())
+                        {
+                            $resultado->valor = $llaves->id;
+                            $this->eliminarArchivos($llaves->id);
+                        }
+                        else
+                        {
+                            $resultado->codigoError = $this->conexion->errno;
+                            $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                        }
                     }
                     else
-                    {
-                        $resultado->codigoError = $this->conexion->errno;
-                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
-                    }
+                        $resultado->mensajeError = "Falló el enlace de parámetros";
                 }
                 else
-                    $resultado->mensajeError = "Falló el enlace de parámetros";
+                {
+                    $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    $resultado->codigoError = $this->conexion->errno;
+                }
+        }
+        
+        
+        if($resultado->correcto())
+            $this->conexion->commit();
+        else
+            $this->conexion->rollback();
+        return $resultado;
+    }
+    
+    private function eliminarPuntos($inspeccionId)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM inspecciones_puntos WHERE inspeccion_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$inspeccionId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                    
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__ ." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
             }
             else
-            {
-                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-                $resultado->codigoError = $this->conexion->errno;
-            }
-                
+                $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
         return $resultado;
     }
     

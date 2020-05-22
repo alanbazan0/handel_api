@@ -115,6 +115,8 @@ class CapacitacionesVista extends CatalogoVista
 			_this.salirFormulario();
 		});
 		
+		$("#perfilesSelect").chosen();
+		
 	
 	}
 	
@@ -525,8 +527,10 @@ class CapacitacionesVista extends CatalogoVista
 			});
 		}
 		
+		
 		$("#perfilesSelect").val(perfilesSeleccionados);
-		$("#perfilesSelect").chosen();
+		 $('#perfilesSelect').trigger("chosen:updated");
+		 //$("#perfilesSelect").chosen();
 		$(".chosen-search-input").height(50);
 		$(".chosen-search-input").val("");
 		
