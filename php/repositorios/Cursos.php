@@ -79,6 +79,30 @@ try
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 $resultado = $repositorio->consultar($criteriosSeleccion);               
             break;
+            case 'consultarCursosContestando':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarCursosContestando($usuario,$criteriosSeleccion);
+            break;
+            case 'consultarCursosPendientes':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarCursosPendientes($usuario,$criteriosSeleccion);
+            break;
+            case 'consultarCursosTerminados':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarCursosTerminados($usuario,$criteriosSeleccion);
+            break;
             case 'ordenarPreguntas':
                 $cursoId = REQUEST('cursoId');
                 $leccionId = REQUEST('leccionId');

@@ -12,6 +12,9 @@ class CapacitacionesUsuarioPresentador extends CatalogoPresentador
 		 repositorio.guardarRespuestasSi(this,this.guardarRespuestasSiResultado,this.vista.cursoId,this.vista.leccionIdSeleccionada,this.vista.preguntaIdSeleccionada,this.vista.respuestas);
 	 }
 	 
+	 
+	
+	 
 	 guardarRespuestasSiResultado(resultado)
 	 {
 		this.vista.ocultarIndicador();	
@@ -451,5 +454,55 @@ class CapacitacionesUsuarioPresentador extends CatalogoPresentador
 				 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar la capacitación. " + resultado.mensajeError);
 		 }
 	 }
+	 
+	 consultar()
+	 {
+		 this.consultarCursosContestando();
+		 this.consultarCursosPendientes();
+		 this.consultarCursosTerminados();
+	 }
+	 
+	 consultarCursosContestando()
+	 {
+		 this.vista.mostrarIndicador();
+		 this._repositorio.consultarCursosContestando(this, function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.cursosContestando = resultado.valor;
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				
+		 },this.vista.criteriosSeleccion);
+	 }
+	 
+	 consultarCursosPendientes()
+	 {
+		 this.vista.mostrarIndicador();
+		 this._repositorio.consultarCursosPendientes(this, function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.cursosPendientes = resultado.valor;
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+					
+		 },this.vista.criteriosSeleccion);
+	 }
+	 
+	 consultarCursosTerminados()
+	 {
+		 this.vista.mostrarIndicador();
+		 this._repositorio.consultarCursosTerminados(this, function(resultado)
+		 {
+				this.vista.ocultarIndicador();	
+				if(resultado.mensajeError=="")
+					this.vista.cursosTerminados = resultado.valor;
+				else
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+					
+		 },this.vista.criteriosSeleccion);
+	 }
+	 
 	 
 }

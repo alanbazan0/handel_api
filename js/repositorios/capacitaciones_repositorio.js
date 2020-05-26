@@ -562,4 +562,79 @@ class CapacitacionesRepositorio extends Repositorio
        });
 	}
 	
+	consultarCursosPendientes(contexto,funcion, criteriosSeleccion, opcional)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+            url: url,
+            type: 'POST',
+            data: {accion : "consultarCursosPendientes", criteriosSeleccion: JSON.stringify(criteriosSeleccion), opcional: opcional},
+            success: function( data, textStatus, jQxhr )
+            {
+                funcion.call(contexto,data);
+            },
+            error: function( jqXhr, textStatus, errorThrown )
+            {
+            	if(textStatus=="parsererror")
+        	   		funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+           		else
+           			funcion.call(contexto,{ mensajeError : textStatus});
+            },
+            fail: function( jqXhr, textStatus, errorThrown )
+            {
+           	 funcion.call(contexto,{ mensajeError : textStatus});
+            }
+        });
+	}
+	
+	consultarCursosContestando(contexto,funcion, criteriosSeleccion, opcional)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+            url: url,
+            type: 'POST',
+            data: {accion : "consultarCursosContestando", criteriosSeleccion: JSON.stringify(criteriosSeleccion), opcional: opcional},
+            success: function( data, textStatus, jQxhr )
+            {
+                funcion.call(contexto,data);
+            },
+            error: function( jqXhr, textStatus, errorThrown )
+            {
+            	if(textStatus=="parsererror")
+        	   		funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+           		else
+           			funcion.call(contexto,{ mensajeError : textStatus});
+            },
+            fail: function( jqXhr, textStatus, errorThrown )
+            {
+           	 funcion.call(contexto,{ mensajeError : textStatus});
+            }
+        });
+	}
+	
+	consultarCursosTerminados(contexto,funcion, criteriosSeleccion, opcional)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+            url: url,
+            type: 'POST',
+            data: {accion : "consultarCursosTerminados", criteriosSeleccion: JSON.stringify(criteriosSeleccion), opcional: opcional},
+            success: function( data, textStatus, jQxhr )
+            {
+                funcion.call(contexto,data);
+            },
+            error: function( jqXhr, textStatus, errorThrown )
+            {
+            	if(textStatus=="parsererror")
+        	   		funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+           		else
+           			funcion.call(contexto,{ mensajeError : textStatus});
+            },
+            fail: function( jqXhr, textStatus, errorThrown )
+            {
+           	 funcion.call(contexto,{ mensajeError : textStatus});
+            }
+        });
+	}
+	
 }

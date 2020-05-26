@@ -694,6 +694,7 @@ class CapacitacionesVista extends CatalogoVista
 	{
 		var submitForm = getNewSubmitForm("capacitacion.php");
 		createNewFormElement(submitForm, "token", token);
+		createNewFormElement(submitForm, "pnt", "capacitaciones.php");
 		submitForm.method = "get"
 		submitForm.target= "_self";
 		submitForm.submit();

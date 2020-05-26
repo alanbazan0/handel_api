@@ -297,12 +297,16 @@ try
                     }
                     
                 }
-                else 
+                else
+                {
                     unset($_SESSION['usuario']);
+                    
+                }
             break;
             case "cerrarSesion":
                 session_start();
                 unset($_SESSION['usuario']);
+                unset($_SESSION['url']);
             break;
             case "consultarSesion":
                 session_start();

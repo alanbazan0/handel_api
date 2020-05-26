@@ -20,15 +20,19 @@ class CapacitacionesUsuarioVista extends CatalogoVista
 		this.velocidadAnimacion = 400;
 	}
 	
+
+	
 	inicializar()
 	{	
 		var _this = this;
 		super.inicializar();
 		
-		this._tarjetas = new Tarjetas("tarjetas");
+		this._cursosPendientes = new Tarjetas("cursosPendientes");
+		this._cursosContestando = new Tarjetas("cursosContestando");
+		this._cursosTerminados = new Tarjetas("cursosTerminados");
 
 		
-//		this._tarjetas.plantillaHtml =  `<div id='capacitacion{{id}}' class='col-xs-12 col-sm-12 col-md-6 col-lg-3 ' data-token="{{token}}">
+//		this._cursosPendientes.plantillaHtml =  `<div id='capacitacion{{id}}' class='col-xs-12 col-sm-12 col-md-6 col-lg-3 ' data-token="{{token}}">
 //		<div class="box box-solid"  stylee='height:150px' >
 //            <!-- /.box-header -->
 //            <div class="box-body">
@@ -57,7 +61,7 @@ class CapacitacionesUsuarioVista extends CatalogoVista
 //           </div>
 //         `;
 		
-		this._tarjetas.plantillaHtml =  `<div id='capacitacion{{id}}' class='test col-xs-12 col-sm-12 col-md-6 col-lg-3' data-token="{{token}}" style='cursor:pointer' data-toggle='tooltip' data-placement='bottom' title='' data-original-title='{{descripcion}}'  >
+		var plantilla =  `<div id='capacitacion{{id}}' class='tarjeta col-xs-12 col-sm-12 col-md-6 col-lg-3' data-token="{{token}}" data-tokenEjecucion="{{tokenEjecucion}}" style='cursor:pointer' data-toggle='tooltip' data-placement='bottom' title='' data-original-title='{{descripcion}}'  >
 			<div class='box box-solid'>
             <div class='box-header'>
               <!-- tools box -->
@@ -94,6 +98,9 @@ class CapacitacionesUsuarioVista extends CatalogoVista
 	           </div>
 	         `;
 	
+		this._cursosContestando.plantillaHtml = plantilla;
+		this._cursosPendientes.plantillaHtml = plantilla;
+		this._cursosTerminados.plantillaHtml = plantilla;
 
 		this.crearFecha();
 		
@@ -660,22 +667,16 @@ class CapacitacionesUsuarioVista extends CatalogoVista
 		 return modelo;
 	 }
 	
-	set datos(datos)
+	set cursosPendientes(datos)
 	{
-		this._tarjetas.registros = datos;
+		this._cursosPendientes.registros = datos;
 		$('.dropdown-toggle').dropdown();
-		
-//		new Dotdotdot( document.querySelector( '.descripcion' ), {
-//
-//		});
 		
 		var elementList = document.querySelectorAll('.descripcion' );
 		for (var i = 0; i < elementList.length; i++) 
 			new Dotdotdot( elementList[i], {});
-
 		
-		
-		this.inicializarEventos();
+		this.inicializarEventosPendientes();
 		
 		$('[data-toggle="tooltip"]').tooltip({
 		    trigger : 'hover',
@@ -683,64 +684,83 @@ class CapacitacionesUsuarioVista extends CatalogoVista
 		    tooltipClass:'withoutColor'
 		})
 		
-		
-		
-		
-//	    $( 'tarjeta').tooltip({
-//	        position: {
-//	          my: "center bottom-20",
-//	          at: "center top",
-//	          using: function( position, feedback ) {
-//	            $( this ).css( position );
-//	            $( "<div>" )
-//	              .addClass( "arrow" )
-//	              .addClass( feedback.vertical )
-//	              .addClass( feedback.horizontal )
-//	              .appendTo( this );
-//	          }
-//	        }
-//	      });
-
-		
+		if(datos.length>0)
+			$("#tituloPendientes").show();
+		else
+			$("#tituloPendientes").hide();
 	}
 	
-	inicializarEventos()
+	set cursosContestando(datos)
 	{
-		var _this = this;
-		$("#tarjetas").on("click", "button.eliminar", function(e)
-		{			
-			var current = e.currentTarget;
-			_this._llaves ={id: $(current).attr("data-id")};
-			var titulo = $(current).attr("data-titulo");
-			
-			_this.confirmar("¿Desea eliminar esta capacitaci\u00f3n?</br></br><label>" +titulo +"</label>",this,function(cursoId)
-			{
-				//_this.eliminarLeccionBaseDatos();
-				 _this.presentador.eliminar();
-				
-			},_this._llaves.id,true);
-			
-			//_this.eliminar("¡¡Se eliminar\u00e1 esta capacitaci\u00f3n!!\n" + titulo);
-		});	
+		this._cursosContestando.registros = datos;
+		$('.dropdown-toggle').dropdown();
 		
-		$("#tarjetas").off("click", "button.editar", this.editarCapacitacion);	
-		$("#tarjetas").on("click", "button.editar", this, this.editarCapacitacion);	
+		var elementList = document.querySelectorAll('.descripcion' );
+		for (var i = 0; i < elementList.length; i++) 
+			new Dotdotdot( elementList[i], {});
 		
-		$("#tarjetas").off("click", "button.ejecutar", this.ejecutarCapacitacion);	
-		$("#tarjetas").on("click", "button.ejecutar", this, this.ejecutarCapacitacion);	
+		this.inicializarEventosContestando();
+		
+		$('[data-toggle="tooltip"]').tooltip({
+		    trigger : 'hover',
+		    container: 'body',
+		    tooltipClass:'withoutColor'
+		})
 	}
 	
-	ejecutarCapacitacion(e)
+	set cursosTerminados(datos)
+	{
+		this._cursosTerminados.registros = datos;
+		$('.dropdown-toggle').dropdown();
+		
+		var elementList = document.querySelectorAll('.descripcion' );
+		for (var i = 0; i < elementList.length; i++) 
+			new Dotdotdot( elementList[i], {});
+		
+		//this.inicializarEventos();
+		
+		$('[data-toggle="tooltip"]').tooltip({
+		    trigger : 'hover',
+		    container: 'body',
+		    tooltipClass:'withoutColor'
+		})
+	}
+	
+	inicializarEventosContestando()
+	{
+		$("#cursosContestando").off("click", "div.tarjeta", this.ejecutarCapacitacionContestado);	
+		$("#cursosContestando").on("click", "div.tarjeta", this, this.ejecutarCapacitacionContestado);	
+	}
+	
+	inicializarEventosPendientes()
+	{
+		$("#cursosPendientes").off("click", "div.tarjeta", this.ejecutarCapacitacionPendiente);	
+		$("#cursosPendientes").on("click", "div.tarjeta", this, this.ejecutarCapacitacionPendiente);	
+	}
+	
+	ejecutarCapacitacionContestado(e)
 	{
 		var current = e.currentTarget;
 		var token =$(current).attr("data-token");
+		var tokenEjecucion =$(current).attr("data-tokenEjecucion");
+		e.data.ejecutar(token, tokenEjecucion);
+	}
+	
+	ejecutarCapacitacionPendiente(e)
+	{
+		var current = e.currentTarget;
+		var token =$(current).attr("data-token");
+		var tokenEjecucion =$(current).attr("data-tokenEjecucion");
 		e.data.ejecutar(token);
 	}
 	
-	ejecutar(token)
+	ejecutar(token,tokenEjecucion)
 	{
 		var submitForm = getNewSubmitForm("capacitacion.php");
 		createNewFormElement(submitForm, "token", token);
+		if(tokenEjecucion!=null)
+			createNewFormElement(submitForm, "tke", tokenEjecucion);
+		createNewFormElement(submitForm, "pnt", "capacitaciones_usuario.php");
 		submitForm.method = "get"
 		submitForm.target= "_self";
 		submitForm.submit();

@@ -123,6 +123,7 @@ class CapacitacionVista extends CatalogoVista
 	
 	mostrarCapacitacionInvalida()
 	{
+		var _this = this;
 		swal({
             title: "Algo salió mal",
             text: "Ocurrió un error al intentar ingresar a la capacitación.",
@@ -138,7 +139,7 @@ class CapacitacionVista extends CatalogoVista
             if (isConfirm) 
             {
             	 setTimeout(function(){
-            		window.close();
+            		 _this.salirFormulario();
  	            }, 1000);
             }
         });
@@ -453,10 +454,15 @@ class CapacitacionVista extends CatalogoVista
 	
 	salirFormulario()
 	{
-		var submitForm = getNewSubmitForm("capacitaciones.php");
-		submitForm.method = "get"
-		submitForm.target= "_self";
-		submitForm.submit();	
+		var pantalla = $("body").attr("data-pantalla");
+		if(pantalla!=null)
+		{
+			var submitForm = getNewSubmitForm(pantalla);
+			submitForm.method = "get"
+			submitForm.target= "_self";
+			submitForm.submit();	
+		}
+	
 	}
 	
 	salirFormularioAlta()
@@ -866,7 +872,10 @@ class CapacitacionVista extends CatalogoVista
 		$("#tituloLeccionLabel").html(leccion.titulo);
 		
 		var descripcion = leccion.descripcion;
-		descripcion = descripcion.replace(/\r?\n/g, '<br />');
+		if(descripcion!=null)
+			descripcion = descripcion.replace(/\r?\n/g, '<br />');
+		else
+			descripcion ="";
 		
 		
 		$("#descripcionLeccionLabel").html(descripcion);
@@ -884,7 +893,8 @@ class CapacitacionVista extends CatalogoVista
 			  videojs.log('Your player is ready!');
 			 
 			  // In this context, `this` is the player that was created by Video.js.
-			  _this.vsgLoadVideo(this,leccion.video);
+			  if(leccion.video!=null)
+				  _this.vsgLoadVideo(this,leccion.video);
 			 // this.play();
 			 
 			  // How about an event listener?
