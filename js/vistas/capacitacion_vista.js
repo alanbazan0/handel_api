@@ -22,6 +22,7 @@ class CapacitacionVista extends CatalogoVista
 	
 	inicializar()
 	{	
+		this.modo =  $("body").attr("data-modo");
 		var _this = this;
 		this.actualizarSesion();	
 		$("#tituloH").click(function()
@@ -31,82 +32,129 @@ class CapacitacionVista extends CatalogoVista
 		this.consultarCursoId();
 		//super.inicializar();
 		
-		
+		this.crearVideo();
+	
 	
 	}
 	
-	mostrarCapacitaciones()
+	crearVideo()
 	{
-		this._tarjetas = new Tarjetas("tarjetas");
+		var _this = this;
+		var options = {};
+		this._player = videojs('video', options, function onPlayerReady() {
+			  videojs.log('Your player is ready!');
+			  
+			  $(".vjs-big-play-button").off('click',_this.clickPlay);
+			  $(".vjs-big-play-button").on('click',_this,_this.clickPlay);
+			  $(".vjs-progress-holder").hide();
+			  $(".vjs-remaining-time").hide();
+			 // this.play();
+			 
+			  this.on('ended', function() 
+			  {
+				  _this.consultarPreguntaAleatoria();
+			  });
+			  
+			  	var myPlayer = this;
 
+			    var currentTime = 0;
+
+			    myPlayer.on("seeking", function(event) {
+			      if (currentTime != myPlayer.currentTime()) {
+			        myPlayer.currentTime(currentTime);
+			      }
+			    });
+
+			    myPlayer.on("seeked", function(event) {
+			      if (currentTime != myPlayer.currentTime()) {
+			        myPlayer.currentTime(currentTime);
+			      }
+			    });
+
+			    setInterval(function() {
+			      if (!myPlayer.paused()) {
+			        currentTime = myPlayer.currentTime();
+			      }
+			    }, 1000);
+			  
+			});
 		
-		this._tarjetas.plantillaHtml =  `<div id='capacitacion{{id}}' class='col-xs-12 col-sm-12 col-md-6 col-lg-3 '>
-		<div class="box {{box}}"  stylee='height:150px' >
-            <div class="box-header with-border">
-              <h5 class='truncate' style='font-weight:bold'>{{titulo}}</h5>
-
-              <div class="box-tools pull-right">
-                <div class="btn-group">
-                   <button type="button"  data-id='{{id}}' class="editar btn btn-box-tool"><i class="fas fa-cog text-blue"></i></button>
-                   <button type="button" data-id='{{id}}' data-titulo="{{titulo}}" class="eliminar btn btn-box-tool"><i class="fa fa-times text-red"></i></button>
-                </div>
-                
-              </div>
-            </div>
-            <!-- /.box-header -->
-            <div class="box-body">
-            	<div class='row'>
-            		<div class='col-md-4 col-lg-4 col-xs-4 m-l-1'>
-            			<img src='`+HANDEL_API+`/php/portadas_cursos/{{portada}}' style='height:80px;width: 100%;object-fit:cover'></img>
-            		</div>
-            		<div class='col-md-8 col-lg-8 col-xs-8' style="padding-left:0px">
-            			<div style='height:90px;' class='text-justify descripcion' ><span>{{descripcion}}</span></div>
-            		</div>
-             	</div>
-             	<div style='font-size:12px;color:#c0c0c0;' >Creado por {{usuarioNombreCompleto}}</div>
-            	<div style='font-size:12px;color:#c0c0c0;' >Última modificación: {{fechaModificacion}}
-            	
-            			<div class="btn-group pull-right">
-                   
-                   <button type="button" data-id="15" data-titulo="Nueva capacitacion" class="ejecutar btn btn-box-tool"><i class="fa fa-play text-green"></i></button>
-                </div>
-            	</div>
-            	
-            </div>
-            <!-- ./box-body -->
-          
-            <!-- /.box-footer -->
-          </div>
-          <!-- /.box -->
-           </div>
-         `;
-	
-
-//		
-//		$("#listaLecciones").sortable({
-//		    axis: "y",
-//		    containment: "parent",
-//		    cursor: "move",
-//		   // items: "div",
-//		    tolerance: "pointer",
-//		    update: function( event, ui ) {
-//		    	var seleccion = $( "#listaLecciones" ).sortable( "serialize", { key: "sort" });
-//				_this.presentador.ordenarLecciones(seleccion);
-//			}
-//		});
-//	    $( "#listaLecciones" ).disableSelection();
-		
-
-		$("#tituloH").click(function()
-		{
-			_this.salirFormulario();
-		});
+		$('.video-js').bind('contextmenu',function() { return false; });
 	}
+	
+	
+//	mostrarCapacitaciones()
+//	{
+//		this._tarjetas = new Tarjetas("tarjetas");
+//
+//		
+//		this._tarjetas.plantillaHtml =  `<div id='capacitacion{{id}}' class='col-xs-12 col-sm-12 col-md-6 col-lg-3 '>
+//		<div class="box {{box}}"  stylee='height:150px' >
+//            <div class="box-header with-border">
+//              <h5 class='truncate' style='font-weight:bold'>{{titulo}}</h5>
+//
+//              <div class="box-tools pull-right">
+//                <div class="btn-group">
+//                   <button type="button"  data-id='{{id}}' class="editar btn btn-box-tool"><i class="fas fa-cog text-blue"></i></button>
+//                   <button type="button" data-id='{{id}}' data-titulo="{{titulo}}" class="eliminar btn btn-box-tool"><i class="fa fa-times text-red"></i></button>
+//                </div>
+//                
+//              </div>
+//            </div>
+//            <!-- /.box-header -->
+//            <div class="box-body">
+//            	<div class='row'>
+//            		<div class='col-md-4 col-lg-4 col-xs-4 m-l-1'>
+//            			<img src='`+HANDEL_API+`/php/portadas_cursos/{{portada}}' style='height:80px;width: 100%;object-fit:cover'></img>
+//            		</div>
+//            		<div class='col-md-8 col-lg-8 col-xs-8' style="padding-left:0px">
+//            			<div style='height:90px;' class='text-justify descripcion' ><span>{{descripcion}}</span></div>
+//            		</div>
+//             	</div>
+//             	<div style='font-size:12px;color:#c0c0c0;' >Creado por {{usuarioNombreCompleto}}</div>
+//            	<div style='font-size:12px;color:#c0c0c0;' >Última modificación: {{fechaModificacion}}
+//            	
+//            			<div class="btn-group pull-right">
+//                   
+//                   <button type="button" data-id="15" data-titulo="Nueva capacitacion" class="ejecutar btn btn-box-tool"><i class="fa fa-play text-green"></i></button>
+//                </div>
+//            	</div>
+//            	
+//            </div>
+//            <!-- ./box-body -->
+//          
+//            <!-- /.box-footer -->
+//          </div>
+//          <!-- /.box -->
+//           </div>
+//         `;
+//	
+//
+////		
+////		$("#listaLecciones").sortable({
+////		    axis: "y",
+////		    containment: "parent",
+////		    cursor: "move",
+////		   // items: "div",
+////		    tolerance: "pointer",
+////		    update: function( event, ui ) {
+////		    	var seleccion = $( "#listaLecciones" ).sortable( "serialize", { key: "sort" });
+////				_this.presentador.ordenarLecciones(seleccion);
+////			}
+////		});
+////	    $( "#listaLecciones" ).disableSelection();
+//		
+//
+//		$("#tituloH").click(function()
+//		{
+//			_this.salirFormulario();
+//		});
+//	}
 	
 	consultarCursoId()
 	{
-		var ejecucionId = $("body").attr("data-ejecucionId");
-		if(ejecucionId !=undefined &&  ejecucionId!="")
+		var tokenEdicion = $("body").attr("data-tokenEdicion");
+		if(tokenEdicion !=undefined &&  tokenEdicion!="")
 			this.presentador.consultarToken();
 		else
 		{
@@ -120,6 +168,8 @@ class CapacitacionVista extends CatalogoVista
 		}
 			
 	}
+	
+
 	
 	mostrarCapacitacionInvalida()
 	{
@@ -148,7 +198,11 @@ class CapacitacionVista extends CatalogoVista
 	set token(token)
 	{
 		this._token = token;
-		this.presentador.consultarPorToken();
+		
+		if(this.modo=="VP")
+			this.presentador.consultarPorToken();
+		else
+			this.presentador.consultarPorTokenSinPreguntas();
 	}
 	
 	get token()
@@ -156,239 +210,239 @@ class CapacitacionVista extends CatalogoVista
 		return this._token;
 	}
 	
-	cambiarCampoPregunta(preguntaId,campo,valor)
-	{
-		vista.presentador.actualizarValorPregunta(preguntaId,campo,valor);
-	}
+//	cambiarCampoPregunta(preguntaId,campo,valor)
+//	{
+//		vista.presentador.actualizarValorPregunta(preguntaId,campo,valor);
+//	}
+//	
+//	cambiarCampoRespuesta(preguntaId,respuestaId,campo,valor)
+//	{
+//		vista.presentador.actualizarValorRespuesta(preguntaId,respuestaId,campo,valor);
+//	}
+//	
+//	cambiarCampoRespuestaCorrecta(preguntaId,respuestaId,valor)
+//	{
+//		//vista.listaPreguntas.seleccionarRespuestaCorrecta(preguntaId,respuestaId);
+//		vista.presentador.actualizarValorRespuestaCorrecta(preguntaId,respuestaId,valor);
+//	}
+//	
+//	cambiarCategoriasPregunta(preguntaId,categorias)
+//	{
+//		vista.presentador.actualizarCategoriasPregunta(preguntaId,categorias);
+//	}
+//	
+//	
+//	inicializarValidacionesFormulario(formulario)
+//	{
+//		var _this = this;
+//		jQuery("#" +formulario).validate({
+//            ignore: [],
+//            errorClass: "invalid-feedback animated fadeInDown",
+//            errorElement: "div",
+//            errorPlacement: function(e, a) {
+//                jQuery(a).parents(".form-group > div").append(e)
+//            },
+//            highlight: function(e) {
+//                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+//            },
+//            success: function(e) {
+//                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+//            },
+//            rules: {
+//                "tituloInput": {
+//                    required: !0
+//                },
+//                "descripcionInput": {
+//                    required: !0
+//                }
+//               
+//            },
+//            messages: {
+//                "tituloInput": "Por favor ingrese un t\u00edtulo",
+//                "descripcionInput": "Por favor ingrese una descripci\u00f3n"
+//                	
+//                
+//            },
+//            submitHandler:function (form) {
+//            	 _this.guardar();
+//            }
+//        });
+//	}
+//	
+//	inicializarValidacionesFormularioAlta(formulario)
+//	{
+//		var _this = this;
+//		jQuery("#" +formulario).validate({
+//            ignore: [],
+//            errorClass: "invalid-feedback animated fadeInDown",
+//            errorElement: "div",
+//            errorPlacement: function(e, a) {
+//                jQuery(a).parents(".form-group > div").append(e)
+//            },
+//            highlight: function(e) {
+//                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+//            },
+//            success: function(e) {
+//                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+//            },
+//            rules: {
+//                "tituloInputAlta": {
+//                    required: !0
+//                },
+//                "descripcionInputAlta": {
+//                    required: !0
+//                }
+//               
+//            },
+//            messages: {
+//                "tituloInputAlta": "Por favor ingrese un t\u00edtulo",
+//                "descripcionInputAlta": "Por favor ingrese una descripci\u00f3n"
+//                	
+//                
+//            },
+//            submitHandler:function (form) {
+//            	 _this.guardar();
+//            }
+//        });
+//	}
+//	
+//	
 	
-	cambiarCampoRespuesta(preguntaId,respuestaId,campo,valor)
-	{
-		vista.presentador.actualizarValorRespuesta(preguntaId,respuestaId,campo,valor);
-	}
+//	crearFecha()
+//	{
+//		$.datepicker.regional['es'] = {
+//				 closeText: 'Cerrar',
+//				 prevText: '< Ant',
+//				 nextText: 'Sig >',
+//				 currentText: 'Hoy',
+//				 monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
+//				 monthNamesShort: ['Ene','Feb','Mar','Abr', 'May','Jun','Jul','Ago','Sep', 'Oct','Nov','Dic'],
+//				 dayNames: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+//				 dayNamesShort: ['Dom','Lun','Mar','Mié','Juv','Vie','Sáb'],
+//				 dayNamesMin: ['Do','Lu','Ma','Mi','Ju','Vi','Sá'],
+//				 weekHeader: 'Sm',
+//				 dateFormat: 'dd/mm/yy',
+//				 firstDay: 1,
+//				 isRTL: false,
+//				 showMonthAfterYear: false,
+//				 yearSuffix: ''
+//				 };
+//		
+//				 $.datepicker.setDefaults($.datepicker.regional['es']);
+//				
+//				$(function () {
+//					$("#fechaProgramadaInput").datepicker();
+//					});
+//	}
+//	
+//	renderPublicado(renglon, type, set)
+//	{    
+//		var contenido = "";
+//		if(renglon.publicado==1)
+//			contenido += "<center><span class='fa fa-check fa-lg text-success'></span></center>";
+//		else
+//			contenido += "<center><span class='fa fa-times fa-lg text-danger'></span></center>";
+//	    return contenido;
+//	}
+//	
+//	crearColumnasGrid()
+//	{
+//		this.tabla._columnas = [
+//			{longitud:50, 	titulo:"",   	alias:"portada", alineacion:"D", itemRenderer:this.renderPortada},
+//			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
+//			{longitud:200, 	titulo:"Título",   alias:"titulo", alineacion:"I" }, 		
+//			{longitud:300, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I" }, 	
+//			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
+//			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
+//			{longitud:100, 	titulo:"Publicado",   alias:"publicado", alineacion:"D", itemRenderer:this.renderPublicado}
+//		]
+//		
+//		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Vista previa'  type='button' class='ejecutar btn-circle mr-0 botones-icon btn btn-sm float-left btn-success active'><span  data-toggle='tooltip' class='fa fa-play-circle fa-lg'></span></button>"+
+//		 								"<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
+//		 								"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+//
+//		
+////		this.grid._origen="vista";
+////		this.grid.manejadorEventos=this.manejadorEventos;
+////		this.grid._colorSeleccion = COLOR_SELECCION;
+////		this.grid._ajustarAltura = true;
+////		this.grid._colorRenglon1 = COLOR_RENGLON1;	
+////		this.grid._colorRenglon2 = COLOR_RENGLON2;	
+////		this.grid._colorEncabezado1 = COLOR_ENCABEZADO1;
+////		this.grid._colorEncabezado2 = COLOR_ENCABEZADO2;
+////		this.grid._colorLetraEncabezado = COLOR_LETRA_ENCABEZADO;
+////		this.grid._colorLetraCuerpo = COLOR_LETRA_CUERPO;
+////		this.grid._regExtra=REGISTROS_EXTRA;
+////		this.grid._bordesRedondeados = true;
+////		this.grid._eliminarLineaVerticales=false;
+////		//this.grid._presentacionGranTotal = "SI";
+////		this.grid.render();		
+//		this.tabla.registros = [];
+//	}
 	
-	cambiarCampoRespuestaCorrecta(preguntaId,respuestaId,valor)
-	{
-		//vista.listaPreguntas.seleccionarRespuestaCorrecta(preguntaId,respuestaId);
-		vista.presentador.actualizarValorRespuestaCorrecta(preguntaId,respuestaId,valor);
-	}
-	
-	cambiarCategoriasPregunta(preguntaId,categorias)
-	{
-		vista.presentador.actualizarCategoriasPregunta(preguntaId,categorias);
-	}
-	
-	
-	inicializarValidacionesFormulario(formulario)
-	{
-		var _this = this;
-		jQuery("#" +formulario).validate({
-            ignore: [],
-            errorClass: "invalid-feedback animated fadeInDown",
-            errorElement: "div",
-            errorPlacement: function(e, a) {
-                jQuery(a).parents(".form-group > div").append(e)
-            },
-            highlight: function(e) {
-                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
-            },
-            success: function(e) {
-                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
-            },
-            rules: {
-                "tituloInput": {
-                    required: !0
-                },
-                "descripcionInput": {
-                    required: !0
-                }
-               
-            },
-            messages: {
-                "tituloInput": "Por favor ingrese un t\u00edtulo",
-                "descripcionInput": "Por favor ingrese una descripci\u00f3n"
-                	
-                
-            },
-            submitHandler:function (form) {
-            	 _this.guardar();
-            }
-        });
-	}
-	
-	inicializarValidacionesFormularioAlta(formulario)
-	{
-		var _this = this;
-		jQuery("#" +formulario).validate({
-            ignore: [],
-            errorClass: "invalid-feedback animated fadeInDown",
-            errorElement: "div",
-            errorPlacement: function(e, a) {
-                jQuery(a).parents(".form-group > div").append(e)
-            },
-            highlight: function(e) {
-                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
-            },
-            success: function(e) {
-                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
-            },
-            rules: {
-                "tituloInputAlta": {
-                    required: !0
-                },
-                "descripcionInputAlta": {
-                    required: !0
-                }
-               
-            },
-            messages: {
-                "tituloInputAlta": "Por favor ingrese un t\u00edtulo",
-                "descripcionInputAlta": "Por favor ingrese una descripci\u00f3n"
-                	
-                
-            },
-            submitHandler:function (form) {
-            	 _this.guardar();
-            }
-        });
-	}
-	
-	
-	
-	crearFecha()
-	{
-		$.datepicker.regional['es'] = {
-				 closeText: 'Cerrar',
-				 prevText: '< Ant',
-				 nextText: 'Sig >',
-				 currentText: 'Hoy',
-				 monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-				 monthNamesShort: ['Ene','Feb','Mar','Abr', 'May','Jun','Jul','Ago','Sep', 'Oct','Nov','Dic'],
-				 dayNames: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-				 dayNamesShort: ['Dom','Lun','Mar','Mié','Juv','Vie','Sáb'],
-				 dayNamesMin: ['Do','Lu','Ma','Mi','Ju','Vi','Sá'],
-				 weekHeader: 'Sm',
-				 dateFormat: 'dd/mm/yy',
-				 firstDay: 1,
-				 isRTL: false,
-				 showMonthAfterYear: false,
-				 yearSuffix: ''
-				 };
-		
-				 $.datepicker.setDefaults($.datepicker.regional['es']);
-				
-				$(function () {
-					$("#fechaProgramadaInput").datepicker();
-					});
-	}
-	
-	renderPublicado(renglon, type, set)
-	{    
-		var contenido = "";
-		if(renglon.publicado==1)
-			contenido += "<center><span class='fa fa-check fa-lg text-success'></span></center>";
-		else
-			contenido += "<center><span class='fa fa-times fa-lg text-danger'></span></center>";
-	    return contenido;
-	}
-	
-	crearColumnasGrid()
-	{
-		this.tabla._columnas = [
-			{longitud:50, 	titulo:"",   	alias:"portada", alineacion:"D", itemRenderer:this.renderPortada},
-			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
-			{longitud:200, 	titulo:"Título",   alias:"titulo", alineacion:"I" }, 		
-			{longitud:300, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I" }, 	
-			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
-			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
-			{longitud:100, 	titulo:"Publicado",   alias:"publicado", alineacion:"D", itemRenderer:this.renderPublicado}
-		]
-		
-		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Vista previa'  type='button' class='ejecutar btn-circle mr-0 botones-icon btn btn-sm float-left btn-success active'><span  data-toggle='tooltip' class='fa fa-play-circle fa-lg'></span></button>"+
-		 								"<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
-		 								"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+//	renderPortada(renglon, campoBase)
+//	{    
+//		var fecha = new Date();
+//		var icono = HANDEL_API + "/php/portadas_cursos/" + renglon.portada+"?"+fecha.getTime();
+//		var contenido = "";
+//		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
+//	    return contenido;
+//	}
+//	
+//	inicializarEventosTabla(tbody, table)
+//	{
+//		this.inicializarEventosBotonesTabla(tbody, table, ["id"]);
+//		var _this = this;
+//		$(tbody).on("click", "button.ejecutar", function()
+//		{			
+//			var tr = $(this).closest('tr');
+//			    
+//		    if ( $(tr).hasClass('child') ) {
+//		      tr = $(tr).prev();  
+//		    }
+//
+//			_this._registroSeleccionado  = table.row( tr ).data();
+//			if (_this._registroSeleccionado != undefined)
+//			{
+//				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+//				_this.ejecutar();
+//			}
+//		});
+//	}
 
-		
-//		this.grid._origen="vista";
-//		this.grid.manejadorEventos=this.manejadorEventos;
-//		this.grid._colorSeleccion = COLOR_SELECCION;
-//		this.grid._ajustarAltura = true;
-//		this.grid._colorRenglon1 = COLOR_RENGLON1;	
-//		this.grid._colorRenglon2 = COLOR_RENGLON2;	
-//		this.grid._colorEncabezado1 = COLOR_ENCABEZADO1;
-//		this.grid._colorEncabezado2 = COLOR_ENCABEZADO2;
-//		this.grid._colorLetraEncabezado = COLOR_LETRA_ENCABEZADO;
-//		this.grid._colorLetraCuerpo = COLOR_LETRA_CUERPO;
-//		this.grid._regExtra=REGISTROS_EXTRA;
-//		this.grid._bordesRedondeados = true;
-//		this.grid._eliminarLineaVerticales=false;
-//		//this.grid._presentacionGranTotal = "SI";
-//		this.grid.render();		
-		this.tabla.registros = [];
-	}
+//
+//	agregar()
+//	{
+//		this.modo = Modo.ALTA;
+//		this.ocultarIndicador();
+//		this.mostrarFormularioAlta();
+//		//$('#nombreInput').focus();
+//		//this.inicializarValidacionesFormulario();
+//	}
 	
-	renderPortada(renglon, campoBase)
-	{    
-		var fecha = new Date();
-		var icono = HANDEL_API + "/php/portadas_cursos/" + renglon.portada+"?"+fecha.getTime();
-		var contenido = "";
-		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
-	    return contenido;
-	}
-	
-	inicializarEventosTabla(tbody, table)
-	{
-		this.inicializarEventosBotonesTabla(tbody, table, ["id"]);
-		var _this = this;
-		$(tbody).on("click", "button.ejecutar", function()
-		{			
-			var tr = $(this).closest('tr');
-			    
-		    if ( $(tr).hasClass('child') ) {
-		      tr = $(tr).prev();  
-		    }
-
-			_this._registroSeleccionado  = table.row( tr ).data();
-			if (_this._registroSeleccionado != undefined)
-			{
-				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
-				_this.ejecutar();
-			}
-		});
-	}
-
-
-	agregar()
-	{
-		this.modo = Modo.ALTA;
-		this.ocultarIndicador();
-		this.mostrarFormularioAlta();
-		//$('#nombreInput').focus();
-		//this.inicializarValidacionesFormulario();
-	}
-	
-	mostrarFormularioAlta()
-	{
-		var _this = this;
-		this.mostrarFormularioHTML(HANDEL_API+"/html/formularios/capacitaciones.php",this, null, function()
-		{
-			//mostrar
-			 setTimeout(function(){
-					$('#tituloInputAlta').focus();
-					$('#logoImageAlta').show();
-					$('#logoImageAlta').attr('src', HANDEL_API + "/php/portadas_cursos/default.png");
-					_this.inicializarValidacionesFormularioAlta("formularioAlta");
-	            }, 1000);
-			 
-			 
-			
-		},null,"","","guardarButtonAlta",function()
-		{
-			//guardar
-			$("#formularioAlta").submit();
-			//_this.insertar();
-			
-		});
-	}
+//	mostrarFormularioAlta()
+//	{
+//		var _this = this;
+//		this.mostrarFormularioHTML(HANDEL_API+"/html/formularios/capacitaciones.php",this, null, function()
+//		{
+//			//mostrar
+//			 setTimeout(function(){
+//					$('#tituloInputAlta').focus();
+//					$('#logoImageAlta').show();
+//					$('#logoImageAlta').attr('src', HANDEL_API + "/php/portadas_cursos/default.png");
+//					_this.inicializarValidacionesFormularioAlta("formularioAlta");
+//	            }, 1000);
+//			 
+//			 
+//			
+//		},null,"","","guardarButtonAlta",function()
+//		{
+//			//guardar
+//			$("#formularioAlta").submit();
+//			//_this.insertar();
+//			
+//		});
+//	}
 	
 //	btnAlta_onClick()
 //	{
@@ -406,9 +460,18 @@ class CapacitacionVista extends CatalogoVista
 	set guardando(guardando)
 	{
 		if(guardando)
+		{
 			$("#guardarButton").hide();
+			$("#siguienteButton").hide();
+			$("#finalizarButton").hide();
+		}
 		else
-			$("#guardarButton").show();       
+		{
+			$("#guardarButton").show();
+			$("#siguienteButton").show();
+			$("#finalizarButton").show();
+			
+		}
 	}
 	
 	btnGuardarFormulario_onClick()
@@ -465,10 +528,10 @@ class CapacitacionVista extends CatalogoVista
 	
 	}
 	
-	salirFormularioAlta()
-	{
-		$('#modalAlta').modal('hide')
-	}
+//	salirFormularioAlta()
+//	{
+//		$('#modalAlta').modal('hide')
+//	}
 
 //	btnCambio_onClick()
 //	{
@@ -486,71 +549,71 @@ class CapacitacionVista extends CatalogoVista
 //				
 //	}
 //	
-	ejecutar()
-	{
-		var submitForm = getNewSubmitForm("auditoria.php","post");
-		createNewFormElement(submitForm, "cursoId", this._llaves.id);
-		submitForm.target= "auditoria" + Math.floor(Math.random()*10000);
-		submitForm.submit();
-	}
+//	ejecutar()
+//	{
+//		var submitForm = getNewSubmitForm("auditoria.php","post");
+//		createNewFormElement(submitForm, "cursoId", this._llaves.id);
+//		submitForm.target= "auditoria" + Math.floor(Math.random()*10000);
+//		submitForm.submit();
+//	}
 	
-	
-	set perfiles(perfiles)
-	{
-		this._perfiles = perfiles;
-		this.cargarOpciones('#perfilesSelect', perfiles,"",null, null, null);
-		
-		
-		var perfilesSeleccionados =[];
-		if(this.modeloEdicion.perfiles!=undefined)
-		{
-			$.each(this.modeloEdicion.perfiles, function(i, p) 
-			{
-				perfilesSeleccionados.push(p.perfilId);
-			});
-		}
-		
-		$("#perfilesSelect").val(perfilesSeleccionados);
-		$("#perfilesSelect").chosen();
-		$(".chosen-search-input").height(50);
-		$(".chosen-search-input").val("");
-		
-		$("#perfilesSelect_chosen").css("width","100%");
-		
-		if(this.modeloEdicion!=null)
-		{
-			this.listaLecciones.lecciones= this.modeloEdicion.lecciones;
-			if(this.listaLecciones.lecciones!=null)
-				if(this.listaLecciones.lecciones.length>0)
-				{
-					this._leccionSeleccionada =  this.modeloEdicion.lecciones[0];
-					this.mostrarLeccion(this._leccionSeleccionada);
-				}
-		}
-		else
-		{
-		}
-		$('#contenidoFormularioDiv').show();
-	}
-	
-	get perfiles()
-	{
-		var perfiles=[];
-		var perfilesSeleccionados  = $("#perfilesSelect").val();
-		if(perfilesSeleccionados !=undefined)
-		{
-			for(var i = 0; i < perfilesSeleccionados.length ; i++)
-			{
-				var perfilSeleccionado = perfilesSeleccionados[i];
-				var perfil = new Object();
-				perfil.id = i + 1;
-				perfil.perfilId = perfilSeleccionado;
-				perfiles.push(perfil);
-			}
-		}
-		return perfiles;
-	}
-	
+//	
+//	set perfiles(perfiles)
+//	{
+//		this._perfiles = perfiles;
+//		this.cargarOpciones('#perfilesSelect', perfiles,"",null, null, null);
+//		
+//		
+//		var perfilesSeleccionados =[];
+//		if(this.modeloEdicion.perfiles!=undefined)
+//		{
+//			$.each(this.modeloEdicion.perfiles, function(i, p) 
+//			{
+//				perfilesSeleccionados.push(p.perfilId);
+//			});
+//		}
+//		
+//		$("#perfilesSelect").val(perfilesSeleccionados);
+//		$("#perfilesSelect").chosen();
+//		$(".chosen-search-input").height(50);
+//		$(".chosen-search-input").val("");
+//		
+//		$("#perfilesSelect_chosen").css("width","100%");
+//		
+//		if(this.modeloEdicion!=null)
+//		{
+//			this.listaLecciones.lecciones= this.modeloEdicion.lecciones;
+//			if(this.listaLecciones.lecciones!=null)
+//				if(this.listaLecciones.lecciones.length>0)
+//				{
+//					this._leccionSeleccionada =  this.modeloEdicion.lecciones[0];
+//					this.mostrarLeccion(this._leccionSeleccionada);
+//				}
+//		}
+//		else
+//		{
+//		}
+//		$('#contenidoFormularioDiv').show();
+//	}
+//	
+//	get perfiles()
+//	{
+//		var perfiles=[];
+//		var perfilesSeleccionados  = $("#perfilesSelect").val();
+//		if(perfilesSeleccionados !=undefined)
+//		{
+//			for(var i = 0; i < perfilesSeleccionados.length ; i++)
+//			{
+//				var perfilSeleccionado = perfilesSeleccionados[i];
+//				var perfil = new Object();
+//				perfil.id = i + 1;
+//				perfil.perfilId = perfilSeleccionado;
+//				perfiles.push(perfil);
+//			}
+//		}
+//		return perfiles;
+//	}
+//	
 
 //	get llaves()
 //	{
@@ -561,14 +624,14 @@ class CapacitacionVista extends CatalogoVista
 //		return llaves;
 //	}
 	
-	get criteriosSeleccion()
-	{
-		 var criteriosSeleccion = 
-		 {				    
-			titulo:$('#tituloInputCriterio').val()
-		 }
-		 return criteriosSeleccion;
-	}		
+//	get criteriosSeleccion()
+//	{
+//		 var criteriosSeleccion = 
+//		 {				    
+//			titulo:$('#tituloInputCriterio').val()
+//		 }
+//		 return criteriosSeleccion;
+//	}		
 
 //	set datos(valor)
 //	{
@@ -576,12 +639,22 @@ class CapacitacionVista extends CatalogoVista
 //		this.grid.render();
 //	}
 	
+	
 	set modelo(valor)
 	{		
 		this.mostrarFormulario();
 		
+		
 		this.modeloEdicion = valor;
-		$('#tituloH').html(this.modeloEdicion.titulo);
+		
+		var titulo = this.modeloEdicion.titulo;
+		if(this.modo==Modo.VISTA_PREVIA)
+		{
+			$('#tituloVistraPreviaH').html("¡VISTA PRELIMINAR!");
+		}
+		
+		
+		$('#tituloH').html(titulo);
 		$('#tituloInput').val(this.modeloEdicion.titulo);
 		var title = $(document).prop('title');
 		$(document).prop('title', title + " " + this.modeloEdicion.titulo);
@@ -590,15 +663,49 @@ class CapacitacionVista extends CatalogoVista
 		descripcion = descripcion.replace(/\r?\n/g, '<br />');
 		
 		$('#descripcionLabel').html(descripcion);
-		if(this.modeloEdicion.publicado)
-			$("#publicadoRadio").prop('checked', true);
-		else
-			$("#publicadoRadio").prop('checked', false);
+//		if(this.modeloEdicion.publicado)
+//			$("#publicadoRadio").prop('checked', true);
+//		else
+//			$("#publicadoRadio").prop('checked', false);
 		$('#logoImage').attr('src', HANDEL_API + "/php/portadas_cursos/" + this.modeloEdicion.portada);
 		$("#logoImage").show();
-		this.presentador.consultarPerfiles();
+//		this.presentador.consultarPerfiles();
+		
+		if(this.modeloEdicion!=null)
+		{
+			this.listaLecciones.modo = this.modo;
+			this.listaLecciones.lecciones= this.modeloEdicion.lecciones;
+			if(this.listaLecciones.lecciones!=null)
+				if(this.listaLecciones.lecciones.length>0)
+				{
+					this._leccionSeleccionada =  this.getLeccionSinCompletar(this.modeloEdicion.lecciones);
+					if(this._leccionSeleccionada==null)
+						this._leccionSeleccionada= this.modeloEdicion.lecciones[0];
+					this.mostrarLeccion(this._leccionSeleccionada);
+				}
+				else
+				{
+					 $("#ayudaLecciones").html(this.textoAyudaLecciones);
+				}
+		}
+		else
+		{
+			
+		}
+		$('#contenidoFormularioDiv').show();
 		
 		
+	}
+	
+	getLeccionSinCompletar(lecciones)
+	{
+		for(var i=0; i < lecciones.length; i++)
+		{
+			var leccion = lecciones[i];
+			if(leccion.terminado!=1)
+				return leccion;
+		}
+		return null;
 	}
 	
 	get modelo()
@@ -627,60 +734,60 @@ class CapacitacionVista extends CatalogoVista
 			 modelo.id = this.modeloEdicion.id;
 		 return modelo;
 	 }
-	
-	set datos(datos)
-	{
-		this._tarjetas.registros = datos;
-		$('.dropdown-toggle').dropdown();
-		
-//		new Dotdotdot( document.querySelector( '.descripcion' ), {
+//	
+//	set datos(datos)
+//	{
+//		this._tarjetas.registros = datos;
+//		$('.dropdown-toggle').dropdown();
+//		
+////		new Dotdotdot( document.querySelector( '.descripcion' ), {
+////
+////		});
+//		
+//		var elementList = document.querySelectorAll('.descripcion' );
+//		for (var i = 0; i < elementList.length; i++) 
+//			new Dotdotdot( elementList[i], {});
 //
-//		});
-		
-		var elementList = document.querySelectorAll('.descripcion' );
-		for (var i = 0; i < elementList.length; i++) 
-			new Dotdotdot( elementList[i], {});
-
-		
-		
-		this.inicializarEventos();
-	}
+//		
+//		
+//		this.inicializarEventos();
+//	}
 	
-	inicializarEventos()
-	{
-		var _this = this;
-		$("#tarjetas").on("click", "button.eliminar", function(e)
-		{			
-			var current = e.currentTarget;
-			_this._llaves ={id: $(current).attr("data-id")};
-			var titulo = $(current).attr("data-titulo");
-			
-			_this.confirmar("¿Desea eliminar esta capacitaci\u00f3n?</br></br><label>" +titulo +"</label>",this,function(cursoId)
-			{
-				//_this.eliminarLeccionBaseDatos();
-				 _this.presentador.eliminar();
-				
-			},_this._llaves.id,true);
-			
-			//_this.eliminar("¡¡Se eliminar\u00e1 esta capacitaci\u00f3n!!\n" + titulo);
-		});	
-		
-		$("#tarjetas").off("click", "button.editar", this.editarCapacitacion);	
-		$("#tarjetas").on("click", "button.editar", this, this.editarCapacitacion);	
-		
-	
-		
-
-		
-	}
+//	inicializarEventos()
+//	{
+//		var _this = this;
+//		$("#tarjetas").on("click", "button.eliminar", function(e)
+//		{			
+//			var current = e.currentTarget;
+//			_this._llaves ={id: $(current).attr("data-id")};
+//			var titulo = $(current).attr("data-titulo");
+//			
+//			_this.confirmar("¿Desea eliminar esta capacitaci\u00f3n?</br></br><label>" +titulo +"</label>",this,function(cursoId)
+//			{
+//				//_this.eliminarLeccionBaseDatos();
+//				 _this.presentador.eliminar();
+//				
+//			},_this._llaves.id,true);
+//			
+//			//_this.eliminar("¡¡Se eliminar\u00e1 esta capacitaci\u00f3n!!\n" + titulo);
+//		});	
+//		
+//		$("#tarjetas").off("click", "button.editar", this.editarCapacitacion);	
+//		$("#tarjetas").on("click", "button.editar", this, this.editarCapacitacion);	
+//		
+//	
+//		
+//
+//		
+//	}
 	
 	
-	editarCapacitacion(e)
-	{
-		var current = e.currentTarget;
-		e.data._llaves ={id: $(current).attr("data-id")};
-		e.data.editar();
-	}
+//	editarCapacitacion(e)
+//	{
+//		var current = e.currentTarget;
+//		e.data._llaves ={id: $(current).attr("data-id")};
+//		e.data.editar();
+//	}
 
 	limpiarFormulario()
 	{
@@ -689,170 +796,170 @@ class CapacitacionVista extends CatalogoVista
 		
 	}
 	
-	agregarLeccion()
-	{
-		this.presentador.insertarLeccion();
-	}
+//	agregarLeccion()
+//	{
+//		this.presentador.insertarLeccion();
+//	}
+//	
+//	agregarPregunta(tipo)
+//	{
+//		var tipo = "om";
+//		this.presentador.insertarPregunta(tipo);
+//		//this.listaPreguntas.agregarPregunta();
+//	}
+//	
+//	agregarTexto()
+//	{
+//		this.listaPreguntas.agregarTexto();
+//	}
+//	
+//	agregarHora()
+//	{
+//		this.listaPreguntas.agregarHora();
+//	}
+//	
+//	agregarFoto()
+//	{
+//		this.listaPreguntas.agregarFoto();
+//	}
+//	
+//	agregarFecha()
+//	{
+//		this.listaPreguntas.agregarFecha();
+//	}
+//	
+//	agregarEncabezado()
+//	{
+//		this.listaPreguntas.agregarEncabezado();
+//	}
+//	
+//	agregarMapa()
+//	{
+//		this.listaPreguntas.agregarMapa();
+//	}
+//	
+//	agregarRespuesta(preguntaId)
+//	{
+//		this.presentador.insertarRespuesta(preguntaId);
+//		//this.listaPreguntas.agregarRespuesta(preguntaId);
+//	}
+//	
+//	eliminarLeccion(event, leccionId)
+//	{
+//		if(this.listaLecciones.lecciones.length>1)
+//		{
+//			var componenteLeccion = this.listaLecciones.getComponente(leccionId);
+//			if(componenteLeccion!=null)
+//			{
+//				var _this = this;
+//				this.confirmar("¿Desea eliminar esta lección?</br></br><label>" +componenteLeccion.titulo +"</label>",this,function(leccionId)
+//				{
+//					_this._llavesLeccion = {cursoId : _this.cursoId, leccionId: leccionId};
+//					_this.eliminarLeccionBaseDatos();
+//					
+//				},leccionId,true);
+//			}
+//		}
+//		else
+//			this.mostrarMensajeAdvertencia("Error","Es necesario contar al menos con una lección. ");		
+//	}
+//	
+//	eliminarPregunta(event, preguntaId)
+//	{
+//		var componentePregunta = this.listaPreguntas.getComponente(preguntaId);
+//		if(componentePregunta!=null)
+//		{
+//			var _this = this;
+//			this.confirmar("¿Desea eliminar esta pregunta?</br></br><label>" +componentePregunta.texto +"</label>" ,this,function(preguntaId)
+//			{
+//				_this._llavesPregunta = {cursoId : _this.cursoId, leccionId: _this.leccionIdSeleccionada, preguntaId : preguntaId};
+//				_this.eliminarPreguntaBaseDatos();
+//				
+//			},preguntaId,true);
+//		}
+//	}
+//	
+//	eliminarRespuesta(event, preguntaId, respuestaId)
+//	{
+//		var componenteRespuesta = this.listaPreguntas.getComponenteRespuesta(preguntaId,respuestaId);
+//		if(componenteRespuesta!=null)
+//		{
+//			var _this = this;
+//			this.confirmar("¿Desea eliminar esta respuesta?</br></br><label>" +componenteRespuesta.texto +"</label>",this,function(respuestaId)
+//			{
+//				_this._llavesRespuesta = {cursoId : _this.cursoId, leccionId: _this.leccionIdSeleccionada, preguntaId : preguntaId, respuestaId: respuestaId};
+//				_this.eliminarRespuestaBaseDatos();
+//				
+//			},respuestaId,true);
+//		}
+//		
+//	}
 	
-	agregarPregunta(tipo)
-	{
-		var tipo = "om";
-		this.presentador.insertarPregunta(tipo);
-		//this.listaPreguntas.agregarPregunta();
-	}
+//	get llavesPregunta()
+//	{
+//		return this._llavesPregunta;
+//	}
+//	
+//	get llavesRespuesta()
+//	{
+//		return this._llavesRespuesta;
+//	}
+//	
+//	get llavesLeccion()
+//	{
+//		return this._llavesLeccion;
+//	}
 	
-	agregarTexto()
-	{
-		this.listaPreguntas.agregarTexto();
-	}
-	
-	agregarHora()
-	{
-		this.listaPreguntas.agregarHora();
-	}
-	
-	agregarFoto()
-	{
-		this.listaPreguntas.agregarFoto();
-	}
-	
-	agregarFecha()
-	{
-		this.listaPreguntas.agregarFecha();
-	}
-	
-	agregarEncabezado()
-	{
-		this.listaPreguntas.agregarEncabezado();
-	}
-	
-	agregarMapa()
-	{
-		this.listaPreguntas.agregarMapa();
-	}
-	
-	agregarRespuesta(preguntaId)
-	{
-		this.presentador.insertarRespuesta(preguntaId);
-		//this.listaPreguntas.agregarRespuesta(preguntaId);
-	}
-	
-	eliminarLeccion(event, leccionId)
-	{
-		if(this.listaLecciones.lecciones.length>1)
-		{
-			var componenteLeccion = this.listaLecciones.getComponente(leccionId);
-			if(componenteLeccion!=null)
-			{
-				var _this = this;
-				this.confirmar("¿Desea eliminar esta lección?</br></br><label>" +componenteLeccion.titulo +"</label>",this,function(leccionId)
-				{
-					_this._llavesLeccion = {cursoId : _this.cursoId, leccionId: leccionId};
-					_this.eliminarLeccionBaseDatos();
-					
-				},leccionId,true);
-			}
-		}
-		else
-			this.mostrarMensajeAdvertencia("Error","Es necesario contar al menos con una lección. ");		
-	}
-	
-	eliminarPregunta(event, preguntaId)
-	{
-		var componentePregunta = this.listaPreguntas.getComponente(preguntaId);
-		if(componentePregunta!=null)
-		{
-			var _this = this;
-			this.confirmar("¿Desea eliminar esta pregunta?</br></br><label>" +componentePregunta.texto +"</label>" ,this,function(preguntaId)
-			{
-				_this._llavesPregunta = {cursoId : _this.cursoId, leccionId: _this.leccionIdSeleccionada, preguntaId : preguntaId};
-				_this.eliminarPreguntaBaseDatos();
-				
-			},preguntaId,true);
-		}
-	}
-	
-	eliminarRespuesta(event, preguntaId, respuestaId)
-	{
-		var componenteRespuesta = this.listaPreguntas.getComponenteRespuesta(preguntaId,respuestaId);
-		if(componenteRespuesta!=null)
-		{
-			var _this = this;
-			this.confirmar("¿Desea eliminar esta respuesta?</br></br><label>" +componenteRespuesta.texto +"</label>",this,function(respuestaId)
-			{
-				_this._llavesRespuesta = {cursoId : _this.cursoId, leccionId: _this.leccionIdSeleccionada, preguntaId : preguntaId, respuestaId: respuestaId};
-				_this.eliminarRespuestaBaseDatos();
-				
-			},respuestaId,true);
-		}
-		
-	}
-	
-	get llavesPregunta()
-	{
-		return this._llavesPregunta;
-	}
-	
-	get llavesRespuesta()
-	{
-		return this._llavesRespuesta;
-	}
-	
-	get llavesLeccion()
-	{
-		return this._llavesLeccion;
-	}
-	
-	
-	eliminarPreguntaBaseDatos()
-	{
-		this.presentador.eliminarPregunta();
-	}
-	
-	eliminarRespuestaBaseDatos()
-	{
-		this.presentador.eliminarRespuesta();
-	}
-	
-	
-	eliminarLeccionBaseDatos()
-	{
-		this.presentador.eliminarLeccion();
-	}
+//	
+//	eliminarPreguntaBaseDatos()
+//	{
+//		this.presentador.eliminarPregunta();
+//	}
+//	
+//	eliminarRespuestaBaseDatos()
+//	{
+//		this.presentador.eliminarRespuesta();
+//	}
+//	
+//	
+//	eliminarLeccionBaseDatos()
+//	{
+//		this.presentador.eliminarLeccion();
+//	}
 	
 
 	
 	
 //	
-	confirmar(textoDialogo,contexto,funcion,parametro,html)
-	{
-		var _this = this;
-		swal({
-	            title: "",
-	            text: textoDialogo,
-	            type: "warning",
-	            html: html,
-	            showCancelButton: true,
-	            confirmButtonColor: "#DD6B55",
-	            confirmButtonText: "Si, eliminar!!",
-	            cancelButtonText: "No",
-	            closeOnConfirm: false,
-	            closeOnCancel: true,
-	            showLoaderOnConfirm: true,
-	        },
-	        function(isConfirm)
-	        {
-	            if (isConfirm) 
-	            {
-	            	 setTimeout(function()
-	            			 {
-	            			funcion.call(contexto,parametro);
-	            			swal.close();
-	 	            }, 1000);
-	            }
-	        });
-	}
-	
+//	confirmar(textoDialogo,contexto,funcion,parametro,html)
+//	{
+//		var _this = this;
+//		swal({
+//	            title: "",
+//	            text: textoDialogo,
+//	            type: "warning",
+//	            html: html,
+//	            showCancelButton: true,
+//	            confirmButtonColor: "#DD6B55",
+//	            confirmButtonText: "Si, eliminar!!",
+//	            cancelButtonText: "No",
+//	            closeOnConfirm: false,
+//	            closeOnCancel: true,
+//	            showLoaderOnConfirm: true,
+//	        },
+//	        function(isConfirm)
+//	        {
+//	            if (isConfirm) 
+//	            {
+//	            	 setTimeout(function()
+//	            			 {
+//	            			funcion.call(contexto,parametro);
+//	            			swal.close();
+//	 	            }, 1000);
+//	            }
+//	        });
+//	}
+//	
 	seleccionarLeccion(event, leccionId)
 	{
 		this._leccionSeleccionada.preguntas = this.listaPreguntas.preguntas;
@@ -867,52 +974,168 @@ class CapacitacionVista extends CatalogoVista
 	
 	mostrarLeccion(leccion)
 	{
-		this.listaLecciones.seleccionar(leccion.id);
+		$("#preguntasDiv").hide();
+		if(leccion.id!=this._leccionIdSeleccionada)
+		{
+			
 		
-		$("#tituloLeccionLabel").html(leccion.titulo);
+			this.listaLecciones.seleccionar(leccion.id);
+			
+			$("#tituloLeccionLabel").html(leccion.titulo);
+			
+			var descripcion = leccion.descripcion;
+			if(descripcion!=null)
+				descripcion = descripcion.replace(/\r?\n/g, '<br />');
+			else
+				descripcion ="";
+			
+			$("#descripcionLeccionLabel").html(descripcion);
+			
+			
+			
+			 $("#ayudaVideo").html("");
+			this.listaPreguntas.mostrarPregunta();
+			
+			var _this = this;
+			
+			 if(leccion.video!=null)
+			 {
+				 $("#ayudaVideo").html("");
+				 this._player.show();
+				  _this.vsgLoadVideo(this._player,leccion.video);
+			 }
+			 else
+			 {
+				 //var html = "";
+				
+			    $("#ayudaVideo").html(this.textoAyudaVideo);
+				 this._player.hide();
+			 }
 		
-		var descripcion = leccion.descripcion;
-		if(descripcion!=null)
-			descripcion = descripcion.replace(/\r?\n/g, '<br />');
-		else
-			descripcion ="";
+			this._leccionIdSeleccionada = leccion.id;
+			this._leccionSeleccionada = leccion;
+			
+			if(this.modo==Modo.VISTA_PREVIA)
+			{
+//				if(leccion.terminado==1)
+//					 $(".vjs-big-play-button").hide();
+//				else
+//					 $(".vjs-big-play-button").show();
+				
+				$("#divBotonesPreguntas").html("");
+				this.consultarPreguntaAleatoria();
+				
+			}
+			else
+			{
+				if(leccion.terminado==1)
+			    {
+					 var html = this.textoLeccionTerminada;
+					 $("#preguntasDiv").show();
+					 $("#divBotonesPreguntas").html(html);
+			    }
+				else
+					$("#divBotonesPreguntas").html("");
+			}
+			
+		}
+	}
+	
+	clickPlay(event)
+	{
+		 event.data.guardarLeccionUsuario();
+	}
+	
+	guardarLeccionUsuario()
+	{
+		if(this.modo!=Modo.VISTA_PREVIA)
+			this.presentador.guardarLeccionUsuario();
+	}
+	
+	consultarPreguntaAleatoria()
+	{
+		this.presentador.consultarPreguntaAleatoria(this._leccionIdSeleccionada);
+	}
+	
+	mostrarPregunta(leccionId, pregunta, numeroPreguntasRestantes,numeroPreguntasContestadas)
+	{
+		$("#preguntasDiv").fadeIn(this.velocidadAnimacion);
 		
+		this.listaPreguntas.mostrarPregunta(pregunta,numeroPreguntasRestantes);
+
+		 var html="";
+		 $("#ayudaPreguntas").html("");
+		 if(numeroPreguntasRestantes==0 && numeroPreguntasContestadas==0)
+		 {
+			 if(this.modo==Modo.VISTA_PREVIA) 
+				 html+="<span class='text-danger' style='font-size:16px'>No olvides agregar preguntas a la lección</span>"
+			 else
+				html+="<span class='text-danger' style='font-size:16px'>No hay preguntas disponibles en la lección</span>"
+		 }
+		 else
+		 {
+			if(pregunta!=null)
+			{
+				$("#ayudaPreguntas").html(this.textoAyudaPreguntas);
+				var disabled = ""
+				if(this.modo==Modo.VISTA_PREVIA) 
+					 disabled = "disabled";
+				 if(numeroPreguntasRestantes>1)
+					 html+="<button id='siguienteButton' type='button' class='btn btn-primary' style='float:right' onclick='vista.siguiente();' "+disabled+" >Siguiente</button>";
+				 else
+					 html+="<button id='finalizarButton' type='button' class='btn btn-success'  style='float:right'  onclick='vista.finalizar();' "+disabled+" >Finalizar</button>";
+			}
+			else
+			{
+				html+=this.textoLeccionTerminada;
+				this.listaLecciones.terminarLeccion(leccionId);
+			}
+		 }
 		
-		$("#descripcionLeccionLabel").html(descripcion);
-		//$("#video").val(leccion.video);
-		
-		//$('#video source').attr('src', leccion.video);
-		
-//		if(this._player!=null)
-//			this._player.stop();
-		 
-		var options = {};
-		
-		var _this = this;
-		this._player = videojs('video', options, function onPlayerReady() {
-			  videojs.log('Your player is ready!');
-			 
-			  // In this context, `this` is the player that was created by Video.js.
-			  if(leccion.video!=null)
-				  _this.vsgLoadVideo(this,leccion.video);
-			 // this.play();
-			 
-			  // How about an event listener?
-			  this.on('ended', function() {
-			    videojs.log('Awww...over so soon?!');
-			  });
-			});
-		
-		
-		
-		this.listaPreguntas.categorias = this._categorias;
-		if(leccion!=null)
-			this.listaPreguntas.preguntas = leccion.preguntas;
-		else
-			this.listaPreguntas.preguntas = [];
-		
-		this._leccionIdSeleccionada = leccion.id;
-		this._leccionSeleccionada = leccion;
+		 $("#divBotonesPreguntas").html(html);
+	}
+
+	get textoLeccionTerminada()
+	{
+		//return "<span class='text-green' style='font-size:16px'>¡Lección completa! Nos vemos en la siguiente lección "+this.usuario.nombre+". ¡Buena suerte!</span>"
+		var html="";
+		html="<div class='text-center;' style='background-color:#154D3A;width:100%'>";
+		html+="<h3 style='padding:10px;color:white;font-size:17px;text-align:center'>¡Lección completa! Nos vemos en la siguiente lección "+this.usuario.nombre+". ¡Buena suerte!</h3>";
+		html+="</div>";
+		return html;
+	}
+	
+	get textoAyudaVideo()
+	{
+		var html ="";
+		 if(this.modo==Modo.VISTA_PREVIA) 
+			 html+="<span class='text-red' style='font-size:16px'>No olvides agregar un video a la lección</span>";
+		 else
+			html+="<span class='text-red' style='font-size:16px'>No hay video disponible en la lección</span>";
+		return html;
+				
+	}
+	
+	get textoAyudaPreguntas()
+	{
+		var html ="";
+		html="<div class='text-center;' style='background-color:#F27200;width:100%'>";
+		html+="<h3 style='padding:10px;color:white;font-size:17px'>Para completar tu lección responde a estas preguntas</h3>";
+		html+="</div>";
+		return html;
+				
+	}
+	
+	
+	get textoAyudaLecciones()
+	{
+		var html ="";
+		 if(this.modo==Modo.VISTA_PREVIA) 
+			 html+="<span class='text-red' style='font-size:16px'>No olvides agregar lecciones a la capacitación</span>";
+		 else
+			html+="<span class='text-red' style='font-size:16px'>No hay lecciones disponibles en la capacitación</span>";
+		return html;
+				
 	}
 	
 	ytVidId(url) {
@@ -971,169 +1194,214 @@ class CapacitacionVista extends CatalogoVista
 	
 	get cursoId()
 	{
-		return this._llaves.id; 
+		return this.modeloEdicion.id;
 	}
 	
-	cancelarRespuestas()
-	{
-		$('#ventanaRespuestasContenedor').hide();
-	}
-	
-	editarRespuestasSi(preguntaId)
-	{
-		$("#tituloRespuestas").val("Respuestas Si");
-		$('#ventanaRespuestasContenedor').data( "tipo", "SI" );
-		$('#ventanaRespuestasContenedor').fadeIn( this.velocidadAnimacion );
-	
-		this.preguntaEdicion = this.listaPreguntas.getPregunta(preguntaId);
-		this.listaRespuestas.categoriasPregunta = this.preguntaEdicion.categorias;
-		this.listaRespuestas.categorias = this._categorias;
-		this.listaRespuestas.respuestas = this.preguntaEdicion.respuestas_si;
-		
-		this._preguntaIdSeleccionada = preguntaId;
-	}
-	
-	editarRespuestasNo(preguntaId)
-	{
-		$("#tituloRespuestas").val("Respuestas No");
-		$('#ventanaRespuestasContenedor').data( "tipo", "NO" );
-		$('#ventanaRespuestasContenedor').fadeIn( this.velocidadAnimacion );
-		this.preguntaEdicion = this.listaPreguntas.getPregunta(preguntaId);
-		this.listaRespuestas.categorias = this._categorias;
-		this.listaRespuestas.respuestas = this.preguntaEdicion.respuestas_no;
-		
-		this._preguntaIdSeleccionada = preguntaId;
-	}
-	
+//	cancelarRespuestas()
+//	{
+//		$('#ventanaRespuestasContenedor').hide();
+//	}
+//	
+//	editarRespuestasSi(preguntaId)
+//	{
+//		$("#tituloRespuestas").val("Respuestas Si");
+//		$('#ventanaRespuestasContenedor').data( "tipo", "SI" );
+//		$('#ventanaRespuestasContenedor').fadeIn( this.velocidadAnimacion );
+//	
+//		this.preguntaEdicion = this.listaPreguntas.getPregunta(preguntaId);
+//		this.listaRespuestas.categoriasPregunta = this.preguntaEdicion.categorias;
+//		this.listaRespuestas.categorias = this._categorias;
+//		this.listaRespuestas.respuestas = this.preguntaEdicion.respuestas_si;
+//		
+//		this._preguntaIdSeleccionada = preguntaId;
+//	}
+//	
+//	editarRespuestasNo(preguntaId)
+//	{
+//		$("#tituloRespuestas").val("Respuestas No");
+//		$('#ventanaRespuestasContenedor').data( "tipo", "NO" );
+//		$('#ventanaRespuestasContenedor').fadeIn( this.velocidadAnimacion );
+//		this.preguntaEdicion = this.listaPreguntas.getPregunta(preguntaId);
+//		this.listaRespuestas.categorias = this._categorias;
+//		this.listaRespuestas.respuestas = this.preguntaEdicion.respuestas_no;
+//		
+//		this._preguntaIdSeleccionada = preguntaId;
+//	}
+//	
 	get preguntaIdSeleccionada()
 	{
 		return this._preguntaIdSeleccionada;
 	}
 	
+//	guardar()
+//	{		
+//		if(this._leccionSeleccionada!=null)
+//			this._leccionSeleccionada.preguntas = this.listaPreguntas.preguntas;
+//		if(this.presentador!=null)
+//		{
+//			if(this.modo==Modo.ALTA)
+//				this.presentador.insertar();
+//			else
+//				this.presentador.actualizar();
+//		}
+//	}
+//	
+//	cerrarRespuestas()
+//	{
+//		$('#ventanaRespuestasContenedor').fadeOut(this.velocidadAnimacion);
+//	}
+	
+//	guardarRespuestas()
+//	{
+//		if(this.preguntaEdicion!=null)
+//		{
+//			var tipo = $('#ventanaRespuestasContenedor').data("tipo");
+//			if(tipo=="SI")
+//			{
+//				this.preguntaEdicion.respuestas_si = this.listaRespuestas.respuestas;
+//				var peso = this.listaPreguntas.getPeso(this.preguntaEdicion.id);
+//				//if(peso==0)
+//				//{
+//					this.listaPreguntas.setPeso(this.preguntaEdicion.id,this.preguntaEdicion.respuestas_si.length+1);
+//				//}
+//				if(this.modo==Modo.CAMBIO)
+//					this.presentador.guardarRespuestasSi();
+//			}
+//			else
+//			{
+//				this.preguntaEdicion.respuestas_no = this.listaRespuestas.respuestas;
+//				if(this.modo==Modo.CAMBIO)
+//					this.presentador.guardarRespuestasNo();
+//			}
+//		}
+//			
+//			
+//		$('#ventanaRespuestasContenedor').fadeOut(this.velocidadAnimacion);
+//	}
+	
+//	get respuestas()
+//	{
+//		return this.listaRespuestas.respuestas;
+//	}
+//	
+//	editar(id)
+//	{
+//		this.modo = "CAMBIO";
+//		this.limpiarFormulario();	
+//		this.mostrarFormulario();
+//		$('#tituloInput').focus();				
+//		//this.inicializarValidacionesFormulario("formulario");
+//		this.presentador.consultarPorLlaves();
+//		//this._cursoId =id;
+//	}
+
+//	cambiarLogo(input)
+//	{
+//		if (input.files && input.files[0]) 
+//		{
+//            var reader = new FileReader();
+//
+//            reader.onload = function (e)
+//            {
+//                $('#logoImage').attr('src', e.target.result);
+//            };
+//            reader.readAsDataURL(input.files[0]);
+//        }
+//		vista.presentador.actualizarLogo();
+//	}
+//	
+//	cambiarLogoAlta(input)
+//	{
+//		if (input.files && input.files[0]) 
+//		{
+//            var reader = new FileReader();
+//
+//            reader.onload = function (e)
+//            {
+//                $('#logoImageAlta').attr('src', e.target.result);
+//            };
+//            reader.readAsDataURL(input.files[0]);
+//        }
+//	}
+//	
+//	get logo()
+//	{
+//		var contenedorArchivos = $("#file") ;
+//		if(contenedorArchivos.length>0)
+//		{
+//			if(contenedorArchivos[0].files.length>0)
+//				return contenedorArchivos[0].files[0];
+//		}
+//		return null;	
+//		
+//	}
+//	
+//	get logoAlta()
+//	{
+//		var contenedorArchivos = $("#fileAlta") ;
+//		if(contenedorArchivos.length>0)
+//		{
+//			if(contenedorArchivos[0].files.length>0)
+//				return contenedorArchivos[0].files[0];
+//		}
+//		return null;	
+//		
+//	}
+//	
+//	eliminarCapacitacion(id)
+//	{
+//
+//	    $("#capacitacion"+id).slideUp(500, function () {
+//	      //$(this.element).trigger(removedEvent);
+//	    	$("#capacitacion"+id).remove();
+//	    });
+//	    
+//		//$("#capacitacion"+id).remove();
+//	}
+//	
+//	
+	siguiente()
+	{
+		this.funcion = "siguente";
+		this.guardar();
+	}
+	
+	anterior()
+	{
+		this.funcion = "anterior";
+		this.guardar();
+	}
+	
+
+	finalizar()
+	{
+		this.funcion = "finalizar";
+		this.guardar();
+	}
+	
 	guardar()
-	{		
-		if(this._leccionSeleccionada!=null)
-			this._leccionSeleccionada.preguntas = this.listaPreguntas.preguntas;
-		if(this.presentador!=null)
+	{
+		console.log("guardando...");
+		var preguntaActual = this.listaPreguntas.preguntaActual;
+		if(preguntaActual.respuestaId!=null && preguntaActual.respuestaId!="")
 		{
-			if(this.modo==Modo.ALTA)
-				this.presentador.insertar();
-			else
-				this.presentador.actualizar();
+			this.presentador.guardarPreguntaUsuario(preguntaActual.registro.id,preguntaActual.respuestaId);
 		}
-	}
-	
-	cerrarRespuestas()
-	{
-		$('#ventanaRespuestasContenedor').fadeOut(this.velocidadAnimacion);
-	}
-	
-	guardarRespuestas()
-	{
-		if(this.preguntaEdicion!=null)
+		else
 		{
-			var tipo = $('#ventanaRespuestasContenedor').data("tipo");
-			if(tipo=="SI")
-			{
-				this.preguntaEdicion.respuestas_si = this.listaRespuestas.respuestas;
-				var peso = this.listaPreguntas.getPeso(this.preguntaEdicion.id);
-				//if(peso==0)
-				//{
-					this.listaPreguntas.setPeso(this.preguntaEdicion.id,this.preguntaEdicion.respuestas_si.length+1);
-				//}
-				if(this.modo==Modo.CAMBIO)
-					this.presentador.guardarRespuestasSi();
-			}
-			else
-			{
-				this.preguntaEdicion.respuestas_no = this.listaRespuestas.respuestas;
-				if(this.modo==Modo.CAMBIO)
-					this.presentador.guardarRespuestasNo();
-			}
+			var _this = this;
+		  swal({
+	            title: "Para continuar",
+	            text: "Seleccione una respuesta: </br>",
+	            html: true,
+	            type: "warning",
+	            confirmButtonColor: "#32C2CD",
+	            confirmButtonText: "Cerrar",
+	            closeOnConfirm: true
+	        },
+	        function(){
+	        });
 		}
-			
-			
-		$('#ventanaRespuestasContenedor').fadeOut(this.velocidadAnimacion);
-	}
-	
-	get respuestas()
-	{
-		return this.listaRespuestas.respuestas;
-	}
-	
-	editar(id)
-	{
-		this.modo = "CAMBIO";
-		this.limpiarFormulario();	
-		this.mostrarFormulario();
-		$('#tituloInput').focus();				
-		//this.inicializarValidacionesFormulario("formulario");
-		this.presentador.consultarPorLlaves();
-		//this._cursoId =id;
-	}
-
-	cambiarLogo(input)
-	{
-		if (input.files && input.files[0]) 
-		{
-            var reader = new FileReader();
-
-            reader.onload = function (e)
-            {
-                $('#logoImage').attr('src', e.target.result);
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-		vista.presentador.actualizarLogo();
-	}
-	
-	cambiarLogoAlta(input)
-	{
-		if (input.files && input.files[0]) 
-		{
-            var reader = new FileReader();
-
-            reader.onload = function (e)
-            {
-                $('#logoImageAlta').attr('src', e.target.result);
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-	}
-	
-	get logo()
-	{
-		var contenedorArchivos = $("#file") ;
-		if(contenedorArchivos.length>0)
-		{
-			if(contenedorArchivos[0].files.length>0)
-				return contenedorArchivos[0].files[0];
-		}
-		return null;	
-		
-	}
-	
-	get logoAlta()
-	{
-		var contenedorArchivos = $("#fileAlta") ;
-		if(contenedorArchivos.length>0)
-		{
-			if(contenedorArchivos[0].files.length>0)
-				return contenedorArchivos[0].files[0];
-		}
-		return null;	
-		
-	}
-	
-	eliminarCapacitacion(id)
-	{
-
-	    $("#capacitacion"+id).slideUp(500, function () {
-	      //$(this.element).trigger(removedEvent);
-	    	$("#capacitacion"+id).remove();
-	    });
-	    
-		//$("#capacitacion"+id).remove();
 	}
 	
 	

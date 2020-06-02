@@ -562,6 +562,31 @@ class CapacitacionesRepositorio extends Repositorio
        });
 	}
 	
+	consultarPorTokenSinPreguntas(contexto,funcion, token)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+           url: url,
+           type: 'POST',
+           data: {accion : "consultarPorTokenSinPreguntas",token: token},
+           success: function( data, textStatus, jQxhr )
+           {
+               funcion.call(contexto,data);
+           },
+           error: function( jqXhr, textStatus, errorThrown )
+           {
+        	   if(textStatus=="parsererror")
+       	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+          		else
+          			funcion.call(contexto,{ mensajeError : textStatus});
+           },
+           fail: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : textStatus});
+           }
+       });
+	}
+	
 	consultarCursosPendientes(contexto,funcion, criteriosSeleccion, opcional)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;
@@ -636,5 +661,82 @@ class CapacitacionesRepositorio extends Repositorio
             }
         });
 	}
+	
+	
+	consultarPreguntaAleatoria(contexto,funcion,cursoId, leccionId, modo)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "consultarPreguntaAleatoria",cursoId: cursoId, leccionId: leccionId, modo: modo},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	guardarLeccionUsuario(contexto,funcion,cursoId, leccionId)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "guardarLeccionUsuario",cursoId: cursoId, leccionId: leccionId},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	guardarPreguntaUsuario(contexto,funcion,cursoId, leccionId, preguntaId, respuestaId)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "guardarPreguntaUsuario",cursoId: cursoId, leccionId: leccionId, preguntaId : preguntaId, respuestaId : respuestaId},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
 	
 }

@@ -3,10 +3,23 @@
     suPHP_ConfigPath /home/appshand/api.apps-handel.com
 </IfModule>
 
+#SetEnvIf Origin "^(.*\.apps-handel\.com)$" ORIGIN_SUB_DOMAIN=$1
+#<FilesMatch "\.(woff|pdf|woff2|html)$">
+#    Header set Access-Control-Allow-Origin "%{ORIGIN_SUB_DOMAIN}e" env=ORIGIN_SUB_DOMAIN
+#</FilesMatch>
+
 SetEnvIf Origin "^(.*\.apps-handel\.com)$" ORIGIN_SUB_DOMAIN=$1
 <FilesMatch "\.(woff|pdf|woff2|html)$">
-    Header set Access-Control-Allow-Origin "%{ORIGIN_SUB_DOMAIN}e" env=ORIGIN_SUB_DOMAIN
+	Header set Access-Control-Allow-Origin: *
 </FilesMatch>
+
+
+
+
+# ----------------------------------------------------------------------
+# Allow loading of external fonts
+# ----------------------------------------------------------------------
+
 
 # END custom php.ini
 

@@ -82,10 +82,10 @@ class CapacitacionesUsuarioVista extends CatalogoVista
                <div class="col-12">
             	<div class="clearfix">
                     <span class="pull-left">{{numeroLecciones}} {{textoLecciones}}</span>
-                    <small class="pull-right"></small>
+                    <small class="label {{bgTerminadas}} pull-right">{{numeroLeccionesTerminadas}} {{textoLeccionesTerminadas}}</small>
                   </div>
                   <div class="progress xs">
-                    <div class="progress-bar progress-bar-green" style="width: 0%;"></div>
+                    <div class="progress-bar {{progressBar}}" style="width: {{porcentajeCumplimiento}}%;"></div>
                    
                   </div>
                   
@@ -706,6 +706,12 @@ class CapacitacionesUsuarioVista extends CatalogoVista
 		    container: 'body',
 		    tooltipClass:'withoutColor'
 		})
+		
+		if(datos.length>0)
+			$("#tituloContestando").show();
+		else
+			$("#tituloContestando").hide();
+		
 	}
 	
 	set cursosTerminados(datos)
@@ -724,6 +730,11 @@ class CapacitacionesUsuarioVista extends CatalogoVista
 		    container: 'body',
 		    tooltipClass:'withoutColor'
 		})
+		
+		if(datos.length>0)
+			$("#tituloTerminados").show();
+		else
+			$("#tituloTerminados").hide();
 	}
 	
 	inicializarEventosContestando()
@@ -742,15 +753,15 @@ class CapacitacionesUsuarioVista extends CatalogoVista
 	{
 		var current = e.currentTarget;
 		var token =$(current).attr("data-token");
-		var tokenEjecucion =$(current).attr("data-tokenEjecucion");
-		e.data.ejecutar(token, tokenEjecucion);
+		//var tokenEjecucion =$(current).attr("data-tokenEjecucion");
+		e.data.ejecutar(token);
 	}
 	
 	ejecutarCapacitacionPendiente(e)
 	{
 		var current = e.currentTarget;
 		var token =$(current).attr("data-token");
-		var tokenEjecucion =$(current).attr("data-tokenEjecucion");
+		//var tokenEjecucion =$(current).attr("data-tokenEjecucion");
 		e.data.ejecutar(token);
 	}
 	
@@ -760,7 +771,7 @@ class CapacitacionesUsuarioVista extends CatalogoVista
 		createNewFormElement(submitForm, "token", token);
 		if(tokenEjecucion!=null)
 			createNewFormElement(submitForm, "tke", tokenEjecucion);
-		createNewFormElement(submitForm, "pnt", "capacitaciones_usuario.php");
+		createNewFormElement(submitForm, "pnt", "entrenamiento.php");
 		submitForm.method = "get"
 		submitForm.target= "_self";
 		submitForm.submit();

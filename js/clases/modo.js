@@ -15,4 +15,9 @@ class Modo
 		return  "CONSULTA";
 	}
 	
+	static get VISTA_PREVIA()
+	{
+		return  "VP";
+	}
+	
 }

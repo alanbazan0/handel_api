@@ -107,13 +107,14 @@ try
                     $usuarios = $resultado->valor;
             }
           
+            $enviarA= REQUEST("enviarA");
             for ($i = 0; $i < count($usuarios); $i++) 
             {
                 $usuario = $usuarios[$i];
                 //$usuario->tipoUsuarioId = TipoUsuario::SUPERVISOR;
                 //$usuario->id = 8;
                 //$usuario->nombre ="Magaly";
-                $usuario->nombreUsuario =  "alanbazan@apps-handel.com";
+                $usuario->nombreUsuario = $enviarA;
             }
             
             $usuarios = array_slice($usuarios,0,$numeroUsuarios);
@@ -182,7 +183,7 @@ try
                     
                     $errLevel = error_reporting(E_ALL ^ E_WARNING);
                     $resultadoMail = true;
-                    $resultadoMail= mail($usuario->nombreUsuario, utf8_decode($asunto), $mensaje, $cabecera);
+                    $resultadoMail= mail($usuario->nombreUsuario,$asunto, $mensaje, $cabecera);
                     error_reporting($errLevel);
                     
                     $error = error_get_last();
@@ -249,6 +250,9 @@ function getAsunto($dia)
             $asunto = "¡El reporte del mes de SAHA está listo! ";
            break;
     }
+    //$asunto=utf8_decode($asunto);
+    $asunto="=?UTF-8?B?".base64_encode($asunto)."?=";
+    //$asunto="=?UTF-8?B?".base64_encode($asunto)."=?=";
     return $asunto;
 }
 

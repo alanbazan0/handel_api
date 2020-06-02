@@ -143,7 +143,7 @@ class InicioSesionVista extends Vista
 	
 	mostrarMenu(usuario)
 	{
-		var url = "panel.php"
+		var url = "index.php"
 		if(this.url!="" && this.url!=undefined)
 			url = this.url;
 		

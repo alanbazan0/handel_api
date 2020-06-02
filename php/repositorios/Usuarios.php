@@ -259,19 +259,32 @@ try
                                             
                                     break;
                                     case "CAVIH":
-                                        if($resultado->valor->tipoUsuarioId == TipoUsuario::ADMINISTRADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::COORDINADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::SUPERVISOR ||  $resultado->valor->tipoUsuarioId == TipoUsuario::CAPACITADO)
-                                        {
-                                            $_SESSION['usuario']=$resultado->valor;
+//                                         if($resultado->valor->tipoUsuarioId == TipoUsuario::ADMINISTRADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::COORDINADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::SUPERVISOR ||  $resultado->valor->tipoUsuarioId == TipoUsuario::CAPACITADO)
+//                                         {
+//                                             $_SESSION['usuario']=$resultado->valor;
                                             
-                                            $historialAccesoRepositorio = new HistorialAccesoRepositorio($conexion);
-                                            $historialAccesoRepositorio->insertar($nombreUsuario,$aplicacionId,$aplicacionVersion);
-                                        }
-                                        else
-                                        {
-                                            $resultado->valor = null;
-                                            $resultado->mensajeError="El acceso a la plataforma en linea esta restringido a usuarios autorizados, si necesita ingresar para realizar cambios por favor solicite los cambios con su supervisor autorizado.";
-                                            unset($_SESSION['usuario']);
-                                        }
+//                                             $historialAccesoRepositorio = new HistorialAccesoRepositorio($conexion);
+//                                             $historialAccesoRepositorio->insertar($nombreUsuario,$aplicacionId,$aplicacionVersion);
+//                                         }
+//                                         else
+//                                         {
+//                                             $resultado->valor = null;
+//                                             $resultado->mensajeError="El acceso a la plataforma en linea esta restringido a usuarios autorizados, si necesita ingresar para realizar cambios por favor solicite los cambios con su supervisor autorizado.";
+//                                             unset($_SESSION['usuario']);
+//                                         }
+//                                             if($resultado->valor->permisoCAVIH==1)
+//                                             {
+                                                $_SESSION['usuario']=$resultado->valor;
+                                                
+                                                $historialAccesoRepositorio = new HistorialAccesoRepositorio($conexion);
+                                                $historialAccesoRepositorio->insertar($nombreUsuario,$aplicacionId,$aplicacionVersion);
+//                                             }
+//                                             else
+//                                             {
+//                                                 $resultado->valor = null;
+//                                                 $resultado->mensajeError="El acceso a la plataforma en linea esta restringido a usuarios autorizados, si necesita ingresar para realizar cambios por favor solicite los cambios con su supervisor autorizado.";
+//                                                 unset($_SESSION['usuario']);
+//                                             }
                                       break;
                                     default:
                                         $resultado->valor = null;

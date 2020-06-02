@@ -110,12 +110,58 @@ try
                 $resultado = $repositorio->ordenarPreguntas($cursoId,$leccionId,$seleccion);        
             break;
             case 'consultarPorLlaves':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
                 $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->consultarPorLlaves($llaves);
-            break;      
-            case 'consultarPorToken':
+                $resultado = $repositorio->consultarPorLlaves($usuario,$llaves);
+            break;   
+            case 'consultarPorTokenSinPreguntas':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
                 $token = REQUEST('token');
-                $resultado = $repositorio->consultarPorToken($token);
+                $resultado = $repositorio->consultarPorTokenSinPreguntas($usuario,$token);
+            break;
+            case 'consultarPreguntaAleatoria':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $cursoId = REQUEST('cursoId');
+                $leccionId = REQUEST('leccionId');
+                $modo = REQUEST('modo');
+                $resultado = $repositorio->consultarPreguntaAleatoria($usuario, $cursoId, $leccionId, $modo);
+            break;
+            case 'guardarLeccionUsuario':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $cursoId = REQUEST('cursoId');
+                $leccionId = REQUEST('leccionId');
+                $resultado = $repositorio->guardarLeccionUsuario($usuario, $cursoId, $leccionId);
+            break;
+            case 'guardarPreguntaUsuario':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $cursoId = REQUEST('cursoId');
+                $leccionId = REQUEST('leccionId');
+                $preguntaId = REQUEST('preguntaId');
+                $respuestaId = REQUEST('respuestaId');
+                $resultado = $repositorio->guardarPreguntaUsuario($usuario, $cursoId, $leccionId,$preguntaId, $respuestaId);
+            break;
+            case 'consultarPorToken':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $token = REQUEST('token');
+                $resultado = $repositorio->consultarPorToken($usuario,$token);
              break;   
             case 'eliminarPregunta':
                 $llaves = json_decode(REQUEST('llaves'));

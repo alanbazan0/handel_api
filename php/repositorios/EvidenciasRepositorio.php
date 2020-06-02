@@ -49,13 +49,13 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                 if($sentencia->bind_param('ssiiss', $id, $modelo->usuarioProcedimientoId, $modelo->realizoActividad, $modelo->justificacionId, $modelo->comentarios,$nombreArchivoSubido))
                 {
                     if(!$sentencia->execute())
-                        $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                        $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 }
                 else
-                    $resultado->mensajeError = 'Falló el enlace de parámetros';
+                    $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
             }
             else
-                $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' .$this->conexion->error;
+                $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' .$this->conexion->error;
         }
         return $resultado;
     }
@@ -83,16 +83,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                         }
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
         }
         else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
     
@@ -125,16 +125,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
 //                         }
 //                     }
 //                     else
-//                         $resultado->mensajeError = 'Falló el enlace del resultado.';
+//                         $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
 //                 }
 //                 else
-//                     $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+//                     $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
 //             }
 //             else
-//                 $resultado->mensajeError = 'Falló el enlace de parámetros';
+//                 $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
 //         }
 //         else
-//             $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+//             $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
 //         return $resultado;
 //     }
     
@@ -165,16 +165,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
 //                         }
 //                     }
 //                     else
-//                         $resultado->mensajeError = 'Falló el enlace del resultado.';
+//                         $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
 //                 }
 //                 else
-//                     $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+//                     $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
 //             }
 //             else
-//                 $resultado->mensajeError = 'Falló el enlace de parámetros';
+//                 $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
 //         }
 //         else
-//             $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+//             $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
 //             return $resultado;
 //     }
     
@@ -207,16 +207,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
 //                         }
 //                     }
 //                     else
-//                         $resultado->mensajeError = 'Falló el enlace del resultado.';
+//                         $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
 //                 }
 //                 else
-//                     $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+//                     $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
 //             }
 //             else
-//                 $resultado->mensajeError = 'Falló el enlace de parámetros';
+//                 $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
 //         }
 //         else
-//             $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+//             $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
 //             return $resultado;
 //     }
     
@@ -254,16 +254,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                         $resultado->valor = $registros;
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
         }
         else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
     
@@ -313,16 +313,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                         $resultado->valor = $registros;
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
         }
         else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
     
@@ -413,16 +413,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
 //                         $resultado->valor = $registros;
 //                     }
 //                     else
-//                         $resultado->mensajeError = 'Falló el enlace del resultado.';
+//                         $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
 //                 }
 //                 else
-//                     $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+//                     $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
 //             }
 //             else
-//                 $resultado->mensajeError = 'Falló el enlace de parámetros';
+//                 $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
 //         }
 //         else
-//             $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+//             $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
     
@@ -459,16 +459,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                             }
                         }
                         else
-                            $resultado->mensajeError = 'Falló el enlace del resultado.';
+                            $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                     }
                     else
-                        $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                        $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 }
                 else
-                    $resultado->mensajeError = 'Falló el enlace de parámetros';
+                    $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
             }
             else
-                $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 return $resultado;
     }
     
@@ -513,16 +513,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                         $resultado->valor = $registros;
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
         }
         else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
         return $resultado;
     }
     
@@ -594,16 +594,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                         $resultado->valor = $registros;
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
         }
         else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
     
@@ -676,16 +676,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                         $resultado->valor = $registros;
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
         }
         else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
         return $resultado;
     }
     
@@ -773,7 +773,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
                     		INNER JOIN sedes S1 ON S1.id = U1.sede_id
                     		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
-                    		INNER JOIN areas A1 ON A1.id = U1.area_id
+                    		LEFT JOIN areas A1 ON A1.id = U1.area_id
                             INNER JOIN departamentos D1 ON D1.id = U1.departamento_id
                     	WHERE justificacion_id IS NOT NULL AND EM1.id = EM.id AND A1.id = A.id AND D1.id = D.id AND U1.id = U.id  $filtroAno1 $filtroMes1
                     ) justificadas,
@@ -784,7 +784,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
                     		INNER JOIN sedes S1 ON S1.id = U1.sede_id
                     		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
-                    		INNER JOIN areas A1 ON A1.id = U1.area_id
+                    		LEFT JOIN areas A1 ON A1.id = U1.area_id
                             INNER JOIN departamentos D1 ON D1.id = U1.departamento_id
                     	WHERE justificacion_id IS NULL AND EM1.id = EM.id AND A1.id = A.id AND D1.id = D.id AND U1.id = U.id $filtroAno1 $filtroMes1
                     ) enviadas,
@@ -795,7 +795,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
                     		INNER JOIN sedes S1 ON S1.id = U1.sede_id
                     		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
-                    		INNER JOIN areas A1 ON A1.id = U1.area_id
+                    		LEFT JOIN areas A1 ON A1.id = U1.area_id
                            INNER JOIN departamentos D1 ON D1.id = U1.departamento_id
                     	 WHERE ((UP1.estatus = 1 AND UP1.fecha_alta  <=  '$ultimoDiaMes') OR (UP1.estatus = 0 AND MONTH(UP1.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP1.fecha_alta) <= $criteriosSeleccion->ano AND MONTH(UP1.fecha_cancelacion) > $criteriosSeleccion->mes AND  YEAR(UP1.fecha_cancelacion) >= $criteriosSeleccion->ano))
                                 AND EM1.id = EM.id AND A1.id = A.id AND D1.id = D.id AND U1.id = U.id 
@@ -806,7 +806,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     					INNER JOIN usuarios U2 ON U2.id = UP2.usuario_id
                     					INNER JOIN sedes S2 ON S2.id = U2.sede_id
                     					INNER JOIN empresas EM2 ON EM2.id = S2.empresa_id
-                    					INNER JOIN areas A2 ON A2.id = U2.area_id
+                    					LEFT JOIN areas A2 ON A2.id = U2.area_id
                                         INNER JOIN departamentos D2 ON D2.id = U2.departamento_id
                     				WHERE  EM2.id = EM1.id AND A2.id = A1.id AND D2.id = D1.id AND U1.id = U.id  $filtroAno2 $filtroMes2
                     				)
@@ -816,7 +816,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     	INNER JOIN usuarios_procedimientos UP ON U.id = UP.usuario_id
                     	INNER JOIN sedes S ON S.id = U.sede_id
                     	INNER JOIN empresas EM ON EM.id = S.empresa_id
-                    	INNER JOIN areas A ON A.id = U.area_id
+                    	LEFT JOIN areas A ON A.id = U.area_id
                         INNER JOIN departamentos D ON D.id = U.departamento_id
                     WHERE UP.estatus = 1 
                         AND U.estatus = 1 
@@ -1096,16 +1096,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                             $resultado->valor = $registros;
                         }
                         else
-                            $resultado->mensajeError = 'Falló el enlace del resultado.';
+                            $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                     }
                     else
-                        $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                        $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 }
                 else
-                    $resultado->mensajeError = 'Falló el enlace de parámetros';
+                    $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
             }
             else
-                $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
         }
         
         return $resultado;
@@ -1150,16 +1150,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                         $resultado->valor = $registros;
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
         }
         else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
     
@@ -1231,16 +1231,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                         $resultado->valor = $registros;
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
         }
         else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
     
@@ -1327,16 +1327,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                         $resultado->valor = $registros;
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
         }
         else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
     
@@ -1421,16 +1421,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                         $resultado->valor = $registros;
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
         }
         else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
     
@@ -1461,13 +1461,13 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                         $resultado->valor=true;
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
         }
         else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
         
       
             
@@ -1581,16 +1581,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                             $resultado->valor = $registros;
                         }
                         else
-                            $resultado->mensajeError = 'Falló el enlace del resultado.';
+                            $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                     }
                     else
-                        $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                        $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 }
                 else
-                    $resultado->mensajeError = 'Falló el enlace de parámetros';
+                    $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
             }
             else
-                $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
           return $resultado;
         
 
@@ -1646,16 +1646,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                 else
                 {
                     $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 }
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
         }
         else
         {
             $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
         }
         return $resultado;
     }
@@ -1788,16 +1788,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                         }
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
         }
         else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
     
@@ -1830,16 +1830,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                         }
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
         }
         else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
     
@@ -1884,16 +1884,16 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                         }
                     }
                     else
-                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                 }
                 else
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
         }
         else
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
     
