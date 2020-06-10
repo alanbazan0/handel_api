@@ -555,6 +555,16 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 if($criteriosSeleccion->permisoSIVAH!="" && $criteriosSeleccion->permisoSIVAH!=null)
                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'permiso_sivah','valor'=>$criteriosSeleccion->permisoSIVAH]);
             }
+            if(isset($criteriosSeleccion->permiso10y7))
+            {
+                if($criteriosSeleccion->permiso10y7!="" && $criteriosSeleccion->permiso10y7!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'permiso_10y7','valor'=>$criteriosSeleccion->permiso10y7]);
+            }
+            if(isset($criteriosSeleccion->estatus))
+            {
+                if($criteriosSeleccion->estatus!="" && $criteriosSeleccion->estatus!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'estatus','valor'=>$criteriosSeleccion->estatus]);
+            }
             $where = $this->where($filtros);
         }
         
@@ -945,7 +955,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
     {
         $resultado = new Resultado();       
         $consulta =   $this->consultaBase .
-                    " WHERE U.nombre_usuario = ? AND U.contrasena = ?";
+                    " WHERE U.nombre_usuario = ? AND U.contrasena = ? ";
         
         
         if($sentencia = $this->conexion->prepare($consulta))

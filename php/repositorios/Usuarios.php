@@ -188,6 +188,9 @@ try
                                 break;
                             }
                         }
+                        
+                        if($resultado->valor->estatus!=1)
+                            $tienePermiso = false;
                        
                         if($tienePermiso)
                         {

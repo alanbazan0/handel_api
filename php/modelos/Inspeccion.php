@@ -47,5 +47,6 @@ class Inspeccion
     public $tieneImpresoSello;
     public $cajaLibreObjetosOrganicos;
     public $factura;
+    public $inspectorAleatorioId;
 }
 
