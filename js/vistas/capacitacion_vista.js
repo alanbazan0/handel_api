@@ -56,6 +56,11 @@ class CapacitacionVista extends CatalogoVista
 			  });
 			  
 			  	var myPlayer = this;
+			  	
+		  	 myPlayer.on("loadedmetadata", function(event) {
+			    	var duracion = parseInt(myPlayer.duration());
+			    	_this.actualizarDuracionLeccion(duracion);
+			    });
 
 			    var currentTime = 0;
 
@@ -70,6 +75,8 @@ class CapacitacionVista extends CatalogoVista
 			        myPlayer.currentTime(currentTime);
 			      }
 			    });
+			    
+			   
 
 			    setInterval(function() {
 			      if (!myPlayer.paused()) {
@@ -1043,6 +1050,7 @@ class CapacitacionVista extends CatalogoVista
 	
 	clickPlay(event)
 	{
+	
 		 event.data.guardarLeccionUsuario();
 	}
 	
@@ -1055,6 +1063,11 @@ class CapacitacionVista extends CatalogoVista
 	consultarPreguntaAleatoria()
 	{
 		this.presentador.consultarPreguntaAleatoria(this._leccionIdSeleccionada);
+	}
+	
+	actualizarDuracionLeccion(duracion)
+	{
+		this.presentador.actualizarDuracionLeccion(this._leccionIdSeleccionada,duracion);
 	}
 	
 	mostrarPregunta(leccionId, pregunta, numeroPreguntasRestantes,numeroPreguntasContestadas)

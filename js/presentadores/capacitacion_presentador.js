@@ -70,6 +70,26 @@ class CapacitacionPresentador extends CatalogoPresentador
 		 }
 		 ,this.vista.cursoId, seccionId, this.vista.modo);
 	}
+	
+	
+	actualizarDuracionLeccion(leccionId,duracion)
+	{
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.actualizarDuracionLeccion(this, function(resultado)
+				 {		
+			 this.vista.ocultarIndicador();	
+			 this.vista.guardando = false;
+			 if(resultado.mensajeError=="")
+			 {
+				
+//				 if(this.vista.leccionIdSeleccionada == resultado.valor.leccionId)
+//					 this.vista.mostrarPregunta(resultado.valor.leccionId,resultado.valor.pregunta, resultado.valor.numeroPreguntasRestantes,resultado.valor.numeroPreguntasContestadas);
+			 }
+			 else
+				 this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		 ,this.vista.cursoId, leccionId,duracion);
+	}
 	 
 	
 	

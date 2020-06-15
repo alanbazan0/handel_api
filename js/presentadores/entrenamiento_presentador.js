@@ -1,4 +1,4 @@
-class CapacitacionesUsuarioPresentador extends CatalogoPresentador
+class EntrenamientoPresentador extends CatalogoPresentador
 {
 	 constructor(vista)
 	 {
@@ -502,6 +502,62 @@ class CapacitacionesUsuarioPresentador extends CatalogoPresentador
 					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 					
 		 },this.vista.criteriosSeleccion);
+	 }
+	 
+	 consultarAvanceUsuario()
+	 {
+		 this.vista.mostrarIndicador();
+		 this._repositorio.consultarAvanceUsuario(this, function(resultado)
+		 {
+				this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.avance = resultado.valor;
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+					
+		 });
+	 }
+	 
+	 consultarAprovechamientoUsuario()
+	 {
+		 this.vista.mostrarIndicador();
+		 this._repositorio.consultarAprovechamientoUsuario(this, function(resultado)
+		 {
+				this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.aprovechamiento = resultado.valor;
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+					
+		 });
+	 }
+	 
+	 consultarVideosVistosUsuario()
+	 {
+		 this.vista.mostrarIndicador();
+		 this._repositorio.consultarVideosVistosUsuario(this, function(resultado)
+		 {
+				this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.videosVistos = resultado.valor;
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+					
+		 });
+	 }
+	 
+	 consultarDiasCapacitacionUsuario()
+	 {
+		 this.vista.mostrarIndicador();
+		 this._repositorio.consultarDiasCapacitacionUsuario(this, function(resultado)
+		 {
+				this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.diasCapacitacion = resultado.valor;
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+					
+		 });
 	 }
 	 
 	 

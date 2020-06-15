@@ -688,6 +688,31 @@ class CapacitacionesRepositorio extends Repositorio
       });
 	}
 	
+	actualizarDuracionLeccion(contexto,funcion,cursoId, leccionId, duracion)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "actualizarDuracionLeccion",cursoId: cursoId, leccionId: leccionId, duracion: duracion},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
 	guardarLeccionUsuario(contexto,funcion,cursoId, leccionId)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;
@@ -738,5 +763,105 @@ class CapacitacionesRepositorio extends Repositorio
       });
 	}
 	
+	consultarAvanceUsuario(contexto,funcion)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "consultarAvanceUsuario"},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	
+	consultarAprovechamientoUsuario(contexto,funcion)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "consultarAprovechamientoUsuario"},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	consultarVideosVistosUsuario(contexto,funcion)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "consultarVideosVistosUsuario"},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	consultarDiasCapacitacionUsuario(contexto,funcion)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "consultarDiasCapacitacionUsuario"},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
 	
 }

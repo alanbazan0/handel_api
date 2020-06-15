@@ -135,6 +135,16 @@ try
                 $modo = REQUEST('modo');
                 $resultado = $repositorio->consultarPreguntaAleatoria($usuario, $cursoId, $leccionId, $modo);
             break;
+            case 'actualizarDuracionLeccion':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                     $usuario = $_SESSION['usuario'];
+                $cursoId = REQUEST('cursoId');
+                $leccionId = REQUEST('leccionId');
+                $duracion = REQUEST('duracion');
+                $resultado = $repositorio->actualizarDuracionLeccion($usuario, $cursoId, $leccionId, $duracion);
+            break;
             case 'guardarLeccionUsuario':
                 session_start();
                 $usuario = null;
@@ -235,15 +245,6 @@ try
                 }
                
             break;
-//             case 'guardarRespuestasSi':
-//                 $cursoId = REQUEST('cursoId');
-//                 $leccionId = REQUEST('leccionId');
-//                 $preguntaId = REQUEST('preguntaId');
-//                 $json = json_decode(REQUEST('respuestas'));
-//                 $mapper = new JsonMapper();
-//                 $respuestas = $mapper->mapArray($json, array());
-//                 $resultado = $repositorio->guardarRespuestasSi($cursoId,$leccionId,$preguntaId,$respuestas);
-//             break;
             case 'guardarRespuestasNo':
                 $cursoId = REQUEST('cursoId');
                 $leccionId = REQUEST('leccionId');
@@ -303,6 +304,34 @@ try
                 $mapper = new JsonMapper();
                 $perfiles = $mapper->mapArray(json_decode(REQUEST('perfiles')), array());
                 $resultado = $repositorio->actualizarPerfiles($cursoId, $perfiles);
+            break;
+            case 'consultarAvanceUsuario':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $resultado = $repositorio->consultarAvanceUsuario($usuario);
+            break;
+            case 'consultarAprovechamientoUsuario':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+            $resultado = $repositorio->consultarAprovechamientoUsuario($usuario);
+            break;
+            case 'consultarVideosVistosUsuario':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $resultado = $repositorio->consultarVideosVistosUsuario($usuario);
+            break;
+            case 'consultarDiasCapacitacionUsuario':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $resultado = $repositorio->consultarDiasCapacitacionUsuario($usuario);
             break;
             default:
                 $resultado->mensajeError = "Acción no válida";

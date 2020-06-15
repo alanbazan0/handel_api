@@ -1,10 +1,10 @@
-class CapacitacionesUsuarioVista extends CatalogoVista
+class EntrenamientoVista extends CatalogoVista
 {		
 	constructor(ventana)
 	{	
 		super();
 		this.ventana = ventana;
-		this.presentador = new CapacitacionesUsuarioPresentador(this);
+		this.presentador = new EntrenamientoPresentador(this);
 
 		this.listaLecciones = new ListaLecciones("listaLecciones");
 		
@@ -1157,11 +1157,90 @@ class CapacitacionesUsuarioVista extends CatalogoVista
 		//$("#capacitacion"+id).remove();
 	}
 	
+	consultar()
+	{
+		this.presentador.consultar();
+		//if($("#avanceIndicador").is(":visible"))
+			this.presentador.consultarAvanceUsuario();
+		//if($("#aprovechamientoIndicador").is(":visible"))
+			this.presentador.consultarAprovechamientoUsuario();
+		//if($("#videosVistosIndicador").is(":visible"))
+			this.presentador.consultarVideosVistosUsuario();
+		//if($("#diasCapacitacionIndicador").is(":visible"))
+			this.presentador.consultarDiasCapacitacionUsuario();
+	}
 	
+	set avance(avance)
+	{
+		$("#avanceIndicadorValor").html(avance.terminados+"/"+avance.total);
+		$("#avanceIndicadorProgreso").width(avance.porcentaje);
+		$("#avanceIndicadorDescripcion").html(avance.porcentaje+"%");
+	}
+	
+	set aprovechamiento(aprovechamiento)
+	{
+		$("#aprovechamientoIndicadorValor").html(aprovechamiento.correctas+"/"+aprovechamiento.total);
+		$("#aprovechamientoIndicadorProgreso").width(aprovechamiento.porcentaje);
+		$("#aprovechamientoIndicadorDescripcion").html(aprovechamiento.porcentaje+"%");
+		
+		$("#cumplimientoBoxDiv").removeClass("bg-green");
+		$("#cumplimientoBoxDiv").removeClass("bg-red");
+		$("#cumplimientoBoxDiv").removeClass("bg-yellow");
+		
+		$("#cumplimientoIcono").removeClass("fas fa-smile-beam");
+		$("#cumplimientoIcono").removeClass("fas fa-meh");
+		$("#cumplimientoIcono").removeClass("fas fa-sad-tear");
+		
+		var porcentajeCumplimiento = parseFloat(aprovechamiento.porcentaje);
+		
+		if(porcentajeCumplimiento >= 0 && porcentajeCumplimiento < 51)
+		{
+			//$("#cumplimientoBoxDiv").addClass("bg-red");
+			$("#aprovechamientoIndicadorIcono").addClass("fas fa-sad-tear");
+			
+		}
+		else if(porcentajeCumplimiento >= 51 && porcentajeCumplimiento < 100)
+		{
+			//$("#cumplimientoBoxDiv").addClass("bg-yellow");
+			$("#aprovechamientoIndicadorIcono").addClass("fas fa-meh");
+		}
+		else if(porcentajeCumplimiento >= 100)
+		{
+			//$("#cumplimientoBoxDiv").addClass("bg-green");
+			$("#aprovechamientoIndicadorIcono").addClass("fas fa-smile-beam");
+		}
+		
+	}
+	
+	set videosVistos(videosVistos)
+	{
+		$("#videosVistosIndicadorValor").html(videosVistos.vistos+"/"+videosVistos.total);
+		$("#videosVistosIndicadorProgreso").width(videosVistos.porcentaje);
+		
+		var tiempo = moment("2015-01-01").startOf('day')
+	    .minutes(videosVistos.minutos)
+	    .format('H:mm');
+		
+		$("#videosVistosIndicadorDescripcion").html("Tiempo: " + tiempo);
+	}
+	
+	set diasCapacitacion(diasCapacitacion)
+	{
+		$("#diasCapacitacionIndicadorValor").html(diasCapacitacion.diasUltimaCapacitacion);
+		$("#diasCapacitacionIndicadorProgreso").width(diasCapacitacion.porcentaje);
+		
+		var textoDias = "";
+		if(diasCapacitacion.diasMesSinCapacitacion==1)
+			textoDias = "día";
+		else
+			textoDias = "días";
+		
+		$("#diasCapacitacionIndicadorDescripcion").html(diasCapacitacion.diasMesSinCapacitacion + " " + textoDias +" del mes sin capacitación");
+	}
 	
 	
 }
-var vista = new CapacitacionesUsuarioVista(this);
+var vista = new EntrenamientoVista(this);
 $(document).ready(function() 
 {
 	vista.inicializar();
