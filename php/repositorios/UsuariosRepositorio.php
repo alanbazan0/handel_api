@@ -575,7 +575,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         
         $consulta =  $this->consultaBase .
                     $where .
-                     " ORDER BY U.nombre";
+                     " ORDER BY U.nombre, U.apellido";
         
      
 
@@ -1056,7 +1056,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         $where = $this->where($filtros);
         
         $consulta = $this->consultaBase .
-        $where;
+        $where . " ORDER BY U.nombre, U.apellido ";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
