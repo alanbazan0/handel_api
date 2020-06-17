@@ -2882,9 +2882,9 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             $registro->textoLecciones = "Lecciones";
         
         if($numeroLeccionesTerminadas==1)
-            $registro->textoLeccionesTerminadas =  "Completada";
+            $registro->textoLeccionesTerminadas =  "Completada ($registro->porcentajeCumplimiento%)";
         else
-            $registro->textoLeccionesTerminadas = "Completadas";
+            $registro->textoLeccionesTerminadas = "Completadas ($registro->porcentajeCumplimiento%)";
         
         $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
         $registro->fotoPerfil =  "../fotos/usuario". $registro->usuarioId .".jpg";

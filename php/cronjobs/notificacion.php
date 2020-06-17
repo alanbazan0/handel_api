@@ -328,13 +328,6 @@ function getContenidoCoordinador($conexion,UsuariosRepositorio $usuariosReposito
             $contenido.="<div style='text-align:center;width:100%'>
                         <div style='text-align:left; display: inline-block; width:90%'>";
             
-//             $usuarioId = $usuario->id;
-//             $ano=  date("Y");
-//             $mes = date("m");
-//             $pdf = new PDF();
-//             $pdf->AliasNbPages();
-//             $pdf->generar($conexion,$usuarioId,$mes,$ano);
-//             $pdf->guardar();
             $ano=  date("Y");
             $mes = date("m");
             $contenido .="<br>" .getImageLink("Descargar","https://api.apps-handel.com/php/reportes/reporte_evidencias.php?usuarioId=$usuario->id&mes=$mes&ano=$ano");
@@ -345,7 +338,18 @@ function getContenidoCoordinador($conexion,UsuariosRepositorio $usuariosReposito
                             </div>";
             
         break;
-            
+        case 1:
+        case 14:
+        case 21:
+        case 27:
+            $resultado = $usuariosRepositorio->consultar($usuario,  (object) ['supervisor1Id' =>  $usuario->id], false);
+            if($resultado->correcto())
+            {
+                $usuariosACargo = $resultado->valor;
+                if(count($usuariosACargo)>0)
+                    $contenido = getContenidoSupervisor($conexion,$usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
+            }
+        break;    
     }
     return $contenido;
 }
@@ -593,11 +597,6 @@ function getContenidoSupervisor($conexion,UsuariosRepositorio $usuariosRepositor
             
             $porcentajeActual = $porcentajeCumplimiento;
             
-//             echo "<br>".$total;
-//             echo "<br>".$cumplidas;
-//             echo "<br>".$pendientes;
-//             echo "<br>".$porcentajeActual;
-            
             $ano =  date("Y",strtotime("-1 month"));
             $mes = date("m",strtotime("-1 month"));
             $criteriosSeleccion = (object) ['ano' => $ano, "mes"=> $mes];
@@ -618,8 +617,6 @@ function getContenidoSupervisor($conexion,UsuariosRepositorio $usuariosRepositor
             {
                 mensajeLog("error",$resultadoPorcentajes->mensajeError);
             }
-            
-           
             
             $porcentajeAnterior = $porcentajeCumplimiento;
             

@@ -565,6 +565,11 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 if($criteriosSeleccion->estatus!="" && $criteriosSeleccion->estatus!=null)
                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'estatus','valor'=>$criteriosSeleccion->estatus]);
             }
+            if(isset($criteriosSeleccion->supervisor1Id))
+            {
+                if($criteriosSeleccion->supervisor1Id!="" && $criteriosSeleccion->supervisor1Id!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'supervisor1_id','valor'=>$criteriosSeleccion->supervisor1Id]);
+            }
             $where = $this->where($filtros);
         }
         
