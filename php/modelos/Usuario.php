@@ -26,6 +26,7 @@ class Usuario
     public $corporativo;
     public $permisoCAVIH;
     public $perfilId;
+    public $recursosHumanos;
     
 }
 

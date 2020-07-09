@@ -125,6 +125,10 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','operador'=>'IN','valor'=>$empresasIds]);
                 }
             }
+            else if($usuario->recursosHumanos==1)
+            {
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','operador'=>'=','valor'=>$usuario->empresaId]);
+            }
         }
         
         $where = $this->where($filtros);

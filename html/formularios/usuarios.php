@@ -128,11 +128,21 @@
 							class="switch-label"></span> <span class="switch-handle"></span>
 						</label>
 					</div>
-					<div id='perfilGroup' class="form-group" style='display:none'>
-						<div>
-							<label for="perfilSelect" class="control-label mb-1">Perfil</label> 
-							<select name="perfilSelect" id="perfilSelect" class="form-control"></select>
-						</div>
+					<div id='perfilGroup' style='display:none'>
+    					<div class="form-group" >
+    						<div>
+    							<label for="perfilSelect" class="control-label mb-1">Perfil</label> 
+    							<select name="perfilSelect" id="perfilSelect" class="form-control"></select>
+    						</div>
+    					</div>
+    					<div class="form-group">
+    							<label class="control-label mb-1">Recursos Humanos</label> <label
+    							class="switch switch-3d switch-success mr-3"> <input
+    							id="recursosHumanosRadio" name="recursosHumanos" type="checkbox"
+    							class="switch-input"> <span
+    							class="switch-label"></span> <span class="switch-handle"></span>
+    						</label>
+    					</div>
 					</div>
 					<div class="form-group">
 						<label class="control-label mb-1">Activo</label> <label

@@ -763,6 +763,11 @@ class CapacitacionesVista extends CatalogoVista
 		//this.listaPreguntas.agregarRespuesta(preguntaId);
 	}
 	
+	enfocarRespuesta(preguntaId, respuestaId)
+	{
+		this.listaPreguntas.enfocarRespuesta(preguntaId,respuestaId);
+	}
+	
 	eliminarLeccion(event, leccionId)
 	{
 		if(this.listaLecciones.lecciones.length>1)

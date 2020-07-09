@@ -68,6 +68,15 @@ try
                 $opcional = REQUEST('opcional');
                 $resultado = $repositorio->consultarPorEmpresa($empresaId,$opcional,$usuario);
             break;
+            case 'consultarPorEmpresaUsuario':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                    $empresaId = REQUEST('empresaId');
+                    $opcional = REQUEST('opcional');
+               $resultado = $repositorio->consultarPorEmpresaUsuario($empresaId,$opcional,$usuario);
+             break;
             case 'eliminar':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);

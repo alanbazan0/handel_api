@@ -302,4 +302,27 @@ class UsuariosRepositorio extends Repositorio
 	        }
 	    });
 	}
+	
+	importarUsuarios(contexto,funcionResultado, empresaId, sedeId, departamentoId, archivo)
+	{		
+		var data = new FormData();
+		data.append("accion", "importar");
+		data.append("empresaId", empresaId);
+		data.append("sedeId", sedeId);
+		data.append("departamentoId", departamentoId);
+    	data.append("file", archivo );
+    	var url = HANDEL_API + "/" + this.servicio;
+        var xhr = new XMLHttpRequest();
+        xhr.open( 'POST', url, true );
+		xhr.onreadystatechange = function ( resultado ) 
+		{
+		    if (this.readyState == 4 && this.status == 200) 
+		    {
+		    	var datos = JSON.parse(resultado.target.response);
+		    	funcionResultado.call(contexto,datos);
+		    }
+		};
+		xhr.send( data );  
+	}
+	
 }

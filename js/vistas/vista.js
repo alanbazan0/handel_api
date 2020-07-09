@@ -59,6 +59,13 @@ class Vista
 		return fecha; 
 	}
 	
+	getFechaYMD(fecha)
+	{
+		fecha = fecha.split('/').reverse().join('-');
+		//fecha = fecha.replace("/","-");
+		return fecha; 
+	}
+	
 	mostrarIndicador()
 	{
 		$('#indicador').show();				

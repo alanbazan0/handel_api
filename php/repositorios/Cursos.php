@@ -209,6 +209,12 @@ try
                 $preguntaId = REQUEST('preguntaId');
                 $resultado = $repositorio->insertarRespuesta($cursoId, $leccionId,  $preguntaId);
             break;
+            case 'insertarRespuestaCorrecta':
+                $cursoId = REQUEST('cursoId');
+                $leccionId = REQUEST('leccionId');
+                $preguntaId = REQUEST('preguntaId');
+                $resultado = $repositorio->insertarRespuestaCorrecta($cursoId, $leccionId,  $preguntaId);
+            break;
             case 'actualizarValor':
                 $cursoId = REQUEST('cursoId');
                 $campo = REQUEST('campo');
@@ -332,6 +338,14 @@ try
                 if(isset($_SESSION['usuario']))
                     $usuario = $_SESSION['usuario'];
                 $resultado = $repositorio->consultarDiasCapacitacionUsuario($usuario);
+            break;
+            case 'consultarResultadosUsuarios':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarResultadosUsuarios($usuario,$criteriosSeleccion);
             break;
             default:
                 $resultado->mensajeError = "Acción no válida";

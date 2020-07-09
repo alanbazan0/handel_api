@@ -228,13 +228,38 @@ class CapacitacionesRepositorio extends Repositorio
       });
 	}
 	
-	insertarRespuesta(contexto,funcion,cursoId, leccionId, preguntaId)
+	insertarRespuesta(contexto,funcion,cursoId, leccionId, preguntaId, respuesta)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
           url: url,
           type: 'POST',
           data: {accion : "insertarRespuesta",cursoId: cursoId,leccionId: leccionId,preguntaId: preguntaId},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	insertarRespuestaCorrecta(contexto,funcion,cursoId, leccionId, preguntaId, respuesta)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "insertarRespuestaCorrecta",cursoId: cursoId,leccionId: leccionId,preguntaId: preguntaId},
           success: function( data, textStatus, jQxhr )
           {
               funcion.call(contexto,data);
@@ -846,6 +871,31 @@ class CapacitacionesRepositorio extends Repositorio
           url: url,
           type: 'POST',
           data: {accion : "consultarDiasCapacitacionUsuario"},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	consultarResultadosUsuarios(contexto,funcion, criteriosSeleccion)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "consultarResultadosUsuarios",criteriosSeleccion: JSON.stringify(criteriosSeleccion)},
           success: function( data, textStatus, jQxhr )
           {
               funcion.call(contexto,data);

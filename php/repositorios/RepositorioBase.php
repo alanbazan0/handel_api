@@ -73,43 +73,51 @@ class RepositorioBase
                 {
                     $filtro = $filtros[$i];
                     $tabla="";
-                    if(isset($filtro->tabla))
-                        $tabla = $filtro->tabla . ".";
-                    if($this->esCadena($filtro->tipoDato))
-                    {                   
-                        if(isset($filtro->operador))
-                        {
-                            if($filtro->operador=="IN")
-                                $texto .= trim($tabla) . trim($filtro->campo) . " IN (" . $filtro->valor.") ";
-                            else
-                                $texto .= trim($tabla) . trim($filtro->campo) . " " . $filtro->operador . " ? ";
-                        }
-                        else
-                            $texto .= trim($tabla) . trim($filtro->campo) . " LIKE CONCAT('%',?,'%') ";
-                    }
-                    else if($this->esFecha($filtro->tipoDato))
+                    
+                    if(isset($filtro->tipo) && $filtro->tipo=="estatico")
                     {
-                        if(isset($filtro->operador))
-                        {
-                            if($filtro->operador=="IN")
-                                $texto .= trim($tabla) . trim($filtro->campo) . " IN (" . $filtro->valor.") ";
-                            else
-                                $texto .= trim($tabla) . trim($filtro->campo) . " " . $filtro->operador . " ? ";
-                        }
-                        else
-                            $texto .= trim($tabla) . trim($filtro->campo) . " = ? ";
+                        $texto .= $filtro->texto;
                     }
                     else
                     {
-                        if(isset($filtro->operador))
-                        {
-                            if($filtro->operador=="IN")
-                                $texto .= trim($tabla) . trim($filtro->campo) . " IN (" . $filtro->valor.") ";
+                        if(isset($filtro->tabla))
+                            $tabla = $filtro->tabla . ".";
+                        if($this->esCadena($filtro->tipoDato))
+                        {                   
+                            if(isset($filtro->operador))
+                            {
+                                if($filtro->operador=="IN")
+                                    $texto .= trim($tabla) . trim($filtro->campo) . " IN (" . $filtro->valor.") ";
+                                else
+                                    $texto .= trim($tabla) . trim($filtro->campo) . " " . $filtro->operador . " ? ";
+                            }
                             else
-                                $texto .= trim($tabla) . trim($filtro->campo) . " " . $filtro->operador . " ? ";
+                                $texto .= trim($tabla) . trim($filtro->campo) . " LIKE CONCAT('%',?,'%') ";
                         }
-                        else       
-                            $texto .= trim($tabla) . trim($filtro->campo) . " = ? ";
+                        else if($this->esFecha($filtro->tipoDato))
+                        {
+                            if(isset($filtro->operador))
+                            {
+                                if($filtro->operador=="IN")
+                                    $texto .= trim($tabla) . trim($filtro->campo) . " IN (" . $filtro->valor.") ";
+                                else
+                                    $texto .= trim($tabla) . trim($filtro->campo) . " " . $filtro->operador . " ? ";
+                            }
+                            else
+                                $texto .= trim($tabla) . trim($filtro->campo) . " = ? ";
+                        }
+                        else
+                        {
+                            if(isset($filtro->operador))
+                            {
+                                if($filtro->operador=="IN")
+                                    $texto .= trim($tabla) . trim($filtro->campo) . " IN (" . $filtro->valor.") ";
+                                else
+                                    $texto .= trim($tabla) . trim($filtro->campo) . " " . $filtro->operador . " ? ";
+                            }
+                            else       
+                                $texto .= trim($tabla) . trim($filtro->campo) . " = ? ";
+                        }
                     }
                     if($i < count($filtros) - 1)
                         $texto .= " AND ";

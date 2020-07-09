@@ -46,6 +46,28 @@ class SedesRepositorio extends Repositorio
 	       }
 	   });
 	}
+	
+	consultarPorEmpresaUsuario(contexto,funcion, empresaId, opcional)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarPorEmpresaUsuario", empresaId : empresaId, opcional : opcional},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       }
+	   });
+	}
 //	
 //	consultarPorEmpresaResultado(resultado)
 //	{

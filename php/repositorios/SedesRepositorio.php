@@ -9,7 +9,7 @@ include "../interfaces/ISedesRepositorio.php";
 include "../modelos/Sede.php";
 include "../clases/TipoUsuario.php";
 include "RepositorioBase.php";
-
+require_once("UsuariosRepositorio.php");
 require_once("../clases/Resultado.php");
 
 class SedesRepositorio extends RepositorioBase implements ISedesRepositorio
@@ -192,6 +192,98 @@ class SedesRepositorio extends RepositorioBase implements ISedesRepositorio
         return $registro;
     }
     
+    public function consultarPorEmpresaUsuario($empresaId,$opcional,$usuario)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $filtros = array();
+        $where="";
+        if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
+        {
+            if($empresaId!="")
+                array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$empresaId]);
+        }
+        else 
+        {
+            if($empresaId!="")
+                array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$empresaId]);
+            else
+            {
+                $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+                if($resultado->correcto())
+                {
+                    $empresasIds = implode(",", $resultado->valor);
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','operador'=>'IN','valor'=>$empresasIds]);
+                }
+            }
+            
+        }
+        
+//         else  if($usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
+//             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$empresaId]);
+//         else  if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR)
+//         {
+//             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
+//             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'id','valor'=>$usuario->sedeId]);
+//         }
+//         else if($usuario->recursosHumanos==1)
+//             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$empresaId]);
+        
+        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+        $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+        if($resultado->correcto())
+        {
+            $empresasIds = implode(",", $resultado->valor);
+            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','operador'=>'IN','valor'=>$empresasIds]);
+        }
+        
+        
+        $where = $this->where($filtros);
+                
+                //         $consulta = $this->consultaBase .
+                //                   " WHERE S.empresa_id  = ?";
+                $consulta = $this->consultaBase .
+                $where. " ORDER BY S.nombre";
+                
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if($this->bind_param($sentencia, $filtros))
+                    {
+                        if($sentencia->execute())
+                        {
+                            if ($sentencia->bind_result($id, $nombre, $nombreCorto, $direccion,$empresaId, $empresaNombre,  $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $fechaAlta, $fechaModificacion, $estatus))
+                            {
+                                while($row = $sentencia->fetch())
+                                {
+                                    $registro = $this->crearRegistro($id, $nombre, $nombreCorto, $direccion,$empresaId, $empresaNombre, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $fechaAlta, $fechaModificacion, $estatus);
+                                    array_push($registros,$registro);
+                                }
+                                if($opcional=="true")
+                                {
+                                    if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR  )
+                                    {
+                                        $registro = $this->crearRegistro("", "Todas las sedes",null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+                                        array_unshift($registros, $registro);
+                                    }
+                                }
+                                $resultado->valor = $registros;
+                            }
+                            else
+                                $resultado->mensajeError = "Falló el enlace del resultado";
+                        }
+                        else
+                            $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace de parámetros";
+                }
+                else
+                    $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    return $resultado;
+    }
+    
     public function consultarPorEmpresa($empresaId,$opcional,$usuario)
     {
         $resultado = new Resultado();
@@ -220,8 +312,8 @@ class SedesRepositorio extends RepositorioBase implements ISedesRepositorio
             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'id','valor'=>$usuario->sedeId]);
         }
-        
-        
+        else if($usuario->recursosHumanos==1)
+            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$empresaId]);
         $where = $this->where($filtros);
         
 //         $consulta = $this->consultaBase .
@@ -244,7 +336,7 @@ class SedesRepositorio extends RepositorioBase implements ISedesRepositorio
                         }
                         if($opcional=="true")
                         {
-                            if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR  )
+                            if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR || $usuario->recursosHumanos==1  )
                             {
                                 $registro = $this->crearRegistro("", "Todas las sedes",null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
                                 array_unshift($registros, $registro);

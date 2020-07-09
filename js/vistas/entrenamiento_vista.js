@@ -1180,7 +1180,7 @@ class EntrenamientoVista extends CatalogoVista
 	set aprovechamiento(aprovechamiento)
 	{
 		$("#aprovechamientoIndicadorValor").html(aprovechamiento.correctas+"/"+aprovechamiento.total);
-		$("#aprovechamientoIndicadorProgreso").width(aprovechamiento.porcentaje);
+		$("#aprovechamientoIndicadorProgreso").width(aprovechamiento.porcentaje+"%");
 		$("#aprovechamientoIndicadorDescripcion").html(aprovechamiento.porcentaje+"%");
 		
 		$("#cumplimientoBoxDiv").removeClass("bg-green");
@@ -1215,27 +1215,36 @@ class EntrenamientoVista extends CatalogoVista
 	set videosVistos(videosVistos)
 	{
 		$("#videosVistosIndicadorValor").html(videosVistos.vistos+"/"+videosVistos.total);
-		$("#videosVistosIndicadorProgreso").width(videosVistos.porcentaje);
+		$("#videosVistosIndicadorProgreso").width(videosVistos.porcentaje+"%");
 		
-		var tiempo = moment("2015-01-01").startOf('day')
-	    .minutes(videosVistos.minutos)
-	    .format('H:mm');
+		var tiempo = 0;
+		if(videosVistos.minutos!=null)
+		{
+			tiempo = moment("2015-01-01").startOf('day').minutes(videosVistos.minutos).format('H:mm');
+		}
 		
 		$("#videosVistosIndicadorDescripcion").html("Tiempo: " + tiempo);
+		
 	}
 	
 	set diasCapacitacion(diasCapacitacion)
 	{
-		$("#diasCapacitacionIndicadorValor").html(diasCapacitacion.diasUltimaCapacitacion);
-		$("#diasCapacitacionIndicadorProgreso").width(diasCapacitacion.porcentaje);
 		
-		var textoDias = "";
-		if(diasCapacitacion.diasMesSinCapacitacion==1)
-			textoDias = "día";
+		if(diasCapacitacion!=null)
+		{
+			$("#diasCapacitacionIndicadorValor").html(diasCapacitacion.diasUltimaCapacitacion);
+			$("#diasCapacitacionIndicadorProgreso").width(diasCapacitacion.porcentaje+"%");
+		
+			var textoDias = "";
+			if(diasCapacitacion.diasMesSinCapacitacion==1)
+				textoDias = "día";
+			else
+				textoDias = "días";
+			
+			$("#diasCapacitacionIndicadorDescripcion").html(diasCapacitacion.diasMesSinCapacitacion + " " + textoDias +" del mes sin capacitación");
+		}
 		else
-			textoDias = "días";
-		
-		$("#diasCapacitacionIndicadorDescripcion").html(diasCapacitacion.diasMesSinCapacitacion + " " + textoDias +" del mes sin capacitación");
+			$("#diasCapacitacionIndicadorDescripcion").html("No has iniciado tu capacitación");
 	}
 	
 	

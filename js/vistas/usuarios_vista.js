@@ -433,6 +433,11 @@ class UsuariosVista extends CatalogoVista
 		else
 			$("#permisoCAVIHRadio").prop('checked', false);
 		
+		if(this.modeloEdicion.recursosHumanos)
+			$("#recursosHumanosRadio").prop('checked', true);
+		else
+			$("#recursosHumanosRadio").prop('checked', false);
+		
 		this.cambiarPermisoCAVIH();
 	}
 	
@@ -458,7 +463,8 @@ class UsuariosVista extends CatalogoVista
 			 permisoSIVAH:$('#permisoSIVAHRadio').is(':checked')?1:0,
 		 	 permiso10y7:$('#permiso10y7Radio').is(':checked')?1:0,
 		 	 permisoCAVIH:$('#permisoCAVIHRadio').is(':checked')?1:0,
-		     perfilId:$('#perfilSelect').val()
+		     perfilId:$('#perfilSelect').val(),
+		     recursosHumanos:$('#recursosHumanosRadio').is(':checked')?1:0
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;

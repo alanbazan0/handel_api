@@ -144,6 +144,22 @@ class ArrayUtils
 		return null;
 	}
 	
+	static indexWithValues(fields,values,array)
+	{
+		if(array!=null)
+		{
+			var fieldsArray = fields.split(",");						
+			for(var i=0;i < array.length;i++)
+			{
+				var val2 = ArrayUtils.getValues(array[i],fieldsArray);
+				if(ArrayUtils.equalValues(values,val2))
+					return i;
+			}		
+		}
+		return -1;
+	}
+	
+	
 	static getIndexWithValues(fields,values,array)
 	{
 		if(array!=null)

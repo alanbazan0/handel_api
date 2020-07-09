@@ -61,7 +61,7 @@ try
                 if($resultado->mensajeError=="")
                 {
                     $administrador_correo = new AdministradorCorreo();
-                    if($modelo->nombreUsuario!="" && $modelo->nombreUsuario!=null)
+                    if($modelo->nombreUsuario!="" && $modelo->nombreUsuario!=null && $modelo->tipoUsuarioId!=TipoUsuario::CAPACITADO)
                         $resultado = $administrador_correo->enviarCorreoBienvenida($modelo);
                 }
             break;
@@ -376,6 +376,28 @@ try
                 $resultado = $repositorio->consultarEstructura($empresaId);
            
             break;
+            case 'importar':
+                $empresaId = REQUEST('empresaId');
+                $sedeId = REQUEST('sedeId');
+                $departamentoId = REQUEST('departamentoId');
+                
+                $adminstradorArchivos = new AdministradorArchivos();
+                $archivo = FILES("file");
+                $carpeta = "importacion";
+                $fecha = new DateTime();
+                $nombreArchivo = "importacion" . $fecha->getTimestamp();
+                $resultado=$adminstradorArchivos->subirArchivo($carpeta,$archivo,$nombreArchivo);
+                if($resultado->correcto())
+                {
+                    $resultado = $repositorio->importar($empresaId,$sedeId,$departamentoId,$carpeta, $nombreArchivo);
+                    if($resultado->correcto())
+                    {
+                        
+                    }
+                }
+                //$adminstradorArchivos->eliminar($carpeta, $nombreArchivo);
+                
+            break;
 //             case 'enviarNotificacion':
 //                 session_start();
 //                 $usuario = null;
@@ -390,6 +412,8 @@ try
             default:
                 $resultado->mensajeError = 'Acción no válida';
             break;
+            
+            
             
         }
     }

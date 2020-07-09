@@ -12,6 +12,7 @@ include "../modelos/Curso.php";
 include "RepositorioBase.php";
 require_once("../clases/Resultado.php");
 require_once("../clases/Token.php");
+require_once("UsuariosRepositorio.php");
 require_once('../clases/AdministradorConexion.php');
 
 class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
@@ -121,6 +122,43 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 $orden =  $resultado->valor;
                 $consulta = "INSERT INTO cursos_respuestas(curso_id, leccion_id, pregunta_id, id, orden,texto) " .
                     "VALUE(?, ?, ?, ?, ?, '')";
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if($sentencia->bind_param("iiiii",$cursoId,$leccionId, $preguntaId, $id, $orden))
+                    {
+                        if($sentencia->execute())
+                        {
+                            $sentencia->close();
+                            $resultado->valor = $id;
+                        }
+                        else
+                        {
+                            $resultado->mensajeError = __FUNCTION__ ." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                        }
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+        }
+        
+        return $resultado;
+    }
+    
+    public function insertarRespuestaCorrecta($cursoId, $leccionId, $preguntaId)
+    {
+        $resultado =  $this->calcularIdRespuesta($cursoId, $leccionId, $preguntaId, "id");
+        if($resultado->correcto())
+        {
+            $id =  $resultado->valor;
+            $resultado =  $this->calcularIdRespuesta($cursoId, $leccionId,$preguntaId, "orden");
+            if($resultado->correcto())
+            {
+                $orden =  $resultado->valor;
+                $consulta = "INSERT INTO cursos_respuestas(curso_id, leccion_id, pregunta_id, id, orden,texto, correcta) " .
+                    "VALUE(?, ?, ?, ?, ?, '', 1)";
                 if($sentencia = $this->conexion->prepare($consulta))
                 {
                     if($sentencia->bind_param("iiiii",$cursoId,$leccionId, $preguntaId, $id, $orden))
@@ -3425,6 +3463,240 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         else
             $resultado->mensajeError =  __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             return $resultado;
+    }
+    
+    public function consultarResultadosUsuarios($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
+        
+        
+        $consulta = "SELECT * from(SELECT U.id as id, U.nombre_usuario as nombreUsuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id, D.nombre as departamentoNombre, U.permiso_cavih, U.perfil_id, PR.nombre perfilNombre, U.recursos_humanos recursosHumanos, " .
+                "(SELECT count(*)
+                FROM cursos C
+                INNER JOIN cursos_preguntas CPR ON CPR.curso_id = C.id
+                WHERE  U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)
+                )total,
+                (
+                    SELECT count(*)
+                    FROM usuarios_cursos_lecciones_preguntas P
+                    INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
+                    WHERE P.usuario_id = U.id
+                    AND R.correcta=1
+                    )correctas, " .
+                    "(SELECT IFNULL(DATE_FORMAT(UC.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')
+                    FROM usuarios_cursos UC
+                    WHERE UC.usuario_id = U.id
+                    ORDER BY UNIX_TIMESTAMP(UC.fecha_modificacion) desc
+                    LIMIT 1)fechaUltimaCapacitacion " .
+            "FROM usuarios U " .
+            "  LEFT JOIN empresas E ON U.empresa_id=E.id ".
+            "  LEFT JOIN sedes S ON U.sede_id = S.id " .
+            "  LEFT JOIN puestos P ON U.puesto_id = P.id " .
+            "  LEFT JOIN areas A ON U.area_id = A.id " .
+            "  LEFT JOIN tipos_usuario T ON U.tipo_usuario_id = T.id " .
+            "  LEFT JOIN usuarios SU1 ON U.supervisor1_id = SU1.id " .
+            "  LEFT JOIN usuarios SU2 ON U.supervisor2_id = SU2.id " .
+            "  LEFT JOIN usuarios SU3 ON U.supervisor3_id = SU3.id ".
+            "  LEFT JOIN departamentos D ON D.id = U.departamento_id" .
+            "  LEFT JOIN perfiles PR ON PR.id = U.perfil_id ";
+        
+        $consulta.= $this->where($filtros);
+        
+        $consulta.=")consulta ";
+        
+        
+        $filtrosSub = array();
+        if(isset($criteriosSeleccion->tipoReporte) && $criteriosSeleccion->tipoReporte!="")
+        {
+            switch($criteriosSeleccion->tipoReporte)
+            {
+                case 1:
+                    array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>'fechaUltimaCapacitacion is not null']);
+                    //$consulta.=" where fechaUltimaCapacitacion is not null ";
+                break;
+                    
+                case 0:
+                    array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>'fechaUltimaCapacitacion is  null']);
+                break;
+            }
+        }
+        
+        if(isset($criteriosSeleccion->fechaInicial) && $criteriosSeleccion->fechaInicial!="")
+            array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>"fechaUltimaCapacitacion >= '$criteriosSeleccion->fechaInicial'"]);
+            if(isset($criteriosSeleccion->fechaFinal) && $criteriosSeleccion->fechaFinal!="")
+            array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>"fechaUltimaCapacitacion <= '$criteriosSeleccion->fechaFinal'"]);
+            
+        $consulta.= $this->where($filtrosSub);
+        
+       //echo $consulta;
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVIH, $perfilId, $perfilNombre, $recursosHumanos, $total,$correctas,$fechaUltimaCapacitacion)  )
+                    {
+                        while($row = $sentencia->fetch())
+                        {
+                            $registro= (object) [
+                                'id' =>  $id,
+                                'nombreUsuario' => $nombreUsuario,
+                                'contrasena' => $contrasena,
+                                'nombre' => $nombre,
+                                'apellido' => $apellido,
+                                'empresaId' => $empresaId,
+                                'empresaNombre' => $empresa,
+                                'sedeId' => $sedeId,
+                                'sedeNombre' => $sede,
+                                'puestoId' => $puestoId,
+                                'puestoNombre' => $puesto,
+                                'areaId' => $areaId,
+                                'areaNombre' => $area,
+                                'tipoUsuarioId' => $tipoUsuarioId,
+                                'tipoUsuarioNombre' => $tipoUsuario,
+                                'supervisor1Id' => $supervisor1Id,
+                                'supervisor1Nombre' => $supervisor1,
+                                'supervisor2Id' => $supervisor2Id,
+                                'supervisor2Nombre' => $supervisor2,
+                                'supervisor3Id' => $supervisor3Id,
+                                'supervisor3Nombre' => $supervisor3,
+                                'ultimoAcceso' => $ultimoAcceso,
+                                'fechaAlta' => $fechaAlta,
+                                'fechaModificacion' => $fechaModificacion,
+                                'estatus' => $estatus,
+                                'tipoEmpresaId' => $tipoEmpresaId,
+                                'tipoAreaId' => $tipoAreaId,
+                                'permisoSAHA' => $permisoSAHA,
+                                'permisoSIVAH' => $permisoSIVAH,
+                                'permiso10y7' => $permiso10y7,
+                                'departamentoId' => $departamentoId,
+                                'departamentoNombre' => $departamentoNombre,
+                                'permisoCAVIH' => $permisoCAVIH,
+                                'perfilId' => $perfilId,
+                                'perfilNombre' => $perfilNombre,
+                                'recursosHumanos' => $recursosHumanos,
+                                'total' => $total,
+                                'correctas' => $correctas,
+                                'fechaUltimaCapacitacion' => $fechaUltimaCapacitacion
+                            ];
+                            
+                            
+                            $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
+                            $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
+                            if(file_exists($registro->fotoPerfil))
+                                $registro->fotoPerfil =  "php/fotos/usuario". $registro->id .".jpg";
+                            else
+                                $registro->fotoPerfil =  "php/fotos/default.jpg";
+                                    
+                            $registro->nodeId = $id;
+                            $registro->parentId = $registro->supervisor1Id;
+                            $registro->text = $registro->nodeId." - ".$registro->nombreCompleto;
+                            
+                            $this->calcularPorcentaje($registro,'correctas','total');
+                            
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado.";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
+    public function getFiltroEstructura($usuario,$criteriosSeleccion)
+    {
+        $filtros = array();
+        
+        if($usuario->recursosHumanos==1)
+        {
+            if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+            {
+                array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+            }
+            else
+            {
+                $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+                if($resultado->correcto())
+                {
+                    $empresasIds = implode(",", $resultado->valor);
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','operador'=>'IN','valor'=>$empresasIds]);
+                }
+            }
+        }
+        else
+        {
+            switch ($usuario->tipoUsuarioId)
+            {
+                case \TipoUsuario::SUPERVISOR:
+                    if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+                    {
+                        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+                    }
+                    else
+                    {
+                        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                        $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+                        if($resultado->correcto())
+                        {
+                            $empresasIds = implode(",", $resultado->valor);
+                            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','operador'=>'IN','valor'=>$empresasIds]);
+                        }
+                    }
+                    break;
+                case \TipoUsuario::COORDINADOR:
+                    if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+                    {
+                        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+                    }
+                    else
+                    {
+                        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                        $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+                        if($resultado->correcto())
+                        {
+                            $empresasIds = implode(",", $resultado->valor);
+                            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','operador'=>'IN','valor'=>$empresasIds]);
+                        }
+                    }
+                break;
+               
+                
+                case \TipoUsuario::ADMINISTRADOR:
+                    if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+                    {
+                        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+                    }
+                    
+                break;
+            }
+        }
+        if(isset($criteriosSeleccion->sedeId) && $criteriosSeleccion->sedeId!="")
+        {
+            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+        }
+        if(isset($criteriosSeleccion->departamentoId) && $criteriosSeleccion->departamentoId!="")
+        {
+            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'departamento_id','valor'=>$criteriosSeleccion->departamentoId]);
+        }
+        
+        
+        return $filtros;
     }
     
     

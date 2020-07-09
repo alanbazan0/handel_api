@@ -317,6 +317,7 @@ class AdministradorCorreo
                 $correos.=", ";
         }
         
+        
         $cabecera = "From:  SAHA <noreply@apps-handel.com>\r\n";
         $cabecera .= "Bcc: $correos\r\n";
         //$cabecera .= "MIME-Version: 1.0\r\n";

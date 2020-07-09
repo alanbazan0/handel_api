@@ -205,19 +205,41 @@ class CapacitacionesPresentador extends CatalogoPresentador
 	 insertarRespuesta(preguntaId)
 	 {
 		 this.vista.mostrarIndicador();	
-		 this._repositorio.insertarRespuesta(this,function(resultado)
-		 {		
-			 this.vista.ocultarIndicador();	
-			 if(resultado.mensajeError=="")
-			 {
-				 this.vista.mostrarMensaje("","Guardado.");
-				 this.vista.listaPreguntas.agregarRespuesta(preguntaId,resultado.valor);
-			 }
-			 else
-			 {
-				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
-			 }
-		 },this.vista.cursoId, this.vista.leccionIdSeleccionada, preguntaId);
+		 
+		 var respuestas = this.vista.listaPreguntas.getRespuestas(preguntaId);
+		 if(respuestas.length==0)
+		{
+			 this._repositorio.insertarRespuestaCorrecta(this,function(resultado)
+			 {		
+				 this.vista.ocultarIndicador();	
+				 if(resultado.mensajeError=="")
+				 {
+					 this.vista.mostrarMensaje("","Guardado.");
+					 this.vista.listaPreguntas.agregarRespuestaCorrecta(preguntaId,resultado.valor);
+				 }
+				 else
+				 {
+					 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+				 }
+			 },this.vista.cursoId, this.vista.leccionIdSeleccionada, preguntaId); 
+		}
+		else
+		{
+			 this._repositorio.insertarRespuesta(this,function(resultado)
+			 {		
+				 this.vista.ocultarIndicador();	
+				 if(resultado.mensajeError=="")
+				 {
+					 this.vista.mostrarMensaje("","Guardado.");
+					 this.vista.listaPreguntas.agregarRespuesta(preguntaId,resultado.valor);
+				 }
+				 else
+				 {
+					 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+				 }
+			 },this.vista.cursoId, this.vista.leccionIdSeleccionada, preguntaId); 
+		}
+		
 	 }
 	 
 	 
