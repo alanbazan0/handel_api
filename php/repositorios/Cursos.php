@@ -79,6 +79,11 @@ try
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 $resultado = $repositorio->consultar($criteriosSeleccion);               
             break;
+            case 'consultarCriterio':
+                $opcional = REQUEST('opcional');
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarCriterio($criteriosSeleccion,$opcional);
+            break;
             case 'consultarCursosContestando':
                 session_start();
                 $usuario = null;

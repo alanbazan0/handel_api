@@ -1324,6 +1324,69 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
+    public function consultarCriterio($criteriosSeleccion,$opcional)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = array();
+        $where="";
+        if($criteriosSeleccion!=null)
+        {
+            if(isset($criteriosSeleccion->titulo))
+            {
+                if($criteriosSeleccion->titulo!="")
+                {
+                    array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'C','campo'=>'titulo','valor'=>$criteriosSeleccion->titulo]);
+                }
+            }
+            $where = $this->where($filtros);
+        }
+        
+        
+        
+        $consulta =" SELECT C.id, IFNULL(C.titulo,''), IFNULL(C.descripcion,''), IFNULL(DATE_FORMAT(C.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(C.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, IFNULL(C.publicado,0), U.id, U.nombre, U.apellido, C.token,
+                (SELECT count(*) FROM cursos_lecciones CL WHERE CL.curso_id = C.id) numero_lecciones, 0 numero_lecciones_terminadas
+             FROM cursos C
+                INNER JOIN usuarios U ON C.usuario_id = U.id " .
+                $where . " order by titulo";
+                
+                
+                
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if($this->bind_param($sentencia, $filtros))
+                    {
+                        if($sentencia->execute())
+                        {
+                            if ($sentencia->bind_result($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido, $token,$numeroLecciones,$numeroLeccionesTerminadas))
+                            {
+                                while($row = $sentencia->fetch())
+                                {
+                                    $registro = $this->crearRegistro($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido,$token,$numeroLecciones,$numeroLeccionesTerminadas);
+                                    array_push($registros,$registro);
+                                }
+                                if($opcional=="true")
+                                {
+                                    $registro = $this->crearRegistro("", "Todas las capacitaciones",null, null, null, null, null, null, null,null,null,null);
+                                    array_unshift($registros, $registro);
+                                }
+                                $resultado->valor = $registros;
+                            }
+                            else
+                                $resultado->mensajeError = "Falló el enlace del resultado.";
+                        }
+                        else
+                            $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace de parámetros";
+                }
+                else
+                    $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    
+                    return $resultado;
+    }
+    
     
     public function consultarCursosContestando($usuario,$criteriosSeleccion)
     {
@@ -3471,36 +3534,42 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         $registros = array();
         $filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
         
+        $filtroCapacitacion ="";
+        if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
+            $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
+        
         
         $consulta = "SELECT * from(SELECT U.id as id, U.nombre_usuario as nombreUsuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id, D.nombre as departamentoNombre, U.permiso_cavih, U.perfil_id, PR.nombre perfilNombre, U.recursos_humanos recursosHumanos, " .
                 "(SELECT count(*)
                 FROM cursos C
                 INNER JOIN cursos_preguntas CPR ON CPR.curso_id = C.id
-                WHERE  U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)
+                WHERE  U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id) $filtroCapacitacion
                 )total,
                 (
                     SELECT count(*)
                     FROM usuarios_cursos_lecciones_preguntas P
+                    INNER JOIN cursos C on C.id = P.curso_id
                     INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
                     WHERE P.usuario_id = U.id
-                    AND R.correcta=1
-                    )correctas, " .
-                    "(SELECT IFNULL(DATE_FORMAT(UC.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')
+                    AND R.correcta=1  $filtroCapacitacion
+                )correctas, 
+                (SELECT IFNULL(DATE_FORMAT(UC.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')
                     FROM usuarios_cursos UC
-                    WHERE UC.usuario_id = U.id
+                    INNER JOIN cursos C on C.id = UC.curso_id
+                    WHERE UC.usuario_id = U.id  $filtroCapacitacion
                     ORDER BY UNIX_TIMESTAMP(UC.fecha_modificacion) desc
-                    LIMIT 1)fechaUltimaCapacitacion " .
-            "FROM usuarios U " .
-            "  LEFT JOIN empresas E ON U.empresa_id=E.id ".
-            "  LEFT JOIN sedes S ON U.sede_id = S.id " .
-            "  LEFT JOIN puestos P ON U.puesto_id = P.id " .
-            "  LEFT JOIN areas A ON U.area_id = A.id " .
-            "  LEFT JOIN tipos_usuario T ON U.tipo_usuario_id = T.id " .
-            "  LEFT JOIN usuarios SU1 ON U.supervisor1_id = SU1.id " .
-            "  LEFT JOIN usuarios SU2 ON U.supervisor2_id = SU2.id " .
-            "  LEFT JOIN usuarios SU3 ON U.supervisor3_id = SU3.id ".
-            "  LEFT JOIN departamentos D ON D.id = U.departamento_id" .
-            "  LEFT JOIN perfiles PR ON PR.id = U.perfil_id ";
+                    LIMIT 1)fechaUltimaCapacitacion 
+            FROM usuarios U 
+              LEFT JOIN empresas E ON U.empresa_id=E.id 
+              LEFT JOIN sedes S ON U.sede_id = S.id 
+              LEFT JOIN puestos P ON U.puesto_id = P.id 
+              LEFT JOIN areas A ON U.area_id = A.id 
+              LEFT JOIN tipos_usuario T ON U.tipo_usuario_id = T.id 
+              LEFT JOIN usuarios SU1 ON U.supervisor1_id = SU1.id 
+              LEFT JOIN usuarios SU2 ON U.supervisor2_id = SU2.id 
+              LEFT JOIN usuarios SU3 ON U.supervisor3_id = SU3.id 
+              LEFT JOIN departamentos D ON D.id = U.departamento_id
+              LEFT JOIN perfiles PR ON PR.id = U.perfil_id ";
         
         $consulta.= $this->where($filtros);
         
@@ -3523,10 +3592,10 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             }
         }
         
-        if(isset($criteriosSeleccion->fechaInicial) && $criteriosSeleccion->fechaInicial!="")
-            array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>"fechaUltimaCapacitacion >= '$criteriosSeleccion->fechaInicial'"]);
-            if(isset($criteriosSeleccion->fechaFinal) && $criteriosSeleccion->fechaFinal!="")
-            array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>"fechaUltimaCapacitacion <= '$criteriosSeleccion->fechaFinal'"]);
+//         if(isset($criteriosSeleccion->fechaInicial) && $criteriosSeleccion->fechaInicial!="")
+//             array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>"fechaUltimaCapacitacion >= '$criteriosSeleccion->fechaInicial'"]);
+//             if(isset($criteriosSeleccion->fechaFinal) && $criteriosSeleccion->fechaFinal!="")
+//             array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>"fechaUltimaCapacitacion <= '$criteriosSeleccion->fechaFinal'"]);
             
         $consulta.= $this->where($filtrosSub);
         

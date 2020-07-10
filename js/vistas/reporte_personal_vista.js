@@ -23,7 +23,7 @@ class ReportePersonalVista extends CatalogoVista
 			_this.iniciarSubirFormato();
 		});
 		
-		this.crearFechas();
+		//this.crearFechas();
 		
 		//this.crearFecha("fechaInicialInputCriterio");
 		
@@ -287,9 +287,13 @@ class ReportePersonalVista extends CatalogoVista
 	set departamentosCriterio(registros)
 	{		
 		this.cargarOpciones('#departamentoSelectCriterio', registros);
-		
+		this.consultarCursosCriterio();
+	}
+	
+	set cursosCriterio(registros)
+	{
+		this.cargarOpciones('#cursoSelectCriterio', registros,"",null, "id", null, "titulo");
 		this.consultarEmpresasCriterio();
-		
 	}
 	
 	editar(id)
@@ -569,8 +573,9 @@ class ReportePersonalVista extends CatalogoVista
 			empresaId: $('#empresaSelectCriterio').val(),
 			sedeId: $('#sedeSelectCriterio').val(),
 			departamentoId: $('#departamentoSelectCriterio').val(),
-			fechaInicial: this.getFechaYMD($	('#fechaInicialInputCriterio').val()),
-			fechaFinal: this.getFechaYMD($('#fechaFinalInputCriterio').val()),
+			cursoId : $('#cursoSelectCriterio').val(),
+//			fechaInicial: this.getFechaYMD($	('#fechaInicialInputCriterio').val()),
+//			fechaFinal: this.getFechaYMD($('#fechaFinalInputCriterio').val()),
 			tipoReporte:$('#tipoReporteSelectCriterio').val()
 		 }
 		 return criteriosSeleccion;
@@ -656,6 +661,12 @@ class ReportePersonalVista extends CatalogoVista
 	{
 		this.cargandoOpciones("#empresaSelectCriterio");
 		this.presentador.consultarEmpresasCriterio();
+	}
+	
+	consultarCursosCriterio()
+	{
+		this.cargandoOpciones("#cursoSelectCriterio");
+		this.presentador.consultarCursosCriterio();
 	}
 	
 	set empresasCriterio(registros)

@@ -204,6 +204,20 @@ class ReportePersonalPresentador extends CatalogoPresentador
 		,this.vista.criteriosSeleccion.empresaId,true);
 	 }
 	 
+	 consultarCursosCriterio()	
+	 {
+		 var repositorio = new CapacitacionesRepositorio(this);		
+		 repositorio.consultarCriterio(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.cursosCriterio = resultado.valor;			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },null, true);
+	 }
+	 
 	 
 	 consultar()	
 	 {
