@@ -236,6 +236,25 @@ class ReportePersonalCapacitacionesPresentador extends CatalogoPresentador
 		,this.vista.criteriosSeleccion);
 	 }
 	 
+	 eliminarCursoUsuario()	
+	 {
+		this.vista.mostrarIndicador();	
+		 var repositorio = new CapacitacionesRepositorio(this);		
+		 repositorio.eliminarCursoUsuario(this, function(resultado)
+		 {
+			this.vista.cerrarConfirmacionEliminar();
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+			{
+				 this.vista.mostrarMensaje("Notificación","Los resultados se eliminaron correctamente.");
+				 this.consultar();
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		,this.vista.llaves);
+	 }
+	 
 	 
 	 
 	

@@ -257,6 +257,10 @@ try
                 }
                
             break;
+            case 'eliminarCursoUsuario':
+                $llaves = json_decode(REQUEST('llaves'));
+                $resultado = $repositorio->eliminarCursoUsuario($llaves);
+            break;
             case 'guardarRespuestasNo':
                 $cursoId = REQUEST('cursoId');
                 $leccionId = REQUEST('leccionId');

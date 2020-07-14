@@ -283,6 +283,37 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
+    private function eliminarPreguntasUsuarioEjecucion($usuarioId, $cursoId)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM usuarios_cursos_lecciones_preguntas WHERE usuario_id =  ? AND curso_id = ? ";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("ii",$usuarioId,$cursoId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__.".Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__.".Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__.".Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
     private function eliminarLeccionesEjecucion($cursoId)
     {
         $resultado = new Resultado();
@@ -290,6 +321,37 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param("i",$cursoId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__.". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__.".Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__.".Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
+    private function eliminarLeccionesUsuarioEjecucion($usuarioId,$cursoId)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM usuarios_cursos_lecciones WHERE usuario_id = ? AND curso_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("ii",$usuarioId,$cursoId))
             {
                 if($sentencia->execute())
                 {
@@ -344,6 +406,41 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         }
         return $resultado;
     }
+    
+    
+    private function eliminarCursoUsuarioEjecucion($usuarioId, $cursoId)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM usuarios_cursos WHERE usuario_id = ? AND curso_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("ii",$usuarioId,$cursoId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__.". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__.".Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__.".Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
+  
+    
     
     
     private function eliminarRespuestasLeccion($cursoId,$leccionId)
@@ -3436,6 +3533,31 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             $this->conexion->rollback();
         return $resultado;
     }
+    
+    public function eliminarCursoUsuario($llaves)
+    {
+        ini_set('max_execution_time', 300);
+        $resultado = new Resultado();
+        $this->conexion->autocommit(FALSE);
+        
+        $resultado = $this->eliminarPreguntasUsuarioEjecucion($llaves->usuarioId, $llaves->cursoId);
+        if($resultado->correcto())
+        {
+            $resultado = $this->eliminarLeccionesUsuarioEjecucion($llaves->usuarioId, $llaves->cursoId);
+            if($resultado->correcto())
+            {
+                $resultado = $this->eliminarCursoUsuarioEjecucion($llaves->usuarioId, $llaves->cursoId);
+                if($resultado->correcto())
+                {
+                }
+            }
+        }
+        if($resultado->correcto())
+            $this->conexion->commit();
+        else
+            $this->conexion->rollback();
+        return $resultado;
+    }
  
     
     public function ordenarPreguntas($cursoId, $leccionId, $seleccion)
@@ -4290,7 +4412,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                     INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
                     WHERE P.usuario_id = U.id
                     AND R.correcta=1  AND C.id = UC1.curso_id
-                )correctas, UC1.fecha_inicial, CR.titulo, UC1.terminado, UC1. fecha_final
+                )correctas, UC1.fecha_inicial, CR.titulo, UC1.terminado, UC1. fecha_final, UC1.curso_id
               FROM usuarios_cursos UC1  
                   INNER JOIN cursos CR ON CR.id = UC1.curso_id
               LEFT JOIN usuarios U ON UC1.usuario_id = U.id
@@ -4342,12 +4464,13 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                     {
                         if($sentencia->execute())
                         {
-                            if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVIH, $perfilId, $perfilNombre, $recursosHumanos, $total,$correctas,$fechaInicial, $titulo, $terminado, $fechaFinal)  )
+                            if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVIH, $perfilId, $perfilNombre, $recursosHumanos, $total,$correctas,$fechaInicial, $titulo, $terminado, $fechaFinal, $cursoId)  )
                             {
                                 while($row = $sentencia->fetch())
                                 {
                                     $registro= (object) [
                                         'id' =>  $id,
+                                        'usuarioId' =>  $id,
                                         'nombreUsuario' => $nombreUsuario,
                                         'contrasena' => $contrasena,
                                         'nombre' => $nombre,
@@ -4388,7 +4511,8 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                                         'fechaInicial' => $fechaInicial,
                                         'titulo' => $titulo,
                                         'terminado' => $terminado,
-                                        'fechaFinal' => $fechaFinal
+                                        'fechaFinal' => $fechaFinal,
+                                        'cursoId' => $cursoId
                                     ];
                                     
                                     
