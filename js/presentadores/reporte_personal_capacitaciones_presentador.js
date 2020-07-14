@@ -1,4 +1,4 @@
-class ReportePersonalPresentador extends CatalogoPresentador
+class ReportePersonalCapacitacionesPresentador extends CatalogoPresentador
 {
 	 constructor(vista)
 	 {
@@ -218,27 +218,12 @@ class ReportePersonalPresentador extends CatalogoPresentador
 		 },null, true);
 	 }
 	 
-	 consultarPerfilesCriterio()	
-	 {
-		 var repositorio = new PerfilesRepositorio(this);		
-		 repositorio.consultar(this, function(resultado)
-		 {
-			if(resultado.mensajeError=="")
-			{
-				this.vista.perfilesCriterio = resultado.valor;			
-			}
-			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-		 },null, true);
-	 }
-	 
-	 
 	 
 	 consultar()	
 	 {
 		this.vista.mostrarIndicador();	
 		 var repositorio = new CapacitacionesRepositorio(this);		
-		 repositorio.consultarResultadosUsuarios(this, function(resultado)
+		 repositorio.consultarCapacitacionesTomadas(this, function(resultado)
 		 {
 			this.vista.ocultarIndicador();	
 			if(resultado.mensajeError=="")

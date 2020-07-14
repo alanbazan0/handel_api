@@ -295,6 +295,7 @@ class EmpresasVista extends CatalogoVista
 		this.consultarPaises();
 		this.consultarCorporativos();
 		this.consultarAdministradores();
+		this.consultarPerfiles();
 	}
 	
 	editar(id)
@@ -390,6 +391,7 @@ class EmpresasVista extends CatalogoVista
 			 ciudadId:$('#ciudadSelect').val(),
 			 corporativoId:$('#corporativoSelect').val(),
 			 administradorId:$('#administradorSelect').val(),
+			 perfilId:$('#perfilSelect').val(),
 			 estatus:$('#estatusRadio').is(':checked')?1:0
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
@@ -420,6 +422,12 @@ class EmpresasVista extends CatalogoVista
 	{
 		this.cargandoOpciones("#administradorSelect");
 		this.presentador.consultarAdministradores();
+	}
+	
+	consultarPerfiles()
+	{
+		this.cargandoOpciones("#perfilSelect");
+		this.presentador.consultarPerfiles();
 	}
 	
 	consultarCorporativos()
@@ -468,6 +476,12 @@ class EmpresasVista extends CatalogoVista
 	set estados(registros)
 	{	
 		this.cargarOpciones('#estadoSelect', registros, this.modo, this.modeloEdicion, 'estadoId',"");
+		
+	}
+	
+	set perfiles(registros)
+	{	
+		this.cargarOpciones('#perfilSelect', registros, this.modo, this.modeloEdicion, 'perfilId',"");
 		
 	}
 	

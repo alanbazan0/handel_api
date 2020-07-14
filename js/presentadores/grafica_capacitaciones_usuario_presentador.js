@@ -1,4 +1,4 @@
-class ReportePersonalPresentador extends CatalogoPresentador
+class GraficaCapacitacionesUsuarioPresentador extends CatalogoPresentador
 {
 	 constructor(vista)
 	 {
@@ -217,21 +217,6 @@ class ReportePersonalPresentador extends CatalogoPresentador
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		 },null, true);
 	 }
-	 
-	 consultarPerfilesCriterio()	
-	 {
-		 var repositorio = new PerfilesRepositorio(this);		
-		 repositorio.consultar(this, function(resultado)
-		 {
-			if(resultado.mensajeError=="")
-			{
-				this.vista.perfilesCriterio = resultado.valor;			
-			}
-			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-		 },null, true);
-	 }
-	 
 	 
 	 
 	 consultar()	

@@ -1424,7 +1424,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         }
     }
     
-    public function importar($empresaId, $sedeId, $departamentoId, $carpeta, $nombreArchivo)
+    public function importar($empresaId, $sedeId, $departamentoId,$perfilId, $carpeta, $nombreArchivo)
     {
         $resultado = new Resultado();
         $this->conexion->autocommit(FALSE);
@@ -1446,6 +1446,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                         $usuario->empresaId = $empresaId;
                         $usuario->sedeId = $sedeId;
                         $usuario->departamentoId = $departamentoId;
+                        $usuario->perfilId = $perfilId;
                         $usuario->nombre = $elt[0];
                         $usuario->apellido = $elt[1];
                         $usuario->nombreUsuario = strtolower($usuario->nombre).".".strtolower($usuario->apellido). ".".$id ;

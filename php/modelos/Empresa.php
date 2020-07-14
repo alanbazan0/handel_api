@@ -15,5 +15,6 @@ class Empresa
     public $ciudadId;
     public $corporativoId;
     public $administradorId;
+    public $perfilId;
 }
 

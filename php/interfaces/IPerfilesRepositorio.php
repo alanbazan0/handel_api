@@ -8,6 +8,6 @@ interface IPerfilesRepositorio
     public function insertar(Perfil $modelo);
     public function actualizar(Perfil $modelo);
     public function consultarPorLlaves($id);
-    public function consultar($criteriosSeleccion);
+    public function consultar($criteriosSeleccion,$opcional);
     public function eliminar($llaves);
 }

@@ -81,6 +81,12 @@
                       	 	<select name="administradorSelect" id="administradorSelect" class="form-control"></select>
                       	 </div> 
                       </div>  
+                       <div class="form-group">   
+                      	<div>
+                      	 	<label for="perfilSelect" class="control-label mb-1">Capacitación para importaciones</label>
+                      	 	<select name="perfilSelect" id="perfilSelect" class="form-control"></select>
+                      	 </div> 
+                      </div>  
                       <div class="form-group">
                       		<label class="control-label mb-1">Activo</label>
                      		<label class="switch switch-3d switch-success mr-3">

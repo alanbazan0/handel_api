@@ -66,41 +66,16 @@ class AdministracionVista extends CatalogoVista
 	crearColumnasGrid()
 	{
 		
-		 var buttonCommon = {
-				   text:      '<i class="fa fa-file-excel-o"></i>',
-			        exportOptions: {
-			            format: {
-			                body: function ( data, row, column, node ) 
-			                {
-			                   if(column==0)
-			                	   return data;
-			                   else
-				               {
-			                	   var html = $.parseHTML( data );
-			                	   var span = $(html).find("span");
-			                	   var title = span.attr("title");
-			                	   return title;
-				               }
-			                }
-			            }
-			        }
-			    };
-		 
 		
-		 this.tabla.botones= [
-	            $.extend( true, {}, buttonCommon, {
-	                extend: 'excelHtml5'
-	            } )
-	        ];
-		 
 		
 		this.tabla.columnas = [
 			
 			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
-			{longitud:200, 	titulo:"Nombre de usuario",   	alias:"nombreUsuario", alineacion:"I", classSpan:"block-email" }, 
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogo},
 			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I",class: "desc" }, 
-			{longitud:200, 	titulo:"Apellido",   alias:"apellido", alineacion:"I",class: "desc" }, 
+			{longitud:200, 	titulo:"Apellido",   alias:"apellido", alineacion:"I",class: "desc" },
+			{longitud:200, 	titulo:"Nombre de usuario",   	alias:"nombreUsuario", alineacion:"I", classSpan:"block-email" }, 
+			{longitud:200, 	titulo:"Contraseña",   	alias:"contrasena", alineacion:"I", classSpan:"block-email" }, 
 			{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },	
 			{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" },	
 //			{longitud:100, 	titulo:"Puesto",   alias:"puestoNombre", alineacion:"I" },	
@@ -113,7 +88,7 @@ class AdministracionVista extends CatalogoVista
 			{longitud:200, 	titulo:"Ultimo acceso",   alias:"ultimoAcceso", alineacion:"I" },			
 			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
 			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
-			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
+			//{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
 
 	
 		]
@@ -121,6 +96,54 @@ class AdministracionVista extends CatalogoVista
 		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
 										"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
+		var _this = this;
+		
+		 var buttonCommon = {
+				   text:      '<i class="fa fa-file-excel-o"></i>',
+			        exportOptions: {
+			            format: {
+			                body: function ( data, row, column, node ) 
+			                {
+			                	if(column==ArrayUtils.indexWithValues("alias",["logo"],_this.tabla.columnas))
+			                	{
+			                		return "";
+			                	} 
+			                	else if(column==ArrayUtils.indexWithValues("alias",["estatus"],_this.tabla.columnas))
+			                	{
+		                		  if(data.includes("fa-check"))
+			                		   return "Activo";
+			                	   else
+			                		   return "Inactivo";
+			                	}
+			                	else if(node.innerHTML.includes("button"))
+			                		return "";
+			                	return data;
+			                 
+			                }
+			            }
+			        }
+			    };
+		 
+		
+//		 this.tabla.botones= [
+//	            $.extend( true, {}, buttonCommon, {
+//	                extend: 'excelHtml5'
+//	            } )
+//	        ];
+
+		 this.tabla.botones =  {
+			      buttons: [
+			    	  $.extend( true, {}, buttonCommon, {
+			                extend: 'excel',"className": 'btn btn-success' 
+			            } ),
+			               ],
+			       dom: {
+					  button: {
+					  className: 'btn'
+				         }
+			       }
+		 };
+		
 		this.tabla.registros = [];	
 	}
 	
@@ -340,7 +363,8 @@ class AdministracionVista extends CatalogoVista
 			 supervisor2Id:$('#supervisor2Select').val(),
 			 supervisor3Id:$('#supervisor3Select').val(),
 			 tipoUsuarioId: TipoUsuario.CAPACITADO,
-			 estatus:$('#estatusRadio').is(':checked')?1:0,
+			 //estatus:$('#estatusRadio').is(':checked')?1:0,
+			 estatus:1,
 			 permisoSAHA:0,
 			 permisoSIVAH:0,
 		 	 permiso10y7:1

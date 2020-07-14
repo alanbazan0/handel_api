@@ -714,8 +714,10 @@ class CapacitacionVista extends CatalogoVista
 		    console.log('Youtube');
 
 		    // alert(getId(vidURL)) // Youtube video ID
-		    //var yvID = getId(vidURL);
-		    //vidURL = "https://www.youtube.com/watch?v="+yvID;
+		    var yvID = this.getId(vidURL);
+		    vidURL = "https://www.youtube.com/watch?v="+yvID;
+		    
+		   // vgsPlayer.src({ "techOrder": ["youtube"], "sources": [{ "type": "video/youtube", "src": "https://www.youtube.com/watch?v=iRusbYIyRNI"}] });
 
 		  } else {
 
@@ -723,16 +725,20 @@ class CapacitacionVista extends CatalogoVista
 
 		    if (!ext) ext = "mp4";
 		    var ext = vidURL.split('.').pop();
+		    
+		   
 		  }
+		  
+		  vgsPlayer.src({
+			    //"techOrder": ['youtube'],
+			    "type": "video/" + ext,
+			    "src": vidURL
+					//"youtube": { "iv_load_policy": 3 }
+			  });
 
 		  console.log(ext);
 
-		  vgsPlayer.src({
-		    //"techOrder": ['youtube'],
-		    "type": "video/" + ext,
-		    "src": vidURL
-				//"youtube": { "iv_load_policy": 3 }
-		  });
+		 
 		  if (poster) vgsPlayer.poster(poster);
 		  //vgsPlayer.play();
 

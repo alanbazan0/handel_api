@@ -71,7 +71,7 @@ class PerfilesRepositorio extends RepositorioBase implements IPerfilesRepositori
         return $resultado;
     }
 
-    public function consultar($criteriosSeleccion)
+    public function consultar($criteriosSeleccion,$opcional)
     {
         $resultado = new Resultado();
         $registros = array();
@@ -94,6 +94,11 @@ class PerfilesRepositorio extends RepositorioBase implements IPerfilesRepositori
                         {
                             $registro = $this->crearRegistro($id, $descripcion,$fechaAlta, $fechaModificacion);
                             array_push($registros,$registro);
+                        }
+                        if($opcional=="true")
+                        {
+                            $registro = $this->crearRegistro("", "Todos las perfiles",null, null);
+                            array_unshift($registros, $registro);
                         }
                         $resultado->valor = $registros;
                     }

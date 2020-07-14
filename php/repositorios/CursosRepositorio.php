@@ -236,12 +236,12 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 else
                 {
                     $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = "Falló la ejecución eliminarRespuestasSi(" . $this->conexion->errno . ") " . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. ". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
                 }
                 
             }
             else
-                $resultado->mensajeError = "Falló el enlace de parámetros";
+                $resultado->mensajeError = __FUNCTION__. "Falló el enlace de parámetros";
         }
         else
         {
@@ -251,6 +251,100 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         }
         return $resultado;
     }
+    
+    private function eliminarPreguntasEjecucion($cursoId)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM usuarios_cursos_lecciones_preguntas WHERE curso_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$cursoId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__.".Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__.".Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__.".Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
+    private function eliminarLeccionesEjecucion($cursoId)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM usuarios_cursos_lecciones WHERE curso_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$cursoId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__.". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__.".Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__.".Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
+    private function eliminarCursosEjecucion($cursoId)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM usuarios_cursos WHERE curso_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$cursoId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__.". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__.".Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__.".Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
     
     private function eliminarRespuestasLeccion($cursoId,$leccionId)
     {
@@ -288,6 +382,38 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     {
         $resultado = new Resultado();
         $consulta ="DELETE FROM cursos_respuestas WHERE curso_id = ? AND leccion_id = ? AND pregunta_id = ?";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("iii",$cursoId, $leccionId, $preguntaId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
+    private function eliminarPreguntaEjecucion($cursoId,$leccionId,$preguntaId)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM usuarios_cursos_lecciones_preguntas WHERE curso_id = ? AND leccion_id = ? AND pregunta_id = ?";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -426,6 +552,39 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
                 
             }
+        }
+        
+        
+        return $resultado;
+    }
+    
+    private function eliminarPreguntasLeccionEjecucion($cursoId,$leccionId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta ="DELETE FROM usuarios_cursos_lecciones_preguntas WHERE curso_id = ? and leccion_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("ii",$cursoId,$leccionId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__ ." Falló la ejecución eliminarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
         }
         
         
@@ -1483,7 +1642,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                                 
                             ];
                             
-                            $this->calcularPorcentaje($registro,'terminados','total');
+                            $this->calcularPorcentaje($registro,'terminados','total',"porcentaje");
                             
                             $resultado->valor = $registro;
                         }
@@ -1542,7 +1701,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                                 
                             ];
                             
-                            $this->calcularPorcentaje($registro,'correctas','total');
+                            $this->calcularPorcentaje($registro,'correctas','total',"porcentaje");
                             
                             $resultado->valor = $registro;
                         }
@@ -1597,7 +1756,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                                 
                             ];
                             
-                            $this->calcularPorcentaje($registro,'vistos','total');
+                            $this->calcularPorcentaje($registro,'vistos','total',"porcentaje");
                             
                             $resultado->valor = $registro;
                         }
@@ -1660,7 +1819,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                             $date = new \DateTime('now');
                             $date->modify('last day of this month');
                             $registro->total = $date->format('d');
-                            $this->calcularPorcentaje($registro,'diasMesSinCapacitacion','total');
+                            $this->calcularPorcentaje($registro,'diasMesSinCapacitacion','total',"porcentaje");
                             
                             $resultado->valor = $registro;
                         }
@@ -1681,27 +1840,24 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             return $resultado;
     }
     
-    private function calcularPorcentaje(&$registro,$campo,$campoTotal)
+    private function calcularPorcentaje(&$registro,$campo,$campoTotal,$campoPorcentaje)
     {
         $total = $registro->$campoTotal;
         $cumplido =$registro->$campo;
-        $registro->porcentaje  = 0;
+        $registro->$campoPorcentaje  = 0;
         if($total!=0)
         {
-            $registro->porcentaje = $cumplido  * 100 / $total;
-            //$registro->porcentajeCumplimiento = number_format($registro->porcentajeCumplimiento, 1, '.', '');
+            $registro->$campoPorcentaje = $cumplido  * 100 / $total;
             
-            $registro->porcentaje = bcdiv($registro->porcentaje, '1', 1);
+            $registro->$campoPorcentaje = bcdiv($registro->$campoPorcentaje, '1', 1);
             
-            list($enteros, $decimales) = explode(".", $registro->porcentaje);
+            list($enteros, $decimales) = explode(".", $registro->$campoPorcentaje);
             if($decimales=="0")
-                $registro->porcentaje = str_replace(".$decimales","",$registro->porcentaje);
-            
-                
+                $registro->$campoPorcentaje = str_replace(".$decimales","",$registro->$campoPorcentaje);
                 
         }
         else
-            $registro->porcentaje = 0;
+            $registro->$campoPorcentaje = 0;
     }
     
     
@@ -3009,13 +3165,57 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         $resultado = new Resultado();
         $this->conexion->autocommit(FALSE);
         
-        $resultado = $this->eliminarRespuestasPregunta($llaves->cursoId, $llaves->leccionId, $llaves->preguntaId);
+        $resultado = $this->eliminarPreguntaEjecucion($llaves->cursoId, $llaves->leccionId, $llaves->preguntaId);
         if($resultado->correcto())
         {
-            $consulta ="DELETE FROM cursos_preguntas WHERE curso_id = ? AND leccion_id = ? AND id = ?";
+            $resultado = $this->eliminarRespuestasPregunta($llaves->cursoId, $llaves->leccionId, $llaves->preguntaId);
+            if($resultado->correcto())
+            {
+                $consulta ="DELETE FROM cursos_preguntas WHERE curso_id = ? AND leccion_id = ? AND id = ?";
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if($sentencia->bind_param("iii",$llaves->cursoId,$llaves->leccionId,$llaves->preguntaId))
+                    {
+                        if($sentencia->execute())
+                        {
+                            $sentencia->close();
+                        }
+                        else
+                        {
+                            $resultado->codigoError = $this->conexion->errno;
+                            $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                        }
+                        
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    
+                }
+            }
+        }
+        if($resultado->correcto())
+            $this->conexion->commit();
+        else
+            $this->conexion->rollback();
+        return $resultado;
+    }
+    
+    public function eliminarRespuesta($llaves)
+    {
+        $resultado = new Resultado();
+        
+        $resultado = $this->eliminarRespuestaEjecucion($llaves);
+        if($resultado->correcto())
+        {
+            $consulta ="DELETE FROM cursos_respuestas WHERE curso_id = ? AND leccion_id = ? AND pregunta_id = ? AND id = ?";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param("iii",$llaves->cursoId,$llaves->leccionId,$llaves->preguntaId))
+                if($sentencia->bind_param("iiii",$llaves->cursoId,$llaves->leccionId,$llaves->preguntaId,$llaves->respuestaId))
                 {
                     if($sentencia->execute())
                     {
@@ -3024,7 +3224,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                     else
                     {
                         $resultado->codigoError = $this->conexion->errno;
-                        $resultado->mensajeError = __FUNCTION__." Falló la ejecución eliminarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
+                        $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
                     }
                     
                 }
@@ -3038,19 +3238,13 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 
             }
         }
-        if($resultado->correcto())
-            $this->conexion->commit();
-        else
-            $this->conexion->rollback();
         return $resultado;
     }
     
-    public function eliminarRespuesta($llaves)
+    public function eliminarRespuestaEjecucion($llaves)
     {
         $resultado = new Resultado();
-         
-        
-        $consulta ="DELETE FROM cursos_respuestas WHERE curso_id = ? AND leccion_id = ? AND pregunta_id = ? AND id = ?";
+        $consulta ="DELETE FROM usuarios_cursos_lecciones_preguntas WHERE curso_id = ? AND leccion_id = ? AND pregunta_id = ? AND respuesta_id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param("iiii",$llaves->cursoId,$llaves->leccionId,$llaves->preguntaId,$llaves->respuestaId))
@@ -3084,13 +3278,66 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         $resultado = new Resultado();
         $this->conexion->autocommit(FALSE);
         
-        $resultado = $this->eliminarPreguntasLeccion($llaves->cursoId,$llaves->leccionId);
+        $resultado = $this->eliminarPreguntasLeccionEjecucion($llaves->cursoId,$llaves->leccionId);
         if($resultado->correcto())
         {
-            $consulta ="DELETE FROM cursos_lecciones WHERE curso_id = ? AND id = ?";
+                   
+            $resultado = $this->eliminarLeccionEjecucion($llaves->cursoId,$llaves->leccionId);
+            if($resultado->correcto())
+            {
+                
+                $resultado = $this->eliminarPreguntasLeccion($llaves->cursoId,$llaves->leccionId);
+                if($resultado->correcto())
+                {
+                    $consulta ="DELETE FROM cursos_lecciones WHERE curso_id = ? AND id = ?";
+                    if($sentencia = $this->conexion->prepare($consulta))
+                    {
+                        if($sentencia->bind_param("ii",$llaves->cursoId,$llaves->leccionId))
+                        {
+                            if($sentencia->execute())
+                            {
+                                $sentencia->close();
+                            }
+                            else
+                            {
+                                $resultado->codigoError = $this->conexion->errno;
+                                $resultado->mensajeError = __FUNCTION__." Falló la ejecución eliminarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
+                            }
+                            
+                        }
+                        else
+                            $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+                    }
+                    else
+                    {
+                        $resultado->codigoError = $this->conexion->errno;
+                        $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                        
+                    }
+                }
+            }
+        }
+        if($resultado->correcto())
+            $this->conexion->commit();
+        else
+            $this->conexion->rollback();
+       
+        return $resultado;
+    }
+    
+    public function eliminarLeccionEjecucion($cursoId, $leccionId)
+    {
+        ini_set('max_execution_time', 300);
+        $resultado = new Resultado();
+        $this->conexion->autocommit(FALSE);
+        
+        $resultado = $this->eliminarPreguntasLeccion($cursoId,$leccionId);
+        if($resultado->correcto())
+        {
+            $consulta ="DELETE FROM usuarios_cursos_lecciones WHERE curso_id = ? AND leccion_id = ?";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param("ii",$llaves->cursoId,$llaves->leccionId))
+                if($sentencia->bind_param("ii",$cursoId,$leccionId))
                 {
                     if($sentencia->execute())
                     {
@@ -3099,7 +3346,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                     else
                     {
                         $resultado->codigoError = $this->conexion->errno;
-                        $resultado->mensajeError = __FUNCTION__." Falló la ejecución eliminarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
+                        $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
                     }
                     
                 }
@@ -3115,10 +3362,10 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         }
         if($resultado->correcto())
             $this->conexion->commit();
-        else
-            $this->conexion->rollback();
-       
-        return $resultado;
+            else
+                $this->conexion->rollback();
+                
+                return $resultado;
     }
     
     public function eliminar($llaves)
@@ -3128,45 +3375,57 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         $this->conexion->autocommit(FALSE);
        
         $resultado = $this->eliminarPerfiles($llaves->id);
+        
         if($resultado->correcto())
         {
-            $resultado = $this->eliminarRespuestas($llaves->id);
+            $resultado = $this->eliminarPreguntasEjecucion($llaves->id);
             if($resultado->correcto())
             {
-                $resultado = $this->eliminarPreguntas($llaves->id);
+                $resultado = $this->eliminarLeccionesEjecucion($llaves->id);
                 if($resultado->correcto())
                 {
-                    $resultado = $this->eliminarLecciones($llaves->id);
+                    $resultado = $this->eliminarCursosEjecucion($llaves->id);
                     if($resultado->correcto())
                     {
-                        $consulta = " DELETE FROM cursos "
-                            . "  WHERE id  = ? ";
-                            if($sentencia = $this->conexion->prepare($consulta))
+                        $resultado = $this->eliminarRespuestas($llaves->id);
+                        if($resultado->correcto())
+                        {
+                            $resultado = $this->eliminarPreguntas($llaves->id);
+                            if($resultado->correcto())
                             {
-                                if($sentencia->bind_param("i",$llaves->id))
+                                $resultado = $this->eliminarLecciones($llaves->id);
+                                if($resultado->correcto())
                                 {
-                                    if($sentencia->execute())
+                                    $consulta = " DELETE FROM cursos "
+                                    . "  WHERE id  = ? ";
+                                    if($sentencia = $this->conexion->prepare($consulta))
                                     {
-                                        //var_dump($llaves);
-                                        $resultado->valor = $llaves->id;
-                                        //var_dump($resultado);
+                                        if($sentencia->bind_param("i",$llaves->id))
+                                        {
+                                            if($sentencia->execute())
+                                            {
+                                                //var_dump($llaves);
+                                                $resultado->valor = $llaves->id;
+                                                //var_dump($resultado);
+                                            }
+                                            else
+                                            {
+                                                $resultado->codigoError = $this->conexion->errno;
+                                                $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                                            }
+                                        }
+                                        else
+                                            $resultado->mensajeError = "Falló el enlace de parámetros";
                                     }
                                     else
                                     {
                                         $resultado->codigoError = $this->conexion->errno;
-                                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                                        $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                                        
                                     }
                                 }
-                                else
-                                    $resultado->mensajeError = "Falló el enlace de parámetros";
                             }
-                            else
-                            {
-                                $resultado->codigoError = $this->conexion->errno;
-                                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-                                
-                            }
-                            
+                        }
                     }
                 }
             }
@@ -3528,19 +3787,11 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             return $resultado;
     }
     
-    public function consultarResultadosUsuarios($usuario,$criteriosSeleccion)
+    private function getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario)
     {
-        $resultado = new Resultado();
-        $registros = array();
-        $filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
-        
-        $filtroCapacitacion ="";
-        if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
-            $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
-        
-        
-        $consulta = "SELECT * from(SELECT U.id as id, U.nombre_usuario as nombreUsuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id, D.nombre as departamentoNombre, U.permiso_cavih, U.perfil_id, PR.nombre perfilNombre, U.recursos_humanos recursosHumanos, " .
-                "(SELECT count(*)
+        //$filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
+        $consulta = "SELECT * from(SELECT U.id as id, U.nombre_usuario as nombreUsuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id departamentoId, D.nombre as departamentoNombre, U.permiso_cavih, U.perfil_id, PR.nombre perfilNombre, U.recursos_humanos recursosHumanos, 
+            (SELECT count(*)
                 FROM cursos C
                 INNER JOIN cursos_preguntas CPR ON CPR.curso_id = C.id
                 WHERE  U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id) $filtroCapacitacion
@@ -3552,29 +3803,52 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                     INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
                     WHERE P.usuario_id = U.id
                     AND R.correcta=1  $filtroCapacitacion
-                )correctas, 
+                )correctas,
                 (SELECT IFNULL(DATE_FORMAT(UC.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')
                     FROM usuarios_cursos UC
                     INNER JOIN cursos C on C.id = UC.curso_id
                     WHERE UC.usuario_id = U.id  $filtroCapacitacion
                     ORDER BY UNIX_TIMESTAMP(UC.fecha_modificacion) desc
-                    LIMIT 1)fechaUltimaCapacitacion 
-            FROM usuarios U 
-              LEFT JOIN empresas E ON U.empresa_id=E.id 
-              LEFT JOIN sedes S ON U.sede_id = S.id 
-              LEFT JOIN puestos P ON U.puesto_id = P.id 
-              LEFT JOIN areas A ON U.area_id = A.id 
-              LEFT JOIN tipos_usuario T ON U.tipo_usuario_id = T.id 
-              LEFT JOIN usuarios SU1 ON U.supervisor1_id = SU1.id 
-              LEFT JOIN usuarios SU2 ON U.supervisor2_id = SU2.id 
-              LEFT JOIN usuarios SU3 ON U.supervisor3_id = SU3.id 
-              LEFT JOIN departamentos D ON D.id = U.departamento_id
+                    LIMIT 1)fechaUltimaCapacitacion,
+                (SELECT count(*)
+                FROM cursos C
+                WHERE  U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)
+                )capacitacionesTotal,
+                (
+                   SELECT count(*)
+                    FROM usuarios_cursos C
+                    WHERE  U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.curso_id) AND C.terminado = 1 AND C.usuario_id = U.id
+                )capacitacionesTerminadas,
+                 (
+                    SELECT count(*)
+                    FROM usuarios_cursos_lecciones UCL
+                        INNER JOIN cursos C on C.id = UCL.curso_id
+                    WHERE UCL.usuario_id = U.id
+                    AND UCL.visto=1  $filtroCapacitacion
+                )videosVistos,
+                (
+                    SELECT SUM(duracion)
+                    FROM usuarios_cursos_lecciones UCL
+                        INNER JOIN cursos C on C.id = UCL.curso_id
+                    WHERE UCL.usuario_id = U.id
+                    AND UCL.visto=1  $filtroCapacitacion
+                )tiempoVisto
+            FROM usuarios U
+              INNER JOIN empresas E ON U.empresa_id=E.id
+              INNER JOIN sedes S ON U.sede_id = S.id
+              INNER JOIN departamentos D ON D.id = U.departamento_id
+              LEFT JOIN puestos P ON U.puesto_id = P.id
+              LEFT JOIN areas A ON U.area_id = A.id
+              LEFT JOIN tipos_usuario T ON U.tipo_usuario_id = T.id
+              LEFT JOIN usuarios SU1 ON U.supervisor1_id = SU1.id
+              LEFT JOIN usuarios SU2 ON U.supervisor2_id = SU2.id
+              LEFT JOIN usuarios SU3 ON U.supervisor3_id = SU3.id
+             
               LEFT JOIN perfiles PR ON PR.id = U.perfil_id ";
         
         $consulta.= $this->where($filtros);
         
         $consulta.=")consulta ";
-        
         
         $filtrosSub = array();
         if(isset($criteriosSeleccion->tipoReporte) && $criteriosSeleccion->tipoReporte!="")
@@ -3584,22 +3858,31 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 case 1:
                     array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>'fechaUltimaCapacitacion is not null']);
                     //$consulta.=" where fechaUltimaCapacitacion is not null ";
-                break;
+                    break;
                     
                 case 0:
                     array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>'fechaUltimaCapacitacion is  null']);
-                break;
+                    break;
             }
         }
         
-//         if(isset($criteriosSeleccion->fechaInicial) && $criteriosSeleccion->fechaInicial!="")
-//             array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>"fechaUltimaCapacitacion >= '$criteriosSeleccion->fechaInicial'"]);
-//             if(isset($criteriosSeleccion->fechaFinal) && $criteriosSeleccion->fechaFinal!="")
-//             array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>"fechaUltimaCapacitacion <= '$criteriosSeleccion->fechaFinal'"]);
-            
         $consulta.= $this->where($filtrosSub);
         
-       //echo $consulta;
+        return $consulta;
+    }
+  
+    
+    public function consultarResultadosUsuarios($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
+        
+        $filtroCapacitacion ="";
+        if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
+            $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
+        
+        $consulta = $this->getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario);
         
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -3608,7 +3891,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVIH, $perfilId, $perfilNombre, $recursosHumanos, $total,$correctas,$fechaUltimaCapacitacion)  )
+                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVIH, $perfilId, $perfilNombre, $recursosHumanos, $total,$correctas,$fechaUltimaCapacitacion,$totalCapacitaciones,$capacitacionesTerminadas,$videosVistos, $tiempoVisto)  )
                     {
                         while($row = $sentencia->fetch())
                         {
@@ -3651,7 +3934,11 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                                 'recursosHumanos' => $recursosHumanos,
                                 'total' => $total,
                                 'correctas' => $correctas,
-                                'fechaUltimaCapacitacion' => $fechaUltimaCapacitacion
+                                'fechaUltimaCapacitacion' => $fechaUltimaCapacitacion,
+                                'totalCapacitaciones' => $totalCapacitaciones,
+                                'capacitacionesTerminadas' => $capacitacionesTerminadas,
+                                'videosVistos' => $videosVistos,
+                                'tiempoVisto' => $tiempoVisto
                             ];
                             
                             
@@ -3665,8 +3952,10 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                             $registro->nodeId = $id;
                             $registro->parentId = $registro->supervisor1Id;
                             $registro->text = $registro->nodeId." - ".$registro->nombreCompleto;
+                            $registro->nombreId =  $registro->nombreCompleto ." (".$registro->id.")";
+                            $this->calcularPorcentaje($registro,'correctas','total',"porcentaje");
                             
-                            $this->calcularPorcentaje($registro,'correctas','total');
+                            $this->calcularPorcentaje($registro,'capacitacionesTerminadas','totalCapacitaciones',"porcentajeAvance");
                             
                             array_push($registros,$registro);
                         }
@@ -3686,6 +3975,553 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             
             return $resultado;
     }
+    
+    public function consultarTiempoUsuarios($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
+        
+        $filtroCapacitacion ="";
+        if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
+            $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
+            
+            
+            $consulta = "SELECT id, nombreUsuario, nombre, apellido, videosVistos, tiempoVisto ".
+                "\nFROM(" . $this->getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario).
+                "\n) AS A " .
+                "\nORDER BY nombre, apellido";
+            
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($this->bind_param($sentencia, $filtros))
+                {
+                    if($sentencia->execute())
+                    {
+                        if ($sentencia->bind_result($id, $nombreUsuario, $nombre, $apellido, $videosVistos, $tiempoVisto)  )
+                        {
+                            while($row = $sentencia->fetch())
+                            {
+                                $registro= (object) [
+                                    'id' =>  $id,
+                                    'nombreUsuario' => $nombreUsuario,
+                                    'nombre' => $nombre,
+                                    'apellido' => $apellido,
+                                    'videosVistos' => $videosVistos,
+                                    'tiempoVisto' => $tiempoVisto,
+                                ];
+                                
+                                
+                                $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
+                                $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
+                                if(file_exists($registro->fotoPerfil))
+                                    $registro->fotoPerfil =  "php/fotos/usuario". $registro->id .".jpg";
+                                else
+                                    $registro->fotoPerfil =  "php/fotos/default.jpg";
+                                        
+//                                     $registro->nodeId = $id;
+//                                     $registro->parentId = $registro->supervisor1Id;
+//                                     $registro->text = $registro->nodeId." - ".$registro->nombreCompleto;
+                                     $registro->nombreId =  $registro->nombreCompleto ." (".$registro->id.")";
+//                                     $this->calcularPorcentaje($registro,'correctas','total',"porcentaje");
+                                        
+//                                         $this->calcularPorcentaje($registro,'capacitacionesTerminadas','totalCapacitaciones',"porcentajeAvance");
+                                        
+                                array_push($registros,$registro);
+                            }
+                            $resultado->valor = $registros;
+                        }
+                        else
+                            $resultado->mensajeError = "Falló el enlace del resultado.";
+                    }
+                    else
+                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = "Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                
+                return $resultado;
+    }
+    
+    public function consultarAvanceUsuarios($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
+        
+        $filtroCapacitacion ="";
+        if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
+            $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
+            
+            $consulta = $this->getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario);
+            
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($this->bind_param($sentencia, $filtros))
+                {
+                    if($sentencia->execute())
+                    {
+                        if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVIH, $perfilId, $perfilNombre, $recursosHumanos, $total,$correctas,$fechaUltimaCapacitacion,$totalCapacitaciones,$capacitacionesTerminadas,$videosVistos, $tiempoVisto)  )
+                        {
+                            while($row = $sentencia->fetch())
+                            {
+                                $registro= (object) [
+                                    'id' =>  $id,
+                                    'nombreUsuario' => $nombreUsuario,
+                                    'contrasena' => $contrasena,
+                                    'nombre' => $nombre,
+                                    'apellido' => $apellido,
+                                    'empresaId' => $empresaId,
+                                    'empresaNombre' => $empresa,
+                                    'sedeId' => $sedeId,
+                                    'sedeNombre' => $sede,
+                                    'puestoId' => $puestoId,
+                                    'puestoNombre' => $puesto,
+                                    'areaId' => $areaId,
+                                    'areaNombre' => $area,
+                                    'tipoUsuarioId' => $tipoUsuarioId,
+                                    'tipoUsuarioNombre' => $tipoUsuario,
+                                    'supervisor1Id' => $supervisor1Id,
+                                    'supervisor1Nombre' => $supervisor1,
+                                    'supervisor2Id' => $supervisor2Id,
+                                    'supervisor2Nombre' => $supervisor2,
+                                    'supervisor3Id' => $supervisor3Id,
+                                    'supervisor3Nombre' => $supervisor3,
+                                    'ultimoAcceso' => $ultimoAcceso,
+                                    'fechaAlta' => $fechaAlta,
+                                    'fechaModificacion' => $fechaModificacion,
+                                    'estatus' => $estatus,
+                                    'tipoEmpresaId' => $tipoEmpresaId,
+                                    'tipoAreaId' => $tipoAreaId,
+                                    'permisoSAHA' => $permisoSAHA,
+                                    'permisoSIVAH' => $permisoSIVAH,
+                                    'permiso10y7' => $permiso10y7,
+                                    'departamentoId' => $departamentoId,
+                                    'departamentoNombre' => $departamentoNombre,
+                                    'permisoCAVIH' => $permisoCAVIH,
+                                    'perfilId' => $perfilId,
+                                    'perfilNombre' => $perfilNombre,
+                                    'recursosHumanos' => $recursosHumanos,
+                                    'total' => $total,
+                                    'correctas' => $correctas,
+                                    'fechaUltimaCapacitacion' => $fechaUltimaCapacitacion,
+                                    'totalCapacitaciones' => $totalCapacitaciones,
+                                    'capacitacionesTerminadas' => $capacitacionesTerminadas,
+                                    'videosVistos' => $videosVistos,
+                                    'tiempoVisto' => $tiempoVisto
+                                ];
+                                
+                                
+                                $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
+                                $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
+                                if(file_exists($registro->fotoPerfil))
+                                    $registro->fotoPerfil =  "php/fotos/usuario". $registro->id .".jpg";
+                                else
+                                    $registro->fotoPerfil =  "php/fotos/default.jpg";
+                                        
+                                $registro->nodeId = $id;
+                                $registro->parentId = $registro->supervisor1Id;
+                                $registro->text = $registro->nodeId." - ".$registro->nombreCompleto;
+                                $registro->nombreId =  $registro->nombreCompleto ." (".$registro->id.")";
+                                //$this->calcularPorcentaje($registro,'correctas','total',"porcentaje");
+                                
+                                $this->calcularPorcentaje($registro,'capacitacionesTerminadas','totalCapacitaciones',"porcentaje");
+                                
+                                array_push($registros,$registro);
+                            }
+                            $resultado->valor = $registros;
+                        }
+                        else
+                            $resultado->mensajeError = "Falló el enlace del resultado.";
+                    }
+                    else
+                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = "Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                
+                return $resultado;
+    }
+    
+    public function consultarResultadosDepartamentos($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
+        
+        $filtroCapacitacion ="";
+        if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
+            $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
+            
+            $consulta = "SELECT departamentoId, departamentoNombre,SUM(correctas)correctas, SUM(total)total ".
+                "\nFROM(" . $this->getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario).
+                "\n) AS A " .
+                "\nGROUP BY departamentoId,departamentoNombre";
+                "\nORDER BY departamentoNombre";
+            
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($this->bind_param($sentencia, $filtros))
+                {
+                    if($sentencia->execute())
+                    {
+                        if ($sentencia->bind_result($id, $nombre, $correctas, $total)  )
+                        {
+                            while($row = $sentencia->fetch())
+                            {
+                                $registro= (object) [
+                                    'id' =>  $id,
+                                    'nombre' => $nombre,
+                                    'correctas' => $correctas,
+                                    'total' => $total
+                                ];
+                                
+                                $registro->nombreId =  $registro->nombre." (".$registro->id.")";
+                                $this->calcularPorcentaje($registro,'correctas','total',"porcentaje");
+                                
+                                array_push($registros,$registro);
+                            }
+                            $resultado->valor = $registros;
+                        }
+                        else
+                            $resultado->mensajeError = "Falló el enlace del resultado.";
+                    }
+                    else
+                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = "Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                
+                return $resultado;
+    }
+    
+    public function consultarAvanceDepartamentos($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
+        
+        $filtroCapacitacion ="";
+        if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
+            $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
+            
+            $consulta = "SELECT departamentoId, departamentoNombre,SUM(capacitacionesTerminadas)capacitacionesTerminadas, SUM(capacitacionesTotal)capacitacionesTotal ".
+                "\nFROM(" . $this->getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario).
+                "\n) AS A " .
+                "\nGROUP BY departamentoId,departamentoNombre";
+            "\nORDER BY departamentoNombre";
+            
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($this->bind_param($sentencia, $filtros))
+                {
+                    if($sentencia->execute())
+                    {
+                        if ($sentencia->bind_result($id, $nombre, $correctas, $total)  )
+                        {
+                            while($row = $sentencia->fetch())
+                            {
+                                $registro= (object) [
+                                    'id' =>  $id,
+                                    'nombre' => $nombre,
+                                    'correctas' => $correctas,
+                                    'total' => $total
+                                ];
+                                
+                                $registro->nombreId =  $registro->nombre." (".$registro->id.")";
+                                $this->calcularPorcentaje($registro,'correctas','total',"porcentaje");
+                                
+                                array_push($registros,$registro);
+                            }
+                            $resultado->valor = $registros;
+                        }
+                        else
+                            $resultado->mensajeError = "Falló el enlace del resultado.";
+                    }
+                    else
+                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = "Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                
+                return $resultado;
+    }
+    
+    public function consultarCapacitacionesTomadas($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
+        
+        if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
+            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'UC1','campo'=>'curso_id','valor'=>$criteriosSeleccion->cursoId]);
+//         $filtroCapacitacion ="";
+//         if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
+//             $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
+            
+            
+            //$consulta = "SELECT * from(
+            $consulta = "SELECT U.id as id, U.nombre_usuario as nombreUsuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id, D.nombre as departamentoNombre, U.permiso_cavih, U.perfil_id, PR.nombre perfilNombre, U.recursos_humanos recursosHumanos, " .
+                "(SELECT count(*)
+                FROM cursos C
+                INNER JOIN cursos_preguntas CPR ON CPR.curso_id = C.id
+                WHERE  U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)  AND C.id = UC1.curso_id
+                )total,
+                (
+                    SELECT count(*)
+                    FROM usuarios_cursos_lecciones_preguntas P
+                    INNER JOIN cursos C on C.id = P.curso_id
+                    INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
+                    WHERE P.usuario_id = U.id
+                    AND R.correcta=1  AND C.id = UC1.curso_id
+                )correctas, UC1.fecha_inicial, CR.titulo, UC1.terminado, UC1. fecha_final
+              FROM usuarios_cursos UC1  
+                  INNER JOIN cursos CR ON CR.id = UC1.curso_id
+              LEFT JOIN usuarios U ON UC1.usuario_id = U.id
+              LEFT JOIN empresas E ON U.empresa_id=E.id
+              LEFT JOIN sedes S ON U.sede_id = S.id
+              LEFT JOIN puestos P ON U.puesto_id = P.id
+              LEFT JOIN areas A ON U.area_id = A.id
+              LEFT JOIN tipos_usuario T ON U.tipo_usuario_id = T.id
+              LEFT JOIN usuarios SU1 ON U.supervisor1_id = SU1.id
+              LEFT JOIN usuarios SU2 ON U.supervisor2_id = SU2.id
+              LEFT JOIN usuarios SU3 ON U.supervisor3_id = SU3.id
+              LEFT JOIN departamentos D ON D.id = U.departamento_id
+              LEFT JOIN perfiles PR ON PR.id = U.perfil_id ";
+            
+            $consulta.= $this->where($filtros) . " order by UNIX_TIMESTAMP(UC1.fecha_inicial) desc";
+            
+            //$consulta.=")consulta ";
+            
+            
+//             $filtrosSub = array();
+//             if(isset($criteriosSeleccion->tipoReporte) && $criteriosSeleccion->tipoReporte!="")
+//             {
+//                 switch($criteriosSeleccion->tipoReporte)
+//                 {
+//                     case 1:
+//                         array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>'fechaUltimaCapacitacion is not null']);
+//                         //$consulta.=" where fechaUltimaCapacitacion is not null ";
+//                         break;
+                        
+//                     case 0:
+//                         array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>'fechaUltimaCapacitacion is  null']);
+//                         break;
+//                 }
+//             }
+            
+            //         if(isset($criteriosSeleccion->fechaInicial) && $criteriosSeleccion->fechaInicial!="")
+                //             array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>"fechaUltimaCapacitacion >= '$criteriosSeleccion->fechaInicial'"]);
+                //             if(isset($criteriosSeleccion->fechaFinal) && $criteriosSeleccion->fechaFinal!="")
+                    //             array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>"fechaUltimaCapacitacion <= '$criteriosSeleccion->fechaFinal'"]);
+                
+               // $consulta.= $this->where($filtrosSub);
+                
+                //echo $consulta;
+                
+                
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if($this->bind_param($sentencia, $filtros))
+                    {
+                        if($sentencia->execute())
+                        {
+                            if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVIH, $perfilId, $perfilNombre, $recursosHumanos, $total,$correctas,$fechaInicial, $titulo, $terminado, $fechaFinal)  )
+                            {
+                                while($row = $sentencia->fetch())
+                                {
+                                    $registro= (object) [
+                                        'id' =>  $id,
+                                        'nombreUsuario' => $nombreUsuario,
+                                        'contrasena' => $contrasena,
+                                        'nombre' => $nombre,
+                                        'apellido' => $apellido,
+                                        'empresaId' => $empresaId,
+                                        'empresaNombre' => $empresa,
+                                        'sedeId' => $sedeId,
+                                        'sedeNombre' => $sede,
+                                        'puestoId' => $puestoId,
+                                        'puestoNombre' => $puesto,
+                                        'areaId' => $areaId,
+                                        'areaNombre' => $area,
+                                        'tipoUsuarioId' => $tipoUsuarioId,
+                                        'tipoUsuarioNombre' => $tipoUsuario,
+                                        'supervisor1Id' => $supervisor1Id,
+                                        'supervisor1Nombre' => $supervisor1,
+                                        'supervisor2Id' => $supervisor2Id,
+                                        'supervisor2Nombre' => $supervisor2,
+                                        'supervisor3Id' => $supervisor3Id,
+                                        'supervisor3Nombre' => $supervisor3,
+                                        'ultimoAcceso' => $ultimoAcceso,
+                                        'fechaAlta' => $fechaAlta,
+                                        'fechaModificacion' => $fechaModificacion,
+                                        'estatus' => $estatus,
+                                        'tipoEmpresaId' => $tipoEmpresaId,
+                                        'tipoAreaId' => $tipoAreaId,
+                                        'permisoSAHA' => $permisoSAHA,
+                                        'permisoSIVAH' => $permisoSIVAH,
+                                        'permiso10y7' => $permiso10y7,
+                                        'departamentoId' => $departamentoId,
+                                        'departamentoNombre' => $departamentoNombre,
+                                        'permisoCAVIH' => $permisoCAVIH,
+                                        'perfilId' => $perfilId,
+                                        'perfilNombre' => $perfilNombre,
+                                        'recursosHumanos' => $recursosHumanos,
+                                        'total' => $total,
+                                        'correctas' => $correctas,
+                                        'fechaInicial' => $fechaInicial,
+                                        'titulo' => $titulo,
+                                        'terminado' => $terminado,
+                                        'fechaFinal' => $fechaFinal
+                                    ];
+                                    
+                                    
+                                    $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
+                                    $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
+                                    if(file_exists($registro->fotoPerfil))
+                                        $registro->fotoPerfil =  "php/fotos/usuario". $registro->id .".jpg";
+                                        else
+                                            $registro->fotoPerfil =  "php/fotos/default.jpg";
+                                            
+                                            $registro->nodeId = $id;
+                                            $registro->parentId = $registro->supervisor1Id;
+                                            $registro->text = $registro->nodeId." - ".$registro->nombreCompleto;
+                                            
+                                            $this->calcularPorcentaje($registro,'correctas','total',"porcentaje");
+                                            
+                                            array_push($registros,$registro);
+                                }
+                                $resultado->valor = $registros;
+                            }
+                            else
+                                $resultado->mensajeError = "Falló el enlace del resultado.";
+                        }
+                        else
+                            $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace de parámetros";
+                }
+                else
+                    $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    
+                    return $resultado;
+    }
+    
+    public function consultarLeccionesTomadas($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
+        
+        $filtroCapacitacion ="";
+        if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
+                $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
+
+        
+        if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
+            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'UC1','campo'=>'curso_id','valor'=>$criteriosSeleccion->cursoId]);
+            
+            $consulta = "SELECT id, titulo, SUM(total), SUM(correctas) FROM(".
+                "SELECT L.id, L.titulo, " .
+            "(SELECT count(*)
+                FROM cursos C
+                INNER JOIN cursos_preguntas CPR ON CPR.curso_id = C.id 
+                WHERE  U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)  AND C.id = UC1.curso_id AND CPR.leccion_id = UCL.leccion_id $filtroCapacitacion  
+                )total,
+                (
+                    SELECT count(*)
+                    FROM usuarios_cursos_lecciones_preguntas P
+                    INNER JOIN cursos C on C.id = P.curso_id
+                    INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
+                    WHERE P.usuario_id = U.id
+                    AND R.correcta=1  AND C.id = UC1.curso_id AND P.leccion_id =UCL.leccion_id $filtroCapacitacion
+                )correctas
+              FROM usuarios_cursos_lecciones UCL
+                  INNER JOIN cursos_lecciones L ON L.curso_id = UCL.curso_id AND L.id = UCL.leccion_id
+                  INNER JOIN usuarios_cursos UC1 ON UC1.curso_id = UCL.curso_id
+                  INNER JOIN cursos CR ON CR.id = UC1.curso_id
+                  LEFT JOIN usuarios U ON UC1.usuario_id = U.id
+                  LEFT JOIN empresas E ON U.empresa_id=E.id
+                  LEFT JOIN sedes S ON U.sede_id = S.id
+                  LEFT JOIN tipos_usuario T ON U.tipo_usuario_id = T.id
+                  LEFT JOIN departamentos D ON D.id = U.departamento_id
+                  LEFT JOIN perfiles PR ON PR.id = U.perfil_id ";
+            
+            $consulta.= $this->where($filtros) .
+            ") consulta " .
+            " group by id,titulo " .
+            " order by titulo ";
+            
+                
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if($this->bind_param($sentencia, $filtros))
+                    {
+                        if($sentencia->execute())
+                        {
+                            if ($sentencia->bind_result($id, $leccionTitulo, $total,  $correctas)  )
+                            {
+                                while($row = $sentencia->fetch())
+                                {
+                                    $registro= (object) [
+                                        'id' =>  $id,
+                                        'nombre' =>  $leccionTitulo,
+                                        'total' =>  $total,
+                                        'correctas' =>  $correctas,
+                                        
+                                    ];
+                                    
+                                    $registro->nombreId =  $registro->nombre ." (".$registro->id.")";
+                                    $this->calcularPorcentaje($registro,'correctas','total',"porcentaje");
+                                    
+//                                     $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
+//                                     $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
+//                                     if(file_exists($registro->fotoPerfil))
+//                                         $registro->fotoPerfil =  "php/fotos/usuario". $registro->id .".jpg";
+//                                         else
+//                                             $registro->fotoPerfil =  "php/fotos/default.jpg";
+                                            
+//                                             $registro->nodeId = $id;
+//                                             $registro->parentId = $registro->supervisor1Id;
+//                                             $registro->text = $registro->nodeId." - ".$registro->nombreCompleto;
+                                            
+//                                             $this->calcularPorcentaje($registro,'correctas','total',"porcentaje");
+                                            
+                                            array_push($registros,$registro);
+                                }
+                                $resultado->valor = $registros;
+                            }
+                            else
+                                $resultado->mensajeError = "Falló el enlace del resultado.";
+                        }
+                        else
+                            $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace de parámetros";
+                }
+                else
+                    $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    
+                    return $resultado;
+}
     
     public function getFiltroEstructura($usuario,$criteriosSeleccion)
     {
@@ -3713,19 +4549,27 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             switch ($usuario->tipoUsuarioId)
             {
                 case \TipoUsuario::SUPERVISOR:
-                    if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+//                     if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+//                     {
+//                         array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+//                     }
+//                     else
+//                     {
+//                         $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+//                         $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+//                         if($resultado->correcto())
+//                         {
+//                             $empresasIds = implode(",", $resultado->valor);
+//                             array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','operador'=>'IN','valor'=>$empresasIds]);
+//                         }
+//                     }
+                    $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                    $resultado = $usuariosRepositorio->consultarIdsUsuarios($usuario);
+                    if($resultado->correcto())
                     {
-                        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
-                    }
-                    else
-                    {
-                        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
-                        $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
-                        if($resultado->correcto())
-                        {
-                            $empresasIds = implode(",", $resultado->valor);
-                            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','operador'=>'IN','valor'=>$empresasIds]);
-                        }
+                        $usuariosIds = implode(",", $resultado->valor);
+                        //$and =" AND U.id IN($usuariosIds)";
+                        array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','operador'=>'IN','valor'=>$usuariosIds]);
                     }
                     break;
                 case \TipoUsuario::COORDINADOR:

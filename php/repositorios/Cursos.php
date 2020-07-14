@@ -197,10 +197,11 @@ try
             case 'eliminarLeccion':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminarLeccion($llaves);
-                if($resultado->mensajeError=="")
-                {
-                    //TODO: Eliminar valores de seccion en la ejecucion
-                }
+//                 if($resultado->correcto())
+//                 {
+//                     //TODO: Eliminar valores de seccion en la ejecucion
+//                     $resultado = $repositorio->eliminarLeccionEjecucion($llaves);
+//                 }
                 break;
             case 'insertarPregunta':
                 $cursoId = REQUEST('cursoId');
@@ -351,6 +352,54 @@ try
                     $usuario = $_SESSION['usuario'];
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 $resultado = $repositorio->consultarResultadosUsuarios($usuario,$criteriosSeleccion);
+            break;
+            case 'consultarTiempoUsuarios':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                 $resultado = $repositorio->consultarTiempoUsuarios($usuario,$criteriosSeleccion);
+            break;
+            case 'consultarCapacitacionesTomadas':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarCapacitacionesTomadas($usuario,$criteriosSeleccion);
+            break;
+            case 'consultarLeccionesTomadas':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarLeccionesTomadas($usuario,$criteriosSeleccion);
+                    break;
+            case 'consultarResultadosDepartamentos':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarResultadosDepartamentos($usuario,$criteriosSeleccion);
+            break;
+            case 'consultarAvanceDepartamentos':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarAvanceDepartamentos($usuario,$criteriosSeleccion);
+            break;
+            case 'consultarAvanceUsuarios':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarAvanceUsuarios($usuario,$criteriosSeleccion);
             break;
             default:
                 $resultado->mensajeError = "Acción no válida";

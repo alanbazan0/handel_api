@@ -1,9 +1,9 @@
-class ReportePersonalVista extends CatalogoVista
+class ReportePersonalCapacitacionesVista extends CatalogoVista
 {		
 	constructor(ventana)
 	{	
 		super(ventana);
-		this.presentador = new ReportePersonalPresentador(this);
+		this.presentador = new ReportePersonalCapacitacionesPresentador(this);
 		this._urlFormulario = "html/formularios/capacitados.php";
 		
 	}
@@ -51,27 +51,26 @@ class ReportePersonalVista extends CatalogoVista
 	
 	crearColumnasGrid()
 	{
-		
-		
-		
 		this.tabla.columnas = [
 			
 //			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
 			
+			{longitud:200, 	titulo:"Capacitacion",   alias:"titulo", alineacion:"I",class: "desc" }, 
+			{longitud:100, 	titulo:"Fecha inicio",   alias:"fechaInicial", alineacion:"I"},
+			{longitud:100, 	titulo:"Completada",   alias:"terminado", alineacion:"I",itemRenderer: this.rendererTerminado},
+			{longitud:100, 	titulo:"Fecha termino",   alias:"fechaFinal", alineacion:"I"},
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogo},
 			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I",class: "desc" }, 
 			{longitud:200, 	titulo:"Apellido",   alias:"apellido", alineacion:"I",class: "desc" },
-			{longitud:200, 	titulo:"Nombre de usuario",   	alias:"nombreUsuario", alineacion:"I", classSpan:"block-email" }, 
+			//{longitud:200, 	titulo:"Nombre de usuario",   	alias:"nombreUsuario", alineacion:"I", classSpan:"block-email" }, 
 			{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },	
 			{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" },	
 			//{longitud:100, 	titulo:"Puesto",   alias:"puestoNombre", alineacion:"I" },	
 //			{longitud:100, 	titulo:"Area",   alias:"areaNombre", alineacion:"I" },	
 			{longitud:100, 	titulo:"Departamento",   alias:"departamentoNombre", alineacion:"I" },	
-			{longitud:100, 	titulo:"Capacitación",   alias:"capacitacion", alineacion:"I", itemRenderer: this.rendererCapacitacion },
-			{longitud:100, 	titulo:"Fecha última capacitación",   alias:"fechaUltimaCapacitacion", alineacion:"I"},
-			{longitud:100, 	titulo:"Aprovechamiento",   alias:"porcentaje", alineacion:"C",itemRenderer: this.rendererPorcentaje },
-			{longitud:100, 	titulo:"Avance",   alias:"porcentajeAvance", alineacion:"C",itemRenderer: this.rendererPorcentajeAvance },
-			{longitud:100, 	titulo:"Capacitaciones completadas",   alias:"capacitacionesCompletadas", alineacion:"I", itemRenderer: this.rendererTermino},
+			//{longitud:100, 	titulo:"Capacitación",   alias:"capacitacion", alineacion:"I", itemRenderer: this.rendererCapacitacion },
+			
+			{longitud:100, 	titulo:"Aprovechamiento",   alias:"porcentaje", alineacion:"I",itemRenderer: this.rendererPorcentaje },
 //			{longitud:100, 	titulo:"Supervisor 1",   alias:"supervisor1Nombre", alineacion:"I" },	
 //			{longitud:100, 	titulo:"Supervisor 2",   alias:"supervisor2Nombre", alineacion:"I" },	
 //			{longitud:100, 	titulo:"Supervisor 3",   alias:"supervisor3Nombre", alineacion:"I" },	
@@ -82,68 +81,7 @@ class ReportePersonalVista extends CatalogoVista
 //			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
 
 	
-		];
-		
-		var _this = this;
-		
-		 var buttonCommon = {
-				   text:      '<i class="fa fa-file-excel-o"></i>',
-			        exportOptions: {
-			            format: {
-			                body: function ( data, row, column, node ) {
-			                	if(column==ArrayUtils.indexWithValues("alias",["logo"],_this.tabla.columnas))
-			                	{
-			                		return "";
-			                	}
-			                	else if(column==ArrayUtils.indexWithValues("alias",["capacitacion"],_this.tabla.columnas))
-				                {
-			                	   if(data.includes("fa-check"))
-			                		   return "Si";
-			                	   else
-			                		   return "No";
-				                }
-			                	else if(column==ArrayUtils.indexWithValues("alias",["porcentaje"],_this.tabla.columnas))
-				                {
-			                	  return node.innerText;
-				                }
-			                	else if(column==ArrayUtils.indexWithValues("alias",["porcentajeAvance"],_this.tabla.columnas))
-				                {
-			                	  return node.innerText;
-				                }
-			                	else if(column==ArrayUtils.indexWithValues("alias",["capacitacionesCompletadas"],_this.tabla.columnas))
-				                {
-			                	   if(data.includes("fa-check"))
-			                		   return "Si";
-			                	   else
-			                		   return "No";
-				                }
-			                	else
-			                	   return data;
-			                }
-			            }
-			        }
-			    };
-		
-		
-		 
-//		 this.tabla.botones= [
-//	            $.extend( true, {}, buttonCommon, {
-//	                extend: 'excel',"className": 'btn btn-success' 
-//	            } )
-//	        ];
-//		 
-		 this.tabla.botones =  {
-			      buttons: [
-			    	  $.extend( true, {}, buttonCommon, {
-			                extend: 'excel',"className": 'btn btn-success' 
-			            } ),
-			               ],
-			       dom: {
-					  button: {
-					  className: 'btn'
-				         }
-			       }
-		 };
+		]
 		
 //		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
 //										"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
@@ -256,33 +194,20 @@ class ReportePersonalVista extends CatalogoVista
 	{    
 		if(renglon.fechaUltimaCapacitacion!=null)
 			return "<center><i class='fas fa-check text-green'></i></center>";
-	    return "<center><i class='fas fa-times text-red'></i></center>";;
+	    return "";
 	}
 	
-//	rendererCapacitacion(renglon, type, set)
-//	{    
-//		if(renglon.fechaUltimaCapacitacion!=null)
-//			return "<center><i class='fas fa-check text-green'></i></center>";
-//	    return "";
-//	}
-//	
-	rendererTermino(renglon, type, set)
+	rendererTerminado(renglon, type, set)
 	{    
-		if(renglon.fechaUltimaCapacitacion!=null)
-		{
-			if(renglon.porcentajeAvance ==100 )
-				return "<center><i class='fas fa-check text-green'></i></center>";
-			else
-				return "<center><i class='fas fa-times text-red'></i></center>";
-		}
+		if(renglon.terminado==1)
+			return "<center><i class='fas fa-check text-green'></i></center>";
 	    return "";
 	}
 	
 	rendererPorcentaje(renglon, type, set)
 	{    
-		if(renglon.fechaUltimaCapacitacion!=null)
-		{
-			var cantidad = renglon.correctas + " / " + renglon.total;
+		//if(renglon.fechaUltimaCapacitacion!=null)
+		//{
 			var porcentajeCumplimiento = parseFloat(renglon.porcentaje);
 			var label ="";
 			if(porcentajeCumplimiento >= 0 && porcentajeCumplimiento < 51)
@@ -297,32 +222,8 @@ class ReportePersonalVista extends CatalogoVista
 			{
 				label = "text-green";
 			}
-			return "<span data-toggle='tooltip' data-placemen='bottom' title='"+cantidad+"' style='font-weight:bold' class='"+label+"'>"+porcentajeCumplimiento+"%</span>";
-		}
-		return "";
-	}
-	
-	rendererPorcentajeAvance(renglon, type, set)
-	{    
-		if(renglon.fechaUltimaCapacitacion!=null)
-		{
-			var cantidad = renglon.capacitacionesTerminadas + " / " + renglon.totalCapacitaciones;
-			var porcentajeCumplimiento = parseFloat(renglon.porcentajeAvance);
-			var label ="";
-			if(porcentajeCumplimiento >= 0 && porcentajeCumplimiento < 51)
-			{
-				label = "text-red";
-			}
-			else if(porcentajeCumplimiento >= 51 && porcentajeCumplimiento < 100)
-			{
-				label = "text-yellow";
-			}
-			else if(porcentajeCumplimiento >= 100)
-			{
-				label = "text-green";
-			}
-			return "<span data-toggle='tooltip' data-placemen='bottom' title='"+cantidad+"' style='font-weight:bold' class='"+label+"'>"+porcentajeCumplimiento+"%</span>";
-		}
+			return "<span style='font-weight:bold' class='"+label+"'>"+porcentajeCumplimiento+"%</span>";
+		//}
 		return "";
 	}
 	
@@ -397,13 +298,6 @@ class ReportePersonalVista extends CatalogoVista
 	set departamentosCriterio(registros)
 	{		
 		this.cargarOpciones('#departamentoSelectCriterio', registros);
-		//this.consultarPerfilesCriterio();
-		this.consultarCursosCriterio();
-	}
-	
-	set perfilesCriterio(registros)
-	{
-		this.cargarOpciones('#perfilSelectCriterio', registros);
 		this.consultarCursosCriterio();
 	}
 	
@@ -786,12 +680,6 @@ class ReportePersonalVista extends CatalogoVista
 		this.presentador.consultarCursosCriterio();
 	}
 	
-	consultarPerfilesCriterio()
-	{
-		this.cargandoOpciones("#perfilSelectCriterio");
-		this.presentador.consultarPerfilesCriterio();
-	}
-	
 	set empresasCriterio(registros)
 	{		
 		this.cargarOpciones('#empresaSelectCriterio', registros);
@@ -857,7 +745,7 @@ class ReportePersonalVista extends CatalogoVista
 	}
 	
 }
-var vista = new ReportePersonalVista(this);
+var vista = new ReportePersonalCapacitacionesVista(this);
 $(document).ready(function() 
 {
 	vista.inicializar();

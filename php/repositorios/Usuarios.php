@@ -380,6 +380,7 @@ try
                 $empresaId = REQUEST('empresaId');
                 $sedeId = REQUEST('sedeId');
                 $departamentoId = REQUEST('departamentoId');
+                $perfilId = REQUEST('perfilId');
                 
                 $adminstradorArchivos = new AdministradorArchivos();
                 $archivo = FILES("file");
@@ -389,7 +390,7 @@ try
                 $resultado=$adminstradorArchivos->subirArchivo($carpeta,$archivo,$nombreArchivo);
                 if($resultado->correcto())
                 {
-                    $resultado = $repositorio->importar($empresaId,$sedeId,$departamentoId,$carpeta, $nombreArchivo);
+                    $resultado = $repositorio->importar($empresaId,$sedeId,$departamentoId,$perfilId,$carpeta, $nombreArchivo);
                     if($resultado->correcto())
                     {
                         

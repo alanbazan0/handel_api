@@ -914,6 +914,108 @@ class CapacitacionesRepositorio extends Repositorio
       });
 	}
 	
+	consultarAvanceUsuarios(contexto,funcion, criteriosSeleccion)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "consultarAvanceUsuarios",criteriosSeleccion: JSON.stringify(criteriosSeleccion)},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	consultarTiempoUsuarios(contexto,funcion, criteriosSeleccion)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "consultarTiempoUsuarios",criteriosSeleccion: JSON.stringify(criteriosSeleccion)},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	
+	
+	consultarResultadosDepartamentos(contexto,funcion, criteriosSeleccion)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "consultarResultadosDepartamentos",criteriosSeleccion: JSON.stringify(criteriosSeleccion)},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	consultarAvanceDepartamentos(contexto,funcion, criteriosSeleccion)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "consultarAvanceDepartamentos",criteriosSeleccion: JSON.stringify(criteriosSeleccion)},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
 	consultarCriterio(contexto,funcion, criteriosSeleccion, opcional)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;
@@ -921,6 +1023,56 @@ class CapacitacionesRepositorio extends Repositorio
           url: url,
           type: 'POST',
           data: {accion : "consultarCriterio",criteriosSeleccion: JSON.stringify(criteriosSeleccion), opcional: opcional},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	consultarCapacitacionesTomadas(contexto,funcion, criteriosSeleccion)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "consultarCapacitacionesTomadas",criteriosSeleccion: JSON.stringify(criteriosSeleccion)},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	consultarLeccionesTomadas(contexto,funcion, criteriosSeleccion)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "consultarLeccionesTomadas",criteriosSeleccion: JSON.stringify(criteriosSeleccion)},
           success: function( data, textStatus, jQxhr )
           {
               funcion.call(contexto,data);

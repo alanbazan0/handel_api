@@ -514,6 +514,9 @@ class ImportarUsuariosAsistente
 	importarUsuarios()
 	{
 		var empresaId=$("#empresaIdOrigenSelect").val();
+		
+		var empresa = ArrayUtils.searchWithValues("id",[empresaId],this._empresas); 
+		
 		var sedeId=$("#sedeIdOrigenSelect").val();
 		var departamentoId=$("#departamentoIdOrigenSelect").val();
 		this._contexto.mostrarIndicador();
@@ -548,7 +551,7 @@ class ImportarUsuariosAsistente
 			}
 			else
 				_this._contexto.mostrarMensajeError("Error",resultado.mensajeError);
-		},empresaId, sedeId, departamentoId, this.archivo);
+		},empresaId, sedeId, departamentoId, empresa.perfilId, this.archivo);
 
 	}
 	
@@ -696,7 +699,9 @@ class ImportarUsuariosAsistente
 	}
 	
 	set empresas(registros)
-	{		
+	{	
+		this._empresas = registros;
+		
 		this.renderizarAsistente();
 		
 		this._contexto.cargarOpciones('#empresaIdOrigenSelect', registros);
