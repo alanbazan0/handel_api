@@ -28,7 +28,7 @@ class CapacitacionesVista extends CatalogoVista
 		this._tarjetas = new Tarjetas("tarjetas");
 
 		
-		this._tarjetas.plantillaHtml =  `<div id='capacitacion{{id}}' class='col-xs-12 col-sm-12 col-md-6 col-lg-3 '>
+		this._tarjetas.plantillaHtml =  `<div id='capacitacion_{{id}}' class='col-xs-12 col-sm-12 col-md-6 col-lg-3 '>
 		<div class="box {{box}}"  stylee='height:150px' >
             <div class="box-header with-border">
               <h5 class='truncate' style='font-weight:bold'>{{titulo}}</h5>
@@ -116,6 +116,18 @@ class CapacitacionesVista extends CatalogoVista
 		});
 		
 		$("#perfilesSelect").chosen();
+		
+		$("#tarjetas").sortable({
+		    containment: "parent",
+		    cursor: "move",
+		    //items: ">div",
+		    tolerance: "pointer",
+		    update: function( event, ui ) {
+		    	var seleccion = $( "#tarjetas" ).sortable( "serialize", { key: "sort" });
+				_this.presentador.ordenarCursos(seleccion);
+			}
+		});
+	    $( "#tarjetas" ).disableSelection();
 		
 	
 	}
@@ -641,6 +653,10 @@ class CapacitacionesVista extends CatalogoVista
 	
 	set datos(datos)
 	{
+		var fecha = new Date();
+		for (var i = 0; i < datos.length; i++) 
+			datos[i].portada+="?" + fecha.getTime();
+		
 		this._tarjetas.registros = datos;
 		$('.dropdown-toggle').dropdown();
 		
@@ -1078,9 +1094,9 @@ class CapacitacionesVista extends CatalogoVista
 	eliminarCapacitacion(id)
 	{
 
-	    $("#capacitacion"+id).slideUp(500, function () {
+	    $("#capacitacion_"+id).slideUp(500, function () {
 	      //$(this.element).trigger(removedEvent);
-	    	$("#capacitacion"+id).remove();
+	    	$("#capacitacion_"+id).remove();
 	    });
 	    
 		//$("#capacitacion"+id).remove();

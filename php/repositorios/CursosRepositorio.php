@@ -1543,11 +1543,11 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         
         
         $consulta =" SELECT C.id, IFNULL(C.titulo,''), IFNULL(C.descripcion,''), IFNULL(DATE_FORMAT(C.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(C.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, IFNULL(C.publicado,0), U.id, U.nombre, U.apellido, C.token,
-                (SELECT count(*) FROM cursos_lecciones CL WHERE CL.curso_id = C.id) numero_lecciones, 0 numero_lecciones_terminadas
+                (SELECT count(*) FROM cursos_lecciones CL WHERE CL.curso_id = C.id) numero_lecciones, 0 numero_lecciones_terminadas, orden
              FROM cursos C
                 INNER JOIN usuarios U ON C.usuario_id = U.id " .
-        $where . " order by UNIX_TIMESTAMP(C.fecha_alta) desc";
-        
+        $where . " order by orden";
+            
       
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -1556,11 +1556,11 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido, $token,$numeroLecciones,$numeroLeccionesTerminadas))
+                    if ($sentencia->bind_result($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido, $token,$numeroLecciones,$numeroLeccionesTerminadas, $orden))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido,$token,$numeroLecciones,$numeroLeccionesTerminadas);
+                            $registro = $this->crearRegistro($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido,$token,$numeroLecciones,$numeroLeccionesTerminadas, $orden);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -1670,7 +1670,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                     INNER JOIN usuarios_cursos UC ON UC.curso_id = C.id AND UC.usuario_id = ?
                     WHERE C.id IN(SELECT curso_id FROM usuarios_cursos UC WHERE UC.usuario_id = ? AND UC.terminado=0) " ;
                     
-        $consulta.= $and . " order by UNIX_TIMESTAMP(C.fecha_alta) desc";
+        $consulta.= $and . " order by orden";
         
         
         
@@ -1982,9 +1982,10 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                         FROM cursos C
                     INNER JOIN usuarios U ON C.usuario_id = U.id
                     WHERE C.id NOT IN(SELECT curso_id FROM usuarios_cursos UC WHERE UC.usuario_id = ?) 
-                            AND ? IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)" ;
+                            AND ? IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id) 
+                            AND C.publicado = 1 " ;
         
-        $consulta.= $and . " order by UNIX_TIMESTAMP(C.fecha_alta) desc";
+        $consulta.= $and . " order by orden";
         
         
         
@@ -2043,7 +2044,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                     INNER JOIN usuarios U ON C.usuario_id = U.id
                     INNER JOIN usuarios_cursos UC ON UC.curso_id = C.id AND UC.usuario_id =  ?
                     WHERE C.id IN(SELECT curso_id FROM usuarios_cursos UC WHERE UC.usuario_id = ? AND UC.terminado=1) 
-                    ORDER  BY UNIX_TIMESTAMP(C.fecha_alta) desc";
+                    ORDER  BY orden";
         
         
         
@@ -3616,6 +3617,62 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             $this->conexion->rollback();
                 
         return $resultado;
+    }
+    
+    public function ordenarCursos($seleccion)
+    {
+        $resultado = new Resultado();
+        
+        $registros = explode("&", $seleccion);
+        
+        $this->conexion->autocommit(FALSE);
+        
+        $i = 1;
+        foreach ($registros as $key => $value)
+        {
+            $ides = explode("=", $value);
+            
+            $id = $ides[1];
+            
+            
+            $consulta = " UPDATE cursos " .
+                "SET orden = ? " .
+                "WHERE id = ? ";
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if( $sentencia->bind_param("ii", $i,$id))
+                {
+                    if($sentencia->execute())
+                    {
+                        $sentencia->close();
+                    }
+                    else
+                    {
+                        $resultado->mensajeError = "Falló la ejecución actualizar(" . $this->conexion->errno . ") " . $this->conexion->error;
+                        break;
+                    }
+                }
+                else
+                {
+                    $resultado->mensajeError = "Falló el enlace de parámetros";
+                    break;
+                }
+            }
+            else
+            {
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                break;
+            }
+            
+            $i++;
+        }
+        if($resultado->correcto())
+            $this->conexion->commit();
+            else
+                $this->conexion->rollback();
+                
+                return $resultado;
     }
     
   

@@ -33,10 +33,14 @@ try
         switch($accion)
         {
             case 'insertar':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
                 $modelo = $mapper->map($json, new Minuta());
-                $resultado = $repositorio->insertar($modelo);
+                $resultado = $repositorio->insertar($modelo,$usuario);
             break;
             case 'actualizar':
                 $json = json_decode(REQUEST('modelo'));
@@ -55,6 +59,12 @@ try
             case 'eliminar':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);
+            break;
+            case 'actualizarValor':
+                $minutaId = REQUEST('minutaId');
+                $campo = REQUEST('campo');
+                $valor = REQUEST('valor');
+                $resultado = $repositorio->actualizarValor($minutaId, $campo,  $valor);
             break;
             default:
                 $resultado->mensajeError = 'Acción no válida';

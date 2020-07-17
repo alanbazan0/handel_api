@@ -5,7 +5,7 @@ use php\modelos\Minuta;
 
 interface IMinutasRepositorio
 {
-    public function insertar(Minuta $modelo);
+    public function insertar(Minuta $modelo,$usuario);
     public function actualizar(Minuta $modelo);
     public function consultarPorLlaves($id);
     public function consultar($criteriosSeleccion);

@@ -5,6 +5,52 @@ class MinutasVista extends CatalogoVista
 		super();
 		this.presentador = new MinutasPresentador(this);
 		this._urlFormulario = "html/formularios/minutas.php";
+		
+		this.listaTareas = new ListaTareas("listaTareas");
+	}
+	
+	inicializar()
+	{
+		var _this = this;
+		super.inicializar();
+		$("#tituloH").click(function()
+				{
+					_this.salirFormulario();
+				});
+		
+		this.crearEventosActualizacion();
+		
+		
+		$("#listaTareas").sortable({
+		    axis: "y",
+		    containment: "parent",
+		    cursor: "move",
+		   // items: "div",
+		    tolerance: "pointer",
+		    update: function( event, ui ) {
+		    	var seleccion = $( "#listaTareas" ).sortable( "serialize", { key: "sort" });
+				_this.presentador.ordenarLecciones(seleccion);
+			}
+		});
+	    $( "#listaTareas" ).disableSelection();
+	}
+	
+	crearEventosActualizacion()
+	{
+		var _this = this;
+		$("#tituloInput").change(this.cambiarCampo);
+		$("#tituloInput").keyup(function()
+		{
+			$("#tituloH").html($("#tituloInput").val());
+		});
+		
+	}
+	
+	cambiarCampo(event)
+	{
+		var campo = $(event.currentTarget).attr("data-campo");
+		var valor = $(event.currentTarget).val();
+		vista.presentador.actualizarValor(campo,valor);
 	}
 	
 //	onLoad()
@@ -19,7 +65,9 @@ class MinutasVista extends CatalogoVista
 			{longitud:30, 	titulo:"",   alias:"terminada", alineacion:"I", itemRenderer: this.renderTerminada},
 			{longitud:40, 	titulo:"Id",   	alias:"id", alineacion:"D" },
 			{longitud:200, 	titulo:"Titulo",   alias:"titulo", alineacion:"I" },
-			{longitud:50, 	titulo:"Avance",   alias:"titulo", alineacion:"C", itemRenderer: this.rendererPorcentaje }, 		
+			{longitud:50, 	titulo:"Avance",   alias:"titulo", alineacion:"C", itemRenderer: this.rendererPorcentaje },
+			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogo},
+			{longitud:200, 	titulo:"Usuario que creó" ,   alias:"usuarioNombreCompleto", alineacion:"I",class: "desc" }, 
 			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
 			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
 			{longitud:100, 	titulo:"Fecha de finalización",   alias:"fechaTermino", alineacion:"I"}
@@ -29,6 +77,15 @@ class MinutasVista extends CatalogoVista
 		"<button data-toggle='tooltip' data-placemen='bottom' t¡itle='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
 		this.tabla.registros = [];
+	}
+	
+	renderLogo(renglon, type, set)
+	{    
+		var fecha = new Date();
+		var contenido = "";
+		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+fecha.getTime();
+		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;border-radius:50%'></img></center>";
+	    return contenido;
 	}
 	
 	rendererPorcentaje(renglon, type, set)
@@ -88,7 +145,7 @@ class MinutasVista extends CatalogoVista
             }
         });
 	}
-//	
+	
 	renderTerminada(renglon, campoBase)
 	{    
 		var contenido = "";
@@ -99,117 +156,35 @@ class MinutasVista extends CatalogoVista
 		return contenido;
 	}
 	
-	
-//	mostrarIndicador()
-//	{
-//		$('#indicador').show();				
-//	}
-//	
-//	ocultarIndicador()
-//	{		
-//		$('#indicador').hide();
-//	}
-//	
-//	btnBaja_onClick()
-//	{ 
-//		if(this.grid._selectedItem!=null)
-//		{
-//			var confirmacion = confirm("¿Esta seguro que desea eliminar el registro?")
-//		    if (confirmacion)
-//		    {
-//		    		this.presentador.eliminar();
-//		    }	
-//		}
-//		else
-//			this.mostrarMensaje("Acción no válida","Seleccione un registro para eliminar.");
-//	}
-//	
-//	btnAlta_onClick()
-//	{
-//		this.modo = "ALTA";
-//		this.ocultarIndicador();
-//		this.limpiarFormulario();	
-//		this.mostrarFormulario();
-//		$('#nombreInput').focus();
-//		
-//	}
-//	
-//	btnCambio_onClick()
-//	{
-//		if(this.grid._selectedItem!=null)
-//		{			
-//			this.modo = "CAMBIO";
-//			this.limpiarFormulario();	
-//			this.mostrarFormulario();
-//			$('#nombreInput').focus();				
-//			this.presentador.consultarPorLlaves();
-//		}
-//		else
-//			this.mostrarMensaje("Acción no válida","Seleccione un registro para modificar.");
-//				
-//	}
-//	
-//	btnConsulta_onClick()
-//	{	
-//		this.presentador.consultar();
-//	}	
-//	
-//	btnGuardarFormulario_onClick()
-//	{		
-//		 if(this.datosValidos())
-//		 {
-//			if(this.modo=='ALTA')
-//				this.presentador.insertar();
-//			else
-//				this.presentador.actualizar();
-//		 }		
-//		
-//	}
-//	
-//	btnSalir_onClick()
-//	{
-//		var confirmacion = confirm("¿Esta seguro que desea salir?")
-//	    if (confirmacion)
-//	    	{
-//		    	
-//	    	}
-//	}
-//	
-//	btnSalirFormulario_onClick()
-//	{		
-//		this.salirFormulario();
-//	}	
-//	
-//	get llaves()
-//	{
-//		var llaves =
-//		{
-//			id:this.grid._selectedItem.id	
-//		}
-//		return llaves;
-//	}
-//	
+
 	
 	get criteriosSeleccion()
 	{
 		 var criteriosSeleccion = 
 		 {				    
-			nombre:$('#nombreInputCriterio').val()
+			titulo:$('#tituloInputCriterio').val()
 		 }
 		 return criteriosSeleccion;
 	}		
 
-//	set datos(valor)
-//	{
-//		this.grid._dataProvider = valor;	
-//		this.grid.render();
-//	}
-//	
 	set modelo(valor)
 	{		
 		this.modeloEdicion = valor;
-		$('#nombreInput').val(this.modeloEdicion.nombre);
+		$('#tituloH').html(this.modeloEdicion.titulo);
+		$('#tituloInput').val(this.modeloEdicion.titulo);
 		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
+		
+		if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
+		{
+			this.listaTareas.tareas= this.modeloEdicion.tareas;
+		}
+		else
+		{
+			
+		}
+		
+		$('#tareasSectionContenido').fadeIn();	
+		
 		//this.consultarEmpresas();
 	}
 	
@@ -217,7 +192,7 @@ class MinutasVista extends CatalogoVista
 	{
 		 var modelo = 
 		 {		
-			 nombre:$('#nombreInput').val(),			 
+			 titulo:$('#tituloInputAlta').val(),			 
 			 estatus:$('#estatusRadio').is(':checked')?1:0
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
@@ -226,46 +201,147 @@ class MinutasVista extends CatalogoVista
 	 }
 	 
 
-	
-//	mostrarFormulario()
-//	{
-//		$('#principalDiv').hide();	
-//		$('#formularioDiv').show();
-//	}
-//	
-//	salirFormulario()
-//	{
-//		$('#principalDiv').show()	
-//		$('#formularioDiv').hide();
-//	}
-//	
-	
-	datosValidos()
-	{
-		var nombre = $("#nombreInput");
-	        
-        
-        var allFields = $( [] ).add(nombre);
-        var tips = $( ".validateTips" );
-		tips.text("");
-		
-		var valid = true;
-		allFields.removeClass("ui-state-error");
-		
-	    valid = valid && this.validaciones.checkValue( nombre, "nombre", tips );
-	   
-		return valid;
-	}	
 
 	limpiarFormulario()
 	{
-		$('#nombreInput').val("");
-		//this.cargandoOpciones('#empresaSelect');
+		$('#formulario').trigger("reset");
 	}
 	
 	
+	editar(id)
+	{
+		this.modo = "CAMBIO";
+		this.limpiarFormulario();	
+		this.mostrarFormulario();
+		$('#tituloInput').focus();				
+		//this.inicializarValidacionesFormulario("formulario");
+		this.listaTareas.tareas = [];
+		this.presentador.consultarPorLlaves();
+		//this._cursoId =id;
+	}
 	
+	get minutaId()
+	{
+		return this._registroSeleccionado.id;
+	}
 	
+	agregar()
+	{
+		this.modo = Modo.ALTA;
+		this.ocultarIndicador();
+		this.mostrarFormularioAlta();
+		//$('#nombreInput').focus();
+		//this.inicializarValidacionesFormulario();
+	}
+	
+	mostrarFormularioAlta()
+	{
+		var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/formularios/minutas.php",this, null, function()
+		{
+			//mostrar
+			 setTimeout(function(){
+					$('#tituloInputAlta').focus();
+//					$('#logoImageAlta').show();
+//					$('#logoImageAlta').attr('src', HANDEL_API + "/php/portadas_cursos/default.png");
+					_this.inicializarValidacionesFormularioAlta("formularioAlta");
+	            }, 1000);
+			 
+			 
+			
+		},null,"","","guardarButtonAlta",function()
+		{
+			//guardar
+			$("#formularioAlta").submit();
+			//_this.insertar();
+			
+		});
+	}
+
+	
+	inicializarValidacionesFormularioAlta(formulario)
+	{
+		var _this = this;
+		jQuery("#" +formulario).validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+                "tituloInputAlta": {
+                    required: !0
+                }
+               
+            },
+            messages: {
+                "tituloInputAlta": "Por favor ingrese un t\u00edtulo",
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.guardar();
+            }
+        });
+	}
+	
+	mostrarFormulario()
+	{
+		$('#minutasSection').hide();	
+		$('#tareasSectionContenido').hide();	
+		$('#tareasSection').show();
+		//$('#guardarButton').hide();
+		
+	}
+	
+	salirFormulario()
+	{
+		$('#minutasSection').show()
+		$('#tareasSectionContenido').hide();	
+		$('#tareasSection').hide();
+		this.consultar();
+	}
+	
+	salirFormularioAlta()
+	{
+		$('#modalAlta').modal('hide')
+	}
+	
+	eliminar(texto)
+	{ 
+		if(texto==undefined)
+			texto ="Se eliminar\u00e1 la minuta<br><label>"+this._registroSeleccionado.titulo+"</label>";
+		var _this = this;
+		swal({
+	            title: "\u00bfEst\u00E1 seguro de eliminar?",
+	            text: texto,
+	            html: true,
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Si, eliminar!!",
+	            cancelButtonText: "No",
+	            closeOnConfirm: false,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	 setTimeout(function(){
+	            		 _this.presentador.eliminar();
+	 	            }, 1000);
+	            }
+	        });
+	}
 
 	
 }

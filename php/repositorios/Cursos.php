@@ -114,6 +114,10 @@ try
                 $seleccion = REQUEST("seleccion");
                 $resultado = $repositorio->ordenarPreguntas($cursoId,$leccionId,$seleccion);        
             break;
+            case 'ordenarCursos':
+                $seleccion = REQUEST("seleccion");
+                $resultado = $repositorio->ordenarCursos($seleccion);
+            break;
             case 'consultarPorLlaves':
                 session_start();
                 $usuario = null;

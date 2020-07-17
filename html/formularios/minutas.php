@@ -7,7 +7,7 @@ header('Content-Type: text/html; charset=utf-8');
 header('Access-Control-Allow-Credentials: true');
 ?>
 <div class='modal fade' id='modalAlta' tabindex='-1' role='dialog' aria-labelledby='scrollmodalLabel' aria-hidden='true'>
-  <div class='modal-dialog modal-lg' role='document'> 
+  <div class='modal-dialog' role='document'> 
       <div class='modal-content'>
           <div class='modal-header'>
               <h5 class='modal-title' id='scrollmodalLabel'>Minuta</h5>
@@ -16,11 +16,11 @@ header('Access-Control-Allow-Credentials: true');
               </button>
           </div>
           <div class='modal-body'>
-              <form id='formulario' action='#'  method='post'>
+              <form id='formularioAlta' action='#'  method='post'>
                   <div class='form-group'>
                       <div>
                           <label class='control-label mb-1'>Titulo</label>
-                          <input  id='tituloInput' name='tituloInput' type='text' class='form-control'>
+                          <input  id='tituloInputAlta' name='tituloInputAlta' type='text' class='form-control'>
                       </div>
                   </div>
                  
@@ -28,7 +28,7 @@ header('Access-Control-Allow-Credentials: true');
           </div>
           <div class='modal-footer'>
               <button type='button' class='btn btn-secondary' data-dismiss='modal'>Cancelar</button>
-              <button  id='guardarButton' type='submit' class='btn btn-primary' >Guardar</button>
+              <button  id='guardarButtonAlta' type='submit' class='btn btn-primary' >Guardar</button>
           </div>
       </div>
   </div>

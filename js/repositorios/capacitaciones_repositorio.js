@@ -153,6 +153,29 @@ class CapacitacionesRepositorio extends Repositorio
 	    });
 	}
 	
+	ordenarCursos(contexto,funcion, seleccion)
+	{		
+		var respuestasString =  JSON.stringify(seleccion);
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+	        url: url,
+	        type: 'POST',
+	        data: {accion : "ordenarCursos",'seleccion':seleccion},
+	        success: function( data, textStatus, jQxhr )
+	        {
+	            funcion.call(contexto,data);
+	        },
+	        error: function( jqXhr, textStatus, errorThrown )
+	        {
+	       	 funcion.call(contexto,{ mensajeError : textStatus});
+	        },
+	        fail: function( jqXhr, textStatus, errorThrown )
+	        {
+	       	 funcion.call(contexto,{ mensajeError : textStatus});
+	        }
+	    });
+	}
+	
 	eliminarPregunta(contexto,funcion,llaves)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;

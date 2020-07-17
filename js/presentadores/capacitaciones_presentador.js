@@ -76,6 +76,23 @@ class CapacitacionesPresentador extends CatalogoPresentador
 			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		
 	 }
+	 
+	 ordenarCursos(seleccion)
+	 {
+		 this.vista.mostrarIndicador();
+		 var repositorio = new CapacitacionesRepositorio(this);		
+		 repositorio.ordenarCursos(this, function(resultado)
+		 {
+				this.vista.ocultarIndicador();	
+				if(resultado.mensajeError=="")
+				{
+					this.vista.mostrarMensaje("","Guardado.");
+				}
+				else
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				
+		 },seleccion);
+	 }
 
 	 ordenarPreguntas(seleccion)
 	 {
