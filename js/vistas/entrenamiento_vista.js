@@ -78,7 +78,7 @@ class EntrenamientoVista extends CatalogoVista
             </div>
             <!-- /.box-body-->
             <div class='box-footer no-border' style='padding: 0px 20px 0px 20px'>
-              <div class='row'>
+              <div class='row' style='height:35px;'>
                <div class="col-12">
             	<div class="clearfix">
                     <span class="pull-left">{{numeroLecciones}} {{textoLecciones}}</span>
@@ -92,14 +92,56 @@ class EntrenamientoVista extends CatalogoVista
                  </div>
               </div>
               <!-- /.row -->
+             
+            </div>
+          </div>
+          <!-- /.box -->
+	           </div>
+	         `;
+		
+		
+		var plantillaPendientes =  `<div id='capacitacion{{id}}' class='tarjeta col-xs-12 col-sm-12 col-md-6 col-lg-3' data-token="{{token}}" data-tokenEjecucion="{{tokenEjecucion}}" style='cursor:pointer' data-toggle='tooltip' data-placement='bottom' title='' data-original-title='{{descripcion}}'  >
+			<div class='box box-solid'>
+            <div class='box-header'>
+              <!-- tools box -->
+              <div class='pull-right box-tools'>
+               
+              </div>
+              <!-- /. tools -->
+
+			<div style='height:20px;font-size:15px;font-weight:bold' class='descripcion' ><span>{{titulo}}</span></div>
+           
+            </div>
+            <div class='box-body'>
+            	<img src='`+HANDEL_API+`/php/portadas_cursos/{{portada}}' style='border-radius:10px;height:110px;width: 100%;object-fit:cover'></img>
+            </div>
+            <!-- /.box-body-->
+            <div class='box-footer no-border' style='padding: 0px 20px 0px 20px'>
+              <div class='row' style='height:30px;'>
+               <div class="col-12">
+            	<div class="clearfix">
+                    <span class="pull-left">{{numeroLecciones}} {{textoLecciones}}</span>
+                    <small class="label {{bgTerminadas}} pull-right">{{numeroLeccionesTerminadas}} {{textoLeccionesTerminadas}}</small>
+                  </div>
+                  <div class="progress xs">
+                    <div class="progress-bar {{progressBar}}" style="width: {{porcentajeCumplimiento}}%;"></div>
+                   
+                  </div>
+                  
+                 </div>
+              </div>
+              <!-- /.row -->
+               <div class='row'>
+            	<span style='font-style:italic' class=''>Tomará aproximadamente {{tiempoEstimado}} minutos</span>
+                </div>
             </div>
           </div>
           <!-- /.box -->
 	           </div>
 	         `;
 	
-		this._cursosContestando.plantillaHtml = plantilla;
-		this._cursosPendientes.plantillaHtml = plantilla;
+		this._cursosContestando.plantillaHtml = plantillaPendientes;
+		this._cursosPendientes.plantillaHtml = plantillaPendientes;
 		this._cursosTerminados.plantillaHtml = plantilla;
 
 		this.crearFecha();

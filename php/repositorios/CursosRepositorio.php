@@ -1664,7 +1664,8 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         
         $consulta = "SELECT C.id, IFNULL(C.titulo,''), IFNULL(C.descripcion,''), IFNULL(DATE_FORMAT(C.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(C.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, IFNULL(C.publicado,0), U.id, U.nombre, U.apellido, C.token,
                     (SELECT count(*) FROM cursos_lecciones CL WHERE CL.curso_id = C.id) numero_lecciones, 
-                     (SELECT count(*) FROM usuarios_cursos_lecciones UCL WHERE UCL.curso_id = C.id AND UCL.usuario_id = ? AND UCL.terminado = 1) numero_lecciones_terminadas
+                     (SELECT count(*) FROM usuarios_cursos_lecciones UCL WHERE UCL.curso_id = C.id AND UCL.usuario_id = ? AND UCL.terminado = 1) numero_lecciones_terminadas,
+                     (SELECT sum(tiempo_estimado) FROM cursos_lecciones CL WHERE CL.curso_id = C.id) tiempo_estimado
                         FROM cursos C
                     INNER JOIN usuarios U ON C.usuario_id = U.id 
                     INNER JOIN usuarios_cursos UC ON UC.curso_id = C.id AND UC.usuario_id = ?
@@ -1680,11 +1681,11 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido, $token,$numeroLecciones,$numeroLeccionesTerminadas))
+                    if ($sentencia->bind_result($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido, $token,$numeroLecciones,$numeroLeccionesTerminadas, $tiempoEstimado))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido,$token,$numeroLecciones,$numeroLeccionesTerminadas);
+                            $registro = $this->crearRegistro($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido,$token,$numeroLecciones,$numeroLeccionesTerminadas, $tiempoEstimado);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -1978,7 +1979,8 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         
         $consulta = "SELECT C.id, IFNULL(C.titulo,''), IFNULL(C.descripcion,''), IFNULL(DATE_FORMAT(C.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(C.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, IFNULL(C.publicado,0), U.id, U.nombre, U.apellido, C.token,
                     (SELECT count(*) FROM cursos_lecciones CL WHERE CL.curso_id = C.id) numero_lecciones,
-                     (SELECT count(*) FROM usuarios_cursos_lecciones UCL WHERE UCL.curso_id = C.id AND UCL.usuario_id = ?  AND UCL.terminado = 1) numero_lecciones_terminadas
+                     (SELECT count(*) FROM usuarios_cursos_lecciones UCL WHERE UCL.curso_id = C.id AND UCL.usuario_id = ?  AND UCL.terminado = 1) numero_lecciones_terminadas,
+                    (SELECT sum(tiempo_estimado) FROM cursos_lecciones CL WHERE CL.curso_id = C.id) tiempo_estimado
                         FROM cursos C
                     INNER JOIN usuarios U ON C.usuario_id = U.id
                     WHERE C.id NOT IN(SELECT curso_id FROM usuarios_cursos UC WHERE UC.usuario_id = ?) 
@@ -1995,11 +1997,11 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido, $token,$numeroLecciones,$numeroLeccionesTerminadas))
+                    if ($sentencia->bind_result($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido, $token,$numeroLecciones,$numeroLeccionesTerminadas,$tiempoEstimado))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido,$token,$numeroLecciones,$numeroLeccionesTerminadas);
+                            $registro = $this->crearRegistro($id, $nombre, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido,$token,$numeroLecciones,$numeroLeccionesTerminadas,$tiempoEstimado);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -2884,7 +2886,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     {
         $resultado = new Resultado();
         $lecciones = array();
-        $consulta = "SELECT id, RTRIM(titulo) titulo, RTRIM(descripcion) descripcion, RTRIM(video) video, IFNULL((SELECT terminado FROM usuarios_cursos_lecciones UCL WHERE UCL.curso_id = CL.curso_id AND UCL.leccion_id = CL.id AND usuario_id = ?),0)" .
+        $consulta = "SELECT id, RTRIM(titulo) titulo, RTRIM(descripcion) descripcion, RTRIM(video) video, IFNULL((SELECT terminado FROM usuarios_cursos_lecciones UCL WHERE UCL.curso_id = CL.curso_id AND UCL.leccion_id = CL.id AND usuario_id = ?),0), tiempo_estimado " .
             "FROM cursos_lecciones CL" .
             " WHERE curso_id  = ? ".
             "ORDER BY orden";
@@ -2894,7 +2896,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $texto, $descripcion, $video, $terminado))
+                    if ($sentencia->bind_result($id, $texto, $descripcion, $video, $terminado, $tiempoEstimado))
                     {
                         while($sentencia->fetch())
                         {
@@ -2903,7 +2905,8 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                                 'titulo' => $texto,
                                 'descripcion' => $descripcion,
                                 'video' => $video, 
-                                'terminado' => $terminado
+                                'terminado' => $terminado,
+                                'tiempoEstimado' => $tiempoEstimado
                             ];
                             array_push($lecciones,$leccion);
                         }
@@ -3176,7 +3179,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             return $resultado;
     }
     
-    private function crearRegistro($id, $titulo, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido,$token,$numeroLecciones,$numeroLeccionesTerminadas)
+    private function crearRegistro($id, $titulo, $descripcion, $fechaAlta, $fechaModificacion, $publicado, $usuarioId, $usuarioNombre, $usuarioApellido,$token,$numeroLecciones,$numeroLeccionesTerminadas, $tiempoEstimado=0)
     {
 
         $archivoIcono = '../../php/portadas_cursos/curso'.$id.'.png';
@@ -3197,8 +3200,8 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             'usuarioApellido' => $usuarioApellido,
             'token'=> $token,
             'numeroLecciones' => $numeroLecciones,
-            'numeroLeccionesTerminadas' => $numeroLeccionesTerminadas
-           
+            'numeroLeccionesTerminadas' => $numeroLeccionesTerminadas,
+            'tiempoEstimado' => $tiempoEstimado
         ];
         
       

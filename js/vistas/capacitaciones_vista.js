@@ -23,7 +23,17 @@ class CapacitacionesVista extends CatalogoVista
 	inicializar()
 	{	
 		var _this = this;
-		super.inicializar();
+		$("#consultarButton").click(function(){
+			_this.consultar();
+		});
+		
+		$("#agregarButton").click(function(){
+			_this.agregar();
+		});
+		
+		
+		this.crearColumnasGrid();		
+		
 		
 		this._tarjetas = new Tarjetas("tarjetas");
 
@@ -70,7 +80,7 @@ class CapacitacionesVista extends CatalogoVista
          `;
 	
 
-		this.crearFecha();
+		//this.crearFecha();
 		
 		$("#listaLecciones").sortable({
 		    axis: "y",
@@ -108,6 +118,8 @@ class CapacitacionesVista extends CatalogoVista
 //		});
 //	    $( "#listaRespuestas" ).disableSelection();
 	    
+	    this.sliderTiempoEstimado = $( "#tiempoEstimadoLeccionInput" ).bootstrapSlider();
+	    
 		this.crearEventosActualizacion();
 		
 		$("#tituloH").click(function()
@@ -129,6 +141,11 @@ class CapacitacionesVista extends CatalogoVista
 		});
 	    $( "#tarjetas" ).disableSelection();
 		
+	    
+	   
+	    
+	    
+	    this.consultar();
 	
 	}
 	
@@ -157,6 +174,22 @@ class CapacitacionesVista extends CatalogoVista
 			}
 		});
 		$("#perfilesSelect").change(this.cambiarCampo);
+		
+		this.sliderOriginalVal=null;
+		
+		this.sliderTiempoEstimado.on("slideStart",function(ev){
+			this.sliderOriginalVal= _this.sliderTiempoEstimado.bootstrapSlider('getValue');
+		});
+		this.sliderTiempoEstimado.on("slideStop",function(ev){
+			var valor  = _this.sliderTiempoEstimado.bootstrapSlider('getValue');
+			if(_this.sliderOriginalVal!= valor)
+			{
+				var leccionId = _this._leccionSeleccionada.id;
+				_this.presentador.actualizarValorLeccion(leccionId,"tiempo_estimado",valor);
+			}
+		});
+		
+
 		
 	}
 	
@@ -609,6 +642,7 @@ class CapacitacionesVista extends CatalogoVista
 	
 	set modelo(valor)
 	{		
+			
 		this.modeloEdicion = valor;
 		$('#tituloH').html(this.modeloEdicion.titulo);
 		$('#tituloInput').val(this.modeloEdicion.titulo);
@@ -919,6 +953,9 @@ class CapacitacionesVista extends CatalogoVista
 		$("#tituloLeccionInput").val(leccion.titulo);
 		$("#descripcionLeccionInput").val(leccion.descripcion);
 		$("#urlVideoLeccionInput").val(leccion.video);
+		
+		this.sliderOriginalVal= leccion.tiempoEstimado;
+		this.sliderTiempoEstimado.bootstrapSlider('setValue', leccion.tiempoEstimado);
 		
 		this.listaPreguntas.categorias = this._categorias;
 		if(leccion!=null)

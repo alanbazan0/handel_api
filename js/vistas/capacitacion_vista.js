@@ -535,6 +535,7 @@ class CapacitacionVista extends CatalogoVista
 				descripcion ="";
 			
 			$("#descripcionLeccionLabel").html(descripcion);
+			$("#tiempoEstimadoLeccionLabel").html("Esta lección y su cuestionario le tomará aproximadamente "+leccion.tiempoEstimado+ " minutos");
 			
 			
 			
