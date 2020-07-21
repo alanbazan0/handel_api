@@ -132,7 +132,7 @@ class EntrenamientoVista extends CatalogoVista
               </div>
               <!-- /.row -->
                <div class='row'>
-            	<span style='font-style:italic' class=''>Tomará aproximadamente {{tiempoEstimado}} minutos</span>
+            	<span style='font-style:italic' class=''>Tomará aproximadamente {{tiempoEstimado}} minutos </span><i class="pull-right fas fa-hourglass-half"></i>
                 </div>
             </div>
           </div>
