@@ -29,4 +29,108 @@ class MinutasRepositorio extends Repositorio
           }
       });
 	}
+	
+	ordenarTareas(contexto,funcion,minutaId, seleccion)
+	{		
+		var respuestasString =  JSON.stringify(seleccion);
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+	        url: url,
+	        type: 'POST',
+	        data: {accion : "ordenarTareas", 'minutaId':minutaId,'seleccion':seleccion},
+	        success: function( data, textStatus, jQxhr )
+	        {
+	            funcion.call(contexto,data);
+	        },
+	        error: function( jqXhr, textStatus, errorThrown )
+	        {
+	        	 if(textStatus=="parsererror")
+	      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+	         		else
+	         			funcion.call(contexto,{ mensajeError : textStatus});
+	        },
+	        fail: function( jqXhr, textStatus, errorThrown )
+	        {
+	        	 if(textStatus=="parsererror")
+	      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+	         		else
+	         			funcion.call(contexto,{ mensajeError : textStatus});
+	        }
+	    });
+	}
+	
+	actualizarValorTarea(contexto,funcion,minutaId, tareaId, campo, valor)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "actualizarValorTarea",minutaId: minutaId, tareaId: tareaId, campo: campo, valor: valor},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	eliminarTarea(contexto,funcion,llaves)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "eliminarTarea",llaves: JSON.stringify(llaves)},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	insertarTarea(contexto,funcion,minutaId)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "insertarTarea",minutaId: minutaId},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
 }

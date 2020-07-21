@@ -66,8 +66,33 @@ try
                 $valor = REQUEST('valor');
                 $resultado = $repositorio->actualizarValor($minutaId, $campo,  $valor);
             break;
+            case 'ordenarTareas':
+                $minutaId = REQUEST('minutaId');
+                $seleccion = REQUEST("seleccion");
+                $resultado = $repositorio->ordenarTareas($minutaId,$seleccion);
+            break;
+            
+            case 'actualizarValorTarea':
+                $minutaId = REQUEST('minutaId');
+                $tareaId = REQUEST('tareaId');
+                $campo = REQUEST('campo');
+                $valor = REQUEST('valor');
+                $resultado = $repositorio->actualizarValorTarea($minutaId, $tareaId, $campo,  $valor);
+            break;
+            case 'eliminarTarea':
+                $llaves = json_decode(REQUEST('llaves'));
+                $resultado = $repositorio->eliminarTarea($llaves);
+            break;
+            case 'insertarTarea':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $minutaId = REQUEST('minutaId');
+                $resultado = $repositorio->insertarTarea($minutaId,$usuario);
+            break;
             default:
-                $resultado->mensajeError = 'Acción no válida';
+                $resultado->mensajeError = 'Acción no implementada';
             break;
         }
     }

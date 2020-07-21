@@ -185,6 +185,7 @@ class CapacitacionesVista extends CatalogoVista
 			if(_this.sliderOriginalVal!= valor)
 			{
 				var leccionId = _this._leccionSeleccionada.id;
+				_this._leccionSeleccionada.tiempoEstimado = valor;
 				_this.presentador.actualizarValorLeccion(leccionId,"tiempo_estimado",valor);
 			}
 		});

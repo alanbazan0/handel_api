@@ -29,10 +29,15 @@ class MinutasVista extends CatalogoVista
 		    tolerance: "pointer",
 		    update: function( event, ui ) {
 		    	var seleccion = $( "#listaTareas" ).sortable( "serialize", { key: "sort" });
-				_this.presentador.ordenarLecciones(seleccion);
+				_this.presentador.ordenarTareas(seleccion);
 			}
 		});
 	    $( "#listaTareas" ).disableSelection();
+	    
+//	    $("#agregarButton").click(function()
+//				{
+//					alert('Esta función esta en desarrollo');
+//				});
 	}
 	
 	crearEventosActualizacion()
@@ -70,7 +75,7 @@ class MinutasVista extends CatalogoVista
 			{longitud:200, 	titulo:"Usuario que creó" ,   alias:"usuarioNombreCompleto", alineacion:"I",class: "desc" }, 
 			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
 			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
-			{longitud:100, 	titulo:"Fecha de finalización",   alias:"fechaTermino", alineacion:"I"}
+			{longitud:100, 	titulo:"Fecha de finalización",   alias:"fechaFinalizacion", alineacion:"I"}
 		]
 		
 		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
@@ -342,7 +347,71 @@ class MinutasVista extends CatalogoVista
 	            }
 	        });
 	}
+	
+	cambiarCampoTarea(tareaId,campo,valor)
+	{
+		vista.presentador.actualizarValorTarea(tareaId,campo,valor);
+	}
+	
+	eliminarTarea(event, tareaId)
+	{
+		var _this = this;
+		var componenteTarea = this.listaTareas.getComponente(tareaId);
+		if(componenteTarea!=null)
+		{
+			var _this = this;
+			this.confirmar("¿Desea eliminar esta tarea?</br></br><label>" +componenteTarea.titulo +"</label>",this,function(tareaId)
+			{
+				_this._llavesTarea = {minutaId : _this.minutaId, tareaId: tareaId};
+				_this.eliminarTareaBaseDatos();
+				
+			},tareaId,true);
+		}
+	}
 
+	confirmar(textoDialogo,contexto,funcion,parametro,html)
+	{
+		var _this = this;
+		swal({
+	            title: "",
+	            text: textoDialogo,
+	            type: "warning",
+	            html: html,
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Si, eliminar!!",
+	            cancelButtonText: "No",
+	            closeOnConfirm: false,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	 setTimeout(function()
+	            			 {
+	            			funcion.call(contexto,parametro);
+	            			swal.close();
+	 	            }, 1000);
+	            }
+	        });
+	}
+	
+	eliminarTareaBaseDatos()
+	{
+		this.presentador.eliminarTarea();
+	}
+	
+	get llavesTarea()
+	{
+		return this._llavesTarea;
+	}
+
+	agregarTarea()
+	{
+		this.presentador.insertarTarea();
+	}
 	
 }
 var vista = new MinutasVista(this);

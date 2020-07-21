@@ -44,5 +44,100 @@ class MinutasPresentador extends CatalogoPresentador
          }, 2000);
 	 }	
 	 
+	 ordenarTareas(seleccion)
+	 {
+		 this.vista.mostrarIndicador();
+		 this._repositorio.ordenarTareas(this, function(resultado)
+		 {
+				this.vista.ocultarIndicador();	
+				if(resultado.mensajeError=="")
+				{
+					this.vista.mostrarMensaje("","Guardado.");
+				}
+				else
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				
+		 },this.vista.minutaId,seleccion);
+	 }
+	 
+	 
+	 actualizarValorTarea(tareaId, campo,valor)
+	 {
+		 if(campo!=undefined)
+		{
+			 this.vista.mostrarIndicador();	
+			 this._repositorio.actualizarValorTarea(this,function(resultado)
+			 {		
+				 this.vista.ocultarIndicador();	
+				 if(resultado.mensajeError=="")
+				 {
+					 this.vista.mostrarMensaje("","Guardado.");
+				 }
+				 else
+				 {
+					 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+				 }
+			 },this.vista.minutaId, tareaId, campo, valor);
+		}
+	 }
+	 
+	 eliminarTarea()
+	 {
+		 this.vista.mostrarIndicador();	
+		 var tareaId = this.vista.llavesTarea.tareaId;
+		 this._repositorio.eliminarTarea(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 this.vista.cerrarConfirmacionEliminar();
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.mostrarMensaje("","Guardado.");
+				 var tareas =  this.vista.listaTareas.tareas;
+				 var indice = this.vista.listaTareas.getIndice(tareaId);
+				
+				 this.vista.listaTareas.eliminar(tareaId);
+//				 if(indice==0)
+//				 {
+//					 var seccionSeleccionada =  this.vista.listaLecciones.lecciones[indice+1];
+//					 this.vista.seleccionarLeccion(null,seccionSeleccionada.id);
+//				 }
+//				 else
+//				 {
+//					 var seccionSeleccionada =  this.vista.listaLecciones.lecciones[indice-1];
+//					 this.vista.seleccionarLeccion(null,seccionSeleccionada.id);
+//				 }
+				
+				 //TODO: consultar seccion
+				 //this.consultar();
+			 }
+			 else
+			 {
+				 if(resultado.codigoError==1451)
+					 this.vista.mostrarMensajeAdvertencia("Error","No se puede eliminar la tarea porque esta relacionada con otro catálogo. ") ;
+				 else
+					 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar la tarea. " + resultado.mensajeError);
+			 }
+		 },this.vista.llavesTarea);
+	 }
+	 
+	 insertarTarea()
+	 {
+		 //var titulo = "";
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.insertarTarea(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.mostrarMensaje("","Guardado.");
+				 this.vista.listaTareas.agregar(resultado.valor);
+				 //this.vista.seleccionarLeccion(null, resultado.valor);
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+			 }
+		 },this.vista.minutaId);
+	 }
 	 
 }
