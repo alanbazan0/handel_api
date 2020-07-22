@@ -33,6 +33,7 @@ class MinutasPresentador extends CatalogoPresentador
 			this.vista.mostrarMensaje("Notificación","La información se guardó correctamente. Id: " + resultado.valor);
 			this.vista.salirFormularioAlta();
 			this.vista._llaves = {id : resultado.valor};
+			this.vista._registroSeleccionado.id = resultado.valor;
 			this.vista.editar();
 		}
 		else
@@ -120,7 +121,7 @@ class MinutasPresentador extends CatalogoPresentador
 		 },this.vista.llavesTarea);
 	 }
 	 
-	 insertarTarea()
+	 insertarTarea(modelo)
 	 {
 		 //var titulo = "";
 		 this.vista.mostrarIndicador();	
@@ -130,14 +131,40 @@ class MinutasPresentador extends CatalogoPresentador
 			 if(resultado.mensajeError=="")
 			 {
 				 this.vista.mostrarMensaje("","Guardado.");
-				 this.vista.listaTareas.agregar(resultado.valor);
+				 this.vista.listaTareas.eliminarBorrador();
+				 this.vista.listaTareas.agregar(resultado.valor,modelo);
+				 this.vista.mostrarBotonAgregar();
+				 this.vista.agregarTarea();
 				 //this.vista.seleccionarLeccion(null, resultado.valor);
 			 }
 			 else
 			 {
 				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
 			 }
-		 },this.vista.minutaId);
+		 },this.vista.minutaId,modelo);
+	 }
+	 
+	 actualizarTarea(modelo)
+	 {
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.actualizarTarea(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.mostrarMensaje("","Guardado.");
+				 this.vista.listaTareas.actualizar(modelo);
+				 this.vista.listaTareas.cancelarEdicion();
+				 //this.vista.listaTareas.agregar(resultado.valor,modelo);
+				 //this.vista.mostrarBotonAgregar();
+				 //this.vista.agregarTarea();
+				 //this.vista.seleccionarLeccion(null, resultado.valor);
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+			 }
+		 },this.vista.minutaId,modelo);
 	 }
 	 
 }

@@ -19,7 +19,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = "SELECT M.id, titulo, IFNULL(DATE_FORMAT(M.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, usuario_id, terminada, IFNULL(DATE_FORMAT(M.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_termino, IFNULL(DATE_FORMAT(M.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion, U.nombre, U.apellido,
+        $this->consultaBase = "SELECT M.id, titulo, IFNULL(DATE_FORMAT(M.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, usuario_id, terminada, IFNULL(DATE_FORMAT(M.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, IFNULL(DATE_FORMAT(M.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion, U.nombre, U.apellido,
                                 (SELECT count(*) FROM minutas_tareas T WHERE T.minuta_id = M.id) total,
                                (SELECT count(*) FROM minutas_tareas T WHERE T.minuta_id = M.id AND T.terminada=1) terminadas
                                 FROM minutas M
@@ -33,7 +33,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         {
             $id = $resultado->valor;
             
-            $consulta = "INSERT INTO minutas(id, titulo, fecha_alta, usuario_id, terminada, fecha_termino, fecha_modificacion)
+            $consulta = "INSERT INTO minutas(id, titulo, fecha_alta, usuario_id, terminada, fecha_finalizacion, fecha_modificacion)
                         VALUES(?, ?, NOW(), ?, 0, ?, NOW())";
             if($sentencia = $this->conexion->prepare($consulta))
             {
@@ -170,30 +170,45 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
 
     public function eliminar($llaves)
     {
+        $this->conexion->autocommit(FALSE);
         $resultado = new Resultado();
-        $consulta = "DELETE FROM minutas WHERE id = ?";
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if($sentencia->bind_param('i',$llaves->id))
+        
+         $resultado = $this->eliminarTareas($llaves->id);
+         if($resultado->correcto())
+         {
+            $consulta = "DELETE FROM minutas WHERE id = ?";
+            if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->execute())
+                if($sentencia->bind_param('i',$llaves->id))
                 {
-                    $resultado->valor = $llaves->id;
+                    if($sentencia->execute())
+                    {
+                        $resultado->valor = $llaves->id;
+                    }
+                    else
+                    {
+                        $resultado->codigoError = $this->conexion->errno;
+                        $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    }
                 }
                 else
-                {
-                    $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
-                }
+                    $resultado->mensajeError = 'Falló el enlace de parámetros';
             }
             else
-                $resultado->mensajeError = 'Falló el enlace de parámetros';
+            {
+                $resultado->codigoError = $this->conexion->errno;
+                $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+         }
+            
+        if($resultado->correcto())
+        {
+            $this->conexion->commit();
+            $resultado->valor = $llaves->id;;
         }
         else
-        {
-            $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
-        }
+            $this->conexion->rollback();
+            
         return $resultado;
     }
 
@@ -581,7 +596,41 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         return $resultado;
     }
     
-    public function insertarTarea($minutaId, $usuario)
+    public function eliminarTareas($minutaId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta ="DELETE FROM minutas_tareas WHERE minuta_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$minutaId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                    
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+                
+        return $resultado;
+    }
+    
+    public function insertarTarea($minutaId, $modelo, $usuario)
     {
         $this->conexion->autocommit(FALSE);
         $resultado =  $this->calcularIdTarea($minutaId, "id");
@@ -592,11 +641,11 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             if($resultado->correcto())
             {
                 $orden =  $resultado->valor;
-                $consulta = "INSERT INTO minutas_tareas(minuta_id, id, orden, usuario_id, fecha_alta, fecha_modificacion, terminada) " .
-                    "VALUE(?, ?, ?, ?, NOW(), NOW(), 0)";
+                $consulta = "INSERT INTO minutas_tareas(minuta_id, id, orden, usuario_id, fecha_alta, fecha_modificacion, terminada, titulo) " .
+                    "VALUE(?, ?, ?, ?, NOW(), NOW(), 0, ?)";
                 if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    if($sentencia->bind_param("iiii",$minutaId, $id, $orden, $usuario->id))
+                    if($sentencia->bind_param("iiiis",$minutaId, $id, $orden, $usuario->id, $modelo->titulo))
                     {
                         if($sentencia->execute())
                         {
@@ -626,6 +675,45 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             $this->conexion->rollback();
         
         return $resultado;
+    }
+    
+    public function actualizarTarea($minutaId, $modelo, $usuario)
+    {
+        $this->conexion->autocommit(FALSE);
+        $consulta = "UPDATE minutas_tareas
+                        SET titulo = ?,
+                            fecha_modificacion = NOW()
+                      WHERE minuta_id = ? AND id = ?";  
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("sii",$modelo->titulo,$minutaId, $modelo->id))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                    
+                    $resultado = $this->actualizarMinuta($minutaId);
+                }
+                else
+                {
+                    $resultado->mensajeError = __FUNCTION__.". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__.". Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__.". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        
+        if($resultado->correcto())
+        {
+            $this->conexion->commit();
+            $resultado->valor = $modelo->id;
+        }
+        else
+            $this->conexion->rollback();
+            
+            return $resultado;
     }
     
     public function calcularIdTarea($minutaId, $campo)

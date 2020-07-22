@@ -100,6 +100,7 @@ class MinutasVista extends CatalogoVista
 			if(renglon.porcentaje==undefined)
 				renglon.porcentaje = 0;
 		
+			var cantidad = renglon.terminadas + " / " + renglon.total;
 			var porcentajeCumplimiento = parseFloat(renglon.porcentaje);
 			var label ="";
 			if(porcentajeCumplimiento >= 0 && porcentajeCumplimiento < 51)
@@ -114,7 +115,7 @@ class MinutasVista extends CatalogoVista
 			{
 				label = "text-green";
 			}
-			return "<span style='font-weight:bold' class='"+label+"'>"+porcentajeCumplimiento+"%</span>";
+			return "<span data-toggle='tooltip' data-placemen='bottom' title='"+cantidad+"'  style='font-weight:bold' class='"+label+"'>"+porcentajeCumplimiento+"%</span>";
 		//}
 		return "";
 	}
@@ -189,7 +190,7 @@ class MinutasVista extends CatalogoVista
 		}
 		
 		$('#tareasSectionContenido').fadeIn();	
-		
+		$("#agregarTareaButton").show();
 		//this.consultarEmpresas();
 	}
 	
@@ -410,7 +411,38 @@ class MinutasVista extends CatalogoVista
 
 	agregarTarea()
 	{
-		this.presentador.insertarTarea();
+		$("#agregarTareaButton").hide();
+		this.listaTareas.cancelarEdicion();
+		this.listaTareas.agregarBorrador();
+		
+	}
+	
+	insertarTarea(modelo)
+	{
+		this.presentador.insertarTarea(modelo);
+	}
+	
+	actualizarTarea(modelo)
+	{
+		this.presentador.actualizarTarea(modelo);
+	}
+	
+	
+	mostrarBotonAgregar()
+	{
+		$("#agregarTareaButton").fadeIn();
+	}
+	
+	
+	eliminarBorrador()
+	{
+		this.listaTareas.eliminarBorrador();
+		$("#agregarTareaButton").fadeIn();
+	}
+	
+	editarTarea(event,id)
+	{
+		this.listaTareas.editar(id);
 	}
 	
 }

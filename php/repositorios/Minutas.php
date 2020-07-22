@@ -4,6 +4,7 @@ use php\clases\JsonMapper;
 use php\modelos\Minuta;
 use php\repositorios\MinutasRepositorio;
 use php\modelos\Resultado;
+use php\modelos\Tarea;
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -12,6 +13,7 @@ include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/MinutasRepositorio.php';
+include '../modelos/Tarea.php';
 
 $origin = "*";
 if(isset($_SERVER['HTTP_ORIGIN']))
@@ -89,7 +91,21 @@ try
                 if(isset($_SESSION['usuario']))
                     $usuario = $_SESSION['usuario'];
                 $minutaId = REQUEST('minutaId');
-                $resultado = $repositorio->insertarTarea($minutaId,$usuario);
+                $json = json_decode(REQUEST('modelo'));
+                $mapper = new JsonMapper();
+                $modelo = $mapper->map($json, new Tarea());
+                $resultado = $repositorio->insertarTarea($minutaId,$modelo,$usuario);
+            break;
+            case 'actualizarTarea':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $minutaId = REQUEST('minutaId');
+                $json = json_decode(REQUEST('modelo'));
+                $mapper = new JsonMapper();
+                $modelo = $mapper->map($json, new Tarea());
+                $resultado = $repositorio->actualizarTarea($minutaId,$modelo,$usuario);
             break;
             default:
                 $resultado->mensajeError = 'Acción no implementada';

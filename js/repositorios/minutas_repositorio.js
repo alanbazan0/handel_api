@@ -109,13 +109,38 @@ class MinutasRepositorio extends Repositorio
       });
 	}
 	
-	insertarTarea(contexto,funcion,minutaId)
+	insertarTarea(contexto,funcion,minutaId, modelo)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
           url: url,
           type: 'POST',
-          data: {accion : "insertarTarea",minutaId: minutaId},
+          data: {accion : "insertarTarea",minutaId: minutaId, modelo: JSON.stringify(modelo)},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	actualizarTarea(contexto,funcion,minutaId, modelo)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "actualizarTarea",minutaId: minutaId, modelo: JSON.stringify(modelo)},
           success: function( data, textStatus, jQxhr )
           {
               funcion.call(contexto,data);
