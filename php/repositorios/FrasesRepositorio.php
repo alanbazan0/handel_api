@@ -7,7 +7,7 @@ use php\modelos\Resultado;
 
 include '../interfaces/IFrasesRepositorio.php';
 include '../modelos/Frase.php';
-include 'RepositorioBase.php';
+require_once('RepositorioBase.php');
 require_once('../clases/Resultado.php');
 
 class FrasesRepositorio extends RepositorioBase implements IFrasesRepositorio
@@ -145,6 +145,42 @@ class FrasesRepositorio extends RepositorioBase implements IFrasesRepositorio
         else
             $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
         return $resultado;
+    }
+    
+    public function consultarAleatorio()
+    {
+        $resultado = new Resultado();
+        $consulta = $this->consultaBase .
+        ' ORDER BY rand()
+        LIMIT 1';
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            //if($sentencia->bind_param('i',$llaves->id))
+            //{
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id, $texto, $autor))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $registro = $this->crearRegistro($id, $texto, $autor);
+                            $resultado->valor = $registro;
+                        }
+                        else
+                            $resultado->mensajeError = 'No se encontró ningún resultado.';
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+//             }
+//             else
+//                 $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
     }
 
     public function eliminar($llaves)

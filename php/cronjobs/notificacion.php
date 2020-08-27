@@ -114,7 +114,8 @@ try
                 //$usuario->tipoUsuarioId = TipoUsuario::SUPERVISOR;
                 //$usuario->id = 8;
                 //$usuario->nombre ="Magaly";
-                $usuario->nombreUsuario = $enviarA;
+                if(isset($enviarA) && $enviarA!="")
+                    $usuario->nombreUsuario = $enviarA;
             }
             
             $usuarios = array_slice($usuarios,0,$numeroUsuarios);
@@ -199,6 +200,8 @@ try
                         $resultado->valor="OK";
                         mensajeLog("log_envio","$i Correo enviado a ".$usuario->nombreUsuario);
                     }
+                    
+                    guardarEnvio($usuario,$asunto,$mensaje);
                     
                     sleep($tiempoEspera);
                 }
@@ -1049,5 +1052,15 @@ function mensajeLog($archivo,$mensaje)
     $mensaje = date("j/n/Y h:i:s") .":".$mensaje;
     file_put_contents('./'.$archivo.'_'.date("j.n.Y").'.log',  utf8_decode("\n".$mensaje) , FILE_APPEND);
     echo "<br>".utf8_decode($mensaje);
+}
+
+function guardarEnvio($usuario, $asunto, $mensaje)
+{
+    $carpeta = "envios/".date("j.n.Y")."/";
+    @mkdir($carpeta);
+    
+ //       $archivo = $carpeta . $usuario->nombreUsuario
+    file_put_contents($carpeta.$usuario->nombreUsuario.".html",  $mensaje , FILE_TEXT);
+    
 }
     

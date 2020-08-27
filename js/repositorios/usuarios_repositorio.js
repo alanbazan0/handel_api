@@ -303,7 +303,7 @@ class UsuariosRepositorio extends Repositorio
 	    });
 	}
 	
-	importarUsuarios(contexto,funcionResultado, empresaId, sedeId, departamentoId, perfilId, archivo)
+	importarUsuarios(contexto,funcionResultado, empresaId, sedeId, departamentoId, perfilId,supervisor1Id, archivo)
 	{		
 		var data = new FormData();
 		data.append("accion", "importar");
@@ -311,6 +311,7 @@ class UsuariosRepositorio extends Repositorio
 		data.append("sedeId", sedeId);
 		data.append("departamentoId", departamentoId);
 		data.append("perfilId", perfilId);
+		data.append("supervisor1Id", supervisor1Id);
     	data.append("file", archivo );
     	var url = HANDEL_API + "/" + this.servicio;
         var xhr = new XMLHttpRequest();

@@ -28,6 +28,7 @@ class AdministracionVista extends CatalogoVista
 		
 		this.consultoGrid = false;
 		this.consultarDepartamentosCriterio();
+		this.consultarPerfilesCriterio();
 		//this.consultarEmpresasCriterio();
 	}
 	
@@ -43,10 +44,22 @@ class AdministracionVista extends CatalogoVista
 		this.presentador.consultarDepartamentosCriterio();
 	}
 	
+	consultarPerfilesCriterio()
+	{
+		this.cargandoOpciones("#perfilSelectCriterio");
+		this.presentador.consultarPerfilesCriterio();
+	}
+	
 	set departamentosCriterio(registros)
 	{		
 		this.cargarOpciones('#departamentoSelectCriterio', registros);
 		this.consultarEmpresasCriterio();
+		
+	}
+	
+	set perfilesCriterio(registros)
+	{		
+		this.cargarOpciones('#perfilSelectCriterio', registros);
 		
 	}
 	
@@ -75,19 +88,21 @@ class AdministracionVista extends CatalogoVista
 			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I",class: "desc" }, 
 			{longitud:200, 	titulo:"Apellido",   alias:"apellido", alineacion:"I",class: "desc" },
 			{longitud:200, 	titulo:"Nombre de usuario",   	alias:"nombreUsuario", alineacion:"I", classSpan:"block-email" }, 
-			{longitud:200, 	titulo:"Contraseña",   	alias:"contrasena", alineacion:"I", classSpan:"block-email" }, 
+			{longitud:200, 	titulo:"Contraseña",   	alias:"contrasena", alineacion:"I", classSpan:"block-email" },
+			{longitud:100, 	titulo:"Número de empleado",   alias:"numeroEmpleado", alineacion:"I" },	
 			{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },	
 			{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" },	
 //			{longitud:100, 	titulo:"Puesto",   alias:"puestoNombre", alineacion:"I" },	
 			//{longitud:100, 	titulo:"Area",   alias:"areaNombre", alineacion:"I" },	
 			{longitud:100, 	titulo:"Departamento",   alias:"departamentoNombre", alineacion:"I" },	
-//			{longitud:100, 	titulo:"Supervisor 1",   alias:"supervisor1Nombre", alineacion:"I" },	
+			{longitud:100, 	titulo:"Supervisor",   alias:"supervisor1Nombre", alineacion:"I" },	
 //			{longitud:100, 	titulo:"Supervisor 2",   alias:"supervisor2Nombre", alineacion:"I" },	
 //			{longitud:100, 	titulo:"Supervisor 3",   alias:"supervisor3Nombre", alineacion:"I" },	
 			//{longitud:100, 	titulo:"Tipo de usuario",   alias:"tipoUsuarioNombre", alineacion:"I" },
 			{longitud:200, 	titulo:"Ultimo acceso",   alias:"ultimoAcceso", alineacion:"I" },			
 			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
 			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
+			{longitud:100, 	titulo:"Perfil",   alias:"perfilNombre", alineacion:"I" }	
 			//{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
 
 	
@@ -99,8 +114,11 @@ class AdministracionVista extends CatalogoVista
 		var _this = this;
 		
 		 var buttonCommon = {
-				   text:      '<i class="fa fa-file-excel-o"></i>',
+				   text:      '<i class="fa fa-file-excel-o"></i> Exportar',
 			        exportOptions: {
+			        	 modifier: {
+		                        selected: null
+		                    },
 			            format: {
 			                body: function ( data, row, column, node ) 
 			                {
@@ -302,6 +320,19 @@ class AdministracionVista extends CatalogoVista
 		//this.inicializarValidacionesFormularioInspector();
 		this.consultarEmpresas();
 		this.consultarDepartamentos();
+		this.consultarPerfiles();
+		
+	}
+	
+	set perfiles(registros)
+	{		
+		this.cargarOpciones('#perfilSelect', registros, this.modo, this.modeloEdicion, 'perfilId',"");
+	}
+	
+	consultarPerfiles()
+	{
+		this.cargandoOpciones("#perfilSelect");
+		this.presentador.consultarPerfiles();
 	}
 	
 	consultarDepartamentos()
@@ -332,18 +363,30 @@ class AdministracionVista extends CatalogoVista
 		$('#nombreInput').val(this.modeloEdicion.nombre);
 		$('#apellidoInput').val(this.modeloEdicion.apellido);
 		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
-//		if(this.modeloEdicion.permisoSAHA)
-//			$("#permisoSAHARadio").prop('checked', true);
-//		else
-//			$("#permisoSAHARadio").prop('checked', false);
-//		if(this.modeloEdicion.permisoSIVAH)
-//			$("#permisoSIVAHRadio").prop('checked', true);
-//		else
-//			$("#permisoSIVAHRadio").prop('checked', false);
-//		if(this.modeloEdicion.permiso10y7)
-//			$("#permiso10y7Radio").prop('checked', true);
-//		else
-//			$("#permiso10y7Radio").prop('checked', false);
+		$('#numeroEmpleadoInput').val(this.modeloEdicion.numeroEmpleado);
+		if(this.modeloEdicion.permisoSAHA)
+			$("#permisoSAHARadio").prop('checked', true);
+		else
+			$("#permisoSAHARadio").prop('checked', false);
+		if(this.modeloEdicion.permisoSIVAH)
+			$("#permisoSIVAHRadio").prop('checked', true);
+		else
+			$("#permisoSIVAHRadio").prop('checked', false);
+		if(this.modeloEdicion.permiso10y7)
+			$("#permiso10y7Radio").prop('checked', true);
+		else
+			$("#permiso10y7Radio").prop('checked', false);
+		
+		if(this.modeloEdicion.permisoCAVIH)
+			$("#permisoCAVIHRadio").prop('checked', true);
+		else
+			$("#permisoCAVIHRadio").prop('checked', false);
+		
+		if(this.modeloEdicion.recursosHumanos)
+			$("#recursosHumanosRadio").prop('checked', true);
+		else
+			$("#recursosHumanosRadio").prop('checked', false);
+		
 		this.consultarCombos();
 	}
 	
@@ -363,11 +406,13 @@ class AdministracionVista extends CatalogoVista
 			 supervisor2Id:$('#supervisor2Select').val(),
 			 supervisor3Id:$('#supervisor3Select').val(),
 			 tipoUsuarioId: TipoUsuario.CAPACITADO,
-			 //estatus:$('#estatusRadio').is(':checked')?1:0,
 			 estatus:1,
 			 permisoSAHA:0,
 			 permisoSIVAH:0,
-		 	 permiso10y7:1
+		 	 permiso10y7:1,
+		 	 perfilId:$('#perfilSelect').val(),
+			 recursosHumanos:$('#recursosHumanosRadio').is(':checked')?1:0,
+		 	 numeroEmpleado:$('#numeroEmpleadoInput').val(),
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
@@ -594,6 +639,9 @@ class AdministracionVista extends CatalogoVista
 		 var criteriosSeleccion = 
 		 {				    
 			empresaId: $('#empresaSelectCriterio').val(),
+			sedeId: $('#sedeSelectCriterio').val(),
+			departamentoId: $('#departamentoSelectCriterio').val(),
+			perfilId: $('#perfilSelectCriterio').val(),
 			nombre:$('#nombreInputCriterio').val(),
 			tipoUsuarioId: TipoUsuario.CAPACITADO
 		 }

@@ -12,11 +12,29 @@ class MinutasVista extends CatalogoVista
 	inicializar()
 	{
 		var _this = this;
-		super.inicializar();
+
+		$("#consultarButton").click(function(){
+			_this.consultar();
+		});
+		
+		$("#agregarButton").click(function(){
+			_this.agregar();
+		});
+		
+		
+		this.crearColumnasGrid();		
+		
+		
+		if(this.minutaIdParametro=="" && this.tareaIdParametro=="")
+			this.consultar();
+		else
+			this.mostrarTareaParametro();
+
+		
 		$("#tituloH").click(function()
-				{
-					_this.salirFormulario();
-				});
+		{
+			_this.salirFormulario();
+		});
 		
 		this.crearEventosActualizacion();
 		
@@ -38,7 +56,29 @@ class MinutasVista extends CatalogoVista
 //				{
 //					alert('Esta función esta en desarrollo');
 //				});
+	    
+	    
+	    
 	}
+	
+	mostrarTareaParametro()
+	{
+		this._registroSeleccionado = {id : this.minutaIdParametro};
+		this.editarTareaFormulario(this.tareaIdParametro);
+	}
+	
+	
+	get minutaIdParametro()
+	{
+		return $("body").attr("data-minutaId");
+	}
+	
+	get tareaIdParametro()
+	{
+		return $("body").attr("data-tareaId");
+	}
+	
+	
 	
 	crearEventosActualizacion()
 	{
@@ -79,7 +119,7 @@ class MinutasVista extends CatalogoVista
 		]
 		
 		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
-		"<button data-toggle='tooltip' data-placemen='bottom' t¡itle='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+		"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
 		this.tabla.registros = [];
 	}
@@ -182,6 +222,7 @@ class MinutasVista extends CatalogoVista
 		
 		if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 		{
+			this.listaTareas.responsables = this._responsables;
 			this.listaTareas.tareas= this.modeloEdicion.tareas;
 		}
 		else
@@ -191,8 +232,21 @@ class MinutasVista extends CatalogoVista
 		
 		$('#tareasSectionContenido').fadeIn();	
 		$("#agregarTareaButton").show();
-		//this.consultarEmpresas();
+		
 	}
+	
+	consultarResponsables()
+	{
+		this.presentador.consultarResponsables();
+	}
+	
+	set responsables(responsables)
+	{
+		this._responsables = responsables;
+		this.presentador.consultarPorLlaves();
+
+	}
+	
 	
 	get modelo()
 	{
@@ -222,8 +276,110 @@ class MinutasVista extends CatalogoVista
 		$('#tituloInput').focus();				
 		//this.inicializarValidacionesFormulario("formulario");
 		this.listaTareas.tareas = [];
-		this.presentador.consultarPorLlaves();
+		this.consultarResponsables();
+
 		//this._cursoId =id;
+	}
+	
+	editarTareaFormulario(tareaId)
+	{
+		this.modo = "CAMBIO";
+		this._tareaId = tareaId;
+		this.mostrarFormularioTarea(this.minutaId, tareaId);
+//		this.limpiarFormulario();	
+//		this.mostrarFormulario();
+//		$('#tituloInput').focus();				
+//		//this.inicializarValidacionesFormulario("formulario");
+//		this.listaTareas.tareas = [];
+//		this.consultarResponsables();
+
+		//this._cursoId =id;
+	}
+	
+	get tareaId()
+	{
+		return this._tareaId;
+	}
+	
+	
+	
+	mostrarFormularioTarea(minutaId, tareaId)
+	{
+		var _this = this;
+		if($("#modalAlta").length ==0)
+		{
+			var url = HANDEL_API + "/html/modales/tarea.php";
+			this.mostrarIndicador();
+			var _this = this;
+			$.post(url,{}, function(html) 
+			{
+				_this.ocultarIndicador();
+				$("body").append(html);
+				$("#modalAlta").on("hidden.bs.modal", function () {
+					//clearInterval(_this.cometariosIntervalId);
+					$("#modalAlta").remove();
+					_this._tareaEdicionFormulario = null;
+					if($("#minutasSection").is(":visible"))
+						_this.consultar();
+					
+				});
+				
+				$("#modalAlta").on("show.bs.modal", function () 
+				{
+					_this._llavesTarea = {minutaId : minutaId, tareaId: tareaId};
+					_this.consultarTareaPorLlaves();
+					
+					
+				});
+			
+				
+				$("#modalAlta").modal({backdrop: 'static', keyboard: false});
+			});
+		}
+		else
+		{
+			$("#modalAlta").modal({backdrop: 'static', keyboard: false});
+		}
+	}
+	
+	get llavesTarea()
+	{
+		return this._llavesTarea;
+	}
+	
+	consultarTareaPorLlaves()
+	{
+		this.presentador.consultarTareaPorLlaves();
+	}
+	
+	actualizar(modelo)
+	{
+		 this.listaTareas.actualizar(modelo,true);
+		 this.listaTareas.cancelarEdicion();
+		 
+		 if(this._tareaEdicionFormulario!=null)
+		{
+			 this._tareaEdicionFormulario.modelo = modelo;
+			 this._tareaEdicionFormulario.cancelarEdicion();
+			
+			 
+		}
+	}
+	
+	set tarea(tarea)
+	{
+//		$("#contenidoTarea").show();
+//		$("#tituloTarea").html(tarea.titulo);
+//		this.consultarComentariosTarea();
+		this._tareaEdicionFormulario = new Tarea(this,"formulario_tareaDiv",tarea,this._responsables,false,false,false,false);
+		this._tareaEdicionFormulario.renderizar();
+		//html+=this.crearContenedor(registro);
+		//this.componentes.push(componente);
+	}
+	
+	consultarComentariosTarea()
+	{
+		
 	}
 	
 	get minutaId()
@@ -349,9 +505,9 @@ class MinutasVista extends CatalogoVista
 	        });
 	}
 	
-	cambiarCampoTarea(tareaId,campo,valor)
+	cambiarCampoTarea(tarea,tareaId,campo,valor)
 	{
-		vista.presentador.actualizarValorTarea(tareaId,campo,valor);
+		vista.presentador.actualizarValorTarea(tarea,tareaId,campo,valor);
 	}
 	
 	eliminarTarea(event, tareaId)
@@ -411,9 +567,10 @@ class MinutasVista extends CatalogoVista
 
 	agregarTarea()
 	{
-		$("#agregarTareaButton").hide();
+	
 		this.listaTareas.cancelarEdicion();
 		this.listaTareas.agregarBorrador();
+		$("#agregarTareaButton").hide();
 		
 	}
 	

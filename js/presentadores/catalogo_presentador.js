@@ -258,5 +258,19 @@ class CatalogoPresentador
 			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 	 }
 	 
+	 consultarTareasPendientes()
+	 {
+		// this.vista.mostrarIndicador();
+		 var repositorio = new MinutasRepositorio(this);		
+		 repositorio.consultarTareasPendientes(this,function(resultado){
+			 if(resultado.mensajeError=="")
+			{
+				this.vista.tareasPendientes = resultado.valor;
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 });
+	 }
+	 
 	 
 }

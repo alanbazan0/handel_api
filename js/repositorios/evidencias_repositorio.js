@@ -14,6 +14,7 @@ class EvidenciasRepositorio extends Repositorio
     	var url = HANDEL_API + "/" + this.servicio;
         var xhr = new XMLHttpRequest();
         xhr.open( 'POST', url, true );
+        xhr.withCredentials = true;
 		xhr.onreadystatechange = function ( resultado ) 
 		{
 		    if (this.readyState == 4 && this.status == 200) 
@@ -46,6 +47,7 @@ class EvidenciasRepositorio extends Repositorio
     	var url = HANDEL_API + "/" + this.servicio;
         var xhr = new XMLHttpRequest();
         xhr.open( 'POST', url, true );
+        xhr.withCredentials = true;
 		xhr.onreadystatechange = function ( resultado ) 
 		{
 		    if (this.readyState == 4 && this.status == 200) 

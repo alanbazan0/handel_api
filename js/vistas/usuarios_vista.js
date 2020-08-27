@@ -57,6 +57,7 @@ class UsuariosVista extends CatalogoVista
 			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I",class: "desc" }, 
 			{longitud:200, 	titulo:"Apellido",   alias:"apellido", alineacion:"I",class: "desc" }, 
 			{longitud:200, 	titulo:"Nombre de usuario",   	alias:"nombreUsuario", alineacion:"I", classSpan:"block-email" }, 
+			{longitud:100, 	titulo:"Número de empleado",   alias:"numeroEmpleado", alineacion:"I" },	
 			{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },	
 			{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" },	
 			{longitud:100, 	titulo:"Puesto",   alias:"puestoNombre", alineacion:"I" },	
@@ -414,6 +415,7 @@ class UsuariosVista extends CatalogoVista
 		$('#nombreInput').val(this.modeloEdicion.nombre);
 		$('#apellidoInput').val(this.modeloEdicion.apellido);
 		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
+		$('#numeroEmpleadoInput').val(this.modeloEdicion.numeroEmpleado);
 		if(this.modeloEdicion.permisoSAHA)
 			$("#permisoSAHARadio").prop('checked', true);
 		else
@@ -464,7 +466,8 @@ class UsuariosVista extends CatalogoVista
 		 	 permiso10y7:$('#permiso10y7Radio').is(':checked')?1:0,
 		 	 permisoCAVIH:$('#permisoCAVIHRadio').is(':checked')?1:0,
 		     perfilId:$('#perfilSelect').val(),
-		     recursosHumanos:$('#recursosHumanosRadio').is(':checked')?1:0
+		     recursosHumanos:$('#recursosHumanosRadio').is(':checked')?1:0,
+		     numeroEmpleado:$('#numeroEmpleadoInput').val(),
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;

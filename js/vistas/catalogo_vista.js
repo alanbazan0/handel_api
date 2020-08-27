@@ -148,6 +148,7 @@ class CatalogoVista extends Vista
 	{	
 		
 		this.consultarNumeroMensajesNoLeidos();
+		this.consultarTareasPendientes();
 		
 		if(this.presentador!=null)
 		{
@@ -161,6 +162,80 @@ class CatalogoVista extends Vista
 		if($("#mensajesLi").length>0)
 		{
 			this.presentador.consultarNumeroMensajesNoLeidos();
+		}
+	}
+	
+	consultarTareasPendientes()
+	{
+		if($("#tareasPendientesSpan").length>0)
+		{
+			this.presentador.consultarTareasPendientes();
+		}
+	}
+	
+	set tareasPendientes(tareasPendientes)
+	{
+		if(tareasPendientes.length>0)
+		{
+			$("#tareasPendientesSpan").html(tareasPendientes.length);
+			
+			var html="";
+			
+			if(tareasPendientes.length==1)
+			{
+				html+="<li class='header'>"+tareasPendientes.length+" tarea pendiente</li>"+
+					 "	<li>"+
+					"	<ul class='menu'>";
+			}
+			else
+			{
+				html+="<li class='header'>"+tareasPendientes.length+" tareas pendientes</li>"+
+					 "	<li>"+
+					"	<ul class='menu'>";
+			}
+		
+			
+			for(var i=0; i < tareasPendientes.length; i++)
+			{
+				var tarea = tareasPendientes[i];
+				html+="	  <li>"+
+				"		<a id='tareaLink"+tarea.id+"' href='#'>";
+				
+				
+//				if(procedimiento.usuarioId == this.usuario.id)
+//					html+="<i class='fa fa-upload text-aqua'></i> ";
+				
+				
+				html+=tarea.titulo +
+				"		</a>"+
+				"	  </li>";
+			}
+			
+			html+="	</ul>"+
+			"	</li>";
+				
+			
+			$("#tareasPendientesUl").html(html);	
+			
+			
+			for(var i=0; i < tareasPendientes.length; i++)
+			{
+				var tarea = tareasPendientes[i];
+				var id = "tareaLink"+tarea.id;
+				$("#"+id).data("tarea",tarea);
+				$("#"+id).data("_this",this);
+				$("#"+id).click(this.tareaClick);
+			}
+			
+		}
+		else
+		{
+			$("#tareasPendientesSpan").html("");
+			
+			var html="";
+			html+="<li class='header'>No hay tareas pendientes</li>"+
+				 "	<li>";
+			$("#tareasPendientesUl").html(html);	
 		}
 	}
 	
@@ -206,6 +281,16 @@ class CatalogoVista extends Vista
 		var _this = $("body").data("_this");
 		var url = "mensajes.php";
 		var submitForm = _this.getNewSubmitForm(url);
+	    submitForm.target= "_self";
+	    submitForm.submit();
+	}
+	
+	tareaClick(event)
+	{
+		//var _this = $("body").data("_this");
+		var tarea = $(event.currentTarget).data("tarea");
+		var url = "minutas.php?minutaId="+tarea.minutaId+"&tareaId="+tarea.id;
+		var submitForm = vista.getNewSubmitForm(url);
 	    submitForm.target= "_self";
 	    submitForm.submit();
 	}

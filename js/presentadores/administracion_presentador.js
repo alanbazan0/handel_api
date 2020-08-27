@@ -188,6 +188,21 @@ class AdministracionPresentador extends CatalogoPresentador
 		 },null,true);
 	 }
 	 
+	 consultarPerfilesCriterio()	
+	 {
+		 var repositorio = new PerfilesRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.perfilesCriterio = resultado.valor;
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },null,true);
+	 }
+	 
 	 consultarSedesCriterio()	
 	 {
 		 var repositorio = new SedesRepositorio(this);		
@@ -204,6 +219,21 @@ class AdministracionPresentador extends CatalogoPresentador
 		,this.vista.criteriosSeleccion.empresaId,true);
 	 }
 	 
+	 
+	 consultarPerfiles()	
+	 {
+		 var repositorio = new PerfilesRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.perfiles = resultado.valor;
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },null);
+	 }
 	
 	 
 }

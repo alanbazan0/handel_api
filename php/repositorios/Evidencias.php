@@ -36,174 +36,164 @@ $conexion=null;
 $diaLimite = 27;
 try
 {
-    $conexion = $administrador_conexion->abrir();
-    if($conexion)
+    session_start();
+    $usuario = null;
+    if(isset($_SESSION['usuario']))
+        $usuario = $_SESSION['usuario'];
+    if($usuario!=null)
     {
-        $accion = REQUEST('accion');
-        $repositorio = new EvidenciasRepositorio($conexion);
-        switch($accion)
+        $conexion = $administrador_conexion->abrir();
+        if($conexion)
         {
-            case 'insertar':
-                $json = json_decode(REQUEST('modelo'));
-                $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Evidencia());
-                $resultado = insertar($modelo,$conexion,$repositorio,$diaLimite);
-            break;
-            case 'actualizar':
-                $json = json_decode(REQUEST('modelo'));
-                $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Evidencia());
-                $resultado = actualizar($modelo,$conexion,$repositorio,$diaLimite);
-            break;
-            case 'validarEvidencia':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $json = json_decode(REQUEST('modelo'));
-                $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Evidencia());
-                $resultado = $repositorio->validarEvidencia($usuario,$modelo);
-                if($resultado->correcto())
-                {
-//                     $llaves= (object)
-//                     [
-//                         'id'=> $modelo->id
-//                     ];
-//                     $resultado = $repositorio->consultarPorLlaves($llaves);
-//                     if($resultado->correcto())
-//                     {
-//                         $evidencia =  $resultado->valor;
-//                         $usuariosRepositorio = new UsuariosRepositorio($conexion);
-//                         $llaves= (object)
-//                         [
-//                             'id'=> $evidencia->usuarioId
-//                         ];
-//                         $resultado = $usuariosRepositorio->consultarPorLLaves($llaves);
-//                         if($resultado->correcto())
-//                         {
-//                             $usuarioDestino = $resultado->valor;
-//                             $administradorCorreo = new AdministradorCorreo(); 
-//                             $resultado = $administradorCorreo->enviarNotificacionComentario($usuario, $usuarioDestino, $evidencia);
-//                             if($resultado->correcto())
-//                                 $resultado->valor = $modelo->id;
-//                         }
-//                     }
-                }
+            $accion = REQUEST('accion');
+            $repositorio = new EvidenciasRepositorio($conexion);
+            switch($accion)
+            {
+                case 'insertar':
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Evidencia());
+                    $resultado = insertar($modelo,$conexion,$repositorio,$diaLimite);
                 break;
-            case 'consultar':
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultar($criteriosSeleccion);
-            break;
-            case 'consultarPorLlaves':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->consultarPorLlaves($llaves);
-            break;
-            case 'eliminar':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->eliminar($llaves);
-            break;
-            case 'consultarEvidenciasCumplidas':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarEvidenciasCumplidas($usuario,$criteriosSeleccion);
-            break;
-            case 'consultarEvidenciasJustificacion':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarEvidenciasJustificacion($usuario,$criteriosSeleccion);
-            break;
-            case 'consultarComentariosEvidencia':
-                $evidenciaId = REQUEST('evidenciaId');
-                $resultado = $repositorio->consultarComentariosEvidencia($evidenciaId);
-            break;
-            case 'consultarEvidencias':
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarEvidencias($criteriosSeleccion);
-            break;
-            case 'consultarPorcentajesEvidencias':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarPorcentajesEvidencias($usuario,$criteriosSeleccion);
-            break;
-            case 'consultarPorcentajesEmpresas':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarPorcentajesEmpresas($usuario,$criteriosSeleccion);
-            break;
-            case 'consultarPorcentajesSedes':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarPorcentajesSedes($usuario,$criteriosSeleccion);
-            break;
-            case 'consultarPorcentajesAdministradores':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarPorcentajesAdministradores($usuario,$criteriosSeleccion);
-            break;
-            case 'consultarPorcentajesAreas':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarPorcentajesAreas($usuario,$criteriosSeleccion);
-            break;
-            case 'consultarPorcentajesUsuarios':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarPorcentajesUsuarios($usuario,$criteriosSeleccion);
+                case 'actualizar':
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Evidencia());
+                    $resultado = actualizar($modelo,$conexion,$repositorio,$diaLimite);
                 break;
-            case 'consultarAnosMeses':
-//                 session_start();
-//                 $usuario = null;
-//                 if(isset($_SESSION['usuario']))
-//                     $usuario = $_SESSION['usuario'];
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarAnosMeses($criteriosSeleccion);
-            break;
-            case 'consultarAnos':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarAnos($usuario,$criteriosSeleccion);
-            break;
-            case 'consultarEvidenciasAnualUsuario':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultarEvidenciasAnualUsuario($usuario,$criteriosSeleccion);
-             break;
-            default:
-                $resultado->mensajeError = 'Acción no válida';
-            break;
-            
+                case 'validarEvidencia':
+    //                 session_start();
+    //                 $usuario = null;
+    //                 if(isset($_SESSION['usuario']))
+    //                     $usuario = $_SESSION['usuario'];
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Evidencia());
+                    $resultado = $repositorio->validarEvidencia($usuario,$modelo);
+                    if($resultado->correcto())
+                    {
+    
+                    }
+                    break;
+                case 'consultar':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultar($criteriosSeleccion);
+                break;
+                case 'consultarPorLlaves':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarPorLlaves($llaves);
+                break;
+                case 'eliminar':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->eliminar($llaves);
+                break;
+                case 'consultarEvidenciasCumplidas':
+    //                 session_start();
+    //                 $usuario = null;
+    //                 if(isset($_SESSION['usuario']))
+    //                     $usuario = $_SESSION['usuario'];
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarEvidenciasCumplidas($usuario,$criteriosSeleccion);
+                break;
+                case 'consultarEvidenciasJustificacion':
+    //                 session_start();
+    //                 $usuario = null;
+    //                 if(isset($_SESSION['usuario']))
+    //                     $usuario = $_SESSION['usuario'];
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarEvidenciasJustificacion($usuario,$criteriosSeleccion);
+                break;
+                case 'consultarComentariosEvidencia':
+                    $evidenciaId = REQUEST('evidenciaId');
+                    $resultado = $repositorio->consultarComentariosEvidencia($evidenciaId);
+                break;
+                case 'consultarEvidencias':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarEvidencias($criteriosSeleccion);
+                break;
+                case 'consultarPorcentajesEvidencias':
+    //                 session_start();
+    //                 $usuario = null;
+    //                 if(isset($_SESSION['usuario']))
+    //                     $usuario = $_SESSION['usuario'];
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarPorcentajesEvidencias($usuario,$criteriosSeleccion);
+                break;
+                case 'consultarPorcentajesEmpresas':
+    //                 session_start();
+    //                 $usuario = null;
+    //                 if(isset($_SESSION['usuario']))
+    //                     $usuario = $_SESSION['usuario'];
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarPorcentajesEmpresas($usuario,$criteriosSeleccion);
+                break;
+                case 'consultarPorcentajesSedes':
+    //                 session_start();
+    //                 $usuario = null;
+    //                 if(isset($_SESSION['usuario']))
+    //                     $usuario = $_SESSION['usuario'];
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarPorcentajesSedes($usuario,$criteriosSeleccion);
+                break;
+                case 'consultarPorcentajesAdministradores':
+    //                 session_start();
+    //                 $usuario = null;
+    //                 if(isset($_SESSION['usuario']))
+    //                     $usuario = $_SESSION['usuario'];
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarPorcentajesAdministradores($usuario,$criteriosSeleccion);
+                break;
+                case 'consultarPorcentajesAreas':
+    //                 session_start();
+    //                 $usuario = null;
+    //                 if(isset($_SESSION['usuario']))
+    //                     $usuario = $_SESSION['usuario'];
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarPorcentajesAreas($usuario,$criteriosSeleccion);
+                break;
+                case 'consultarPorcentajesUsuarios':
+    //                 session_start();
+    //                 $usuario = null;
+    //                 if(isset($_SESSION['usuario']))
+    //                     $usuario = $_SESSION['usuario'];
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarPorcentajesUsuarios($usuario,$criteriosSeleccion);
+                    break;
+                case 'consultarAnosMeses':
+    //                 session_start();
+    //                 $usuario = null;
+    //                 if(isset($_SESSION['usuario']))
+    //                     $usuario = $_SESSION['usuario'];
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarAnosMeses($criteriosSeleccion);
+                break;
+                case 'consultarAnos':
+    //                 session_start();
+    //                 $usuario = null;
+    //                 if(isset($_SESSION['usuario']))
+    //                     $usuario = $_SESSION['usuario'];
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarAnos($usuario,$criteriosSeleccion);
+                break;
+                case 'consultarEvidenciasAnualUsuario':
+    //                 session_start();
+    //                 $usuario = null;
+    //                 if(isset($_SESSION['usuario']))
+    //                     $usuario = $_SESSION['usuario'];
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarEvidenciasAnualUsuario($usuario,$criteriosSeleccion);
+                 break;
+                default:
+                    $resultado->mensajeError = 'Acción no válida';
+                break;
+                
+            }
         }
+    }
+    else 
+    {
+        $resultado->mensajeError = "La sesión caducó. Inicie sesión e intente de nuevo.";
+        $resultado->codigoError = "sesion_caducada";
     }
 }
 catch(Exception $e)

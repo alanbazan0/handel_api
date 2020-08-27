@@ -902,6 +902,7 @@ class CapacitacionesVista extends CatalogoVista
 		this.presentador.eliminarLeccion();
 	}
 	
+	
 
 	
 	
@@ -963,6 +964,8 @@ class CapacitacionesVista extends CatalogoVista
 			this.listaPreguntas.preguntas = leccion.preguntas;
 		else
 			this.listaPreguntas.preguntas = [];
+		
+		this.actualizarNumeroPreguntas();
 		
 		this._leccionIdSeleccionada = leccion.id;
 		this._leccionSeleccionada = leccion;
@@ -1140,8 +1143,22 @@ class CapacitacionesVista extends CatalogoVista
 		//$("#capacitacion"+id).remove();
 	}
 	
+	agregarPreguntaLista(tipo,valor)
+	{
+		this.listaPreguntas.agregar(tipo,valor);
+		this.actualizarNumeroPreguntas();
+	}
 	
+	actualizarNumeroPreguntas()
+	{
+		$("#numeroPreguntasH").html(this.listaPreguntas.preguntas.length);
+	}
 	
+	async eliminarPreguntaLista(preguntaId)
+	{
+		await this.listaPreguntas.eliminarPregunta(preguntaId);
+		this.actualizarNumeroPreguntas();
+	}
 	
 }
 var vista = new CapacitacionesVista(this);

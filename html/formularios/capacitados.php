@@ -51,6 +51,12 @@
 					</div>
 					<div class="form-group">
 						<div>
+							<label for="numeroEmpleadoInput" class="control-label mb-1">Número de empleado</label>
+							<input id="numeroEmpleadoInput" name="numeroEmpleadoInput" type="text" class="form-control">
+						</div>
+					</div>
+					<div class="form-group">
+						<div>
 							<label for="empresaSelect" class="control-label mb-1">Empresa</label>
 							<select name="empresaSelect" id="empresaSelect" class="form-control" onchange="vista.cambiarEmpresa();"></select>
 						</div>
@@ -61,67 +67,83 @@
 							<select name="sedeSelect" id="sedeSelect" class="form-control" onchange="vista.cambiarSede();"></select>
 						</div>
 					</div>
-<!-- 					<div class="form-group"> -->
-<!-- 						<div> -->
-<!-- 							<label for="puestoSelect" class="control-label mb-1">Puesto</label> -->
-<!-- 							<select name="puestoSelect" id="puestoSelect" class="form-control"></select> -->
-<!-- 						</div> -->
-<!-- 					</div> -->
-<!-- 					<div class="form-group"> -->
-<!-- 						<div> -->
-<!-- 							<label for="areaSelect" class="control-label mb-1">Area</label>  -->
-<!-- 							<select name="areaSelect" id="areaSelect" class="form-control"></select> -->
-<!-- 						</div> -->
-<!-- 					</div> -->
+					<div class="form-group">
+						<div>
+							<label for="puestoSelect" class="control-label mb-1">Puesto</label>
+							<select name="puestoSelect" id="puestoSelect" class="form-control"></select>
+						</div>
+					</div>
+					<div class="form-group" style='display:none'>
+						<div>
+							<label for="areaSelect" class="control-label mb-1">Area</label> 
+							<select name="areaSelect" id="areaSelect" class="form-control"></select>
+						</div>
+					</div>
 					<div class="form-group">
 						<div>
 							<label for="departamentoSelect" class="control-label mb-1">Departamento</label> 
 							<select name="departamentoSelect" id="departamentoSelect" class="form-control"></select>
 						</div>
 					</div>
-<!-- 					<div class="form-group"> -->
-<!-- 						<div> -->
-<!-- 							<label for="supervisor1Select" class="control-label mb-1">Supervisor 1</label>  -->
-<!-- 							<select name="supervisor1Select" id="supervisor1Select" class="form-control"></select> -->
-<!-- 						</div> -->
-<!-- 					</div> -->
+					<div class="form-group">
+						<div>
+							<label for="supervisor1Select" class="control-label mb-1">Supervisor 1</label> 
+							<select name="supervisor1Select" id="supervisor1Select" class="form-control"></select>
+						</div>
+					</div>
 					
-<!-- 					<div class="form-group"> -->
-<!-- 						<div> -->
-<!-- 							<label for="supervisor2Select" class="control-label mb-1">Supervisor 2</label>  -->
-<!-- 							<select name="supervisor2Select" id="supervisor2Select" class="form-control"></select> -->
-<!-- 						</div> -->
-<!-- 					</div> -->
-<!-- 					<div class="form-group"> -->
-<!-- 						<div> -->
-<!-- 							<label for="supervisor3Select" class="control-label mb-1">Supervisor 3</label>  -->
-<!-- 							<select name="supervisor3Select" id="supervisor3Select" class="form-control"></select> -->
-<!-- 						</div> -->
-<!-- 					</div> -->
-<!-- 					<div class="form-group"> -->
-<!-- 						<label class="control-label mb-1">Acceso a SAHA</label> <label -->
-<!-- 							class="switch switch-3d switch-success mr-3"> <input -->
-<!-- 							id="permisoSAHARadio" name="permisoSAHA" type="checkbox" -->
-<!-- 							class="switch-input" checked="true"> <span -->
-<!-- 							class="switch-label"></span> <span class="switch-handle"></span> -->
-<!-- 						</label> -->
-<!-- 					</div> -->
-<!-- 					<div class="form-group"> -->
-<!-- 						<label class="control-label mb-1">Acceso a SIVAH</label> <label -->
-<!-- 							class="switch switch-3d switch-success mr-3"> <input -->
-<!-- 							id="permisoSIVAHRadio" name="permisoSIVAH" type="checkbox" -->
-<!-- 							class="switch-input" checked="true"> <span -->
-<!-- 							class="switch-label"></span> <span class="switch-handle"></span> -->
-<!-- 						</label> -->
-<!-- 					</div> -->
-<!-- 					<div class="form-group"> -->
-<!-- 						<label class="control-label mb-1">Acceso a 10 y 7</label> <label -->
-<!-- 							class="switch switch-3d switch-success mr-3"> <input -->
-<!-- 							id="permiso10y7Radio" name="permiso10y7" type="checkbox" -->
-<!-- 							class="switch-input" checked="true"> <span -->
-<!-- 							class="switch-label"></span> <span class="switch-handle"></span> -->
-<!-- 						</label> -->
-<!-- 					</div> -->
+					<div class="form-group" style='display:none'>
+						<div>
+							<label for="supervisor2Select" class="control-label mb-1">Supervisor 2</label> 
+							<select name="supervisor2Select" id="supervisor2Select" class="form-control"></select>
+						</div>
+					</div>
+					<div class="form-group" style='display:none'>
+						<div>
+							<label for="supervisor3Select" class="control-label mb-1">Supervisor 3</label> 
+							<select name="supervisor3Select" id="supervisor3Select" class="form-control"></select>
+						</div>
+					</div>
+					<div class="form-group" style='display:none'>
+						<label class="control-label mb-1">Acceso a SAHA</label> <label
+							class="switch switch-3d switch-success mr-3"> <input
+							id="permisoSAHARadio" name="permisoSAHA" type="checkbox"
+							class="switch-input" checked="true"> <span
+							class="switch-label"></span> <span class="switch-handle"></span>
+						</label>
+					</div>
+					<div class="form-group" style='display:none'> 
+						<label class="control-label mb-1">Acceso a SIVAH</label> <label
+							class="switch switch-3d switch-success mr-3"> <input
+							id="permisoSIVAHRadio" name="permisoSIVAH" type="checkbox"
+							class="switch-input" checked="true"> <span
+							class="switch-label"></span> <span class="switch-handle"></span>
+						</label>
+					</div>
+					<div class="form-group" style='display:none'>
+						<label class="control-label mb-1">Acceso a 10 y 7</label> <label
+							class="switch switch-3d switch-success mr-3"> <input
+							id="permiso10y7Radio" name="permiso10y7" type="checkbox"
+							class="switch-input" checked="true"> <span
+							class="switch-label"></span> <span class="switch-handle"></span>
+						</label>
+					</div>
+					<div id='perfilGroup' >
+    					<div class="form-group" >
+    						<div>
+    							<label for="perfilSelect" class="control-label mb-1">Perfil</label> 
+    							<select name="perfilSelect" id="perfilSelect" class="form-control"></select>
+    						</div>
+    					</div>
+    					<div class="form-group" style='display:none'>
+    							<label class="control-label mb-1">Recursos Humanos</label> <label
+    							class="switch switch-3d switch-success mr-3"> <input
+    							id="recursosHumanosRadio" name="recursosHumanos" type="checkbox"
+    							class="switch-input"> <span
+    							class="switch-label"></span> <span class="switch-handle"></span>
+    						</label>
+    					</div>
+					</div>
 					<div class="form-group">
 						<label class="control-label mb-1">Activo</label> <label
 							class="switch switch-3d switch-success mr-3"> <input
@@ -130,6 +152,7 @@
 							class="switch-label"></span> <span class="switch-handle"></span>
 						</label>
 					</div>
+					
 				</form>
 			</div>
 			<div class="modal-footer">

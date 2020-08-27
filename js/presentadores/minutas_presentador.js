@@ -62,7 +62,7 @@ class MinutasPresentador extends CatalogoPresentador
 	 }
 	 
 	 
-	 actualizarValorTarea(tareaId, campo,valor)
+	 actualizarValorTarea(tarea,tareaId, campo,valor)
 	 {
 		 if(campo!=undefined)
 		{
@@ -73,6 +73,7 @@ class MinutasPresentador extends CatalogoPresentador
 				 if(resultado.mensajeError=="")
 				 {
 					 this.vista.mostrarMensaje("","Guardado.");
+					 this.vista.actualizar(tarea);
 				 }
 				 else
 				 {
@@ -153,18 +154,52 @@ class MinutasPresentador extends CatalogoPresentador
 			 if(resultado.mensajeError=="")
 			 {
 				 this.vista.mostrarMensaje("","Guardado.");
-				 this.vista.listaTareas.actualizar(modelo);
-				 this.vista.listaTareas.cancelarEdicion();
-				 //this.vista.listaTareas.agregar(resultado.valor,modelo);
-				 //this.vista.mostrarBotonAgregar();
-				 //this.vista.agregarTarea();
-				 //this.vista.seleccionarLeccion(null, resultado.valor);
+//				 this.vista.listaTareas.actualizar(modelo);
+//				 this.vista.listaTareas.cancelarEdicion();
+				 this.vista.actualizar(modelo);
+			 }
+			 else
+			 {
+				 this.vista.listaTareas.activarBotonGuardar();
+				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+			 }
+		 },this.vista.minutaId,modelo);
+	 }
+	 
+	 consultarResponsables()
+	 {
+		 this.vista.mostrarIndicador();
+		 var  reposiorio = new UsuariosRepositorio();
+		 reposiorio.consultar(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.responsables = resultado.valor;
 			 }
 			 else
 			 {
 				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
 			 }
-		 },this.vista.minutaId,modelo);
+		 });
+	 }
+	 
+	 consultarTareaPorLlaves()
+	 {
+		 this.vista.mostrarIndicador();
+		 var  reposiorio = new MinutasRepositorio();
+		 reposiorio.consultarTareaPorLlaves(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.tarea = resultado.valor;
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+			 }
+		 }, this.vista.llavesTarea);
 	 }
 	 
 }

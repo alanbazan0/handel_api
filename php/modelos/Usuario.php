@@ -27,6 +27,7 @@ class Usuario
     public $permisoCAVIH;
     public $perfilId;
     public $recursosHumanos;
+    public $numeroEmpleado;
     
 }
 

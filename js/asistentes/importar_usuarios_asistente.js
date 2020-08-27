@@ -313,21 +313,35 @@ class ImportarUsuariosAsistente
 		html+="<div class='form-group'>";
 		html+="<div>";
 		html+="<label class='control-label mb-1'>Empresa</label>";
-		html+="<select id='empresaIdOrigenSelect' name='empresaIdOrigenSelect' class='form-control'></select>";
+		html+="<select id='empresaIdOrigenSelect' name='empresaIdOrigenSelect' class='form-control'><option>Cargando...</option></select>";
 		html+="</div>";
 		html+="</div>";
 		
 		html+="<div class='form-group'>";
 		html+="<div>";
 		html+="<label class='control-label mb-1'>Sede</label>";
-		html+="<select id='sedeIdOrigenSelect' name='sedeIdOrigenSelect' class='form-control'></select>";
+		html+="<select id='sedeIdOrigenSelect' name='sedeIdOrigenSelect' class='form-control'><option>Cargando...</option></select>";
 		html+="</div>";
 		html+="</div>";
 		
 		html+="<div class='form-group'>";
 		html+="<div>";
 		html+="<label class='control-label mb-1'>Departamento</label>";
-		html+="<select id='departamentoIdOrigenSelect' name='departamentoIdOrigenSelect' class='form-control'></select>";
+		html+="<select id='departamentoIdOrigenSelect' name='departamentoIdOrigenSelect' class='form-control'><option>Cargando...</option></select>";
+		html+="</div>";
+		html+="</div>";
+		
+		html+="<div class='form-group'>";
+		html+="<div>";
+		html+="<label class='control-label mb-1'>Supervisor</label>";
+		html+="<select id='supervisor1IdOrigenSelect' name='supervisor1IdOrigenSelect' class='form-control'><option>Cargando...</option></select>";
+		html+="</div>";
+		html+="</div>";
+		
+		html+="<div class='form-group'>";
+		html+="<div>";
+		html+="<label class='control-label mb-1'>Perfil</label>";
+		html+="<select id='perfilIdOrigenSelect' name='perfilIdOrigenSelect' class='form-control'><option>Cargando...</option></select>";
 		html+="</div>";
 		html+="</div>";
 		
@@ -519,6 +533,12 @@ class ImportarUsuariosAsistente
 		
 		var sedeId=$("#sedeIdOrigenSelect").val();
 		var departamentoId=$("#departamentoIdOrigenSelect").val();
+		var supervisor1Id=$("#supervisor1IdOrigenSelect").val();
+		
+		var perfilId = $("#perfilIdOrigenSelect").val();
+		if(perfilId=="")
+			perfilId = empresa.perfilId;
+		
 		this._contexto.mostrarIndicador();
 		var _this = this;
 		var repositorio = new UsuariosRepositorio();
@@ -551,7 +571,7 @@ class ImportarUsuariosAsistente
 			}
 			else
 				_this._contexto.mostrarMensajeError("Error",resultado.mensajeError);
-		},empresaId, sedeId, departamentoId, empresa.perfilId, this.archivo);
+		},empresaId, sedeId, departamentoId, perfilId, supervisor1Id, this.archivo);
 
 	}
 	
@@ -614,11 +634,7 @@ class ImportarUsuariosAsistente
 	
 	consultar()
 	{
-//		this._contexto.cargando = true;
-//		var repositorio = new CamposRepositorio();
-//		repositorio.consultarDesplegado(this,this.consultarResultado, this.criteriosSeleccion, this._paginacion);
 		this.consultarEmpresas();
-		this.consultarDepartamentos();
 	}
 	
 	
@@ -647,16 +663,46 @@ class ImportarUsuariosAsistente
 		},null,false);
 	}
 	
+	consultarPerfiles()
+	{
+		this._contexto.cargandoOpciones("#perfilIdOrigenSelect");
+		var repositorio = new PerfilesRepositorio();
+		repositorio.consultar(this,function(resultado)
+		{
+			this._contexto.cargando = false;
+			if(resultado.mensajeError=="")
+			{
+				this.perfiles = resultado.valor;
+			}
+			else
+				this._contexto.mostrarMensajeError("Error",resultado.mensajeError);
+		},null,false);
+	}
+	
+	
 	consultarEmpresasResultado(resultado)
 	{
 		this._contexto.cargando = false;
 		if(resultado.mensajeError=="")
 		{
 			this.empresas = resultado.valor;
+			//this.cambiarEmpresa();
 		}
 		else
 			this._contexto.mostrarMensajeError("Error",resultado.mensajeError);
 	}
+	
+//	cambiarEmpresa()
+//	{
+//		this.cargandoOpciones("#sedeIdOrigenSelect");
+//		this.cargandoOpciones("#supervisor1OrigenSelect");
+//	
+//		this.consultarSedes();
+//		
+//		//this.consultarPuestos();
+//		this.consultarSupervisores();
+//		
+//	}
 	
 	
 	consultarSedesOrigen()
@@ -665,6 +711,17 @@ class ImportarUsuariosAsistente
 		var repositorio = new SedesRepositorio();
 		var  empresaId = $("#empresaIdOrigenSelect").val();
 		repositorio.consultarPorEmpresa(this,this.consultarSedesOrigenResultado,empresaId);
+	}
+	
+	consultarSupervisoresOrigen()
+	{
+		this._contexto.cargandoOpciones("#supervisor1IdOrigenSelect");
+		var repositorio = new UsuariosRepositorio();
+		var  empresaId = $("#empresaIdOrigenSelect").val();
+		repositorio.consultarSupervisoresPorEmpresa(this,function(resultado){
+			this.supervisoresOrigen = resultado.valor;
+		},empresaId);
+
 	}
 	
 	consultarSedesOrigenResultado(resultado)
@@ -708,6 +765,10 @@ class ImportarUsuariosAsistente
 		//this._contexto.cargarOpciones('#empresaIdDestinoSelect', registros, this.modo, this.modeloEdicion, 'empresaId',"");
 		
 		this.consultarSedesOrigen();
+		this.consultarSupervisoresOrigen();
+		this.consultarDepartamentos();
+		this.consultarPerfiles();
+
 		//this.consultarSedesDestino();
 	}
 	
@@ -722,11 +783,18 @@ class ImportarUsuariosAsistente
 		//this.consultarSedesDestino();
 	}
 	
+	set perfiles(registros)
+	{		
+		//this._contexto.cargarOpciones('#perfilIdOrigenSelect', registros);
+		this._contexto.cargarOpciones('#perfilIdOrigenSelect', registros, Modo.ALTA, null, 'perfilId',"");
+	}
+	
 	cambiarEmpresaOrigen()
 	{
 		var _this =$("#"+event.currentTarget.id).data("_this");
 		_this._contexto.cargandoOpciones("#sedeIdOrigenSelect");
 		_this.consultarSedesOrigen();
+		_this.consultarSupervisoresOrigen();
 	}
 	
 	cambiarEmpresaDestino()
@@ -740,6 +808,44 @@ class ImportarUsuariosAsistente
 	{		
 		this._contexto.cargarOpciones('#sedeIdOrigenSelect', registros);
 	}
+	
+	set supervisoresOrigen(registros)
+	{		
+		//this._contexto.cargarOpciones('#supervisor1IdOrigenSelect', registros);
+		this.cargarSupervisores('#supervisor1IdOrigenSelect', registros, Modo.ALTA, null, 'supervisor1Id',"");
+	}
+	
+	cargarSupervisores(select, registros, modo, modeloEdicion, campo, texto)
+	{
+		$(select).empty();
+		if(texto!=null)
+		{
+			if(texto=="")
+				$(select).append($('<option></option>').val("").html("-Seleccione"));
+			else 
+				$(select).append($('<option></option>').val("").html(texto));
+		}
+		$.each(registros, function(i, p) 
+		{
+		    $(select).append($('<option></option>').val(p.id).html(p.nombre + " " + p.apellido));
+		});
+		if(modo==Modo.CAMBIO && modeloEdicion!=null)
+		{
+			var id = modeloEdicion[campo];
+			$(select).val(id);
+			var selected = $(select +" option[value='"+id+"']");
+			if(selected.length==0)
+			{	
+				if(texto=="")
+				{
+					$(select).prop('selectedIndex',0);
+				}
+					
+			}
+			
+		}
+	}
+	
 	
 	set sedesDestino(registros)
 	{		

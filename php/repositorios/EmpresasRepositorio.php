@@ -36,6 +36,8 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
             $modelo->corporativoId=null;
         if($modelo->administradorId=="")
             $modelo->administradorId=null;
+        if($modelo->perfilId=="")
+            $modelo->perfilId=null;
         if($resultado->mensajeError=="")
         {
             $id = $resultado->valor;           
@@ -65,6 +67,8 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
             $modelo->corporativoId=null;
         if($modelo->administradorId=="")
             $modelo->administradorId=null;
+        if($modelo->perfilId=="")
+            $modelo->perfilId=null;
         $resultado = new Resultado();
         $consulta = " UPDATE empresas " .
                      "SET nombre = ?, " .
@@ -114,9 +118,24 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
         }
         if($usuario!=null)
         {
-//             if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
-//                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','valor'=>$usuario->empresaId]);
-            if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
+            if($usuario->recursosHumanos==1)
+            {
+                if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+                {
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'E','campo'=>'id','valor'=>$criteriosSeleccion->empresaId]);
+                }
+                else
+                {
+                    $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                    $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+                    if($resultado->correcto())
+                    {
+                        $empresasIds = implode(",", $resultado->valor);
+                        array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','operador'=>'IN','valor'=>$empresasIds]);
+                    }
+                }
+            }
+            else if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
             {
                 $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
                 $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
@@ -126,10 +145,7 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','operador'=>'IN','valor'=>$empresasIds]);
                 }
             }
-            else if($usuario->recursosHumanos==1)
-            {
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','operador'=>'=','valor'=>$usuario->empresaId]);
-            }
+            
         }
         
         $where = $this->where($filtros);

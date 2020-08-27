@@ -60,8 +60,12 @@ try
                 $resultado = $repositorio->actualizar($modelo) ;
             break;
             case 'consultar':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultar($criteriosSeleccion);               
+                $resultado = $repositorio->consultar($usuario,$criteriosSeleccion);               
             break;
             case 'consultarPorLlaves':
                 $llaves = json_decode(REQUEST('llaves'));

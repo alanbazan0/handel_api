@@ -34,21 +34,25 @@ class CapacitacionVista extends CatalogoVista
 		
 		this.crearVideo();
 	
+		
+		
 	
 	}
 	
 	crearVideo()
 	{
 		var _this = this;
-		var options = {};
+		var options = { controlBar: {
+	        CurrentTimeDisplay: true,
+	        DurationDisplay: true
+	    }};
 		this._player = videojs('video', options, function onPlayerReady() {
 			  videojs.log('Your player is ready!');
 			  
 			  $(".vjs-big-play-button").off('click',_this.clickPlay);
 			  $(".vjs-big-play-button").on('click',_this,_this.clickPlay);
 			  $(".vjs-progress-holder").hide();
-			  $(".vjs-remaining-time").hide();
-			 // this.play();
+			  //$(".vjs-remaining-time").hide();
 			 
 			  this.on('ended', function() 
 			  {
@@ -61,6 +65,16 @@ class CapacitacionVista extends CatalogoVista
 			    	var duracion = parseInt(myPlayer.duration());
 			    	_this.actualizarDuracionLeccion(duracion);
 			    });
+		  	 
+			    myPlayer.on("timeupdate", function(event) {
+			    	var remainingTime = myPlayer.remainingTime();
+			    	var minutes = Math.floor(remainingTime / 60);   
+			    	var seconds = Math.floor(remainingTime - minutes * 60);
+			    	var x = minutes;
+			    	var y = seconds < 10 ? "0" + seconds : seconds;
+			    	$(".vjs-remaining-time").html("-"+ x + ":" + y);
+				    });
+			    
 
 			    var currentTime = 0;
 
@@ -76,7 +90,6 @@ class CapacitacionVista extends CatalogoVista
 			      }
 			    });
 			    
-			   
 
 			    setInterval(function() {
 			      if (!myPlayer.paused()) {
@@ -87,6 +100,16 @@ class CapacitacionVista extends CatalogoVista
 			});
 		
 		$('.video-js').bind('contextmenu',function() { return false; });
+		
+		 $('.vjs-control-bar').css("display","none");
+		
+		$('.full-vid').hover(function() {
+			 $('.vjs-control-bar').attr("style","");
+	    },function() {
+	    	 $('.vjs-control-bar').css("display","none");
+	    });
+		
+		
 	}
 	
 	
@@ -519,71 +542,74 @@ class CapacitacionVista extends CatalogoVista
 	
 	mostrarLeccion(leccion)
 	{
-		$("#preguntasDiv").hide();
-		if(leccion.id!=this._leccionIdSeleccionada)
+		if(leccion!=null)
 		{
-			
-		
-			this.listaLecciones.seleccionar(leccion.id);
-			
-			$("#tituloLeccionLabel").html(leccion.titulo);
-			
-			var descripcion = leccion.descripcion;
-			if(descripcion!=null)
-				descripcion = descripcion.replace(/\r?\n/g, '<br />');
-			else
-				descripcion ="";
-			
-			$("#descripcionLeccionLabel").html(descripcion);
-			$("#tiempoEstimadoLeccionLabel").html("Esta lección y su cuestionario le tomará aproximadamente "+leccion.tiempoEstimado+ " minutos");
-			
-			
-			
-			 $("#ayudaVideo").html("");
-			this.listaPreguntas.mostrarPregunta();
-			
-			var _this = this;
-			
-			 if(leccion.video!=null)
-			 {
-				 $("#ayudaVideo").html("");
-				 this._player.show();
-				  _this.vsgLoadVideo(this._player,leccion.video);
-			 }
-			 else
-			 {
-				 //var html = "";
-				
-			    $("#ayudaVideo").html(this.textoAyudaVideo);
-				 this._player.hide();
-			 }
-		
-			this._leccionIdSeleccionada = leccion.id;
-			this._leccionSeleccionada = leccion;
-			
-			if(this.modo==Modo.VISTA_PREVIA)
+			$("#preguntasDiv").hide();
+			if(leccion.id!=this._leccionIdSeleccionada)
 			{
-//				if(leccion.terminado==1)
-//					 $(".vjs-big-play-button").hide();
-//				else
-//					 $(".vjs-big-play-button").show();
 				
-				$("#divBotonesPreguntas").html("");
-				this.consultarPreguntaAleatoria();
+			
+				this.listaLecciones.seleccionar(leccion.id);
 				
-			}
-			else
-			{
-				if(leccion.terminado==1)
-			    {
-					 var html = this.textoLeccionTerminada;
-					 $("#preguntasDiv").show();
-					 $("#divBotonesPreguntas").html(html);
-			    }
+				$("#tituloLeccionLabel").html(leccion.titulo);
+				
+				var descripcion = leccion.descripcion;
+				if(descripcion!=null)
+					descripcion = descripcion.replace(/\r?\n/g, '<br />');
 				else
-					$("#divBotonesPreguntas").html("");
-			}
+					descripcion ="";
+				
+				$("#descripcionLeccionLabel").html(descripcion);
+				$("#tiempoEstimadoLeccionLabel").html("Esta lección y su cuestionario le tomará aproximadamente "+leccion.tiempoEstimado+ " minutos");
+				
+				
+				
+				 $("#ayudaVideo").html("");
+				this.listaPreguntas.mostrarPregunta();
+				
+				var _this = this;
+				
+				 if(leccion.video!=null)
+				 {
+					 $("#ayudaVideo").html("");
+					 this._player.show();
+					  _this.vsgLoadVideo(this._player,leccion.video);
+				 }
+				 else
+				 {
+					 //var html = "";
+					
+				    $("#ayudaVideo").html(this.textoAyudaVideo);
+					 this._player.hide();
+				 }
 			
+				this._leccionIdSeleccionada = leccion.id;
+				this._leccionSeleccionada = leccion;
+				
+				if(this.modo==Modo.VISTA_PREVIA)
+				{
+	//				if(leccion.terminado==1)
+	//					 $(".vjs-big-play-button").hide();
+	//				else
+	//					 $(".vjs-big-play-button").show();
+					
+					$("#divBotonesPreguntas").html("");
+					this.consultarPreguntaAleatoria();
+					
+				}
+				else
+				{
+					if(leccion.terminado==1)
+				    {
+						 var html = this.textoLeccionTerminada;
+						 $("#preguntasDiv").show();
+						 $("#divBotonesPreguntas").html(html);
+				    }
+					else
+						$("#divBotonesPreguntas").html("");
+				}
+				
+			}
 		}
 	}
 	
@@ -639,8 +665,8 @@ class CapacitacionVista extends CatalogoVista
 			}
 			else
 			{
-				html+=this.textoLeccionTerminada;
 				this.listaLecciones.terminarLeccion(leccionId);
+				html+=this.textoLeccionTerminada;
 			}
 		 }
 		
@@ -650,11 +676,29 @@ class CapacitacionVista extends CatalogoVista
 	get textoLeccionTerminada()
 	{
 		//return "<span class='text-green' style='font-size:16px'>¡Lección completa! Nos vemos en la siguiente lección "+this.usuario.nombre+". ¡Buena suerte!</span>"
+		this._leccionSeleccionada =  this.getLeccionSinCompletar(this.modeloEdicion.lecciones);
+		var texto="";
+		if(this._leccionSeleccionada!=null)
+			texto = "lección";
+		else
+			texto = "capacitación";
+			
 		var html="";
 		html="<div class='text-center;' style='background-color:#154D3A;width:100%'>";
-		html+="<h3 style='padding:10px;color:white;font-size:17px;text-align:center'>¡Lección completa! Nos vemos en la siguiente lección "+this.usuario.nombre+". ¡Buena suerte!</h3>";
+		html+="<h3 style='padding:10px;color:white;font-size:17px;text-align:center'>¡Lección completa! Nos vemos en la siguiente "+ texto+" "+this.usuario.nombre+". ¡Buena suerte!</h3>";
+		html+="</div>";
+		html+="<div class='text-center;' style='width:100%'>";
+		html+="<button id='finalizarCapacitacionButton' type='button' class='btn btn-success'   style='float:right'  onclick='vista.salirFormulario();' ><i class='fas fa-undo'></i> Regresar al menú de capacitación</button>";
+		if(this._leccionSeleccionada!=null)
+			html+="<button id='siguienteLeccionButton' type='button' class='btn btn-primary'  style='float:right;margin-right:5px;' onclick='vista.siguienteLeccion();'><i class='fas fa-arrow-right'></i> Ir a la siguiente lección</button>";
 		html+="</div>";
 		return html;
+	}
+	
+	siguienteLeccion()
+	{
+		this._leccionSeleccionada =  this.getLeccionSinCompletar(this.modeloEdicion.lecciones);
+		this.mostrarLeccion(this._leccionSeleccionada);
 	}
 	
 	get textoAyudaVideo()

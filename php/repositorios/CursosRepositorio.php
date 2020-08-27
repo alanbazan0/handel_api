@@ -1710,16 +1710,34 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         $resultado = new Resultado();
        
         
-        $consulta = "SELECT 
-                        (
-                            SELECT count(*)	
-                            FROM cursos C
-                            WHERE  ? IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)
-                        )total,
+//         $consulta = "SELECT 
+//                         (
+//                             SELECT count(*)	
+//                             FROM cursos C
+//                             WHERE  ? IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id) AND publicado = 1
+//                         )total,
+//                         (
+//                             SELECT count(*)
+//                             FROM cursos C
+//                             WHERE C.id IN(SELECT curso_id 
+//                                         FROM usuarios_cursos UC
+//                                             INNER JOIN cursos C1 ON UC.curso_id = C1.id   
+//                                         WHERE UC.usuario_id = ? AND UC.terminado=1 AND C1.publicado = 1)
+//                         )terminados" ;
+        
+        $consulta = "SELECT
                         (
                             SELECT count(*)
                             FROM cursos C
-                            WHERE C.id IN(SELECT curso_id FROM usuarios_cursos UC WHERE UC.usuario_id = ? AND UC.terminado=1)
+                                INNER JOIN cursos_preguntas CPR ON CPR.curso_id = C.id
+                            WHERE  ? IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id) AND C.publicado = 1
+                        )total,
+                        (
+                           SELECT count(*)
+                            FROM usuarios_cursos_lecciones_preguntas P
+                            	INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
+                                INNER JOIN cursos C ON R.curso_id = C.id
+                            WHERE P.usuario_id = ? AND C.publicado = 1
                         )terminados" ;
         
         
@@ -1771,14 +1789,16 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                             SELECT count(*)
                             FROM cursos C
                                 INNER JOIN cursos_preguntas CPR ON CPR.curso_id = C.id 
-                            WHERE  ? IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)
+                            WHERE  ? IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)  AND C.publicado = 1
                         )total,
                         (
                            SELECT count(*)
                             FROM usuarios_cursos_lecciones_preguntas P
                             	INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
+                                INNER JOIN cursos C ON R.curso_id = C.id
                             WHERE P.usuario_id = ? 
                                 AND R.correcta=1
+                                AND C.publicado = 1
                         )correctas" ;
         
         
@@ -2157,7 +2177,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     {
         $resultado = new Resultado();
             $consulta = "UPDATE usuarios_cursos_lecciones 
-                SET fecha_final = NOW(), terminado = 1 
+                SET fecha_final = NOW(), terminado = 1,  fecha_modificacion = NOW()
                 WHERE usuario_id=? AND curso_id = ? AND leccion_id = ?";
             
             
@@ -2194,7 +2214,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     {
         $resultado = new Resultado();
         $consulta = "UPDATE usuarios_cursos
-                SET fecha_final = NOW(), terminado = 1
+                SET fecha_final = NOW(), terminado = 1, fecha_modificacion= NOW()
                 WHERE usuario_id=? AND curso_id = ?";
         
         
@@ -2226,6 +2246,44 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         
         return  $resultado;
     }
+    
+    public function actualizarCurso($usuarioId, $cursoId)
+    {
+        $resultado = new Resultado();
+        $consulta = "UPDATE usuarios_cursos
+                SET fecha_modificacion= NOW()
+                WHERE usuario_id=? AND curso_id = ?";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("ii",$usuarioId,$cursoId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__ . " Falló la ejecución update (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+            }
+            else
+            {
+                $resultado->mensajeError = __FUNCTION__ . " Falló el enlace de parámetros update";
+            }
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__ . " Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        }
+        
+        
+        return  $resultado;
+    }
+    
     
     public function guardarLeccionUsuario($usuario, $cursoId, $leccionId)
     {
@@ -2328,26 +2386,30 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 {
                     $sentencia->close();
                     
-                    $resultado = $this->calcularNumeroPreguntasRestantes($usuario->id,$cursoId,$leccionId);
+                    $resultado = $this->actualizarCurso($usuario->id,$cursoId);
                     if($resultado->correcto())
                     {
-                        $numeroPreguntasRestantes= $resultado->valor;
-                        if($numeroPreguntasRestantes==0)
+                        $resultado = $this->calcularNumeroPreguntasRestantes($usuario->id,$cursoId,$leccionId);
+                        if($resultado->correcto())
                         {
-                            $resultado = $this->terminarLeccion($usuario->id, $cursoId, $leccionId);
-                            if($resultado->correcto())
+                            $numeroPreguntasRestantes= $resultado->valor;
+                            if($numeroPreguntasRestantes==0)
                             {
-                                $resultado = $this->calcularNumeroLeccionesRestantes($usuario->id,$cursoId);
+                                $resultado = $this->terminarLeccion($usuario->id, $cursoId, $leccionId);
                                 if($resultado->correcto())
                                 {
-                                    $numeroLeccionesRestantes= $resultado->valor;
-                                    if($numeroLeccionesRestantes==0)
+                                    $resultado = $this->calcularNumeroLeccionesRestantes($usuario->id,$cursoId);
+                                    if($resultado->correcto())
                                     {
-                                        $resultado = $this->terminarCurso($usuario->id, $cursoId);
+                                        $numeroLeccionesRestantes= $resultado->valor;
+                                        if($numeroLeccionesRestantes==0)
+                                        {
+                                            $resultado = $this->terminarCurso($usuario->id, $cursoId);
+                                        }
                                     }
                                 }
+                                
                             }
-                            
                         }
                     }
                     
@@ -2629,6 +2691,13 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 {
                     $resultado->valor=true;
                     $sentencia->close();
+                    
+                    $resultado = $this->actualizarCurso($usuario->id,$cursoId);
+                    if($resultado->correcto())
+                    {
+                        
+                    }
+                    
                 }
                 else
                     $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
@@ -4025,10 +4094,10 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
               LEFT JOIN usuarios SU1 ON U.supervisor1_id = SU1.id
               LEFT JOIN usuarios SU2 ON U.supervisor2_id = SU2.id
               LEFT JOIN usuarios SU3 ON U.supervisor3_id = SU3.id
-             
-              LEFT JOIN perfiles PR ON PR.id = U.perfil_id ";
+              LEFT JOIN perfiles PR ON PR.id = U.perfil_id 
+        WHERE U.permiso_cavih = 1 ";
         
-        $consulta.= $this->where($filtros);
+        $consulta.= $this->and($filtros);
         
         $consulta.=")consulta ";
         

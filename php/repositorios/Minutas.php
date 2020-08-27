@@ -28,89 +28,105 @@ $conexion=null;
 try
 {
     $conexion = $administrador_conexion->abrir();
-    if($conexion)
+    session_start();
+    $usuario = null;
+    if(isset($_SESSION['usuario']))
+        $usuario = $_SESSION['usuario'];
+    if($usuario!=null)
     {
-        $accion = REQUEST('accion');
-        $repositorio = new MinutasRepositorio($conexion);
-        switch($accion)
+        if($conexion)
         {
-            case 'insertar':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $json = json_decode(REQUEST('modelo'));
-                $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Minuta());
-                $resultado = $repositorio->insertar($modelo,$usuario);
-            break;
-            case 'actualizar':
-                $json = json_decode(REQUEST('modelo'));
-                $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Minuta());
-                $resultado = $repositorio->actualizar($modelo) ;
-            break;
-            case 'consultar':
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultar($criteriosSeleccion);
-            break;
-            case 'consultarPorLlaves':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->consultarPorLlaves($llaves);
-            break;
-            case 'eliminar':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->eliminar($llaves);
-            break;
-            case 'actualizarValor':
-                $minutaId = REQUEST('minutaId');
-                $campo = REQUEST('campo');
-                $valor = REQUEST('valor');
-                $resultado = $repositorio->actualizarValor($minutaId, $campo,  $valor);
-            break;
-            case 'ordenarTareas':
-                $minutaId = REQUEST('minutaId');
-                $seleccion = REQUEST("seleccion");
-                $resultado = $repositorio->ordenarTareas($minutaId,$seleccion);
-            break;
-            
-            case 'actualizarValorTarea':
-                $minutaId = REQUEST('minutaId');
-                $tareaId = REQUEST('tareaId');
-                $campo = REQUEST('campo');
-                $valor = REQUEST('valor');
-                $resultado = $repositorio->actualizarValorTarea($minutaId, $tareaId, $campo,  $valor);
-            break;
-            case 'eliminarTarea':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->eliminarTarea($llaves);
-            break;
-            case 'insertarTarea':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $minutaId = REQUEST('minutaId');
-                $json = json_decode(REQUEST('modelo'));
-                $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Tarea());
-                $resultado = $repositorio->insertarTarea($minutaId,$modelo,$usuario);
-            break;
-            case 'actualizarTarea':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $minutaId = REQUEST('minutaId');
-                $json = json_decode(REQUEST('modelo'));
-                $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Tarea());
-                $resultado = $repositorio->actualizarTarea($minutaId,$modelo,$usuario);
-            break;
-            default:
-                $resultado->mensajeError = 'Acción no implementada';
-            break;
+            $accion = REQUEST('accion');
+            $repositorio = new MinutasRepositorio($conexion);
+            switch($accion)
+            {
+                case 'insertar':
+                  
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Minuta());
+                    $resultado = $repositorio->insertar($modelo,$usuario);
+                break;
+                case 'actualizar':
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Minuta());
+                    $resultado = $repositorio->actualizar($modelo) ;
+                break;
+                case 'consultar':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultar($criteriosSeleccion);
+                break;
+                case 'consultarTareasPendientes':
+                    $resultado = $repositorio->consultarTareasPendientes($usuario);
+                    break;
+                case 'consultarPorLlaves':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarPorLlaves($llaves);
+                break;
+                case 'consultarTareaPorLlaves':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarTareaPorLlaves($llaves);
+                break;
+                case 'eliminar':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->eliminar($llaves);
+                break;
+                case 'actualizarValor':
+                    $minutaId = REQUEST('minutaId');
+                    $campo = REQUEST('campo');
+                    $valor = REQUEST('valor');
+                    $resultado = $repositorio->actualizarValor($minutaId, $campo,  $valor);
+                break;
+                case 'ordenarTareas':
+                    $minutaId = REQUEST('minutaId');
+                    $seleccion = REQUEST("seleccion");
+                    $resultado = $repositorio->ordenarTareas($minutaId,$seleccion);
+                break;
+                
+                case 'actualizarValorTarea':
+                    $minutaId = REQUEST('minutaId');
+                    $tareaId = REQUEST('tareaId');
+                    $campo = REQUEST('campo');
+                    $valor = REQUEST('valor');
+                    $resultado = $repositorio->actualizarValorTarea($minutaId, $tareaId, $campo,  $valor);
+                break;
+                case 'eliminarTarea':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->eliminarTarea($llaves);
+                break;
+                case 'insertarTarea':
+    //                 session_start();
+    //                 $usuario = null;
+    //                 if(isset($_SESSION['usuario']))
+    //                     $usuario = $_SESSION['usuario'];
+                    $minutaId = REQUEST('minutaId');
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Tarea());
+                    $resultado = $repositorio->insertarTarea($minutaId,$modelo,$usuario);
+                break;
+                case 'actualizarTarea':
+    //                 session_start();
+    //                 $usuario = null;
+    //                 if(isset($_SESSION['usuario']))
+    //                     $usuario = $_SESSION['usuario'];
+                    $minutaId = REQUEST('minutaId');
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Tarea());
+                    $resultado = $repositorio->actualizarTarea($minutaId,$modelo,$usuario);
+                break;
+                default:
+                    $resultado->mensajeError = 'Acción no implementada';
+                break;
+            }
         }
+    }
+    else
+    {
+        $resultado->mensajeError = "La sesión caducó. Inicie sesión e intente de nuevo.";
+        $resultado->codigoError = "sesion_caducada";
     }
 }
 catch(Exception $e)

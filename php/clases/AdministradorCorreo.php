@@ -243,9 +243,9 @@ class AdministradorCorreo
     {
        // $usuarios = array();
         //array_push($usuarios,(object) ['nombreUsuario' => 'alanbazan@apps-handel.com','nombreCompleto' => 'Alan Bazán']);
+     
         
         $mensaje= file_get_contents('../plantillas_correo/tema_nuevo.html');
-        
         
         $caricatura = "https://api.apps-handel.com/images/caricatura/Bonus_Shapes_and_Backgounds-12.png";
         
@@ -256,6 +256,34 @@ class AdministradorCorreo
         
         return  $this->enviarCorreoUsuarios($tipo,$usuarios,$asuntoCorreo, $mensaje, $info);
     }
+    
+    public function enviarNotificacionTarea($usuario, $usuarios, $minuta, $tarea)
+    {
+        // $usuarios = array();
+        //array_push($usuarios,(object) ['nombreUsuario' => 'alanbazan@apps-handel.com','nombreCompleto' => 'Alan Bazán']);
+        
+        $nombreUsuario = $usuario->nombreCompleto;
+        $fotoPerfil = "https://api.apps-handel.com/" . $usuario->fotoPerfil;
+        $asunto  = $usuario->nombreCompleto . ": te asignó  una tarea: " . $tarea->titulo;
+        //  $asuntoCorreo = html_entity_decode($asunto);
+        
+        $asunto="=?UTF-8?B?".base64_encode($asunto)."?=";
+        
+        $tipo = "minuta" .$minuta->id ."tarea" . $tarea->id;
+        $info = "";
+        $mensaje= file_get_contents('../plantillas_correo/notificacion_tarea.html');
+        
+        
+     //   $caricatura = "https://api.apps-handel.com/images/caricatura/Bonus_Shapes_and_Backgounds-12.png";
+        
+        $mensaje=  str_replace("@nombreUsuario",$nombreUsuario,$mensaje);
+        $mensaje=  str_replace("@fotoPerfil",$fotoPerfil,$mensaje);
+        $mensaje=  str_replace("@nombreMinuta",$minuta->titulo,$mensaje);
+        $mensaje=  str_replace("@nombreTarea",$tarea->titulo,$mensaje);
+        
+        return  $this->enviarCorreoUsuarios($tipo,$usuarios,$asunto, $mensaje, $info, "SAHA: Tareas");
+    }
+    
     
 //     public function enviarNotificacionComentario($usuario, $usuarios, $evidencia, $comentario)
 //     {
@@ -303,7 +331,7 @@ class AdministradorCorreo
     }
     
     
-    public function enviarCorreoUsuarios($tipo,$usuarios, $asunto, $mensaje, $info)
+    public function enviarCorreoUsuarios($tipo,$usuarios, $asunto, $mensaje, $info, $de=null)
     {
         $resultado = new Resultado();
        
@@ -317,8 +345,10 @@ class AdministradorCorreo
                 $correos.=", ";
         }
         
+        if($de==null)
+            $de= "SAHA";
         
-        $cabecera = "From:  SAHA <noreply@apps-handel.com>\r\n";
+        $cabecera = "From:  $de <noreply@apps-handel.com>\r\n";
         $cabecera .= "Bcc: $correos\r\n";
         //$cabecera .= "MIME-Version: 1.0\r\n";
         $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";

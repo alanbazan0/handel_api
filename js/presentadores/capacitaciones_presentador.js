@@ -122,7 +122,8 @@ class CapacitacionesPresentador extends CatalogoPresentador
 			 if(resultado.mensajeError=="")
 			 {
 				 this.vista.mostrarMensaje("","Guardado.");
-				 this.vista.listaPreguntas.eliminarPregunta(preguntaId);
+				 this.vista.eliminarPreguntaLista(preguntaId);
+				 
 				 //TODO: consultar seccion
 				 //this.consultar();
 			 }
@@ -210,7 +211,8 @@ class CapacitacionesPresentador extends CatalogoPresentador
 			 if(resultado.mensajeError=="")
 			 {
 				 this.vista.mostrarMensaje("","Guardado.");
-				 this.vista.listaPreguntas.agregar(tipo,resultado.valor);
+				 this.vista.agregarPreguntaLista(tipo,resultado.valor);
+				
 			 }
 			 else
 			 {

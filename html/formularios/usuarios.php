@@ -49,6 +49,12 @@
 					</div>
 					<div class="form-group">
 						<div>
+							<label for="numeroEmpleadoInput" class="control-label mb-1">Número de empleado</label>
+							<input id="numeroEmpleadoInput" name="numeroEmpleadoInput" type="text" class="form-control">
+						</div>
+					</div>
+					<div class="form-group">
+						<div>
 							<label for="empresaSelect" class="control-label mb-1">Empresa</label>
 							<select name="empresaSelect" id="empresaSelect" class="form-control" onchange="vista.cambiarEmpresa();"></select>
 						</div>
@@ -136,7 +142,7 @@
     						</div>
     					</div>
     					<div class="form-group">
-    							<label class="control-label mb-1">Recursos Humanos</label> <label
+    							<label class="control-label mb-1">Coordinador CAVI</label> <label
     							class="switch switch-3d switch-success mr-3"> <input
     							id="recursosHumanosRadio" name="recursosHumanos" type="checkbox"
     							class="switch-input"> <span

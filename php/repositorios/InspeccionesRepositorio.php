@@ -9,7 +9,8 @@ include "../interfaces/IInspeccionesReporitorio.php";
 include "../modelos/Inspeccion.php";
 include "../modelos/Punto.php";
 include "../clases/TipoUsuario.php";
-include "RepositorioBase.php";
+require_once("RepositorioBase.php");
+require_once("UsuariosRepositorio.php");
 require_once("../clases/Resultado.php");
 
 class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRepositorio
@@ -245,7 +246,7 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             return $resultado;
     }
     
-    public function consultar($criteriosSeleccion)
+    public function consultar($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
         $registros = array();
@@ -257,6 +258,19 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             {
                 if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+                else
+                {
+                    if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
+                    {
+                        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                        $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+                        if($resultado->correcto())
+                        {
+                            $empresasIds = implode(",", $resultado->valor);
+                            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','operador'=>'IN','valor'=>$empresasIds]);
+                        }
+                    }
+                }
             }
             if(isset($criteriosSeleccion->sedeId))
             {
