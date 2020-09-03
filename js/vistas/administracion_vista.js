@@ -81,7 +81,7 @@ class AdministracionVista extends CatalogoVista
 		
 		
 		
-		this.tabla.columnas = [
+		var columnas = [
 			
 			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogo},
@@ -89,24 +89,29 @@ class AdministracionVista extends CatalogoVista
 			{longitud:200, 	titulo:"Apellido",   alias:"apellido", alineacion:"I",class: "desc" },
 			{longitud:200, 	titulo:"Nombre de usuario",   	alias:"nombreUsuario", alineacion:"I", classSpan:"block-email" }, 
 			{longitud:200, 	titulo:"Contraseña",   	alias:"contrasena", alineacion:"I", classSpan:"block-email" },
-			{longitud:100, 	titulo:"Número de empleado",   alias:"numeroEmpleado", alineacion:"I" },	
-			{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },	
-			{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" },	
-//			{longitud:100, 	titulo:"Puesto",   alias:"puestoNombre", alineacion:"I" },	
-			//{longitud:100, 	titulo:"Area",   alias:"areaNombre", alineacion:"I" },	
-			{longitud:100, 	titulo:"Departamento",   alias:"departamentoNombre", alineacion:"I" },	
-			{longitud:100, 	titulo:"Supervisor",   alias:"supervisor1Nombre", alineacion:"I" },	
-//			{longitud:100, 	titulo:"Supervisor 2",   alias:"supervisor2Nombre", alineacion:"I" },	
-//			{longitud:100, 	titulo:"Supervisor 3",   alias:"supervisor3Nombre", alineacion:"I" },	
-			//{longitud:100, 	titulo:"Tipo de usuario",   alias:"tipoUsuarioNombre", alineacion:"I" },
-			{longitud:200, 	titulo:"Ultimo acceso",   alias:"ultimoAcceso", alineacion:"I" },			
-			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
-			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
-			{longitud:100, 	titulo:"Perfil",   alias:"perfilNombre", alineacion:"I" }	
-			//{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
+			{longitud:100, 	titulo:"Número de empleado",   alias:"numeroEmpleado", alineacion:"I" }];
+		
+		//if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
+			columnas.push({longitud:200, 	titulo:"Tipo de usuario",   alias:"tipoUsuarioNombre", alineacion:"I" });	
+		
+		columnas.push({longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" });	
+		columnas.push({longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" });
+		//			{longitud:100, 	titulo:"Puesto",   alias:"puestoNombre", alineacion:"I" },	
+		//{longitud:100, 	titulo:"Area",   alias:"areaNombre", alineacion:"I" },	
+		columnas.push({longitud:100, 	titulo:"Departamento",   alias:"departamentoNombre", alineacion:"I" });	
+		columnas.push({longitud:100, 	titulo:"Supervisor",   alias:"supervisor1Nombre", alineacion:"I" });	
+		//			{longitud:100, 	titulo:"Supervisor 2",   alias:"supervisor2Nombre", alineacion:"I" },	
+		//			{longitud:100, 	titulo:"Supervisor 3",   alias:"supervisor3Nombre", alineacion:"I" },	
+		//{longitud:100, 	titulo:"Tipo de usuario",   alias:"tipoUsuarioNombre", alineacion:"I" },
+		columnas.push({longitud:200, 	titulo:"Ultimo acceso",   alias:"ultimoAcceso", alineacion:"I" });			
+		columnas.push({longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" });	
+		columnas.push({longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" });
+		columnas.push({longitud:100, 	titulo:"Perfil",   alias:"perfilNombre", alineacion:"I" });
+		//{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
 
 	
-		]
+		
+		this.tabla.columnas = columnas;
 		
 		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
 										"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
@@ -643,8 +648,12 @@ class AdministracionVista extends CatalogoVista
 			departamentoId: $('#departamentoSelectCriterio').val(),
 			perfilId: $('#perfilSelectCriterio').val(),
 			nombre:$('#nombreInputCriterio').val(),
-			tipoUsuarioId: TipoUsuario.CAPACITADO
+			
 		 }
+		 
+		 if(this.usuario.tipoUsuarioId!=TipoUsuario.ADMINISTRADOR)
+			 criteriosSeleccion.tipoUsuarioId = TipoUsuario.CAPACITADO;
+		 
 		 return criteriosSeleccion;
 	}	
 	

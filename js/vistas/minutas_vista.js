@@ -7,7 +7,31 @@ class MinutasVista extends CatalogoVista
 		this._urlFormulario = "html/formularios/minutas.php";
 		
 		this.listaTareas = new ListaTareas("listaTareas");
+		this._time = new Date().getTime();
+		
+
+		this._colores = [
+			"#cdd9c5",
+			"#e7d1c8",
+			"#d3e0e1",
+			"#dcdcd1",
+			"#ecede7",
+			"#9e927f",
+			"#bec3d9",
+			"#f3b885",
+			"#c8bec2",
+			"#a9e5e3",
+			"#b5bcc3",
+			"#c39297",
+			"#ffffff",
+			"#f8e9b2",
+			"#b8bdd2",
+			"#f7dfed",
+			"#d2cbc1",
+			"#dbdcde"];
 	}
+	
+	
 	
 	inicializar()
 	{
@@ -59,6 +83,11 @@ class MinutasVista extends CatalogoVista
 	    
 	    
 	    
+	}
+	
+	get time()
+	{
+		return this._time;
 	}
 	
 	mostrarTareaParametro()
@@ -316,7 +345,7 @@ class MinutasVista extends CatalogoVista
 				_this.ocultarIndicador();
 				$("body").append(html);
 				$("#modalAlta").on("hidden.bs.modal", function () {
-					//clearInterval(_this.cometariosIntervalId);
+					clearInterval(_this.cometariosIntervalId);
 					$("#modalAlta").remove();
 					_this._tareaEdicionFormulario = null;
 					if($("#minutasSection").is(":visible"))
@@ -329,8 +358,34 @@ class MinutasVista extends CatalogoVista
 					_this._llavesTarea = {minutaId : minutaId, tareaId: tareaId};
 					_this.consultarTareaPorLlaves();
 					
+					var fotoPerfil = HANDEL_API + "/" + _this.usuario.fotoPerfil+"?"+_this.time;
+					$("#fotoPerfilComentarioImg").attr("src",fotoPerfil);
+					
+					moment.locale('es') ;
+					
+					$("#enviarComentarioButton").click(function () 
+					{
+						var comentario = $("#comentarioInput").val().trim();
+						if(comentario!="")
+							_this.enviarComentario();
+					});
+					$("#comentarioInput").keypress(function(event){
+					    var keycode = (event.keyCode ? event.keyCode : event.which);
+					    if(keycode == '13')
+					    {
+					    	var comentario = $("#comentarioInput").val().trim();
+							if(comentario!="")
+								_this.enviarComentario();
+					    }
+					});
+					_this._comentarios = [];
+					_this.consultarComentarios();
+					_this.cometariosIntervalId = setInterval(_this.consultarComentariosAutomaticamente, 20000);
+					
 					
 				});
+				
+			
 			
 				
 				$("#modalAlta").modal({backdrop: 'static', keyboard: false});
@@ -340,6 +395,12 @@ class MinutasVista extends CatalogoVista
 		{
 			$("#modalAlta").modal({backdrop: 'static', keyboard: false});
 		}
+	}
+	
+	consultarComentariosAutomaticamente()
+	{
+		var _this  = $("body").data("_this");
+		vista.consultarComentarios();
 	}
 	
 	get llavesTarea()
@@ -375,11 +436,16 @@ class MinutasVista extends CatalogoVista
 		this._tareaEdicionFormulario.renderizar();
 		//html+=this.crearContenedor(registro);
 		//this.componentes.push(componente);
+		
+		
+		
 	}
 	
-	consultarComentariosTarea()
+	
+	
+	consultarComentarios()
 	{
-		
+		this.presentador.consultarComentarios();
 	}
 	
 	get minutaId()
@@ -600,6 +666,88 @@ class MinutasVista extends CatalogoVista
 	editarTarea(event,id)
 	{
 		this.listaTareas.editar(id);
+	}
+	
+	set comentarios(comentarios)
+	{
+		var numero="";
+		if(comentarios.length==1)
+			numero = "1 comentario";
+		else
+			numero = comentarios.length+" comentarios";
+		$("#numeroComentariosSpan").html(numero);
+		if(comentarios.length> this._comentarios.length)
+		{
+			this._comentarios= comentarios;
+			
+			var usuariosColores = this.asignarColoresUsuarios();
+		
+			var html="";
+			for(var i=0; i< comentarios.length; i++)
+			{
+				var fecha = new Date();
+				var comentario = comentarios[i];
+				var foto = HANDEL_API + "/" + comentario.fotoPerfil+"?"+this.time;
+
+				var color = this.buscarPorValor(usuariosColores,"usuarioId",comentario.usuarioId);
+				
+				
+				moment.locale('es') ;
+				var fechaComentario = moment(comentario.fecha);
+				
+				html+="<div class='box-comment' data-usuarioId='"+comentario.usuarioId+"' style='background-color:"+color.color+";padding:5px;'>" +
+				"<img class='img-circle img-sm' src='"+foto+"' alt='User Image'>" +
+				"<div class='comment-text'>" +
+					"<span class='username'> "+comentario.usuarioNombreCompleto+" <span class='text-muted pull-right'>"+fechaComentario.fromNow()+"</span>" +
+					"</span>" + comentario.comentario +
+				"</div>" +
+				"</div>";
+				
+			}
+			$("#comentariosDiv").html(html);
+		}	
+	}
+	
+
+	asignarColoresUsuarios()
+	{
+		var usuariosColores = []; 
+		var indiceColor = 0;
+		for(var i=0; i < this._comentarios.length; i++)
+		{
+			var comentario = this._comentarios[i];
+			var usuarioId = comentario.usuarioId;
+			var usuario = this.buscarPorValor(usuariosColores,"usuarioId",usuarioId);
+			if(usuario==null)
+			{
+				var color = "#ffffff";
+				if(indiceColor < this._colores.length)
+					color = this._colores[indiceColor];
+				usuariosColores.push({usuarioId: usuarioId, color: color});
+				indiceColor++;
+			}
+				
+		}
+		return usuariosColores;
+	}
+	
+	enviarComentario()
+	{
+		this.presentador.enviarComentario();
+		$("#comentarioInput").val("");
+	}
+	
+	
+	get modeloComentario()
+	{
+		var modelo =
+		{
+			minutaId: this._llavesTarea.minutaId,
+			tareaId : this._llavesTarea.tareaId,
+			usuarioId: this.usuario.id,
+			comentario: $("#comentarioInput").val()
+		};
+		return modelo;
 	}
 	
 }

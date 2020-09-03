@@ -25,7 +25,41 @@
  					<li id='formulario_tareaDiv'>
  					</li>
 				</ul>
+				<div class="box box-widget">
+					<div class="box-body">
+						<div id='mensajeDiv'>
+						
+						</div>
+						<span id="numeroComentariosSpan"  class="pull-right text-muted"></span>
+					</div>
+					<!-- /.box-body -->
+					<div id="comentariosDiv" class="box-footer box-comments">
+						
+					</div>
+					<!-- /.box-footer -->
+					<div class="box-footer">
+<!-- 						<form action="#" method="post"> -->
+							<img id="fotoPerfilComentarioImg" class="img-responsive img-circle img-sm"
+								src="" alt="Alt Text">
+							<!-- .img-push is used to add margin to elements next to floating images -->
+							<div class="img-push">
+<!-- 								<input  id="comentarioInput"  type="text" class="form-control input-sm" -->
+<!-- 									placeholder="Ingrese un comentario"> -->
+                                     <div class="input-group">
+                                    			<input id="comentarioInput" class="form-control" placeholder="Ingrese un comentario...">
+                                    	
+                                    		<div class="input-group-btn">
+                                    		  <button id="enviarComentarioButton" type="button" class="btn btn-success"><i class="fa fa-send"></i></button>
+                                    		</div>
+                                	 	 </div>
+							</div>
+<!-- 						</form> -->
+					</div>
+					<!-- /.box-footer -->
+				</div>
 			</div>
+			
+			
 			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
 <!-- 				<button id="guardarButton" type="submit" class="btn btn-primary" >Guardar</button> -->

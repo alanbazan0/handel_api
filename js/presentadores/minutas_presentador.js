@@ -202,4 +202,41 @@ class MinutasPresentador extends CatalogoPresentador
 		 }, this.vista.llavesTarea);
 	 }
 	 
+	 consultarComentarios()
+	 {
+		// this.vista.mostrarIndicador();
+		 var repositorio = new TareasComentariosRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+				//this.vista.ocultarIndicador();	
+				if(resultado.mensajeError=="")
+					this.vista.comentarios = resultado.valor;
+				else
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				
+		 },this.vista.llavesTarea);
+	 }
+	
+	 enviarComentario()
+	 {
+		 //this.vista.mostrarIndicador();
+		 var repositorio = new TareasComentariosRepositorio(this);		
+		 repositorio.insertar(this, function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.consultarComentarios();
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				
+		 },this.vista.modeloComentario);
+	 }
+	
+	 
+	
+	 
+	 
+	 
+	
+	 
 }

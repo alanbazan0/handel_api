@@ -121,9 +121,18 @@ try
                 $usuario = null;
                 if(isset($_SESSION['usuario']))
                     $usuario = $_SESSION['usuario'];
-                $opcional = REQUEST('opcional');
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultar($usuario,$criteriosSeleccion,$opcional);               
+                
+                if($usuario!=null)
+                {
+                    $opcional = REQUEST('opcional');
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultar($usuario,$criteriosSeleccion,$opcional);
+                }
+                else
+                {
+                    $resultado->mensajeError = "La sesión caducó. Inicie sesión e intente de nuevo.";
+                    $resultado->codigoError = 10;
+                }
             break;
             case 'consultarPorPermiso':
                 session_start();

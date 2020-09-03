@@ -1570,8 +1570,9 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                         $usuario->supervisor1Id= $supervisor1Id;
                         
                         $usuario->numeroEmpleado = $elt[0];
-                        $usuario->nombre = $elt[1];
-                        $usuario->apellido = $elt[2];
+                        $usuario->nombre =ucfirst(strtolower($elt[1]));
+                        $usuario->apellido = ucfirst(strtolower($elt[2]));
+                        
                     
                         $usuario->nombreUsuario = strtolower($usuario->nombre).".".strtolower($usuario->apellido). ".".$id ;
                         $usuario->contrasena = rand(1000,9999); 

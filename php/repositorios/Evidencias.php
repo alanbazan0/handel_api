@@ -193,7 +193,7 @@ try
     else 
     {
         $resultado->mensajeError = "La sesión caducó. Inicie sesión e intente de nuevo.";
-        $resultado->codigoError = "sesion_caducada";
+        $resultado->codigoError = 10;
     }
 }
 catch(Exception $e)
