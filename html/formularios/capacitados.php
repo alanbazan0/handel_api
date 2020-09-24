@@ -17,12 +17,12 @@
 			</div>
 			<div class="modal-body">
 				<form id="formulario" action="#"  method="post">
-<!-- 					<div class="form-group"> -->
-<!-- 						<div> -->
-<!-- 							<label for="tipoUsuarioSelect" class="control-label mb-1">Tipo de usuario</label>  -->
-<!-- 							<select name="tipoUsuarioSelect" id="tipoUsuarioSelect" class="form-control" data-toggle='tooltip' data-placement='bottom' title='' onchange="vista.cambiarTipoUsuario();"></select> -->
-<!-- 						</div> -->
-<!-- 					</div> -->
+					<div class="form-group" style='display:none'>
+						<div>
+							<label for="tipoUsuarioSelect" class="control-label mb-1">Tipo de usuario</label> 
+							<select name="tipoUsuarioSelect" id="tipoUsuarioSelect" class="form-control" data-toggle='tooltip' data-placement='bottom' title='' onchange="vista.cambiarTipoUsuario();"></select>
+						</div>
+					</div>
 					
 					
 					<div class="form-group">

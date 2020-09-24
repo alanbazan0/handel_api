@@ -7,7 +7,7 @@ use php\modelos\Resultado;
 
 include '../interfaces/ITareasComentariosRepositorio.php';
 include '../modelos/TareaComentario.php';
-include 'RepositorioBase.php';
+require_once('RepositorioBase.php');
 require_once('../clases/Resultado.php');
 
 class TareasComentariosRepositorio extends RepositorioBase implements ITareasComentariosRepositorio

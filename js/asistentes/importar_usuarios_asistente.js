@@ -35,10 +35,11 @@ class ImportarUsuariosAsistente
 		
 	}
 	
-	mostrar(contexto, funcion)
+	mostrar(contexto, funcion, empresaId)
 	{
 		this._contexto = contexto;
 		this._funcion = funcion;
+		this._empresaId = empresaId;
 		if($("#"+this._modal).length ==0)
 		{
 			this.renderizarModal();
@@ -131,6 +132,8 @@ class ImportarUsuariosAsistente
 		html+="</div>";
 		
 		$("#"+this._modal +"body").html(html);
+		
+		
 		
 		$("#empresaIdOrigenSelect").change(this.cambiarEmpresaOrigen);
 		$("#empresaIdOrigenSelect").data("_this",this);
@@ -762,6 +765,10 @@ class ImportarUsuariosAsistente
 		this.renderizarAsistente();
 		
 		this._contexto.cargarOpciones('#empresaIdOrigenSelect', registros);
+		
+		if(this._empresaId!="")
+			$("#empresaIdOrigenSelect").val(this._empresaId);
+		
 		//this._contexto.cargarOpciones('#empresaIdDestinoSelect', registros, this.modo, this.modeloEdicion, 'empresaId',"");
 		
 		this.consultarSedesOrigen();

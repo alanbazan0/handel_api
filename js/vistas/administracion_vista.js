@@ -67,7 +67,7 @@ class AdministracionVista extends CatalogoVista
 	iniciarImportarUsuarios()
 	{
 		this._importarUsuariosModal = new ImportarUsuariosAsistente();
-		this._importarUsuariosModal.mostrar(this, this.importarUsuarios);
+		this._importarUsuariosModal.mostrar(this, this.importarUsuarios, this.criteriosSeleccion.empresaId);
 	}
 	
 	importarUsuarios()
@@ -323,6 +323,7 @@ class AdministracionVista extends CatalogoVista
 			$('#contrasenaInput').val(contrasena);
 		}
 		//this.inicializarValidacionesFormularioInspector();
+		this.consultarTiposUsuario();
 		this.consultarEmpresas();
 		this.consultarDepartamentos();
 		this.consultarPerfiles();
@@ -410,17 +411,20 @@ class AdministracionVista extends CatalogoVista
 			 supervisor1Id:$('#supervisor1Select').val(),
 			 supervisor2Id:$('#supervisor2Select').val(),
 			 supervisor3Id:$('#supervisor3Select').val(),
-			 tipoUsuarioId: TipoUsuario.CAPACITADO,
-			 estatus:1,
-			 permisoSAHA:0,
-			 permisoSIVAH:0,
-		 	 permiso10y7:1,
+			 tipoUsuarioId:$('#tipoUsuarioSelect').val(),
+			 estatus:$('#estatusRadio').is(':checked')?1:0,
+			 permisoSAHA:$('#permisoSAHARadio').is(':checked')?1:0,
+			 permisoSIVAH:$('#permisoSIVAHRadio').is(':checked')?1:0,
+		 	 permiso10y7:$('#permiso10y7Radio').is(':checked')?1:0,
+		 	 permisoCAVIH:$('#permisoCAVIHRadio').is(':checked')?1:0,
 		 	 perfilId:$('#perfilSelect').val(),
 			 recursosHumanos:$('#recursosHumanosRadio').is(':checked')?1:0,
 		 	 numeroEmpleado:$('#numeroEmpleadoInput').val(),
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
+		 else
+			 modelo.tipoUsuarioId= TipoUsuario.CAPACITADO;
 		 return modelo;
 	 }
 	 

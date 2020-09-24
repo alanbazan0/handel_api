@@ -526,6 +526,9 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
     {
         $filtros = array();
         
+        if($usuario!=null)
+        {
+        
         if($usuario->recursosHumanos==1)
         {
             if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
@@ -598,6 +601,14 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                     }
                     
                 break;
+            }
+        }
+        }
+        else
+        {
+            if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+            {
+                array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
             }
         }
         return $filtros;
@@ -1540,6 +1551,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
     public function importar($empresaId, $sedeId, $departamentoId,$perfilId,$supervisor1Id, $carpeta, $nombreArchivo)
     {
         $resultado = new Resultado();
+        ini_set('max_execution_time', 300);
         $this->conexion->autocommit(FALSE);
         
         if($supervisor1Id=="")
@@ -1570,11 +1582,26 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                         $usuario->supervisor1Id= $supervisor1Id;
                         
                         $usuario->numeroEmpleado = $elt[0];
-                        $usuario->nombre =ucfirst(strtolower($elt[1]));
-                        $usuario->apellido = ucfirst(strtolower($elt[2]));
                         
+                        $usuario->nombre = mb_convert_case($elt[1], MB_CASE_TITLE, "UTF-8");
+                        $usuario->apellido = mb_convert_case($elt[2], MB_CASE_TITLE, "UTF-8");
+                        
+                        $nombres = explode(' ',trim($this->quitarTildes($usuario->nombre)));
+                        $nombre ="";
+                        if(count($nombres)>0)
+                        {
+                            $nombre = strtolower($nombres[0]);
+                            $nombre = $nombre[0];
+                        }
+                        
+                        $apellidos = explode(' ',trim($this->quitarTildes($usuario->apellido)));
+                        $apellido ="";
+                        if(count($apellidos)>0)
+                        {
+                            $apellido = strtolower($apellidos[0]);
+                        }
                     
-                        $usuario->nombreUsuario = strtolower($usuario->nombre).".".strtolower($usuario->apellido). ".".$id ;
+                        $usuario->nombreUsuario = $nombre.$apellido.$id ;
                         $usuario->contrasena = rand(1000,9999); 
                         $usuario->tipoUsuarioId = \TipoUsuario::CAPACITADO;
                         $usuario->estatus = 1;
@@ -1618,6 +1645,15 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             $this->conexion->rollback();
             
         return $resultado;    
+    }
+    
+  
+    function quitarTildes($cadena) {
+        //$cadena = utf8_decode($cadena);
+        $no_permitidas= array ("á","é","í","ó","ú","Á","É","Í","Ó","Ú","ñ","À","Ã","Ì","Ò","Ù","Ã™","Ã ","Ã¨","Ã¬","Ã²","Ã¹","ç","Ç","Ã¢","ê","Ã®","Ã´","Ã»","Ã‚","ÃŠ","ÃŽ","Ã”","Ã›","ü","Ã¶","Ã–","Ã¯","Ã¤","«","Ò","Ã","Ã„","Ã‹");
+        $permitidas= array ("a","e","i","o","u","A","E","I","O","U","n","N","A","E","I","O","U","a","e","i","o","u","c","C","a","e","i","o","u","A","E","I","O","U","u","o","O","i","a","e","U","I","A","E");
+        $texto = str_replace($no_permitidas, $permitidas ,$cadena);
+        return $texto;
     }
     
 }

@@ -1009,6 +1009,64 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         return $resultado;
     }
     
+    public function consultarUsuariosConTareas()
+    {
+        $resultado = new Resultado();
+        $usuarios = array();
+        
+        $consulta = "SELECT id, nombre, apellido, nombre_usuario
+                    FROM usuarios
+                    WHERE id IN(SELECT usuario_id
+                    FROM minutas_tareas_responsables
+                    )";
+        
+            
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            //if($sentencia->bind_param("ii",$minutaId,$tarea->id))
+            //{
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $nombre, $apellido, $nombreUsuario))
+                    {
+                        
+                        while($sentencia->fetch())
+                        {
+                            $usuario= (object) [
+                                'id' =>  $id,
+                                'nombre' => $nombre,
+                                'apellido' => $apellido,
+                                'nombreUsuario' => $nombreUsuario
+                            ];
+                            
+                            
+                            $usuario->nombreCompleto = $usuario->nombre . " " . $usuario->apellido;
+                            //                             $usuario->fotoPerfil =  "../fotos/usuario". $usuario->id .".jpg";
+                            //                             if(file_exists($usuario->fotoPerfil))
+                            //                                 $usuario->fotoPerfil =  "php/fotos/usuario". $usuario->id .".jpg";
+                            //                             else
+                            //                                 $usuario->fotoPerfil =  "php/fotos/default.jpg";
+                                
+                            array_push($usuarios,$usuario);
+                        }
+                        
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+//         }
+//         else
+//             $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+       
+        $resultado->valor = $usuarios;
+        return $resultado;
+    }
+    
     public function consultarUsuariosNoAsignados($minutaId,$tarea)
     {
         $resultado = new Resultado();

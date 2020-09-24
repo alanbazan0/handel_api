@@ -244,10 +244,10 @@ function getAsunto($dia)
             $asunto = "A dos semanas del cierre";
             break;
         case 21:
-            $asunto = "!Quedan seis días!";
+            $asunto = "¡Quedan seis días!";
             break;
         case 27:
-             $asunto = "!Último día para subir evidencias a SAHA!";
+             $asunto = "¡Último día para subir evidencias a SAHA!";
             break;
         case 28:
             $asunto = "¡El reporte del mes de SAHA está listo! ";
@@ -1057,7 +1057,8 @@ function mensajeLog($archivo,$mensaje)
 function guardarEnvio($usuario, $asunto, $mensaje)
 {
     $carpeta = "envios/".date("j.n.Y")."/";
-    @mkdir($carpeta);
+    if(!file_exists($carpeta))
+        @mkdir($carpeta);
     
  //       $archivo = $carpeta . $usuario->nombreUsuario
     file_put_contents($carpeta.$usuario->nombreUsuario.".html",  $mensaje , FILE_TEXT);
