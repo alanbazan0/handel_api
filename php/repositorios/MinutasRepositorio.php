@@ -417,6 +417,90 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             return $resultado;
     }
     
+    public function consultarTareasUsuario($usuarioId)
+    {
+        $resultado = new Resultado();
+        $tareas = array();
+        $consulta = "SELECT T.minuta_id, M.titulo, T.id, RTRIM(T.titulo) titulo, IFNULL(DATE_FORMAT(T.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, IFNULL(DATE_FORMAT(T.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion,
+            IFNULL(DATE_FORMAT(T.fecha_compromiso,'%d/%m/%Y'),'') as fecha_compromiso,
+            IFNULL(DATE_FORMAT(T.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, T.terminada, T.usuario_id, U.nombre, U.apellido,
+            CASE WHEN NOW() > fecha_compromiso THEN 1 ELSE 0 END vencida  
+            FROM minutas_tareas T
+                INNER JOIN usuarios U ON U.id = T.usuario_id
+                INNER JOIN minutas M ON M.id = T.minuta_id
+             WHERE ? IN (SELECT MTR.usuario_id FROM minutas_tareas_responsables MTR WHERE MTR.minuta_id = T.minuta_id AND MTR.tarea_id = T.id ) 
+            ORDER BY T.terminada desc, vencida, orden";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$usuarioId))
+            {
+                if($sentencia->execute())
+                {
+                    //$valores = array();
+                    if ($sentencia->bind_result($minutaId, $minutaTitulo,$id, $titulo, $fechaAlta, $fechaModificacion, $fechaCompromiso, $fechaFinalizacion, $terminada, $usuarioId, $usuarioNombre, $usuarioApellido, $vencida))
+                    //if ($sentencia->bind_result($valores))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $tarea= (object) [
+                                'minutaId' =>  $minutaId,
+                                'minutaTitulo' =>  $minutaTitulo,
+                                'id' =>  $id,
+                                'titulo' => $titulo,
+                                'fechaAlta' => $fechaAlta,
+                                'fechaModificacion' => $fechaModificacion,
+                                'fechaCompromiso' => $fechaCompromiso,
+                                'fechaFinalizacion' => $fechaFinalizacion,
+                                'terminada' => $terminada,
+                                'usuarioId' => $usuarioId,
+                                'usuarioNombre' => $usuarioNombre,
+                                'usuarioApellido' => $usuarioApellido,
+                                'vencida' => $vencida
+                            ];
+                            
+                            $tarea->usuarioNombreCompleto = $tarea->usuarioNombre . " " . $tarea->usuarioApellido;
+                            $tarea->fotoPerfil =  "../fotos/usuario". $tarea->usuarioId .".jpg";
+                            if(file_exists($tarea->fotoPerfil))
+                                $tarea->fotoPerfil =  "php/fotos/usuario". $tarea->usuarioId .".jpg";
+                                else
+                                    $tarea->fotoPerfil =  "php/fotos/default.jpg";
+                                    
+                                    array_push($tareas,$tarea);
+                        }
+                        $resultado->valor = $tareas;
+                        
+                        $sentencia->close();
+                        
+                        for($i=0; $i < count($tareas);$i++)
+                        {
+                            $tarea = $tareas[$i];
+                            $resultadoCategorias = $this->consultarResponsablesTarea($minutaId,$tarea->id);
+                            if($resultadoCategorias->correcto())
+                            {
+                                $tarea->responsables = $resultadoCategorias->valor;
+                            }
+                            else
+                            {
+                                $resultado->mensajeError = $resultadoCategorias->mensajeError;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
     public function consultarTareasPendientes($usuario)
     {
         $resultado = new Resultado();

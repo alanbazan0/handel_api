@@ -2393,7 +2393,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                         if($resultado->correcto())
                         {
                             $numeroPreguntasRestantes= $resultado->valor;
-                            if($numeroPreguntasRestantes==0)
+                            if($numeroPreguntasRestantes<=0)
                             {
                                 $resultado = $this->terminarLeccion($usuario->id, $cursoId, $leccionId);
                                 if($resultado->correcto())
@@ -2402,7 +2402,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                                     if($resultado->correcto())
                                     {
                                         $numeroLeccionesRestantes= $resultado->valor;
-                                        if($numeroLeccionesRestantes==0)
+                                        if($numeroLeccionesRestantes<=0)
                                         {
                                             $resultado = $this->terminarCurso($usuario->id, $cursoId);
                                         }

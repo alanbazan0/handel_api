@@ -99,12 +99,24 @@ class MinutasVista extends CatalogoVista
 	
 	get minutaIdParametro()
 	{
-		return $("body").attr("data-minutaId");
+		var id = $("body").attr("data-id");
+		var elementos = id.split("_");
+		if(elementos.length==2)
+		{
+			return elementos[0];
+		}
+		return 0;
 	}
 	
 	get tareaIdParametro()
 	{
-		return $("body").attr("data-tareaId");
+		var id = $("body").attr("data-id");
+		var elementos = id.split("_");
+		if(elementos.length==2)
+		{
+			return elementos[1];
+		}
+		return 0;
 	}
 	
 	

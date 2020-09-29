@@ -273,16 +273,65 @@ function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,MinutasRep
                 <br>";
     
 
-//     $contenido.="<div style='text-align:center;width:100%'>";"
-//                 <div style='text-align:left; display: inline-block; width:90%'>";
+    $contenido.="<div style='text-align:left;width:100%;background-color:#e6e7e8'>
+                <div style='text-align:left; display: inline-block; width:90%'>";
     
-//     $contenido .= "<br>Agradecemos tu colaboración para tener el mejor desempeño de la compañía con la certiﬁcación.";
-//     $contenido.= "<br><br><label>El mes anterior tu cumplimiento de evidencias fue $porcentajeCumplimiento%</label>";
-//     $contenido.= getCaricatura("https://api.apps-handel.com/images/caricatura/Little_Business_Girl-03.png",100);
-//     $contenido.= "<br><br>PD<br><label style=' font-style: italic;'>No olvides que puedes utilizar las apps de IOS y Android para facilitar la subida de tus evidencias.</label>";
-//     $contenido .= "</div>
-//                     </div>";
-//     break;
+    $contenido .= "<br><span style='font-weight:bold; text-decoration: underline;'>Tus tareas:</span>";
+    
+    
+    $resultado = $minutasRepositorio->consultarTareasUsuario($usuario->id);
+    if($resultado->correcto())
+    {
+       $tareas = $resultado->valor;
+       if($tareas!=null)
+       {
+           $contenido .= "<br>";
+           for ($i = 0; $i < count($tareas); $i++) 
+           {
+               $tarea = $tareas[$i];
+               $url = 'https://saha.apps-handel.com/minutas.php?id='.$tarea->minutaId.'_'.$tarea->id;
+               if($tarea->terminada==1)
+               {
+                   $contenido .= "<br>
+                                    <div style=' text-decoration:line-through;color: gray'>
+                                    <span style='font-weight:bold;'>$tarea->titulo</span> - <span style=''>$tarea->minutaTitulo</span> - 
+                                    <span>Completada el $tarea->fechaFinalizacion </span> -  
+                                    <a href='$url' target='_blank' style='color: gray;'>ver tarea</a>
+                                    </div>";
+                   $contenido .= "<br>";
+               }
+               else 
+               {
+                   if($tarea->vencida==1)
+                   {
+                       $contenido .= "<br>
+                                        <div style='color: red;'>
+                                        <span style='font-weight:bold;'>$tarea->titulo</span> - <span style=''>$tarea->minutaTitulo</span> -
+                                        <span>Venció el $tarea->fechaCompromiso </span> -
+                                        <a href='$url' target='_blank' style='color: red;'>ver tarea</a>
+                                        </div>";
+                       $contenido .= "<br>";
+                   }
+                   else
+                   {
+                       $contenido .= "<br>
+                                        <div>
+                                        <span style='font-weight:bold;'>$tarea->titulo</span> - <span style=''>$tarea->minutaTitulo</span> -
+                                        <span>Vence el $tarea->fechaCompromiso </span> -
+                                        <a href='$url' target='_blank'>ver tarea</a>
+                                        </div>";
+                       $contenido .= "<br>";
+                   }
+               }
+               
+           }
+       }
+    }
+    else
+        $contenido .= $resultado->mensajeError;
+    
+    $contenido .= "</div>
+                    </div>";
 
     
     return $contenido;   

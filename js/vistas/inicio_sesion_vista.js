@@ -145,7 +145,9 @@ class InicioSesionVista extends Vista
 	{
 		var url = "index.php"
 		if(this.url!="" && this.url!=undefined)
+		{
 			url = this.url;
+		}
 		
 		var submitForm = this.getNewSubmitForm(url);
 		this.createNewFormElement(submitForm, "usuario", JSON.stringify(usuario));	 
