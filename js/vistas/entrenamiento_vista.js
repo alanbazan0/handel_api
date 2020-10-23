@@ -1215,7 +1215,7 @@ class EntrenamientoVista extends CatalogoVista
 	set avance(avance)
 	{
 		$("#avanceIndicadorValor").html(avance.terminados+"/"+avance.total);
-		$("#avanceIndicadorProgreso").width(avance.porcentaje);
+		$("#avanceIndicadorProgreso").width(avance.porcentaje+"%");
 		$("#avanceIndicadorDescripcion").html(avance.porcentaje+"%");
 	}
 	

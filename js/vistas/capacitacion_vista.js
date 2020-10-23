@@ -49,8 +49,8 @@ class CapacitacionVista extends CatalogoVista
 		this._player = videojs('video', options, function onPlayerReady() {
 			  videojs.log('Your player is ready!');
 			  
-			  $(".vjs-big-play-button").off('click',_this.clickPlay);
-			  $(".vjs-big-play-button").on('click',_this,_this.clickPlay);
+//			  $(".vjs-big-play-button").off('click',_this.clickPlay);
+//			  $(".vjs-big-play-button").on('click',_this,_this.clickPlay);
 			  $(".vjs-progress-holder").hide();
 			  //$(".vjs-remaining-time").hide();
 			 
@@ -60,10 +60,15 @@ class CapacitacionVista extends CatalogoVista
 			  });
 			  
 			  	var myPlayer = this;
+			 
+//			myPlayer.on('play',function(event){ 
+//				_this.guardarLeccionUsuario();
+//			});
 			  	
 		  	 myPlayer.on("loadedmetadata", function(event) {
 			    	var duracion = parseInt(myPlayer.duration());
-			    	_this.actualizarDuracionLeccion(duracion);
+			    	//_this.actualizarDuracionLeccion(duracion);
+			    	_this.guardarLeccionUsuario(duracion);
 			    });
 		  	 
 			    myPlayer.on("timeupdate", function(event) {
@@ -74,21 +79,24 @@ class CapacitacionVista extends CatalogoVista
 			    	var y = seconds < 10 ? "0" + seconds : seconds;
 			    	$(".vjs-remaining-time").html("-"+ x + ":" + y);
 				    });
-			    
 
-			    var currentTime = 0;
 
-			    myPlayer.on("seeking", function(event) {
-			      if (currentTime != myPlayer.currentTime()) {
-			        myPlayer.currentTime(currentTime);
-			      }
-			    });
-
-			    myPlayer.on("seeked", function(event) {
-			      if (currentTime != myPlayer.currentTime()) {
-			        myPlayer.currentTime(currentTime);
-			      }
-			    });
+			    if(!_this.seeking)
+			   {
+				    var currentTime = 0;
+	
+				    myPlayer.on("seeking", function(event) {
+				      if (currentTime != myPlayer.currentTime()) {
+				        myPlayer.currentTime(currentTime);
+				      }
+				    });
+	
+				    myPlayer.on("seeked", function(event) {
+				      if (currentTime != myPlayer.currentTime()) {
+				        myPlayer.currentTime(currentTime);
+				      }
+				    });
+			   }
 			    
 
 			    setInterval(function() {
@@ -619,11 +627,17 @@ class CapacitacionVista extends CatalogoVista
 		 event.data.guardarLeccionUsuario();
 	}
 	
-	guardarLeccionUsuario()
+	guardarLeccionUsuario(duracion)
 	{
 		if(this.modo!=Modo.VISTA_PREVIA)
-			this.presentador.guardarLeccionUsuario();
+			this.presentador.guardarLeccionUsuario(this._leccionIdSeleccionada,duracion);
 	}
+	
+	actualizarDuracionLeccion(duracion)
+	{
+		this.presentador.actualizarDuracionLeccion(this._leccionIdSeleccionada,duracion);
+	}
+
 	
 	consultarPreguntaAleatoria()
 	{
@@ -848,7 +862,11 @@ class CapacitacionVista extends CatalogoVista
 		}
 	}
 	
-	
+	get seeking()
+	{
+		return $("body").attr("data-seeking")=="true";
+		
+	}
 	
 	
 }

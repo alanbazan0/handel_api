@@ -70,7 +70,9 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 			{longitud:100, 	titulo:"Departamento",   alias:"departamentoNombre", alineacion:"I" },	
 			//{longitud:100, 	titulo:"Capacitación",   alias:"capacitacion", alineacion:"I", itemRenderer: this.rendererCapacitacion },
 			
-			{longitud:100, 	titulo:"Aprovechamiento",   alias:"porcentaje", alineacion:"I",itemRenderer: this.rendererPorcentaje },
+			{longitud:100, 	titulo:"Aprovechamiento",   alias:"porcentaje", alineacion:"C",itemRenderer: this.rendererPorcentaje },
+			{longitud:100, 	titulo:"Preguntas correctas",   alias:"correctas", alineacion:"C"},
+			{longitud:100, 	titulo:"Total de preguntas",   alias:"total", alineacion:"C" },
 //			{longitud:100, 	titulo:"Supervisor 1",   alias:"supervisor1Nombre", alineacion:"I" },	
 //			{longitud:100, 	titulo:"Supervisor 2",   alias:"supervisor2Nombre", alineacion:"I" },	
 //			{longitud:100, 	titulo:"Supervisor 3",   alias:"supervisor3Nombre", alineacion:"I" },	
@@ -222,7 +224,8 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 			{
 				label = "text-green";
 			}
-			return "<span style='font-weight:bold' class='"+label+"'>"+porcentajeCumplimiento+"%</span>";
+			var preguntas = renglon.correctas + "/" + renglon.total;
+			return "<span data-toggle='tooltip' data-placemen='bottom' title='"+preguntas+"' style='font-weight:bold' class='"+label+"'>"+porcentajeCumplimiento+"%</span>";
 		//}
 		return "";
 	}

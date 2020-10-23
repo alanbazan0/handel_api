@@ -161,7 +161,8 @@ try
                     $usuario = $_SESSION['usuario'];
                 $cursoId = REQUEST('cursoId');
                 $leccionId = REQUEST('leccionId');
-                $resultado = $repositorio->guardarLeccionUsuario($usuario, $cursoId, $leccionId);
+                $duracion = REQUEST('duracion');
+                $resultado = $repositorio->guardarLeccionUsuario($usuario, $cursoId, $leccionId,$duracion);
             break;
             case 'guardarPreguntaUsuario':
                 session_start();

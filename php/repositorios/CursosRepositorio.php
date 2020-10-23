@@ -4,14 +4,15 @@ namespace php\repositorios;
 use php\interfaces\ICursosRepositorio;
 use php\modelos\Curso;
 use php\modelos\Resultado;
-use php\clases\AdministradorConexion;
 use php\clases\Token;
+use php\clases\Logger;
 
 include "../interfaces/ICursosRepositorio.php";
 include "../modelos/Curso.php";
 include "RepositorioBase.php";
 require_once("../clases/Resultado.php");
 require_once("../clases/Token.php");
+require_once("../clases/Logger.php");
 require_once("UsuariosRepositorio.php");
 require_once('../clases/AdministradorConexion.php');
 
@@ -1784,28 +1785,51 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         $resultado = new Resultado();
         
         
+//         $consulta = "SELECT
+//                         (
+//                             SELECT count(*)
+//                             FROM cursos C
+//                                 INNER JOIN cursos_preguntas CPR ON CPR.curso_id = C.id 
+//                             WHERE  ? IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)  AND C.publicado = 1
+//                         )total,
+//                         (
+//                            SELECT count(*)
+//                             FROM usuarios_cursos_lecciones_preguntas P
+//                             	INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
+//                                 INNER JOIN cursos C ON R.curso_id = C.id
+//                             WHERE P.usuario_id = ? 
+//                                 AND R.correcta=1
+//                                 AND C.publicado = 1
+//                         )correctas" ;
+        
+        
         $consulta = "SELECT
                         (
-                            SELECT count(*)
-                            FROM cursos C
-                                INNER JOIN cursos_preguntas CPR ON CPR.curso_id = C.id 
-                            WHERE  ? IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)  AND C.publicado = 1
+                        	SELECT count(*)
+                        	FROM cursos_preguntas CPR 
+                        		INNER JOIN cursos C ON CPR.curso_id = C.id 
+                                INNER JOIN usuarios_cursos UC ON UC.curso_id = C.id AND UC.usuario_id= ?
+                        	WHERE C.publicado = 1
+                        		AND UC.terminado = 1
                         )total,
                         (
                            SELECT count(*)
-                            FROM usuarios_cursos_lecciones_preguntas P
-                            	INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
-                                INNER JOIN cursos C ON R.curso_id = C.id
-                            WHERE P.usuario_id = ? 
-                                AND R.correcta=1
-                                AND C.publicado = 1
+                        	FROM usuarios_cursos_lecciones_preguntas P
+                        		INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
+                        		INNER JOIN cursos C ON R.curso_id = C.id
+                                INNER JOIN usuarios_cursos UC ON UC.curso_id = C.id AND UC.usuario_id= P.usuario_id
+                        	WHERE P.usuario_id = ? 
+                        		AND R.correcta=1
+                        		AND C.publicado = 1
+                                AND UC.terminado = 1 
+                                
                         )correctas" ;
         
         
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("ii",  $usuario->perfilId, $usuario->id))
+            if($sentencia->bind_param("ii",$usuario->id, $usuario->id))
             {
                 if($sentencia->execute())
                 {
@@ -2285,7 +2309,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     }
     
     
-    public function guardarLeccionUsuario($usuario, $cursoId, $leccionId)
+    public function guardarLeccionUsuario($usuario, $cursoId, $leccionId, $duracion)
     {
         $resultado = new Resultado();
         $this->conexion->autocommit(FALSE);
@@ -2294,14 +2318,15 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         if($resultado->correcto())
         {
 
-            $consulta = "UPDATE usuarios_cursos_lecciones " .
-                "SET fecha_modificacion = NOW() ".
-                "WHERE usuario_id=? AND curso_id = ? AND leccion_id = ?";
+            $consulta = "UPDATE usuarios_cursos_lecciones 
+                SET fecha_modificacion = NOW(),
+                     duracion = ? 
+                WHERE usuario_id=? AND curso_id = ? AND leccion_id = ?";
             
             
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param("iii",$usuario->id,$cursoId, $leccionId))
+                if($sentencia->bind_param("siii",$duracion,$usuario->id,$cursoId, $leccionId))
                 {
                     if($sentencia->execute())
                     {
@@ -2314,11 +2339,11 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                             
                             if($count==0)
                             {
-                                $consulta = "INSERT INTO usuarios_cursos_lecciones(usuario_id,curso_id, leccion_id, fecha_inicial, fecha_modificacion, terminado) " .
-                                    "VALUE(?, ?, ?,  NOW(), NOW(), 0)";
+                                $consulta = "INSERT INTO usuarios_cursos_lecciones(usuario_id,curso_id, leccion_id, fecha_inicial, fecha_modificacion, terminado, duracion) " .
+                                    "VALUE(?, ?, ?,  NOW(), NOW(), 0, ?)";
                                 if($sentencia = $this->conexion->prepare($consulta))
                                 {
-                                    if($sentencia->bind_param("iii",$usuario->id,$cursoId,$leccionId))
+                                    if($sentencia->bind_param("iiis",$usuario->id,$cursoId,$leccionId, $duracion))
                                     {
                                         if($sentencia->execute())
                                         {
@@ -2373,6 +2398,10 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     
     public function guardarPreguntaUsuario($usuario, $cursoId, $leccionId, $preguntaId, $respuestaId)
     {
+//         Logger::log("guardarPreguntaUsuario",  "-----------------------------------------------------------------------");
+//         Logger::log("guardarPreguntaUsuario",  "Guardando pregunta del usuario");
+//         Logger::log("guardarPreguntaUsuario",  "usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId, preguntaId: $preguntaId, respuestaId: $respuestaId;");
+        
         $resultado = new Resultado();
         $this->conexion->autocommit(FALSE);
         
@@ -2380,37 +2409,87 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             "VALUE(?, ?, ?, ?, ?,  NOW())";
         if($sentencia = $this->conexion->prepare($consulta))
         {
+//            Logger::log("guardarPreguntaUsuario",  "enlazando parametros: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId, preguntaId: $preguntaId, respuestaId: $respuestaId;");
             if($sentencia->bind_param("iiiii",$usuario->id,$cursoId,$leccionId,$preguntaId,$respuestaId))
             {
+//                 Logger::log("guardarPreguntaUsuario",  "parametros enlazados: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId, preguntaId: $preguntaId, respuestaId: $respuestaId;");
+//                 Logger::log("guardarPreguntaUsuario",  "insertando pregunta: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId, preguntaId: $preguntaId, respuestaId: $respuestaId;");
                 if($sentencia->execute())
                 {
+//                     Logger::log("guardarPreguntaUsuario",  "inserto pregunta");
                     $sentencia->close();
                     
+//                     Logger::log("guardarPreguntaUsuario",  "insertando pregunta: usuarioId: $usuario->id; cursoId: $cursoId");
                     $resultado = $this->actualizarCurso($usuario->id,$cursoId);
                     if($resultado->correcto())
                     {
+//                         Logger::log("guardarPreguntaUsuario",  "actualizo curso");
+//                         Logger::log("guardarPreguntaUsuario",  "calculando numero de preguntas restantes: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId");
                         $resultado = $this->calcularNumeroPreguntasRestantes($usuario->id,$cursoId,$leccionId);
                         if($resultado->correcto())
                         {
                             $numeroPreguntasRestantes= $resultado->valor;
+//                             Logger::log("guardarPreguntaUsuario",  "numero de preguntas restantes = $numeroPreguntasRestantes");
                             if($numeroPreguntasRestantes<=0)
                             {
+//                                 Logger::log("guardarPreguntaUsuario",  "terminando leccion: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId");
                                 $resultado = $this->terminarLeccion($usuario->id, $cursoId, $leccionId);
                                 if($resultado->correcto())
                                 {
+//                                     Logger::log("guardarPreguntaUsuario",  "LECCION TERMINADA: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId");
+//                                     Logger::log("guardarPreguntaUsuario",  "calculando numero de lecciones restantes: usuarioId: $usuario->id; cursoId: $cursoId");
                                     $resultado = $this->calcularNumeroLeccionesRestantes($usuario->id,$cursoId);
                                     if($resultado->correcto())
                                     {
                                         $numeroLeccionesRestantes= $resultado->valor;
+//                                         Logger::log("guardarPreguntaUsuario",  "numero de lecciones restantes = $numeroLeccionesRestantes");
                                         if($numeroLeccionesRestantes<=0)
                                         {
+//                                             Logger::log("guardarPreguntaUsuario",  "terminando curso: usuarioId: $usuario->id; cursoId: $cursoId");
                                             $resultado = $this->terminarCurso($usuario->id, $cursoId);
+                                            if($resultado->correcto())
+                                            {
+//                                                 Logger::log("guardarPreguntaUsuario",  "CURSO TERMINADO: usuarioId: $usuario->id; cursoId: $cursoId");
+                                                
+                                            }
+                                            else
+                                            {
+//                                                 Logger::log("guardarPreguntaUsuario",  "ERROR: No termino el curso: $resultado->mensajeError");
+                                            }
+                                                
+                                        }
+                                        else 
+                                        {
+//                                             Logger::log("guardarPreguntaUsuario",  "Curso aun no termina, quedan lecciones, numero de lecciones restantes = $numeroLeccionesRestantes");
+                                            
                                         }
                                     }
+                                    else
+                                    {
+//                                         Logger::log("guardarPreguntaUsuario",  "ERROR: No se pudo calcular el numero de lecciones restantes: $resultado->mensajeError");
+                                    }
                                 }
+                                 else
+                                 {
+//                                      Logger::log("guardarPreguntaUsuario",  "ERROR: No termino la leccion: $resultado->mensajeError");
+                                 }
+                                     
+                                
+                            }
+                            else
+                            {
+//                                 Logger::log("guardarPreguntaUsuario",  "Leccion aun no termina, quedan preguntas, numero de preguntas restantes = $numeroPreguntasRestantes");
                                 
                             }
                         }
+                        else
+                        {
+//                             Logger::log("guardarPreguntaUsuario",  "ERROR: No se pudo calcular el numero de preguntas restantes: $resultado->mensajeError");
+                        }
+                    }
+                    else
+                    {
+//                         Logger::log("guardarPreguntaUsuario",  "ERROR: No se actualizo el curso: $resultado->mensajeError");
                     }
                     
                 }
@@ -2418,23 +2497,35 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 {
                     $resultado->codigoError = $this->conexion->errno;
                     $resultado->mensajeError = __FUNCTION__ . " Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+//                     Logger::log("guardarPreguntaUsuario",  "ERROR: $resultado->mensajeError");
                 }
             }
             else
             {
                 $resultado->mensajeError = __FUNCTION__ . "Falló el enlace de parámetros";
+//                 Logger::log("guardarPreguntaUsuario",  "ERROR: $resultado->mensajeError");
+                
             }
         }
         else
         {
             $resultado->codigoError = $this->conexion->errno;
             $resultado->mensajeError = __FUNCTION__ . "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+//             Logger::log("guardarPreguntaUsuario",  "ERROR: $resultado->mensajeError");
+            
         }
         
         if($resultado->correcto())
+        {
             $this->conexion->commit();
+//             Logger::log("guardarPreguntaUsuario",  "commit pregunta: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId, preguntaId: $preguntaId, respuestaId: $respuestaId;");
+        }
         else
+        {
             $this->conexion->rollback();
+//             Logger::log("guardarPreguntaUsuario",  "rollback pregunta: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId, preguntaId: $preguntaId, respuestaId: $respuestaId;");
+            
+        }
         return  $resultado;
     }
     
@@ -2721,6 +2812,8 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             "SET visto = 1, " .
             "  fecha_modificacion= NOW() " .
             "WHERE usuario_id = ? AND curso_id = ? AND leccion_id = ? ";
+        
+        //echo $usuario->id."_".$cursoId."_".$leccionId;
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -4041,19 +4134,24 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     private function getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario)
     {
         //$filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
-        $consulta = "SELECT * from(SELECT U.id as id, U.nombre_usuario as nombreUsuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id departamentoId, D.nombre as departamentoNombre, U.permiso_cavih, U.perfil_id, PR.nombre perfilNombre, U.recursos_humanos recursosHumanos, 
+        $consulta = "SELECT * 
+            from(
+            SELECT U.id as id, U.nombre_usuario as nombreUsuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id departamentoId, D.nombre as departamentoNombre, U.permiso_cavih, U.perfil_id, PR.nombre perfilNombre, U.recursos_humanos recursosHumanos, 
             (SELECT count(*)
-                FROM cursos C
-                INNER JOIN cursos_preguntas CPR ON CPR.curso_id = C.id
-                WHERE  U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id) $filtroCapacitacion
+                        	FROM cursos_preguntas CPR 
+                        		INNER JOIN cursos C ON CPR.curso_id = C.id 
+                                INNER JOIN usuarios_cursos UC ON UC.curso_id = C.id 
+                        	WHERE C.publicado = 1 AND UC.usuario_id=  U.id
+                        		AND UC.terminado = 1 $filtroCapacitacion
                 )total,
                 (
                     SELECT count(*)
                     FROM usuarios_cursos_lecciones_preguntas P
                     INNER JOIN cursos C on C.id = P.curso_id
+                    INNER JOIN usuarios_cursos UC ON UC.curso_id = C.id AND UC.usuario_id= P.usuario_id                    
                     INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
                     WHERE P.usuario_id = U.id
-                    AND R.correcta=1  $filtroCapacitacion
+                    AND R.correcta=1  AND UC.terminado=1 $filtroCapacitacion
                 )correctas,
                 (SELECT IFNULL(DATE_FORMAT(UC.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')
                     FROM usuarios_cursos UC
@@ -4063,12 +4161,13 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                     LIMIT 1)fechaUltimaCapacitacion,
                 (SELECT count(*)
                 FROM cursos C
-                WHERE  U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)
+                WHERE  U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id) AND C.publicado = 1
                 )capacitacionesTotal,
                 (
                    SELECT count(*)
                     FROM usuarios_cursos C
                     WHERE  U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.curso_id) AND C.terminado = 1 AND C.usuario_id = U.id
+                    
                 )capacitacionesTerminadas,
                  (
                     SELECT count(*)
@@ -4531,7 +4630,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             $consulta = "SELECT U.id as id, U.nombre_usuario as nombreUsuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id, D.nombre as departamentoNombre, U.permiso_cavih, U.perfil_id, PR.nombre perfilNombre, U.recursos_humanos recursosHumanos, " .
                 "(SELECT count(*)
                 FROM cursos C
-                INNER JOIN cursos_preguntas CPR ON CPR.curso_id = C.id
+                    INNER JOIN cursos_preguntas CPR ON CPR.curso_id = C.id
                 WHERE  U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)  AND C.id = UC1.curso_id
                 )total,
                 (

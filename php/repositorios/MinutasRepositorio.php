@@ -428,11 +428,24 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             FROM minutas_tareas T
                 INNER JOIN usuarios U ON U.id = T.usuario_id
                 INNER JOIN minutas M ON M.id = T.minuta_id
-             WHERE ? IN (SELECT MTR.usuario_id FROM minutas_tareas_responsables MTR WHERE MTR.minuta_id = T.minuta_id AND MTR.tarea_id = T.id ) 
-            ORDER BY T.terminada desc, vencida, orden";
+             WHERE ? IN (SELECT MTR.usuario_id FROM minutas_tareas_responsables MTR WHERE MTR.minuta_id = T.minuta_id AND MTR.tarea_id = T.id )
+                AND T.terminada = 1 
+                AND DATEDIFF(NOW(),T.fecha_finalizacion) <= 7
+            UNION
+        SELECT T.minuta_id, M.titulo, T.id, RTRIM(T.titulo) titulo, IFNULL(DATE_FORMAT(T.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, IFNULL(DATE_FORMAT(T.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion,
+            IFNULL(DATE_FORMAT(T.fecha_compromiso,'%d/%m/%Y'),'') as fecha_compromiso,
+            IFNULL(DATE_FORMAT(T.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, T.terminada, T.usuario_id, U.nombre, U.apellido,
+            CASE WHEN NOW() > fecha_compromiso THEN 1 ELSE 0 END vencida  
+            FROM minutas_tareas T
+                INNER JOIN usuarios U ON U.id = T.usuario_id
+                INNER JOIN minutas M ON M.id = T.minuta_id
+             WHERE ? IN (SELECT MTR.usuario_id FROM minutas_tareas_responsables MTR WHERE MTR.minuta_id = T.minuta_id AND MTR.tarea_id = T.id )
+            AND T.terminada = 0 
+              ORDER BY terminada desc, UNIX_TIMESTAMP(fecha_finalizacion), vencida,  UNIX_TIMESTAMP(fecha_alta),  UNIX_TIMESTAMP(fecha_compromiso) 
+            ";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("i",$usuarioId))
+            if($sentencia->bind_param("ii",$usuarioId,$usuarioId))
             {
                 if($sentencia->execute())
                 {

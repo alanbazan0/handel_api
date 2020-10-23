@@ -269,22 +269,23 @@ function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,MinutasRep
 //         mensajeLog("error_envio_tareas", $resultadoPorcentajes->mensajeError);
 //     }
     
-    $contenido.="Tomemos unos minutos para recordar el avance a las tareas de SAHA durante esta semana:
-                <br>";
     
-
-    $contenido.="<div style='text-align:left;width:100%;background-color:#e6e7e8'>
-                <div style='text-align:left; display: inline-block; width:90%'>";
-    
-    $contenido .= "<br><span style='font-weight:bold; text-decoration: underline;'>Tus tareas:</span>";
     
     
     $resultado = $minutasRepositorio->consultarTareasUsuario($usuario->id);
     if($resultado->correcto())
     {
        $tareas = $resultado->valor;
-       if($tareas!=null)
+       if($tareas!=null && count($tareas)>0)
        {
+           $contenido.="Tomemos unos minutos para recordar el avance a las tareas de SAHA durante esta semana:
+                <br>";
+           
+           
+           $contenido.="<div style='text-align:left;width:100%;background-color:#e6e7e8'>
+                <div style='text-align:left; display: inline-block; width:90%'>";
+           
+           $contenido .= "<br><span style='font-weight:bold; text-decoration: underline;'>Tus tareas:</span>";
            $contenido .= "<br>";
            for ($i = 0; $i < count($tareas); $i++) 
            {
@@ -296,7 +297,7 @@ function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,MinutasRep
                                     <div style=' text-decoration:line-through;color: gray'>
                                     <span style='font-weight:bold;'>$tarea->titulo</span> - <span style=''>$tarea->minutaTitulo</span> - 
                                     <span>Completada el $tarea->fechaFinalizacion </span> -  
-                                    <a href='$url' target='_blank' style='color: gray;'>ver tarea</a>
+                                    <a href='$url' target='_blank' style='color: gray;'>ver tarea o comentar</a>
                                     </div>";
                    $contenido .= "<br>";
                }
@@ -308,7 +309,7 @@ function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,MinutasRep
                                         <div style='color: red;'>
                                         <span style='font-weight:bold;'>$tarea->titulo</span> - <span style=''>$tarea->minutaTitulo</span> -
                                         <span>Venció el $tarea->fechaCompromiso </span> -
-                                        <a href='$url' target='_blank' style='color: red;'>ver tarea</a>
+                                        <a href='$url' target='_blank' style='color: red;'>ver tarea o comentar</a>
                                         </div>";
                        $contenido .= "<br>";
                    }
@@ -316,22 +317,27 @@ function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,MinutasRep
                    {
                        $contenido .= "<br>
                                         <div>
-                                        <span style='font-weight:bold;'>$tarea->titulo</span> - <span style=''>$tarea->minutaTitulo</span> -
-                                        <span>Vence el $tarea->fechaCompromiso </span> -
-                                        <a href='$url' target='_blank'>ver tarea</a>
+                                        <span style='font-weight:bold;'>$tarea->titulo</span> - <span style=''>$tarea->minutaTitulo</span>"; 
+                                       
+                       if($tarea->fechaCompromiso!="")
+                           $contenido .= " - <span>Vence el $tarea->fechaCompromiso </span>  " ;
+                       
+                       $contenido .= " - <a href='$url' target='_blank'>ver tarea o comentar</a>
                                         </div>";
                        $contenido .= "<br>";
                    }
                }
                
            }
-       }
-    }
-    else
-        $contenido .= $resultado->mensajeError;
-    
-    $contenido .= "</div>
+           
+           $contenido .= "</div>
                     </div>";
+       }
+       
+    }
+   
+    
+  
 
     
     return $contenido;   

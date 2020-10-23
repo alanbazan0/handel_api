@@ -93,7 +93,7 @@ class CapacitacionPresentador extends CatalogoPresentador
 	 
 	
 	
-	guardarLeccionUsuario()
+	guardarLeccionUsuario(leccionId,duracion)
 	{
 		 this.vista.mostrarIndicador();	
 		 this._repositorio.guardarLeccionUsuario(this, function(resultado)
@@ -106,7 +106,7 @@ class CapacitacionPresentador extends CatalogoPresentador
 			 else
 				 this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		 }
-		 ,this.vista.cursoId, this.vista.leccionIdSeleccionada);
+		 ,this.vista.cursoId, leccionId, duracion);
 	}
 	 
 	guardarPreguntaUsuario(preguntaId, respuestaId)

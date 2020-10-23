@@ -424,7 +424,12 @@ class AdministracionVista extends CatalogoVista
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
 		 else
+		 {
 			 modelo.tipoUsuarioId= TipoUsuario.CAPACITADO;
+			 modelo.permisoSAHA=0;
+			 modelo.permisoSIVAH=0;
+			 modelo.permisoCAVIH=1;
+		 }
 		 return modelo;
 	 }
 	 
@@ -504,12 +509,17 @@ class AdministracionVista extends CatalogoVista
 		var nombre = this.removeAccents($("#nombreInput").val()).trim();
 		var apellido = this.removeAccents($("#apellidoInput").val()).trim();
 		var empresaId = $("#empresaSelect").val();
-		var nombreUsuario = nombre.toLowerCase();
+		
+		nombre = nombre.toLowerCase();
+		
+		var nombreUsuario = "";
+		if(nombre.length>0)
+			nombreUsuario = nombre[0];
 		
 		if(apellido!="")
-			nombreUsuario += "." + apellido.toLowerCase() ;
+			nombreUsuario += apellido.toLowerCase() ;
 		
-		nombreUsuario+="." +empresaId;
+		//nombreUsuario+="." +empresaId;
 		$("#nombreUsuarioInput").val(nombreUsuario);
 	}
 	

@@ -54,11 +54,11 @@ class MinutasVista extends CatalogoVista
 		else
 			this.mostrarTareaParametro();
 
-		
-		$("#tituloH").click(function()
+		$(".salir").click(function()
 		{
 			_this.salirFormulario();
 		});
+		
 		
 		this.crearEventosActualizacion();
 		
@@ -394,6 +394,7 @@ class MinutasVista extends CatalogoVista
 					_this.consultarComentarios();
 					_this.cometariosIntervalId = setInterval(_this.consultarComentariosAutomaticamente, 20000);
 					
+					setInterval(function(){$("#comentarioInput").focus();},2000);
 					
 				});
 				

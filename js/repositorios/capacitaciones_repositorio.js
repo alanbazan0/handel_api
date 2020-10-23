@@ -786,13 +786,13 @@ class CapacitacionesRepositorio extends Repositorio
       });
 	}
 	
-	guardarLeccionUsuario(contexto,funcion,cursoId, leccionId)
+	guardarLeccionUsuario(contexto,funcion,cursoId, leccionId, duracion)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
           url: url,
           type: 'POST',
-          data: {accion : "guardarLeccionUsuario",cursoId: cursoId, leccionId: leccionId},
+          data: {accion : "guardarLeccionUsuario",cursoId: cursoId, leccionId: leccionId, duracion: duracion},
           success: function( data, textStatus, jQxhr )
           {
               funcion.call(contexto,data);
