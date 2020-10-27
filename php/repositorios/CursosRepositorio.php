@@ -4653,9 +4653,10 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
               LEFT JOIN usuarios SU2 ON U.supervisor2_id = SU2.id
               LEFT JOIN usuarios SU3 ON U.supervisor3_id = SU3.id
               LEFT JOIN departamentos D ON D.id = U.departamento_id
-              LEFT JOIN perfiles PR ON PR.id = U.perfil_id ";
+              LEFT JOIN perfiles PR ON PR.id = U.perfil_id  
+            WHERE U.permiso_cavih = 1  ";
             
-            $consulta.= $this->where($filtros) . " order by UNIX_TIMESTAMP(UC1.fecha_inicial) desc";
+            $consulta.= $this->and($filtros) . " order by UNIX_TIMESTAMP(UC1.fecha_inicial) desc";
             
             //$consulta.=")consulta ";
             
@@ -4807,19 +4808,22 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 )correctas
               FROM usuarios_cursos_lecciones UCL
                   INNER JOIN cursos_lecciones L ON L.curso_id = UCL.curso_id AND L.id = UCL.leccion_id
-                  INNER JOIN usuarios_cursos UC1 ON UC1.curso_id = UCL.curso_id
+                  INNER JOIN usuarios_cursos UC1 ON UC1.curso_id = UCL.curso_id AND UC1.usuario_id = UCL.usuario_id
                   INNER JOIN cursos CR ON CR.id = UC1.curso_id
                   LEFT JOIN usuarios U ON UC1.usuario_id = U.id
                   LEFT JOIN empresas E ON U.empresa_id=E.id
                   LEFT JOIN sedes S ON U.sede_id = S.id
                   LEFT JOIN tipos_usuario T ON U.tipo_usuario_id = T.id
                   LEFT JOIN departamentos D ON D.id = U.departamento_id
-                  LEFT JOIN perfiles PR ON PR.id = U.perfil_id ";
+                  LEFT JOIN perfiles PR ON PR.id = U.perfil_id
+            WHERE U.permiso_cavih = 1 ";
             
-            $consulta.= $this->where($filtros) .
+            $consulta.= $this->and($filtros) .
             ") consulta " .
             " group by id,titulo " .
             " order by titulo ";
+            
+            Logger::log("CursosRepositiorio", $consulta);
             
                 
                 if($sentencia = $this->conexion->prepare($consulta))

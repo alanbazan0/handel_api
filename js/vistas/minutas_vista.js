@@ -29,9 +29,17 @@ class MinutasVista extends CatalogoVista
 			"#f7dfed",
 			"#d2cbc1",
 			"#dbdcde"];
+		
+		var fecha = new Date();
+		this._time = fecha.getTime();
+		
 	}
 	
 	
+//	get time()
+//	{
+//		return this._time;
+//	}
 	
 	inicializar()
 	{
@@ -169,7 +177,7 @@ class MinutasVista extends CatalogoVista
 	{    
 		var fecha = new Date();
 		var contenido = "";
-		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+fecha.getTime();
+		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+vista.time;
 		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;border-radius:50%'></img></center>";
 	    return contenido;
 	}

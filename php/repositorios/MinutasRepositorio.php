@@ -14,7 +14,7 @@ require_once('../clases/Resultado.php');
 require_once('../clases/Porcentaje.php');
 require_once('../clases/AdministradorCorreo.php');
 require_once('FrasesRepositorio.php');
-
+require_once('UsuariosRepositorio.php');
 
 class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
 {
@@ -637,6 +637,46 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             return $resultado;
     }
     
+//     private function consultarDuenoTarea($minutaId,$tareaId)
+//     {
+//         $resultado = new Resultado();
+//         $consulta = "SELECT usuario_id " .
+//             "FROM minutas_tareas " .
+//             " WHERE minuta_id = ? AND tarea_id = ? ";
+//         if($sentencia = $this->conexion->prepare($consulta))
+//         {
+            
+//             if($sentencia->bind_param("ii",$minutaId,$tareaId))
+//             {
+//                 if($sentencia->execute())
+//                 {
+//                     if ($sentencia->bind_result($id))
+//                     {
+//                         if($sentencia->fetch())
+//                         {
+//                             $dueno= (object) [
+//                                 'id' =>  $id
+//                             ];
+//                             $resultado->valor = $dueno;
+//                         }
+                      
+//                         $sentencia->close();
+//                     }
+//                     else
+//                         $resultado->mensajeError = __FUNCTION__. ". Falló el enlace del resultado";
+//                 }
+//                 else
+//                     $resultado->mensajeError = __FUNCTION__. ". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+//             }
+//             else
+//                 $resultado->mensajeError = __FUNCTION__. ". Falló el enlace de parámetros";
+//         }
+//         else
+//             $resultado->mensajeError = __FUNCTION__. ". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+//             return $resultado;
+//     }
+    
     public function ordenarTareas($minutaId, $seleccion)
     {
         $resultado = new Resultado();
@@ -699,7 +739,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             return $resultado;
     }
     
-    public function actualizarValorTarea($minutaId, $tareaId, $campo, $valor)
+    public function actualizarValorTarea($usuario,$minutaId, $tareaId, $campo, $valor)
     {
         $resultado = new Resultado();
         $this->conexion->autocommit(FALSE);
@@ -727,16 +767,20 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                     $resultado->valor=true;
                     $sentencia->close();
                     
-//                     $resultado = $this->consultarNumeroTareasPendientesMinuta($minutaId);
-//                     if($resultado->correcto())
-//                     {
-//                         $pendientes = $resultado->valor;
-//                         if($pendientes==0)
-//                             $resultado = $this->actualizarFinalizacionMinuta($minutaId,1,"NOW()");
-//                         else
-//                             $resultado = $this->actualizarFinalizacionMinuta($minutaId,0,"NULL");
-//                     }
                     $resultado = $this->actualizarMinuta($minutaId);
+                    if($resultado->correcto())
+                    {
+                        if($campo=="terminada" && $valor==1)
+                        {
+                            $resultado = $this->consultarTareaPorLlaves((object)['minutaId' => $minutaId, "tareaId" => $tareaId]);                            
+                            if($resultado->correcto())
+                            {
+                                $tarea = $resultado->valor;
+                               
+                                $resultado = $this->enviarNotificacionDuenoTarea($usuario,$minutaId, $tarea);
+                            }
+                        }
+                    }
                     
                 }
                 else
@@ -1074,6 +1118,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                         $nombreUsuario = $usuario->nombreCompleto;
                         $fotoPerfil = "https://api.apps-handel.com/" . $usuario->fotoPerfil;
                         $asunto  = $usuario->nombreCompleto . ": te asignó  una tarea: " . $tarea->titulo;
+                        $accion = "te asignó  una tarea: ";
                         
                         $asunto="=?UTF-8?B?".base64_encode($asunto)."?=";
                         
@@ -1083,6 +1128,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                         
                         
                         $mensaje=  str_replace("@nombreUsuario",$nombreUsuario,$mensaje);
+                        $mensaje=  str_replace("@nombreUsuario",$accion,$mensaje);
                         $mensaje=  str_replace("@fotoPerfil",$fotoPerfil,$mensaje);
                         $mensaje=  str_replace("@nombreMinuta",$minuta->titulo,$mensaje);
                         $mensaje=  str_replace("@nombreTarea",$tarea->titulo,$mensaje);
@@ -1101,6 +1147,72 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                         $resultado = $administrador_correo->enviarCorreoUsuarios($tipo,$usuarios,$asunto, $mensaje, $info, "SAHA: Tareas");
                    //}
                 }
+            }
+        }
+        return $resultado;
+    }
+    
+    public function enviarNotificacionDuenoTarea($usuario,$minutaId, $tarea)
+    {
+        $resultado = new Resultado();
+        $resultado = $this->consultarPorLlaves((object)['id' => $minutaId]);
+        $usuarios = array();
+        if($resultado->correcto())
+        {
+            $minuta = $resultado->valor;
+            $frasesRepositorio = new FrasesRepositorio($this->conexion);
+            $resultado = $frasesRepositorio->consultarAleatorio();
+            if($resultado->correcto())
+            {
+                $frase = $resultado->valor;
+                $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                $resultado =  $usuariosRepositorio->consultarPorLLaves((object)['id' => $tarea->usuarioId]);
+                if($resultado->correcto())
+                {
+                    $dueno = $resultado->valor;
+                    
+              
+                    array_push($usuarios,$dueno);
+                    //                     $resultado = $this->consultarUsuariosNoAsignados($minuta,$tarea);
+                    //                     if($resultado->correcto())
+                        //                     {
+                    //                         $usuarios = $resultado->valor;
+                    
+                    //array_push($usuarios,(object) ['nombreUsuario' => 'alanbazan@apps-handel.com','nombreCompleto' => 'Alan Bazán']);
+                    
+                    $nombreUsuario = $usuario->nombreCompleto;
+                    $fotoPerfil = "https://api.apps-handel.com/" . $usuario->fotoPerfil;
+                    $asunto  = $usuario->nombreCompleto . ": terminó una tarea: " . $tarea->titulo;
+                    $accion = "terminó una tarea: ";
+                    
+                    $asunto="=?UTF-8?B?".base64_encode($asunto)."?=";
+                    
+                    $tipo = "minuta" .$minuta->id ."tarea" . $tarea->id;
+                    $info = "";
+                    $mensaje= file_get_contents('../plantillas_correo/notificacion_tarea.html');
+                    
+                   
+                    
+                    $mensaje=  str_replace("@nombreUsuario",$nombreUsuario,$mensaje);
+                    $mensaje=  str_replace("@accion",$accion,$mensaje);
+                    $mensaje=  str_replace("@fotoPerfil",$fotoPerfil,$mensaje);
+                    $mensaje=  str_replace("@nombreMinuta",$minuta->titulo,$mensaje);
+                    $mensaje=  str_replace("@nombreTarea",$tarea->titulo,$mensaje);
+                    $mensaje=  str_replace("@fechaVencimiento",$tarea->fechaCompromiso,$mensaje);
+                    
+                    $mensaje=  str_replace("@minutaId",$minuta->id,$mensaje);
+                    $mensaje=  str_replace("@tareaId",$tarea->id,$mensaje);
+                    
+                    
+                    $mensaje=  str_replace("@frase",$frase->texto,$mensaje);
+                    $mensaje=  str_replace("@autor",$frase->autor,$mensaje);
+                    
+                    
+                    
+                    $administrador_correo = new AdministradorCorreo();
+                    $resultado = $administrador_correo->enviarCorreoUsuarios($tipo,$usuarios,$asunto, $mensaje, $info, "SAHA: Tareas");
+                }
+                //}
             }
         }
         return $resultado;

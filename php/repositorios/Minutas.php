@@ -89,7 +89,7 @@ try
                     $tareaId = REQUEST('tareaId');
                     $campo = REQUEST('campo');
                     $valor = REQUEST('valor');
-                    $resultado = $repositorio->actualizarValorTarea($minutaId, $tareaId, $campo,  $valor);
+                    $resultado = $repositorio->actualizarValorTarea($usuario,$minutaId, $tareaId, $campo,  $valor);
                 break;
                 case 'eliminarTarea':
                     $llaves = json_decode(REQUEST('llaves'));
