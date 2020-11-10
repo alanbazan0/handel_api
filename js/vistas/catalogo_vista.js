@@ -198,8 +198,9 @@ class CatalogoVista extends Vista
 			for(var i=0; i < tareasPendientes.length; i++)
 			{
 				var tarea = tareasPendientes[i];
+				var id = "tareaLink"+tarea.minutaId+"_"+tarea.id;
 				html+="	  <li>"+
-				"		<a id='tareaLink"+tarea.id+"' href='#'>";
+				"		<a id='"+id+"' href='#'>";
 				
 				
 //				if(procedimiento.usuarioId == this.usuario.id)
@@ -211,9 +212,12 @@ class CatalogoVista extends Vista
 				"	  </li>";
 			}
 			
+			
+			
 			html+="	</ul>"+
 			"	</li>";
-				
+			
+			html+=" <li class='footer'><a href='minutas.php'>Ver todas</a></li>";
 			
 			$("#tareasPendientesUl").html(html);	
 			
@@ -221,7 +225,7 @@ class CatalogoVista extends Vista
 			for(var i=0; i < tareasPendientes.length; i++)
 			{
 				var tarea = tareasPendientes[i];
-				var id = "tareaLink"+tarea.id;
+				var id = "tareaLink"+tarea.minutaId+"_"+tarea.id;
 				$("#"+id).data("tarea",tarea);
 				$("#"+id).data("_this",this);
 				$("#"+id).click(this.tareaClick);
@@ -289,7 +293,7 @@ class CatalogoVista extends Vista
 	{
 		//var _this = $("body").data("_this");
 		var tarea = $(event.currentTarget).data("tarea");
-		var url = "minutas.php?minutaId="+tarea.minutaId+"&tareaId="+tarea.id;
+		var url = "minutas.php?id="+tarea.minutaId+"_"+tarea.id;
 		var submitForm = vista.getNewSubmitForm(url);
 	    submitForm.target= "_self";
 	    submitForm.submit();
@@ -413,9 +417,16 @@ class CatalogoVista extends Vista
 	set guardando(guardando)
 	{
 		if(guardando)
+		{
 			$("#guardarButton").attr("disabled",true);
+			$("#guardarButtonAlta").attr("disabled",true);
+		}
 		else
+		{
 			$("#guardarButton").attr("disabled",false);
+			$("#guardarButtonAlta").attr("disabled",false);
+			
+		}
 	}
 		
 	salirFormulario()

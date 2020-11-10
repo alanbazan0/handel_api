@@ -7,8 +7,19 @@ class MinutasVista extends CatalogoVista
 		this._urlFormulario = "html/formularios/minutas.php";
 		
 		this.listaTareas = new ListaTareas("listaTareas");
+		this.listaTareasPendientes = new ListaTareas("listaTareasPendientes");
+		this.listaTareasPendientes.editar = false;
+		this.listaTareasPendientes.eliminar = false;
+		this.listaTareasPendientes.mover = false;
+		this.listaTareasPendientes.minuta = true;
+		this.listaTareasPendientes.removerTerminada = true;
+		
+		this.listaTareasTerminadas = new ListaTareas("listaTareasTerminadas");
 		this._time = new Date().getTime();
 		
+		this._consultoMinutas = false;
+		this._consultoTareasPendientes = false;
+		this._consultoTareasTerminadas = false;
 
 		this._colores = [
 			"#cdd9c5",
@@ -57,10 +68,12 @@ class MinutasVista extends CatalogoVista
 		this.crearColumnasGrid();		
 		
 		
-		if(this.minutaIdParametro=="" && this.tareaIdParametro=="")
-			this.consultar();
-		else
-			this.mostrarTareaParametro();
+//		if(this.minutaIdParametro=="" && this.tareaIdParametro=="")
+//			this.consultar();
+//		else if(this.minutaIdParametro=="" && this.tareaIdParametro=="")
+//			this.mostrarTareaParametro();
+		
+		
 
 		$(".salir").click(function()
 		{
@@ -84,14 +97,82 @@ class MinutasVista extends CatalogoVista
 		});
 	    $( "#listaTareas" ).disableSelection();
 	    
+//	   
 //	    $("#agregarButton").click(function()
 //				{
 //					alert('Esta función esta en desarrollo');
 //				});
 	    
+	    $("#editarUsuariosCompartirButton").click(function()
+		{
+	    	$("#groupCompartirUsuarioVisualizacion").hide();
+			$("#groupCompartirUsuarioEdicion").fadeIn();
+		});
 	    
+	    $("#usuariosCompartirCancelarButton").click(function()
+		{
+	    	$("#groupCompartirUsuarioVisualizacion").fadeIn();
+			$("#groupCompartirUsuarioEdicion").hide();
+				
+		});
+	    
+	    $("#usuariosCompartirGuardarButton").click(function()
+		{
+	    	$("#groupCompartirUsuarioVisualizacion").fadeIn();
+			$("#groupCompartirUsuarioEdicion").hide();
+				
+		});
+	    
+	    $("#usuariosCompartirSelect").chosen();
+	    
+	    if(this.minutaIdParametro!=0 && this.tareaIdParametro!=0)
+			this.mostrarTareaParametro();
+		else if(this.minutaIdParametro!=0)
+			this.mostrarMinutaParametro();
+		else
+			this.consultarMisTareasPendientes();
+	    
+	    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+	    	  var target = $(e.target).attr("href") // activated tab
+	    	  switch(target)
+	    	  {
+	    	  	case "#minutas":
+	    	  		if(!_this._consultoMinutas)
+	    	  			_this.consultar();	
+	    		break;
+	    	  	case "#tareas-pendientes":
+	    	  		//if(!_this._consultoTareasPendientes)
+	    	  			_this.consultarMisTareasPendientes();	
+	    		break;
+	    	  }
+	    	});
+	    
+	   $("#buscarTareaInput").on("keyup", function() {
+	        var value = $(this).val().toLowerCase();
+	        $("#listaTareasPendientes li").filter(function() {
+	          $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+	        });
+	      });
 	    
 	}
+	
+	consultar()
+	{
+		this._consultoMinutas = true;
+		super.consultar();
+	}
+	
+	consultarMisTareasPendientes()
+	{
+		this._consultoTareasPendientes = true;
+		this.presentador.consultarMisTareasPendientes();
+	}
+	
+//	editarUsuariosCompartir()
+//	{
+//		$("#groupCompartirUsuarioVisualizacion").hide();
+//		$("#groupCompartirUsuarioEdicion").fadeIn();
+//	}
 	
 	get time()
 	{
@@ -101,7 +182,14 @@ class MinutasVista extends CatalogoVista
 	mostrarTareaParametro()
 	{
 		this._registroSeleccionado = {id : this.minutaIdParametro};
-		this.editarTareaFormulario(this.tareaIdParametro);
+		this.editarTareaFormulario(this.listaTareas, this._registroSeleccionado.id, this.tareaIdParametro);
+	}
+	
+	mostrarMinutaParametro()
+	{
+		this._llaves = {id : this.minutaIdParametro};
+		this._registroSeleccionado = {id : this.minutaIdParametro};
+		this.editar();
 	}
 	
 	
@@ -109,7 +197,7 @@ class MinutasVista extends CatalogoVista
 	{
 		var id = $("body").attr("data-id");
 		var elementos = id.split("_");
-		if(elementos.length==2)
+		if(elementos.length>0)
 		{
 			return elementos[0];
 		}
@@ -133,6 +221,8 @@ class MinutasVista extends CatalogoVista
 	{
 		var _this = this;
 		$("#tituloInput").change(this.cambiarCampo);
+		$("#descripcionInput").change(this.cambiarCampo);
+		$("#usuariosCompartirSelect").change(this.cambiarCampo);
 		$("#tituloInput").keyup(function()
 		{
 			$("#tituloH").html($("#tituloInput").val());
@@ -143,8 +233,15 @@ class MinutasVista extends CatalogoVista
 	cambiarCampo(event)
 	{
 		var campo = $(event.currentTarget).attr("data-campo");
-		var valor = $(event.currentTarget).val();
-		vista.presentador.actualizarValor(campo,valor);
+		if(campo=="usuarios")
+		{
+			vista.presentador.actualizarUsuarios();
+		}
+		else
+		{
+			var valor = $(event.currentTarget).val();
+			vista.presentador.actualizarValor(campo,valor);
+		}
 	}
 	
 //	onLoad()
@@ -158,7 +255,8 @@ class MinutasVista extends CatalogoVista
 		this.tabla.columnas = [
 			{longitud:30, 	titulo:"",   alias:"terminada", alineacion:"I", itemRenderer: this.renderTerminada},
 			{longitud:40, 	titulo:"Id",   	alias:"id", alineacion:"D" },
-			{longitud:200, 	titulo:"Titulo",   alias:"titulo", alineacion:"I" },
+			{longitud:200, 	titulo:"Título",   alias:"titulo", alineacion:"I" },
+			{longitud:300, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I" },
 			{longitud:50, 	titulo:"Avance",   alias:"titulo", alineacion:"C", itemRenderer: this.rendererPorcentaje },
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogo},
 			{longitud:200, 	titulo:"Usuario que creó" ,   alias:"usuarioNombreCompleto", alineacion:"I",class: "desc" }, 
@@ -267,7 +365,73 @@ class MinutasVista extends CatalogoVista
 		this.modeloEdicion = valor;
 		$('#tituloH').html(this.modeloEdicion.titulo);
 		$('#tituloInput').val(this.modeloEdicion.titulo);
+		$('#descripcionInput').val(this.modeloEdicion.descripcion);
 		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
+		
+		
+		
+		$('#tareasSectionContenido').fadeIn();	
+		$("#agregarTareaButton").show();
+		
+		
+		var fecha = new Date();
+		var foto = HANDEL_API + "/" + this.modeloEdicion.fotoPerfil+"?"+fecha.getTime();
+		
+		
+//		var fotoPerfil = HANDEL_API + "/" + this.modeloEdicion.fotoPerfil+"?"+fecha.getTime();
+//		$("#fotoPerfilComentarioImg").attr("src",fotoPerfil);
+		
+		moment.locale('es') ;
+		var fechaAlta = this.getFechaMDA(this.modeloEdicion.fechaAlta);
+		
+		var fecha = moment(fechaAlta);
+		
+		var html = "<img class='img-circle' src='"+foto+"' "+
+					"alt='User Image'> <span class='username'><a href='#'>" + this.modeloEdicion.usuarioNombreCompleto +"</a>" +
+					"</span> <span class='description' title='"+this.modeloEdicion.fechaAlta+"'  >Creada" +
+					"- " + fecha.fromNow() + "</span>";
+		$("#usuarioDiv").html(html);
+		
+		
+		this.consultarResponsables();
+		
+		
+		
+		
+	}
+	
+	consultarResponsables()
+	{
+		this.presentador.consultarResponsables();
+	}
+	
+	set responsables(responsables)
+	{
+//		this._responsables = responsables;
+//		
+		this._responsables = responsables;
+		for(var i=0; i < this._responsables.length; i++)
+		{
+			var responsable = this._responsables[i];
+			if(responsable.id == this.usuario.id)
+				responsable.nombreCompleto = responsable.nombreCompleto + " (Yo)";
+			else if(responsable.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
+				responsable.nombreCompleto +=" (Handel)"
+
+				
+		}
+		
+		
+		
+		
+		
+//		this.cargarOpciones('#usuariosCompartirSelect', responsables,"",null, null, null);
+		
+		
+		
+		
+		
+	
 		
 		if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 		{
@@ -279,21 +443,63 @@ class MinutasVista extends CatalogoVista
 			
 		}
 		
-		$('#tareasSectionContenido').fadeIn();	
-		$("#agregarTareaButton").show();
+		this.usuariosCompartir = responsables;
 		
-	}
-	
-	consultarResponsables()
-	{
-		this.presentador.consultarResponsables();
-	}
-	
-	set responsables(responsables)
-	{
-		this._responsables = responsables;
-		this.presentador.consultarPorLlaves();
+		
+		//this.presentador.consultarPorLlaves();
 
+	}
+	
+	set usuariosCompartir(responsables)
+	{
+		
+		var usuarios = ArrayUtils.copy(responsables);
+		
+		eliminarPorValor(usuarios,"id",this.usuario.id);
+		
+		var select = "#usuariosCompartirSelect";
+		$(select).empty();
+		var fecha = new Date();
+		$.each(usuarios, function(i, p) 
+		{
+			var fotoPerfil = HANDEL_API+ "/"+p.fotoPerfil+"?"+fecha.getTime();
+			var nombre  = p.nombreCompleto;
+		    $(select).append($('<option data-img-src="'+fotoPerfil+'"></option>').val(p.id).html(nombre));
+		});
+		
+		var usuariosSeleccionados =[];
+		if(this.modeloEdicion.usuarios!=undefined)
+		{
+			$.each(this.modeloEdicion.usuarios, function(i, p) 
+			{
+				usuariosSeleccionados.push(p.usuarioId);
+			});
+		}
+		
+		$("#usuariosCompartirSelect").val(usuariosSeleccionados);
+		 $('#usuariosCompartirSelect').trigger("chosen:updated");
+		 //$("#perfilesSelect").chosen();
+		$(".chosen-search-input").height(50);
+		$(".chosen-search-input").val("");
+		
+		$("#usuariosCompartirSelect_chosen").css("width","100%");
+		
+		if(this.modeloEdicion.usuarioId == this.usuario.id)
+			$("#compartirGroup").fadeIn();
+		
+//		var responsablesSeleccionados =[];
+//		if(this.registro.responsables!=undefined)
+//		{
+//			
+//			$.each(this.registro.responsables, function(i, p) 
+//			{
+//				responsablesSeleccionados.push(p.usuarioId);
+//			});
+//		}
+//		
+//		$(select).val(responsablesSeleccionados);
+//		$(select).chosen();
+//		$(select+"_chosen").width("100%");
 	}
 	
 	
@@ -301,7 +507,8 @@ class MinutasVista extends CatalogoVista
 	{
 		 var modelo = 
 		 {		
-			 titulo:$('#tituloInputAlta').val(),			 
+			 titulo:$('#tituloInputAlta').val(),		
+			 descripcion:$('#descripcionInputAlta').val(),	
 			 estatus:$('#estatusRadio').is(':checked')?1:0
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
@@ -313,6 +520,7 @@ class MinutasVista extends CatalogoVista
 
 	limpiarFormulario()
 	{
+		$("#compartirGroup").hide();
 		$('#formulario').trigger("reset");
 	}
 	
@@ -325,24 +533,17 @@ class MinutasVista extends CatalogoVista
 		$('#tituloInput').focus();				
 		//this.inicializarValidacionesFormulario("formulario");
 		this.listaTareas.tareas = [];
-		this.consultarResponsables();
+		
+		this.presentador.consultarPorLlaves();
 
 		//this._cursoId =id;
 	}
 	
-	editarTareaFormulario(tareaId)
+	editarTareaFormulario(listaTareas,minutaId,tareaId)
 	{
 		this.modo = "CAMBIO";
 		this._tareaId = tareaId;
-		this.mostrarFormularioTarea(this.minutaId, tareaId);
-//		this.limpiarFormulario();	
-//		this.mostrarFormulario();
-//		$('#tituloInput').focus();				
-//		//this.inicializarValidacionesFormulario("formulario");
-//		this.listaTareas.tareas = [];
-//		this.consultarResponsables();
-
-		//this._cursoId =id;
+		this.mostrarFormularioTarea(listaTareas,minutaId, tareaId);
 	}
 	
 	get tareaId()
@@ -352,7 +553,7 @@ class MinutasVista extends CatalogoVista
 	
 	
 	
-	mostrarFormularioTarea(minutaId, tareaId)
+	mostrarFormularioTarea(listaTareas,minutaId, tareaId)
 	{
 		var _this = this;
 		if($("#modalAlta").length ==0)
@@ -368,8 +569,9 @@ class MinutasVista extends CatalogoVista
 					clearInterval(_this.cometariosIntervalId);
 					$("#modalAlta").remove();
 					_this._tareaEdicionFormulario = null;
-					if($("#minutasSection").is(":visible"))
-						_this.consultar();
+					_this.consultarNumeroComentariosTarea(listaTareas,minutaId, tareaId);
+//					if($("#minutasSection").is(":visible"))
+//						_this.consultar();
 					
 				});
 				
@@ -434,10 +636,11 @@ class MinutasVista extends CatalogoVista
 		this.presentador.consultarTareaPorLlaves();
 	}
 	
-	actualizar(modelo)
+	actualizar(componente,modelo)
 	{
-		 this.listaTareas.actualizar(modelo,true);
-		 this.listaTareas.cancelarEdicion();
+		
+		componente.listaTareas.actualizar(modelo,true);
+		componente.listaTareas.cancelarEdicion();
 		 
 		 if(this._tareaEdicionFormulario!=null)
 		{
@@ -555,6 +758,7 @@ class MinutasVista extends CatalogoVista
 		$('#minutasSection').show()
 		$('#tareasSectionContenido').hide();	
 		$('#tareasSection').hide();
+		$("#compartirGroup").hide();
 		this.consultar();
 	}
 	
@@ -592,21 +796,21 @@ class MinutasVista extends CatalogoVista
 	        });
 	}
 	
-	cambiarCampoTarea(tarea,tareaId,campo,valor)
+	cambiarCampoTarea(componente,tarea,tareaId,campo,valor)
 	{
-		vista.presentador.actualizarValorTarea(tarea,tareaId,campo,valor);
+		vista.presentador.actualizarValorTarea(componente,tarea,tareaId,campo,valor);
 	}
 	
-	eliminarTarea(event, tareaId)
+	eliminarTarea(event, minutaId, tareaId)
 	{
 		var _this = this;
-		var componenteTarea = this.listaTareas.getComponente(tareaId);
+		var componenteTarea = this.listaTareas.getComponente(minutaId, tareaId);
 		if(componenteTarea!=null)
 		{
 			var _this = this;
 			this.confirmar("¿Desea eliminar esta tarea?</br></br><label>" +componenteTarea.titulo +"</label>",this,function(tareaId)
 			{
-				_this._llavesTarea = {minutaId : _this.minutaId, tareaId: tareaId};
+				_this._llavesTarea = {minutaId : minutaId, tareaId: tareaId};
 				_this.eliminarTareaBaseDatos();
 				
 			},tareaId,true);
@@ -666,9 +870,9 @@ class MinutasVista extends CatalogoVista
 		this.presentador.insertarTarea(modelo);
 	}
 	
-	actualizarTarea(modelo)
+	actualizarTarea(componente,modelo)
 	{
-		this.presentador.actualizarTarea(modelo);
+		this.presentador.actualizarTarea(componente,modelo);
 	}
 	
 	
@@ -769,6 +973,40 @@ class MinutasVista extends CatalogoVista
 			comentario: $("#comentarioInput").val()
 		};
 		return modelo;
+	}
+	
+	get usuarios()
+	{
+		var usuarios=[];
+		var usuariosSeleccionados  = $("#usuariosCompartirSelect").val();
+		if(usuariosSeleccionados !=undefined)
+		{
+			for(var i = 0; i < usuariosSeleccionados.length ; i++)
+			{
+				var usuarioSeleccionado = usuariosSeleccionados[i];
+				var usuario = new Object();
+				usuario.id = i + 1;
+				usuario.usuarioId = usuarioSeleccionado;
+				usuarios.push(usuario);
+			}
+		}
+		return usuarios;
+	}
+	
+	set misTareasPendientes(misTareasPendientes)
+	{
+		this.listaTareasPendientes.tareas= misTareasPendientes;
+	}
+	
+	consultarNumeroComentariosTarea(listaTareas,minutaId, tareaId)
+	{
+		this.listaTareasActual = listaTareas;
+		this.presentador.consultarNumeroComentariosTarea(minutaId, tareaId);
+	}
+	
+	setNumeroComentariosTarea(minutaId, tareaId, numeroComentarios)
+	{
+		this.listaTareasActual.setNumeroComentariosTarea(minutaId,tareaId, numeroComentarios);
 	}
 	
 }

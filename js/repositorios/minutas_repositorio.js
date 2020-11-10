@@ -159,15 +159,41 @@ class MinutasRepositorio extends Repositorio
       });
 	}
 	
-	consultarTareasPendientes(contexto,funcion, criteriosSeleccion)
+//	consultarTareasPendientes(contexto,funcion, criteriosSeleccion)
+//	{		
+//
+//		
+//		var url = HANDEL_API + "/" + this.servicio;
+//		 $.ajax({
+//            url: url,
+//            type: 'POST',
+//            data: {accion : "consultarTareasPendientes", criteriosSeleccion: JSON.stringify(criteriosSeleccion)},
+//            success: function( data, textStatus, jQxhr )
+//            {
+//                funcion.call(contexto,data);
+//            },
+//            error: function( jqXhr, textStatus, errorThrown )
+//            {
+//            	if(textStatus=="parsererror")
+//        	   		funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+//           		else
+//           			funcion.call(contexto,{ mensajeError : textStatus});
+//            },
+//            fail: function( jqXhr, textStatus, errorThrown )
+//            {
+//           	 funcion.call(contexto,{ mensajeError : textStatus});
+//            }
+//        });
+//	}
+	
+	consultarMisTareas(contexto,funcion, criteriosSeleccion)
 	{		
 
-		
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
             url: url,
             type: 'POST',
-            data: {accion : "consultarTareasPendientes", criteriosSeleccion: JSON.stringify(criteriosSeleccion)},
+            data: {accion : "consultarMisTareas", criteriosSeleccion: JSON.stringify(criteriosSeleccion)},
             success: function( data, textStatus, jQxhr )
             {
                 funcion.call(contexto,data);
@@ -185,6 +211,7 @@ class MinutasRepositorio extends Repositorio
             }
         });
 	}
+	
 	
 	consultarTareaPorLlaves(contexto,funcion, llaves)
 	{		
@@ -211,5 +238,55 @@ class MinutasRepositorio extends Repositorio
            	 funcion.call(contexto,{ mensajeError : textStatus});
             }
         });
+	}
+	
+	actualizarUsuarios(contexto,funcion,minutaId, usuarios)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "actualizarUsuarios",minutaId: minutaId, usuarios:JSON.stringify(usuarios)},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
+	consultarNumeroComentariosTarea(contexto,funcion,minutaId, tareaId)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "consultarNumeroComentariosTarea",minutaId: minutaId, tareaId:tareaId},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
 	}
 }

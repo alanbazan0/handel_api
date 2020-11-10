@@ -19,7 +19,7 @@ class MinutasPresentador extends CatalogoPresentador
 				 }
 				 else
 				 {
-					 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+					 this.vista.mostrarMensajeError("Error", resultado.mensajeError, resultado.codigoError);
 				 }
 			 },this.vista.minutaId, campo, valor);
 		}
@@ -37,7 +37,7 @@ class MinutasPresentador extends CatalogoPresentador
 			this.vista.editar();
 		}
 		else
-			this.vista.mostrarMensajeError("Error","Ocurrió un error al guardar el registro. " + resultado.mensajeError);	
+			this.vista.mostrarMensajeError("Error","Ocurrió un error al guardar el registro. " + resultado.mensajeError, resultado.codigoError);	
 		
 		 setTimeout(function()
 		{
@@ -56,13 +56,13 @@ class MinutasPresentador extends CatalogoPresentador
 					this.vista.mostrarMensaje("","Guardado.");
 				}
 				else
-					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
 				
 		 },this.vista.minutaId,seleccion);
 	 }
 	 
 	 
-	 actualizarValorTarea(tarea,tareaId, campo,valor)
+	 actualizarValorTarea(componente,tarea,tareaId, campo,valor)
 	 {
 		 if(campo!=undefined)
 		{
@@ -73,13 +73,21 @@ class MinutasPresentador extends CatalogoPresentador
 				 if(resultado.mensajeError=="")
 				 {
 					 this.vista.mostrarMensaje("","Guardado.");
-					 this.vista.actualizar(tarea);
+					 this.vista.actualizar(componente,tarea);
+					 
+					 if(campo=="terminada")
+					 {
+						if(componente.listaTareas.removerTerminada) 
+						{
+							componente.listaTareas.eliminarTarea(tarea.minutaId, tarea.id);
+						}
+					 }
 				 }
 				 else
 				 {
-					 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+					 this.vista.mostrarMensajeError("Error", resultado.mensajeError, resultado.codigoError);
 				 }
-			 },this.vista.minutaId, tareaId, campo, valor);
+			 },tarea.minutaId, tarea.id, campo, valor);
 		}
 	 }
 	 
@@ -95,29 +103,16 @@ class MinutasPresentador extends CatalogoPresentador
 			 {
 				 this.vista.mostrarMensaje("","Guardado.");
 				 var tareas =  this.vista.listaTareas.tareas;
-				 var indice = this.vista.listaTareas.getIndice(tareaId);
+				 //var indice = this.vista.listaTareas.getIndice(tareaId);
 				
-				 this.vista.listaTareas.eliminar(tareaId);
-//				 if(indice==0)
-//				 {
-//					 var seccionSeleccionada =  this.vista.listaLecciones.lecciones[indice+1];
-//					 this.vista.seleccionarLeccion(null,seccionSeleccionada.id);
-//				 }
-//				 else
-//				 {
-//					 var seccionSeleccionada =  this.vista.listaLecciones.lecciones[indice-1];
-//					 this.vista.seleccionarLeccion(null,seccionSeleccionada.id);
-//				 }
-				
-				 //TODO: consultar seccion
-				 //this.consultar();
+				 this.vista.listaTareas.eliminarTarea(this.vista.minutaId, tareaId);
 			 }
 			 else
 			 {
 				 if(resultado.codigoError==1451)
 					 this.vista.mostrarMensajeAdvertencia("Error","No se puede eliminar la tarea porque esta relacionada con otro catálogo. ") ;
 				 else
-					 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar la tarea. " + resultado.mensajeError);
+					 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar la tarea. " + resultado.mensajeError, resultado.codigoError);
 			 }
 		 },this.vista.llavesTarea);
 	 }
@@ -133,19 +128,19 @@ class MinutasPresentador extends CatalogoPresentador
 			 {
 				 this.vista.mostrarMensaje("","Guardado.");
 				 this.vista.listaTareas.eliminarBorrador();
-				 this.vista.listaTareas.agregar(resultado.valor,modelo);
+				 this.vista.listaTareas.agregar(this.vista.minutaId,resultado.valor,modelo);
 				 this.vista.mostrarBotonAgregar();
 				 this.vista.agregarTarea();
 				 //this.vista.seleccionarLeccion(null, resultado.valor);
 			 }
 			 else
 			 {
-				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+				 this.vista.mostrarMensajeError("Error", resultado.mensajeError, resultado.codigoError);
 			 }
 		 },this.vista.minutaId,modelo);
 	 }
 	 
-	 actualizarTarea(modelo)
+	 actualizarTarea(componente,modelo)
 	 {
 		 this.vista.mostrarIndicador();	
 		 this._repositorio.actualizarTarea(this,function(resultado)
@@ -156,12 +151,12 @@ class MinutasPresentador extends CatalogoPresentador
 				 this.vista.mostrarMensaje("","Guardado.");
 //				 this.vista.listaTareas.actualizar(modelo);
 //				 this.vista.listaTareas.cancelarEdicion();
-				 this.vista.actualizar(modelo);
+				 this.vista.actualizar(componente,modelo);
 			 }
 			 else
 			 {
 				 this.vista.listaTareas.activarBotonGuardar();
-				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+				 this.vista.mostrarMensajeError("Error", resultado.mensajeError, resultado.codigoError);
 			 }
 		 },this.vista.minutaId,modelo);
 	 }
@@ -170,7 +165,7 @@ class MinutasPresentador extends CatalogoPresentador
 	 {
 		 this.vista.mostrarIndicador();
 		 var  reposiorio = new UsuariosRepositorio();
-		 reposiorio.consultar(this,function(resultado)
+		 reposiorio.consultarUsuariosCorportarivoYAdministradores(this,function(resultado)
 		 {		
 			 this.vista.ocultarIndicador();	
 			 if(resultado.mensajeError=="")
@@ -179,7 +174,7 @@ class MinutasPresentador extends CatalogoPresentador
 			 }
 			 else
 			 {
-				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+				 this.vista.mostrarMensajeError("Error", resultado.mensajeError, resultado.codigoError);
 			 }
 		 });
 	 }
@@ -197,7 +192,7 @@ class MinutasPresentador extends CatalogoPresentador
 			 }
 			 else
 			 {
-				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+				 this.vista.mostrarMensajeError("Error", resultado.mensajeError, resultado.codigoError);
 			 }
 		 }, this.vista.llavesTarea);
 	 }
@@ -212,7 +207,7 @@ class MinutasPresentador extends CatalogoPresentador
 				if(resultado.mensajeError=="")
 					this.vista.comentarios = resultado.valor;
 				else
-					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
 				
 		 },this.vista.llavesTarea);
 	 }
@@ -227,16 +222,56 @@ class MinutasPresentador extends CatalogoPresentador
 			if(resultado.mensajeError=="")
 				this.vista.consultarComentarios();
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
 				
 		 },this.vista.modeloComentario);
 	 }
 	
 	 
-	
+	 actualizarUsuarios()
+	 {
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.actualizarUsuarios(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.mostrarMensaje("","Guardado.");
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error", resultado.mensajeError, resultado.codigoError);
+			 }
+		 },this.vista.minutaId, this.vista.usuarios);
+	 }
 	 
+	 consultarMisTareasPendientes()
+	 {
+		// this.vista.mostrarIndicador();
+		 var repositorio = new MinutasRepositorio(this);		
+		 repositorio.consultarMisTareas(this,function(resultado){
+			 if(resultado.mensajeError=="")
+			{
+				this.vista.misTareasPendientes = resultado.valor;
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
+		 },{"terminada":0});
+	 }
 	 
-	 
+	 consultarNumeroComentariosTarea(minutaId, tareaId)
+	 {
+		 var repositorio = new MinutasRepositorio(this);		
+		 repositorio.consultarNumeroComentariosTarea(this,function(resultado){
+			 if(resultado.mensajeError=="")
+			{
+				 this.vista.setNumeroComentariosTarea(minutaId, tareaId, resultado.valor);
+				//this.vista.misTareasPendientes = resultado.valor;
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
+		 }, minutaId, tareaId);
+	 }
 	
 	 
 }

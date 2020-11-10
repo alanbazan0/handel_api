@@ -102,6 +102,13 @@ try
                 $usuarioId = REQUEST('usuarioId');
                 $resultado = $repositorio->consultarSupervisoresPorEmpresa($empresaId,$usuarioId);              
             break;
+            case 'consultarUsuariosCorportarivoYAdministradores':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $resultado = $repositorio->consultarUsuariosCorportarivoYAdministradores($usuario);
+            break;
             case 'consultarPorEmpresaSede':
                 session_start();
                 $usuario = null;

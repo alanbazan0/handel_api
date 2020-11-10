@@ -6,12 +6,14 @@ use php\repositorios\MensajesRepositorio;
 use php\modelos\Resultado;
 use php\repositorios\UsuariosRepositorio;
 use php\clases\AdministradorCorreo;
+use php\clases\CodigoError;
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
+include '../clases/CodigoError.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/UsuariosRepositorio.php';
 include '../repositorios/MensajesRepositorio.php';
@@ -29,86 +31,99 @@ $resultado = new Resultado();
 $conexion=null;
 try
 {
-    $conexion = $administrador_conexion->abrir();
-    if($conexion)
+    
+    session_start();
+    $usuario = null;
+    if(isset($_SESSION['usuario']))
+        $usuario = $_SESSION['usuario'];
+    if($usuario!=null)
     {
-        $accion = REQUEST('accion');
-        $repositorio = new MensajesRepositorio($conexion);
-        switch($accion)
+        $conexion = $administrador_conexion->abrir();
+        if($conexion)
         {
-            case 'insertar':
-                
-                $json = json_decode(REQUEST('modelo'));
-                $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Mensaje());
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $resultado = $repositorio->insertar($modelo,$usuario);
-//                 if($resultado->correcto())
-//                 {
-//                     $modelo->id = $resultado->valor;
-//                     $usuariosRepositorio = new UsuariosRepositorio($conexion);
-//                     $criteriosSeleccion = (object) ['permisoSAHA' => 1];
-//                     if($modelo->empresaId!=null && $modelo->empresaId!="")
-//                         $criteriosSeleccion->empresaId = $modelo->empresaId;
-//                     if($modelo->sedeId!=null && $modelo->sedeId!="")
-//                         $criteriosSeleccion->sedeId = $modelo->sedeId;
-//                     if($modelo->departamentoId!=null && $modelo->departamentoId!="")
-//                         $criteriosSeleccion->departamentoId = $modelo->departamentoId;
-//                     if($modelo->usuarioId!=null && $modelo->usuarioId!="")
-//                         $criteriosSeleccion->usuarioId = $modelo->usuarioId;
-//                     $resultado = $usuariosRepositorio->consultar($modelo,$criteriosSeleccion,false);
-//                     if($resultado->correcto())
-//                     {
-//                         $administrador_correo = new AdministradorCorreo();
-//                         $resultado = $administrador_correo->enviarNotificacionMensaje($usuario,$resultado->valor,$modelo);
-//                     }
-//                 }
-                
-            break;
-            case 'actualizar':
-                $json = json_decode(REQUEST('modelo'));
-                $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Mensaje());
-                $resultado = $repositorio->actualizar($modelo) ;
-            break;
-            case 'consultar':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultar($criteriosSeleccion,$usuario);
-            break;
-            case 'marcarComoLeido':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $mensajeId = REQUEST('mensajeId');
-                $resultado = $repositorio->marcarComoLeido($mensajeId,$usuario);
-            break;
-            case 'consultarPorLlaves':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->consultarPorLlaves($llaves);
-            break;
-            case 'eliminar':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->eliminar($llaves);
-            break;
-            case 'consultarNumeroMensajesNoLeidos':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $resultado = $repositorio->consultarNumeroMensajesNoLeidos($usuario);
-            break;
-            default:
-                $resultado->mensajeError = 'Acción no válida';
-            break;
+            $accion = REQUEST('accion');
+            $repositorio = new MensajesRepositorio($conexion);
+            switch($accion)
+            {
+                case 'insertar':
+                    
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Mensaje());
+//                     session_start();
+//                     $usuario = null;
+//                     if(isset($_SESSION['usuario']))
+//                         $usuario = $_SESSION['usuario'];
+                    $resultado = $repositorio->insertar($modelo,$usuario);
+    //                 if($resultado->correcto())
+    //                 {
+    //                     $modelo->id = $resultado->valor;
+    //                     $usuariosRepositorio = new UsuariosRepositorio($conexion);
+    //                     $criteriosSeleccion = (object) ['permisoSAHA' => 1];
+    //                     if($modelo->empresaId!=null && $modelo->empresaId!="")
+    //                         $criteriosSeleccion->empresaId = $modelo->empresaId;
+    //                     if($modelo->sedeId!=null && $modelo->sedeId!="")
+    //                         $criteriosSeleccion->sedeId = $modelo->sedeId;
+    //                     if($modelo->departamentoId!=null && $modelo->departamentoId!="")
+    //                         $criteriosSeleccion->departamentoId = $modelo->departamentoId;
+    //                     if($modelo->usuarioId!=null && $modelo->usuarioId!="")
+    //                         $criteriosSeleccion->usuarioId = $modelo->usuarioId;
+    //                     $resultado = $usuariosRepositorio->consultar($modelo,$criteriosSeleccion,false);
+    //                     if($resultado->correcto())
+    //                     {
+    //                         $administrador_correo = new AdministradorCorreo();
+    //                         $resultado = $administrador_correo->enviarNotificacionMensaje($usuario,$resultado->valor,$modelo);
+    //                     }
+    //                 }
+                    
+                break;
+                case 'actualizar':
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Mensaje());
+                    $resultado = $repositorio->actualizar($modelo) ;
+                break;
+                case 'consultar':
+//                     session_start();
+//                     $usuario = null;
+//                     if(isset($_SESSION['usuario']))
+//                         $usuario = $_SESSION['usuario'];
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultar($criteriosSeleccion,$usuario);
+                break;
+                case 'marcarComoLeido':
+//                     session_start();
+//                     $usuario = null;
+//                     if(isset($_SESSION['usuario']))
+//                         $usuario = $_SESSION['usuario'];
+                    $mensajeId = REQUEST('mensajeId');
+                    $resultado = $repositorio->marcarComoLeido($mensajeId,$usuario);
+                break;
+                case 'consultarPorLlaves':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarPorLlaves($llaves);
+                break;
+                case 'eliminar':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->eliminar($llaves);
+                break;
+                case 'consultarNumeroMensajesNoLeidos':
+//                     session_start();
+//                     $usuario = null;
+//                     if(isset($_SESSION['usuario']))
+//                         $usuario = $_SESSION['usuario'];
+                    $resultado = $repositorio->consultarNumeroMensajesNoLeidos($usuario);
+                break;
+                default:
+                    $resultado->mensajeError = 'Acción no válida';
+                break;
+            }
         }
+    }
+    else
+    {
+        $resultado->mensajeError = "La sesión caducó. Inicie sesión e intente de nuevo.";
+        $resultado->codigoError = CodigoError::SESION_CADUCADA;
     }
 }
 catch(Exception $e)

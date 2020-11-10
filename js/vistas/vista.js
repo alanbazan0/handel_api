@@ -171,7 +171,7 @@ class Vista
 		 }
 	 }
 	
-	mostrarMensajeError(titulo, mensaje)
+	mostrarMensajeError(titulo, mensaje, codigoError)
 	{
 		 toastr.error(mensaje,titulo,{
 		        "positionClass": "toast-bottom-right",
@@ -192,6 +192,14 @@ class Vista
 		        "tapToDismiss": false
 
 		    });
+		 
+		 var _this = this;
+		 if(codigoError==5000)
+		{
+			 setTimeout(() => {
+				this.cerrarSesion();
+			}, 2000);
+		}
 	}
 	
 	mostrarMensaje(titulo, mensaje)
@@ -709,6 +717,28 @@ class Vista
 		get aplicacionVersion()
 		{
 			return $("body").attr("data-aplicacionVersion");
+		}
+		
+		getFechaMDA(fecha)
+		{
+			var elementos = fecha.split(" ");
+			if(elementos.length==2)
+			{
+				var fecha = elementos[0];
+				var hora = elementos[1];
+				elementos = fecha.split("/");
+				if(elementos.length==3)
+				{
+					var dia = elementos[0];
+					var mes = elementos[1];
+					var ano = elementos[2];
+					
+					var f = mes + "/" + dia + "/" + ano + " " + hora;
+					return f;
+					
+				}
+			}
+			return "";
 		}
 		
 }

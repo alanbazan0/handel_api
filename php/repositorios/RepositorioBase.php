@@ -192,6 +192,7 @@ class RepositorioBase
     {
         $bind = false;
         $filtros = $this->eliminarFiltrosIN($filtros);
+        $filtros = $this->eliminarFiltrosEstaticos($filtros);
         if(count($filtros)>0)
         {
             $types = $this->types($filtros);
@@ -230,6 +231,29 @@ class RepositorioBase
         }
         return $filtrosIN;
     }
+    
+    private function eliminarFiltrosEstaticos($filtros)
+    {
+        $filtrosIN = array();
+        for ($i=0; $i<count($filtros);$i++)
+        {
+            $filtro = $filtros[$i];
+            if(isset($filtro->tipo))
+            {
+                if($filtro->tipo=="estatico")
+                {
+                    
+                }
+                else
+                    array_push($filtrosIN, $filtro);
+                    
+            }
+            else
+                array_push($filtrosIN, $filtro);
+        }
+        return $filtrosIN;
+    }
+    
     
     
     public function get_result($sentencia)

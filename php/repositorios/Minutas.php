@@ -5,6 +5,7 @@ use php\modelos\Minuta;
 use php\repositorios\MinutasRepositorio;
 use php\modelos\Resultado;
 use php\modelos\Tarea;
+use php\clases\CodigoError;
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -14,6 +15,8 @@ include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/MinutasRepositorio.php';
 include '../modelos/Tarea.php';
+include '../clases/CodigoError.php';
+
 
 $origin = "*";
 if(isset($_SERVER['HTTP_ORIGIN']))
@@ -27,13 +30,13 @@ $resultado = new Resultado();
 $conexion=null;
 try
 {
-    $conexion = $administrador_conexion->abrir();
     session_start();
     $usuario = null;
     if(isset($_SESSION['usuario']))
         $usuario = $_SESSION['usuario'];
     if($usuario!=null)
     {
+        $conexion = $administrador_conexion->abrir();
         if($conexion)
         {
             $accion = REQUEST('accion');
@@ -55,14 +58,18 @@ try
                 break;
                 case 'consultar':
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                    $resultado = $repositorio->consultar($criteriosSeleccion);
+                    $resultado = $repositorio->consultar($usuario,$criteriosSeleccion);
                 break;
-                case 'consultarTareasPendientes':
-                    $resultado = $repositorio->consultarTareasPendientes($usuario);
-                    break;
+                case 'consultarMisTareas':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarMisTareas($usuario,$criteriosSeleccion);
+                break;
+//                 case 'consultarTareasPendientes':
+//                     $resultado = $repositorio->consultarTareasPendientes($usuario);
+//                 break;
                 case 'consultarPorLlaves':
                     $llaves = json_decode(REQUEST('llaves'));
-                    $resultado = $repositorio->consultarPorLlaves($llaves);
+                    $resultado = $repositorio->consultarPorLlaves($llaves,true);
                 break;
                 case 'consultarTareaPorLlaves':
                     $llaves = json_decode(REQUEST('llaves'));
@@ -91,6 +98,12 @@ try
                     $valor = REQUEST('valor');
                     $resultado = $repositorio->actualizarValorTarea($usuario,$minutaId, $tareaId, $campo,  $valor);
                 break;
+                case 'actualizarUsuarios':
+                    $minutaId = REQUEST('minutaId');
+                    $mapper = new JsonMapper();
+                    $usuarios = $mapper->mapArray(json_decode(REQUEST('usuarios')), array());
+                    $resultado = $repositorio->actualizarUsuarios($usuario,$minutaId, $usuarios);
+                break;
                 case 'eliminarTarea':
                     $llaves = json_decode(REQUEST('llaves'));
                     $resultado = $repositorio->eliminarTarea($llaves);
@@ -117,6 +130,11 @@ try
                     $modelo = $mapper->map($json, new Tarea());
                     $resultado = $repositorio->actualizarTarea($minutaId,$modelo,$usuario);
                 break;
+                case 'consultarNumeroComentariosTarea':
+                    $minutaId = REQUEST('minutaId');
+                    $tareaId = REQUEST('tareaId');
+                    $resultado = $repositorio->consultarNumeroComentariosTarea($minutaId, $tareaId);
+                break;
                 default:
                     $resultado->mensajeError = 'Acción no implementada';
                 break;
@@ -126,7 +144,7 @@ try
     else
     {
         $resultado->mensajeError = "La sesión caducó. Inicie sesión e intente de nuevo.";
-        $resultado->codigoError = "sesion_caducada";
+        $resultado->codigoError = CodigoError::SESION_CADUCADA;
     }
 }
 catch(Exception $e)

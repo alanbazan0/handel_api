@@ -19,7 +19,7 @@ class CatalogoPresentador
 		if(resultado.mensajeError=="")
 			this.vista.datos = resultado.valor;
 		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
 		
 	 }
 	 
@@ -40,7 +40,7 @@ class CatalogoPresentador
 			this.consultar();
 		}
 		else
-			this.vista.mostrarMensajeError("Error","Ocurrió un error al guardar el registro. " + resultado.mensajeError);	
+			this.vista.mostrarMensajeError("Error","Ocurrió un error al guardar el registro. " + resultado.mensajeError, resultado.codigoError);	
 		
 		 setTimeout(function()
 		{
@@ -67,7 +67,7 @@ class CatalogoPresentador
 			this.consultar();
 		 }
 		 else
-			this.vista.mostrarMensajeError("Error","Ocurrió un error al actualizar el registro. " + resultado.mensajeError);		
+			this.vista.mostrarMensajeError("Error","Ocurrió un error al actualizar el registro. " + resultado.mensajeError, resultado.codigoError);		
 		 setTimeout(function()
 		{
 			 this.vista.guardando = false;
@@ -88,7 +88,7 @@ class CatalogoPresentador
 		if(resultado.mensajeError=="")
 			this.vista.numeroMensajesNoLeidos = resultado.valor;
 		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
 		
 	 }
 	   
@@ -106,7 +106,7 @@ class CatalogoPresentador
 			 this.vista.modelo = resultado.valor;
 		 }
 		 else
-			 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError);
+			 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError, resultado.codigoError);
 	 }
 	 
 	 eliminar()
@@ -130,7 +130,7 @@ class CatalogoPresentador
 			 if(resultado.codigoError==1451)
 				 this.vista.mostrarMensajeAdvertencia("Error","No se puede eliminar el registro porque esta relacionado con otro catálogo. ") ;
 			 else
-				 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar el registro. " + resultado.mensajeError);
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar el registro. " + resultado.mensajeError, resultado.codigoError);
 		 }
 	 }
 	 
@@ -151,7 +151,7 @@ class CatalogoPresentador
 			this.vista.mensajeEnviado();
 		}
 		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
 		
 		 setTimeout(function()
 		{
@@ -174,7 +174,7 @@ class CatalogoPresentador
 			this.vista.cambiarEmpresaMensaje();
 		}
 		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
 		
 	 }
 	 
@@ -222,7 +222,7 @@ class CatalogoPresentador
 			this.vista.cambiarSedeMensaje();
 		}
 		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
 	 }
 	 
 //	 consultarAreasMensaje()	
@@ -255,21 +255,21 @@ class CatalogoPresentador
 			this.vista.usuariosMensaje = resultado.valor;
 		}
 		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
 	 }
 	 
 	 consultarTareasPendientes()
 	 {
 		// this.vista.mostrarIndicador();
 		 var repositorio = new MinutasRepositorio(this);		
-		 repositorio.consultarTareasPendientes(this,function(resultado){
+		 repositorio.consultarMisTareas(this,function(resultado){
 			 if(resultado.mensajeError=="")
 			{
 				this.vista.tareasPendientes = resultado.valor;
 			}
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-		 });
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
+		 },{"terminada":0});
 	 }
 	 
 	 

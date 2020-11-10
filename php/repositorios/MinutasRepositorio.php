@@ -23,7 +23,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = "SELECT M.id, titulo, IFNULL(DATE_FORMAT(M.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, usuario_id, terminada, IFNULL(DATE_FORMAT(M.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, IFNULL(DATE_FORMAT(M.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion, U.nombre, U.apellido,
+        $this->consultaBase = "SELECT M.id, titulo, descripcion, IFNULL(DATE_FORMAT(M.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, usuario_id, terminada, IFNULL(DATE_FORMAT(M.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, IFNULL(DATE_FORMAT(M.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion, U.nombre, U.apellido,
                                 (SELECT count(*) FROM minutas_tareas T WHERE T.minuta_id = M.id) total,
                                (SELECT count(*) FROM minutas_tareas T WHERE T.minuta_id = M.id AND T.terminada=1) terminadas
                                 FROM minutas M
@@ -37,11 +37,11 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         {
             $id = $resultado->valor;
             
-            $consulta = "INSERT INTO minutas(id, titulo, fecha_alta, usuario_id, terminada, fecha_finalizacion, fecha_modificacion)
-                        VALUES(?, ?, NOW(), ?, 0, ?, NOW())";
+            $consulta = "INSERT INTO minutas(id, titulo, descripcion, fecha_alta, usuario_id, terminada, fecha_finalizacion, fecha_modificacion)
+                        VALUES(?, ?, ?, NOW(), ?, 0, ?, NOW())";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param('isis', $id, $modelo->titulo, $usuario->id,  $modelo->fechaTermino))
+                if($sentencia->bind_param('issis', $id, $modelo->titulo,$modelo->descripcion, $usuario->id,  $modelo->fechaTermino))
                 {
                     if(!$sentencia->execute())
                         $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
@@ -61,6 +61,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         $consulta = "UPDATE minutas
                      SET 
                          titulo = ?,
+                         descripcion = ?,
                          fecha_alta = ?,
                          usuario_id = ?,
                          terminada = ?,
@@ -68,7 +69,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                      WHERE id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param('ssiisi',$modelo->titulo, $modelo->fechaAlta, $modelo->usuarioId, $modelo->terminada, $modelo->fechaTermino ,$modelo->id ))
+            if($sentencia->bind_param('sssiisi',$modelo->titulo,$modelo->descripcion, $modelo->fechaAlta, $modelo->usuarioId, $modelo->terminada, $modelo->fechaTermino ,$modelo->id ))
             {
                 if($sentencia->execute())
                 {
@@ -85,7 +86,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         return $resultado;
     }
 
-    public function consultar($criteriosSeleccion)
+    public function consultar($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
         $registros = array();
@@ -93,22 +94,37 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         $where='';
         if($criteriosSeleccion!=null)
         {
-            if(isset($criteriosSeleccion->titulo))
+            if(isset($criteriosSeleccion->titulo) && $criteriosSeleccion->titulo!="")
                 array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'M','campo'=>'titulo','valor'=>$criteriosSeleccion->titulo]);
-            $where = $this->where($filtros);
+           
         }
+        
+        if($usuario!=null)
+        {
+            $filtro = "(M.usuario_id = $usuario->id OR $usuario->id IN (SELECT usuario_id FROM minutas_usuarios MU WHERE MU.minuta_id = M.id))";
+            array_push($filtros,(object)['tipo'=>'estatico','texto'=> $filtro]);
+        }
+        
+        $where = $this->where($filtros);
+        
+        
         $consulta = $this->consultaBase . $where . " ORDER BY UNIX_TIMESTAMP(M.fecha_alta) desc";
+        
+        
+        
+        
+        
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($this->bind_param($sentencia, $filtros))
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino, $fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas))
+                    if($sentencia->bind_result($id, $descripcion, $titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino, $fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas);
+                            $registro = $this->crearRegistro($id,$descripcion, $titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -127,7 +143,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         return $resultado;
     }
 
-    public function consultarPorLlaves($llaves)
+    public function consultarPorLlaves($llaves,$consultarDetalle)
     {
         $resultado = new Resultado();
         $consulta = $this->consultaBase .
@@ -138,22 +154,32 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas))
+                    if($sentencia->bind_result($id, $descripcion,$titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas))
                     {
                         if($sentencia->fetch())
                         {
-                            $minuta = $this->crearRegistro($id, $titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino, $fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas);
+                            $minuta = $this->crearRegistro($id,$descripcion, $titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino, $fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas);
                             $resultado->valor = $minuta;
                             
                             $sentencia->close();
                             
-                            $resultadoTareas = $this->consultarTareas($minuta->id);
-                            if($resultadoTareas->correcto())
+                            if($consultarDetalle)
                             {
-                                $minuta->tareas = $resultadoTareas->valor;
+                                $resultadoTareas = $this->consultarTareas($minuta->id);
+                                if($resultadoTareas->correcto())
+                                {
+                                    $minuta->tareas = $resultadoTareas->valor;
+                                    $resultadoUsuarios = $this->consultarUsuarios($minuta->id);
+                                    if($resultadoUsuarios->correcto())
+                                    {
+                                        $minuta->usuarios = $resultadoUsuarios->valor;
+                                    }
+                                    else
+                                        $resultado->mensajeError = $resultadoUsuarios->mensajeError;
+                                }
+                                else
+                                    $resultado->mensajeError = $resultadoTareas->mensajeError;
                             }
-                            else
-                                $resultado->mensajeError = $resultadoTareas->mensajeError;
                         }
                         else
                             $resultado->mensajeError = __FUNCTION__.'. No se encontró ningún resultado.';
@@ -175,7 +201,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
     public function consultarTareaPorLlaves($llaves)
     {
         $resultado = new Resultado();
-        $consulta = "SELECT T.id, RTRIM(titulo) titulo, IFNULL(DATE_FORMAT(T.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, IFNULL(DATE_FORMAT(T.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion,
+        $consulta = "SELECT T.minuta_id, T.id, RTRIM(titulo) titulo, IFNULL(DATE_FORMAT(T.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, IFNULL(DATE_FORMAT(T.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion,
             IFNULL(DATE_FORMAT(T.fecha_compromiso,'%d/%m/%Y'),'') as fecha_compromiso,
             IFNULL(DATE_FORMAT(T.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, terminada, usuario_id, U.nombre, U.apellido
             FROM minutas_tareas T
@@ -188,12 +214,13 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $titulo, $fechaAlta, $fechaModificacion, $fechaCompromiso, $fechaFinalizacion, $terminada, $usuarioId, $usuarioNombre, $usuarioApellido))
+                    if ($sentencia->bind_result($minutaId, $id, $titulo, $fechaAlta, $fechaModificacion, $fechaCompromiso, $fechaFinalizacion, $terminada, $usuarioId, $usuarioNombre, $usuarioApellido))
                     {
                         if($sentencia->fetch())
                         {
                             $tarea= (object) [
                                 'id' =>  $id,
+                                'minutaId' => $minutaId,
                                 'titulo' => $titulo,
                                 'fechaAlta' => $fechaAlta,
                                 'fechaModificacion' => $fechaModificacion,
@@ -278,12 +305,13 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         return $resultado;
     }
 
-    private function crearRegistro($id, $titulo, $fechaAlta, $usuarioId, $terminada, $fechaFinalizacion,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas)
+    private function crearRegistro($id, $titulo,$descripcion, $fechaAlta, $usuarioId, $terminada, $fechaFinalizacion,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas)
     {
         $registro= (object) 
         [
             'id' => $id,
             'titulo' => $titulo,
+            'descripcion' => $descripcion,
             'fechaAlta' => $fechaAlta,
             'usuarioId' => $usuarioId,
             'terminada' => $terminada,
@@ -342,11 +370,13 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
     {
         $resultado = new Resultado();
         $tareas = array();
-        $consulta = "SELECT T.id, RTRIM(titulo) titulo, IFNULL(DATE_FORMAT(T.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, IFNULL(DATE_FORMAT(T.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion, 
+        $consulta = "SELECT T.minuta_id, M.titulo minutaTitulo, T.id, RTRIM(T.titulo) titulo, IFNULL(DATE_FORMAT(T.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, IFNULL(DATE_FORMAT(T.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion, 
             IFNULL(DATE_FORMAT(T.fecha_compromiso,'%d/%m/%Y'),'') as fecha_compromiso, 
-            IFNULL(DATE_FORMAT(T.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, terminada, usuario_id, U.nombre, U.apellido 
+            IFNULL(DATE_FORMAT(T.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, T.terminada, T.usuario_id, U.nombre, U.apellido, 
+            (SELECT count(*) FROM minutas_tareas_comentarios MTC WHERE MTC.minuta_id = T.minuta_id AND MTC.tarea_id = T.id) numeroComentarios 
             FROM minutas_tareas T
                 INNER JOIN usuarios U ON U.id = T.usuario_id 
+                INNER JOIN minutas M ON M.id = T.minuta_id
              WHERE minuta_id  = ? 
             ORDER BY orden";
         if($sentencia = $this->conexion->prepare($consulta))
@@ -356,13 +386,15 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                 if($sentencia->execute())
                 {
                     //$valores = array();
-                    if ($sentencia->bind_result($id, $titulo, $fechaAlta, $fechaModificacion, $fechaCompromiso, $fechaFinalizacion, $terminada, $usuarioId, $usuarioNombre, $usuarioApellido))
+                    if ($sentencia->bind_result($minutaId,$minutaTitulo,$id, $titulo, $fechaAlta, $fechaModificacion, $fechaCompromiso, $fechaFinalizacion, $terminada, $usuarioId, $usuarioNombre, $usuarioApellido, $numeroComentarios))
                     //if ($sentencia->bind_result($valores))
                     {
                         while($sentencia->fetch())
                         {
                             $tarea= (object) [
                                 'id' =>  $id,
+                                'minutaId' =>  $minutaId,
+                                'minutaTitulo' =>  $minutaTitulo,
                                 'titulo' => $titulo,
                                 'fechaAlta' => $fechaAlta,
                                 'fechaModificacion' => $fechaModificacion,
@@ -371,7 +403,8 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                                 'terminada' => $terminada,
                                 'usuarioId' => $usuarioId,
                                 'usuarioNombre' => $usuarioNombre,
-                                'usuarioApellido' => $usuarioApellido
+                                'usuarioApellido' => $usuarioApellido,
+                                'numeroComentarios' => $numeroComentarios
                             ];
                             
                             $tarea->usuarioNombreCompleto = $tarea->usuarioNombre . " " . $tarea->usuarioApellido;
@@ -415,6 +448,109 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
             return $resultado;
+    }
+    
+    public function consultarMisTareas($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $tareas = array();
+        
+        $filtros = array();
+        $and='';
+        if($criteriosSeleccion!=null)
+        {
+            //var_dump($criteriosSeleccion);
+            if(isset($criteriosSeleccion->terminada))
+                array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'T','campo'=>'terminada','valor'=>$criteriosSeleccion->terminada]);
+                
+        }
+        
+        
+        $and = $this->and($filtros);
+        
+        $consulta = "SELECT M.id, M.titulo, T.id, RTRIM(T.titulo) titulo, IFNULL(DATE_FORMAT(T.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, IFNULL(DATE_FORMAT(T.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion,
+            IFNULL(DATE_FORMAT(T.fecha_compromiso,'%d/%m/%Y'),'') as fecha_compromiso,
+            IFNULL(DATE_FORMAT(T.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, T.terminada, T.usuario_id, U.nombre, U.apellido,
+            (SELECT count(*) FROM minutas_tareas_comentarios MTC WHERE MTC.minuta_id = T.minuta_id AND MTC.tarea_id = T.id) numeroComentarios
+            FROM minutas_tareas T
+                INNER JOIN usuarios U ON U.id = T.usuario_id
+                INNER JOIN minutas M ON M.id = T.minuta_id
+             WHERE $usuario->id IN (SELECT usuario_id FROM minutas_tareas_responsables MTR WHERE MTR.minuta_id = M.id AND MTR.tarea_id = T.id) 
+            $and
+            ORDER BY UNIX_TIMESTAMP(fecha_compromiso)";
+        
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            //if($sentencia->bind_param("i",$usuario->id))
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    //$valores = array();
+                    if ($sentencia->bind_result($minutaId, $minutaTitulo, $id, $titulo, $fechaAlta, $fechaModificacion, $fechaCompromiso, $fechaFinalizacion, $terminada, $usuarioId, $usuarioNombre, $usuarioApellido, $numeroComentarios))
+                    //if ($sentencia->bind_result($valores))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $tarea= (object) [
+                                'minutaId' =>  $minutaId,
+                                'minutaTitulo' => $minutaTitulo,
+                                'id' =>  $id,
+                                'titulo' => $titulo,
+                                'fechaAlta' => $fechaAlta,
+                                'fechaModificacion' => $fechaModificacion,
+                                'fechaCompromiso' => $fechaCompromiso,
+                                'fechaFinalizacion' => $fechaFinalizacion,
+                                'terminada' => $terminada,
+                                'usuarioId' => $usuarioId,
+                                'usuarioNombre' => $usuarioNombre,
+                                'usuarioApellido' => $usuarioApellido,
+                                'numeroComentarios' => $numeroComentarios
+                            ];
+                            
+                            $tarea->usuarioNombreCompleto = $tarea->usuarioNombre . " " . $tarea->usuarioApellido;
+                            $tarea->fotoPerfil =  "../fotos/usuario". $tarea->usuarioId .".jpg";
+                            if(file_exists($tarea->fotoPerfil))
+                                $tarea->fotoPerfil =  "php/fotos/usuario". $tarea->usuarioId .".jpg";
+                            else
+                                $tarea->fotoPerfil =  "php/fotos/default.jpg";
+                                
+                            array_push($tareas,$tarea);
+                        }
+                        $resultado->valor = $tareas;
+                        
+                        $sentencia->close();
+                        
+//                         for($i=0; $i < count($tareas);$i++)
+//                         {
+//                             $tarea = $tareas[$i];
+//                             $resultadoCategorias = $this->consultarResponsablesTarea($minutaId,$tarea->id);
+//                             if($resultadoCategorias->correcto())
+//                             {
+//                                 $tarea->responsables = $resultadoCategorias->valor;
+//                             }
+//                             else
+//                             {
+//                                 $resultado->mensajeError = $resultadoCategorias->mensajeError;
+//                                 break;
+//                             }
+//                         }
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        return $resultado;
     }
     
     public function consultarTareasUsuario($usuarioId)
@@ -514,85 +650,85 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             return $resultado;
     }
     
-    public function consultarTareasPendientes($usuario)
-    {
-        $resultado = new Resultado();
-        $tareas = array();
-        $consulta = "SELECT T.minuta_id, T.id, RTRIM(titulo) titulo, IFNULL(DATE_FORMAT(T.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, IFNULL(DATE_FORMAT(T.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion,
-            IFNULL(DATE_FORMAT(T.fecha_compromiso,'%d/%m/%Y'),'') as fecha_compromiso,
-            IFNULL(DATE_FORMAT(T.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, terminada, usuario_id, U.nombre, U.apellido
-            FROM minutas_tareas T
-                INNER JOIN usuarios U ON U.id = T.usuario_id
-             WHERE ? IN (SELECT usuario_id FROM minutas_tareas_responsables MTR WHERE MTR.minuta_id = T.minuta_id AND MTR.tarea_id = T.id) AND T.terminada = 0
-            ORDER BY orden";
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if($sentencia->bind_param("i",$usuario->id))
-            {
-                if($sentencia->execute())
-                {
-                    //$valores = array();
-                    if ($sentencia->bind_result($minutaId,$id, $titulo, $fechaAlta, $fechaModificacion, $fechaCompromiso, $fechaFinalizacion, $terminada, $usuarioId, $usuarioNombre, $usuarioApellido))
-                    //if ($sentencia->bind_result($valores))
-                    {
-                        while($sentencia->fetch())
-                        {
-                            $tarea= (object) [
-                                'minutaId' =>  $minutaId,
-                                'id' =>  $id,
-                                'titulo' => $titulo,
-                                'fechaAlta' => $fechaAlta,
-                                'fechaModificacion' => $fechaModificacion,
-                                'fechaCompromiso' => $fechaCompromiso,
-                                'fechaFinalizacion' => $fechaFinalizacion,
-                                'terminada' => $terminada,
-                                'usuarioId' => $usuarioId,
-                                'usuarioNombre' => $usuarioNombre,
-                                'usuarioApellido' => $usuarioApellido
-                            ];
-                            
-                            $tarea->usuarioNombreCompleto = $tarea->usuarioNombre . " " . $tarea->usuarioApellido;
-                            $tarea->fotoPerfil =  "../fotos/usuario". $tarea->usuarioId .".jpg";
-                            if(file_exists($tarea->fotoPerfil))
-                                $tarea->fotoPerfil =  "php/fotos/usuario". $tarea->usuarioId .".jpg";
-                            else
-                                $tarea->fotoPerfil =  "php/fotos/default.jpg";
-                                    
-                            array_push($tareas,$tarea);
-                        }
-                        $resultado->valor = $tareas;
-                        
-                        $sentencia->close();
-                        
-//                         for($i=0; $i < count($tareas);$i++)
+//     public function consultarTareasPendientes($usuario)
+//     {
+//         $resultado = new Resultado();
+//         $tareas = array();
+//         $consulta = "SELECT T.minuta_id, T.id, RTRIM(titulo) titulo, IFNULL(DATE_FORMAT(T.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, IFNULL(DATE_FORMAT(T.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion,
+//             IFNULL(DATE_FORMAT(T.fecha_compromiso,'%d/%m/%Y'),'') as fecha_compromiso,
+//             IFNULL(DATE_FORMAT(T.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, terminada, usuario_id, U.nombre, U.apellido
+//             FROM minutas_tareas T
+//                 INNER JOIN usuarios U ON U.id = T.usuario_id
+//              WHERE ? IN (SELECT usuario_id FROM minutas_tareas_responsables MTR WHERE MTR.minuta_id = T.minuta_id AND MTR.tarea_id = T.id) AND T.terminada = 0
+//             ORDER BY orden";
+//         if($sentencia = $this->conexion->prepare($consulta))
+//         {
+//             if($sentencia->bind_param("i",$usuario->id))
+//             {
+//                 if($sentencia->execute())
+//                 {
+//                     //$valores = array();
+//                     if ($sentencia->bind_result($minutaId,$id, $titulo, $fechaAlta, $fechaModificacion, $fechaCompromiso, $fechaFinalizacion, $terminada, $usuarioId, $usuarioNombre, $usuarioApellido))
+//                     //if ($sentencia->bind_result($valores))
+//                     {
+//                         while($sentencia->fetch())
 //                         {
-//                             $tarea = $tareas[$i];
-//                             $resultadoCategorias = $this->consultarResponsablesTarea($minutaId,$tarea->id);
-//                             if($resultadoCategorias->correcto())
-//                             {
-//                                 $tarea->responsables = $resultadoCategorias->valor;
-//                             }
+//                             $tarea= (object) [
+//                                 'minutaId' =>  $minutaId,
+//                                 'id' =>  $id,
+//                                 'titulo' => $titulo,
+//                                 'fechaAlta' => $fechaAlta,
+//                                 'fechaModificacion' => $fechaModificacion,
+//                                 'fechaCompromiso' => $fechaCompromiso,
+//                                 'fechaFinalizacion' => $fechaFinalizacion,
+//                                 'terminada' => $terminada,
+//                                 'usuarioId' => $usuarioId,
+//                                 'usuarioNombre' => $usuarioNombre,
+//                                 'usuarioApellido' => $usuarioApellido
+//                             ];
+                            
+//                             $tarea->usuarioNombreCompleto = $tarea->usuarioNombre . " " . $tarea->usuarioApellido;
+//                             $tarea->fotoPerfil =  "../fotos/usuario". $tarea->usuarioId .".jpg";
+//                             if(file_exists($tarea->fotoPerfil))
+//                                 $tarea->fotoPerfil =  "php/fotos/usuario". $tarea->usuarioId .".jpg";
 //                             else
-//                             {
-//                                 $resultado->mensajeError = $resultadoCategorias->mensajeError;
-//                                 break;
-//                             }
+//                                 $tarea->fotoPerfil =  "php/fotos/default.jpg";
+                                    
+//                             array_push($tareas,$tarea);
 //                         }
-                    }
-                    else
-                        $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
-                }
-                else
-                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
-            }
-            else
-                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
-        }
-        else
-            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+//                         $resultado->valor = $tareas;
+                        
+//                         $sentencia->close();
+                        
+// //                         for($i=0; $i < count($tareas);$i++)
+// //                         {
+// //                             $tarea = $tareas[$i];
+// //                             $resultadoCategorias = $this->consultarResponsablesTarea($minutaId,$tarea->id);
+// //                             if($resultadoCategorias->correcto())
+// //                             {
+// //                                 $tarea->responsables = $resultadoCategorias->valor;
+// //                             }
+// //                             else
+// //                             {
+// //                                 $resultado->mensajeError = $resultadoCategorias->mensajeError;
+// //                                 break;
+// //                             }
+// //                         }
+//                     }
+//                     else
+//                         $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+//                 }
+//                 else
+//                     $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+//             }
+//             else
+//                 $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+//         }
+//         else
+//             $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
-            return $resultado;
-    }
+//             return $resultado;
+//     }
     
     private function consultarResponsablesTarea($minutaId,$tareaId)
     {
@@ -743,19 +879,23 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
     {
         $resultado = new Resultado();
         $this->conexion->autocommit(FALSE);
-        $fechaFinalizacion = "";
+        $finalizacion = "";
         if($campo=="terminada")
         {
             if($valor==1)
-                $fechaFinalizacion = "fecha_finalizacion = NOW(),";
+                $finalizacion = "fecha_finalizacion = NOW(),
+                                 usuario_finalizacion_id = $usuario->id";
             else
-                $fechaFinalizacion = "fecha_finalizacion = NULL,";
+                $finalizacion = "fecha_finalizacion = NULL,
+                                     usuario_finalizacion_id = NULL";
         }
+        
         
         $consulta = " UPDATE minutas_tareas 
            SET $campo = ? ,
-                $fechaFinalizacion
-                fecha_modificacion = NOW()
+                fecha_modificacion = NOW(),
+                $finalizacion
+                
             WHERE minuta_id = ? AND id = ? ";
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -777,7 +917,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                             {
                                 $tarea = $resultado->valor;
                                
-                                $resultado = $this->enviarNotificacionDuenoTarea($usuario,$minutaId, $tarea);
+                                //$resultado = $this->enviarNotificacionDuenoTareaTerminada($usuario,$minutaId, $tarea);
                             }
                         }
                     }
@@ -1095,9 +1235,9 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
     {
         $resultado = new Resultado();
      
-        if($tarea->responsables!="" && $tarea->responsables!=null)
+        if($tarea->responsables!="" && $tarea->responsables!=null && count($usuarios)>0)
         {
-            $resultado = $this->consultarPorLlaves((object)['id' => $minutaId]);
+            $resultado = $this->consultarPorLlaves((object)['id' => $minutaId],false);
             if($resultado->correcto())
             {
                 $minuta = $resultado->valor;
@@ -1128,7 +1268,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                         
                         
                         $mensaje=  str_replace("@nombreUsuario",$nombreUsuario,$mensaje);
-                        $mensaje=  str_replace("@nombreUsuario",$accion,$mensaje);
+                        $mensaje=  str_replace("@accion",$accion,$mensaje);
                         $mensaje=  str_replace("@fotoPerfil",$fotoPerfil,$mensaje);
                         $mensaje=  str_replace("@nombreMinuta",$minuta->titulo,$mensaje);
                         $mensaje=  str_replace("@nombreTarea",$tarea->titulo,$mensaje);
@@ -1136,6 +1276,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                         
                         $mensaje=  str_replace("@minutaId",$minuta->id,$mensaje);
                         $mensaje=  str_replace("@tareaId",$tarea->id,$mensaje);
+                        $mensaje=  str_replace("@texto","",$mensaje);
                         
                         
                         $mensaje=  str_replace("@frase",$frase->texto,$mensaje);
@@ -1152,10 +1293,10 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         return $resultado;
     }
     
-    public function enviarNotificacionDuenoTarea($usuario,$minutaId, $tarea)
+    public function enviarNotificacionDuenoTareaTerminada($usuario,$minutaId, $tarea)
     {
         $resultado = new Resultado();
-        $resultado = $this->consultarPorLlaves((object)['id' => $minutaId]);
+        $resultado = $this->consultarPorLlaves((object)['id' => $minutaId],false);
         $usuarios = array();
         if($resultado->correcto())
         {
@@ -1182,8 +1323,8 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                     
                     $nombreUsuario = $usuario->nombreCompleto;
                     $fotoPerfil = "https://api.apps-handel.com/" . $usuario->fotoPerfil;
-                    $asunto  = $usuario->nombreCompleto . ": terminó una tarea: " . $tarea->titulo;
-                    $accion = "terminó una tarea: ";
+                    $asunto  = $usuario->nombreCompleto . ": terminó una tarea que le asignaste: " . $tarea->titulo;
+                    $accion = "terminó una tarea que le asignaste: ";
                     
                     $asunto="=?UTF-8?B?".base64_encode($asunto)."?=";
                     
@@ -1203,6 +1344,9 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                     $mensaje=  str_replace("@minutaId",$minuta->id,$mensaje);
                     $mensaje=  str_replace("@tareaId",$tarea->id,$mensaje);
                     
+                    $porcentaje = $minuta->porcentaje;
+                    $mensaje=  str_replace("@texto","<br>Con ésta tarea cumplida, el avance de la minuta es $porcentaje%",$mensaje);
+                    
                     
                     $mensaje=  str_replace("@frase",$frase->texto,$mensaje);
                     $mensaje=  str_replace("@autor",$frase->autor,$mensaje);
@@ -1213,6 +1357,60 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                     $resultado = $administrador_correo->enviarCorreoUsuarios($tipo,$usuarios,$asunto, $mensaje, $info, "SAHA: Tareas");
                 }
                 //}
+            }
+        }
+        return $resultado;
+    }
+    
+    public function enviarNotificacionUsuariosMinuta($usuario,$minutaId, $usuarios)
+    {
+        $resultado = new Resultado();
+        
+        if(count($usuarios)>0)
+        {
+            $resultado = $this->consultarPorLlaves((object)['id' => $minutaId],false);
+            if($resultado->correcto())
+            {
+                $minuta = $resultado->valor;
+                $frasesRepositorio = new FrasesRepositorio($this->conexion);
+                $resultado = $frasesRepositorio->consultarAleatorio();
+                if($resultado->correcto())
+                {
+                    
+                    $frase = $resultado->valor;
+                    
+                    $nombreUsuario = $usuario->nombreCompleto;
+                    $fotoPerfil = "https://api.apps-handel.com/" . $usuario->fotoPerfil;
+                    $asunto  = $usuario->nombreCompleto . ": te compartió una minuta: " . $minuta->titulo;
+                    $accion = "te compartió una minuta: ";
+                    
+                    $asunto="=?UTF-8?B?".base64_encode($asunto)."?=";
+                    
+                    $tipo = "minuta" .$minuta->id;
+                    $info = "";
+                    $mensaje= file_get_contents('../plantillas_correo/notificacion_minuta.html');
+                    
+                    
+                    $mensaje=  str_replace("@nombreUsuario",$nombreUsuario,$mensaje);
+                    $mensaje=  str_replace("@accion",$accion,$mensaje);
+                    $mensaje=  str_replace("@fotoPerfil",$fotoPerfil,$mensaje);
+                    $mensaje=  str_replace("@nombreMinuta",$minuta->titulo,$mensaje);
+                    //$mensaje=  str_replace("@nombreTarea","",$mensaje);
+                    //$mensaje=  str_replace("@fechaVencimiento",$tarea->fechaCompromiso,$mensaje);
+                    
+                    $mensaje=  str_replace("@minutaId",$minuta->id,$mensaje);
+                    //$mensaje=  str_replace("@tareaId",$tarea->id,$mensaje);
+                    
+                    
+                    $mensaje=  str_replace("@frase",$frase->texto,$mensaje);
+                    $mensaje=  str_replace("@autor",$frase->autor,$mensaje);
+                    
+                    
+                    
+                    $administrador_correo = new AdministradorCorreo();
+                    $resultado = $administrador_correo->enviarCorreoUsuarios($tipo,$usuarios,$asunto, $mensaje, $info, "SAHA: Tareas");
+                    //}
+                }
             }
         }
         return $resultado;
@@ -1331,6 +1529,68 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                          
                             
                            
+                            
+                        }
+                        else
+                            $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        }
+        $resultado->valor = $usuarios;
+        return $resultado;
+    }
+    
+    public function consultarUsuariosNoAsignadosMinuta($minutaId,$usuariosCompartir)
+    {
+        $resultado = new Resultado();
+        $usuarios = array();
+        $usuariosIds = "";
+        if($usuariosCompartir!=null)
+        {
+            for ($l = 0; $l< count($usuariosCompartir); $l++)
+            {
+                $responsable = $usuariosCompartir[$l];
+                $usuariosIds.= $responsable->usuarioId;
+                if($l < count($usuariosCompartir) -1)
+                    $usuariosIds.=",";
+            }
+            
+            $consulta = "SELECT id, nombre, apellido, nombre_usuario
+                        FROM usuarios
+                        WHERE id IN ($usuariosIds) AND id NOT IN(SELECT usuario_id
+                        FROM minutas_usuarios
+                        WHERE minuta_id = ?)";
+            
+            
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($sentencia->bind_param("i",$minutaId))
+                {
+                    if($sentencia->execute())
+                    {
+                        if ($sentencia->bind_result($id, $nombre, $apellido, $nombreUsuario))
+                        {
+                            
+                            while($sentencia->fetch())
+                            {
+                                $usuario= (object) [
+                                    'id' =>  $id,
+                                    'nombre' => $nombre,
+                                    'apellido' => $apellido,
+                                    'nombreUsuario' => $nombreUsuario
+                                ];
+                                
+                                $usuario->nombreCompleto = $usuario->nombre . " " . $usuario->apellido;
+                                array_push($usuarios,$usuario);
+                            }
                             
                         }
                         else
@@ -1501,5 +1761,220 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
     }
     
     
+    public function actualizarUsuarios($usuario,$minutaId, $usuarios)
+    {
+//         $resultado = new Resultado();
+//         ini_set('max_execution_time', 300);
+//         $resultado = new Resultado();
+//         $this->conexion->autocommit(FALSE);
+//         $resultado  = $this->eliminarUsuarios($minutaId);
+//         if($resultado->correcto())
+//         {
+//             $resultado  = $this->insertarUsuarios($minutaId,$usuarios);
+            
+//             if($resultado->correcto())
+//             {
+//                 $resultado = $this->consultarUsuariosNoAsignadosCompartir($minutaId,$modelo);
+//                 if($resultado->correcto())
+//                 {
+                    
+//                 }
+                    
+//                 //$resultado = $this->enviarNotificacionUsuarios($usuario,$minutaId, $modelo, $usuarios);
+//             }
+//         }
+//         if($resultado->correcto())
+//             $this->conexion->commit();
+//         else
+//             $this->conexion->rollback();
+//         return $resultado;
+
+         $resultado = new Resultado();
+        ini_set('max_execution_time', 300);
+        $resultado = new Resultado();
+        $this->conexion->autocommit(FALSE);
+       
+        $resultado = $this->consultarUsuariosNoAsignadosMinuta($minutaId,$usuarios);
+        
+        if($resultado->correcto())
+        {
+            $usuariosCompartir = $resultado->valor;
+            $resultado  = $this->eliminarUsuarios($minutaId);
+            if($resultado->correcto())
+            {
+                $resultado  = $this->insertarUsuarios($minutaId,$usuarios);
+                if($resultado->correcto())
+                {
+                    $resultado = $this->actualizarMinuta($minutaId);
+                    if($resultado->correcto())
+                    {
+                        $resultado = $this->enviarNotificacionUsuariosMinuta($usuario,$minutaId, $usuariosCompartir);
+                    }
+                }
+            }
+        }
+        
+        if($resultado->correcto())
+            $this->conexion->commit();
+        else
+            $this->conexion->rollback();
+        return $resultado;
+
+    }
+    
+    private function eliminarUsuarios($minutaId)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM minutas_usuarios WHERE minuta_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$minutaId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                    
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__ ." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
+    private function insertarUsuarios($minutaId,$usuarios)
+    {
+        $resultado = new Resultado();
+        
+      
+        
+        for ($l = 0; $l< count($usuarios); $l++)
+        {
+            $usuario = $usuarios[$l];
+            
+            $consulta = "INSERT INTO minutas_usuarios(minuta_id, id, usuario_id) " .
+                "VALUE(?, ?, ?)";
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($sentencia->bind_param("iii",$minutaId,$usuario->id, $usuario->usuarioId))
+                {
+                    if($sentencia->execute())
+                    {
+                        $sentencia->close();
+                    }
+                    else
+                    {
+                        $resultado->codigoError = $this->conexion->errno;
+                        $resultado->mensajeError = __FUNCTION__." Falló la ejecución: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                        break;
+                    }
+                }
+                else
+                {
+                    $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+                    break;
+                }
+            }
+            else
+            {
+                $resultado->codigoError = $this->conexion->errno;
+                $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                break;
+            }
+        }
+        return $resultado;
+    }
+    
+    
+    private function consultarUsuarios($minutaId)
+    {
+        $resultado = new Resultado();
+        $usuarios = array();
+        $consulta = "SELECT id, usuario_id " .
+            "FROM minutas_usuarios " .
+            " WHERE minuta_id = ? ".
+            "ORDER BY id";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            
+            if($sentencia->bind_param("i",$minutaId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id,$usuarioId))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $usuario= (object) [
+                                'id' =>  $id,
+                                'usuarioId' =>  $usuarioId
+                            ];
+                            array_push($usuarios,$usuario);
+                        }
+                        $resultado->valor = $usuarios;
+                        $sentencia->close();
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__. " Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__. " Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. " Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__. " Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
+    public function consultarNumeroComentariosTarea($minutaId, $tareaId)
+    {
+        $resultado = new Resultado();
+        $consulta =  "SELECT count(*) AS id FROM minutas_tareas_comentarios WHERE minuta_id = ? AND tarea_id = ?  ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("ii", $minutaId, $tareaId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $resultado->valor = $id;
+                        }
+                        else
+                            $resultado->mensajeError =  __FUNCTION__. " No se encontró ningún resultado";
+                    }
+                    else
+                        $resultado->mensajeError =  __FUNCTION__. " Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError =  __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+            {
+                $resultado->mensajeError =  __FUNCTION__. " Falló el enlace de parámetros";
+            }
+        }
+        else
+            $resultado->mensajeError =  __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            return $resultado;
+    }   
     
 }

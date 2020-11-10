@@ -19,10 +19,20 @@ header('Access-Control-Allow-Credentials: true');
               <form id='formularioAlta' action='#'  method='post'>
                   <div class='form-group'>
                       <div>
-                          <label class='control-label mb-1'>Titulo</label>
+                          <label class='control-label mb-1'>Título</label>
                           <input  id='tituloInputAlta' name='tituloInputAlta' type='text' class='form-control'>
                       </div>
                   </div>
+                  
+                  <div class='form-group'>
+                      <div>
+                          <label class='control-label mb-1'>Descripción</label>
+                         <textarea  class="form-control"  name="descripcionInputAlta"  style='height:70px;resize: none;' id="descripcionInputAlta"></textarea>
+
+                      </div>
+                  </div>
+                  
+                  
                  
               </form>
           </div>
