@@ -194,10 +194,12 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
                     FROM mensajes M
                         INNER JOIN usuarios U ON U.id = M.usuario_id 
                     WHERE M.id NOT IN(SELECT mensaje_id FROM mensajes_leidos ML WHERE ML.usuario_id = ?)
-                            AND ((U.tipo_usuario_id = 1 AND (compartir_empresa_id is null OR compartir_empresa_id = ?)) or (U.tipo_usuario_id != 1 AND U.empresa_id IN ($empresasIds)))
+                            AND ((((U.tipo_usuario_id = 1 AND (compartir_empresa_id is null OR compartir_empresa_id = ?)) or (U.tipo_usuario_id != 1 AND U.empresa_id IN ($empresasIds)))
              	            AND (compartir_sede_id is null OR compartir_sede_id = ?)
                             AND (compartir_departamento_id is null OR compartir_departamento_id = ?)
-                            AND (compartir_usuario_id is null OR compartir_usuario_id = ? or usuario_id=?)";
+                            AND (compartir_usuario_id is null OR compartir_usuario_id = ? )) or usuario_id=?)  ";
+            
+           
             
             
             $resultado->valor = 0;
@@ -246,10 +248,10 @@ class MensajesRepositorio extends RepositorioBase implements IMensajesRepositori
         {
             $empresasIds = implode(",", $resultado->valor);
             
-            $where= "WHERE ((tipo_usuario_id = 1 AND (compartir_empresa_id is null OR compartir_empresa_id = ?)) or (tipo_usuario_id != 1 AND U.empresa_id IN ($empresasIds)))
+            $where= "WHERE ( ((tipo_usuario_id = 1 AND (compartir_empresa_id is null OR compartir_empresa_id = ?)) or (tipo_usuario_id != 1 AND U.empresa_id IN ($empresasIds)))
              	AND (compartir_sede_id is null OR compartir_sede_id = ?)
                  AND (compartir_departamento_id is null OR compartir_departamento_id = ?)
-                 AND (compartir_usuario_id is null OR compartir_usuario_id = ? OR usuario_id= ?)";
+                 AND (compartir_usuario_id is null OR compartir_usuario_id = ?)) OR usuario_id = ?";
             
             
             $consulta = $this->consultaBase . $where . ' ORDER BY UNIX_TIMESTAMP(fecha) desc';

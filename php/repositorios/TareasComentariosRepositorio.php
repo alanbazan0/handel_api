@@ -4,10 +4,12 @@ namespace php\repositorios;
 use php\interfaces\ITareasComentariosRepositorio;
 use php\modelos\TareaComentario;
 use php\modelos\Resultado;
+use php\clases\AdministradorCorreo;
 
 include '../interfaces/ITareasComentariosRepositorio.php';
 include '../modelos/TareaComentario.php';
 require_once('RepositorioBase.php');
+require_once('MinutasRepositorio.php');
 require_once('../clases/Resultado.php');
 
 class TareasComentariosRepositorio extends RepositorioBase implements ITareasComentariosRepositorio
@@ -22,8 +24,9 @@ class TareasComentariosRepositorio extends RepositorioBase implements ITareasCom
                                 INNER JOIN usuarios U ON U.id = MTC.usuario_id ";
     }
 
-    public function insertar(TareaComentario $modelo)
+    public function insertar($usuario,TareaComentario $modelo)
     {
+        $this->conexion->autocommit(FALSE);
         $resultado = $this->calcularId('id','minutas_tareas_comentarios');
         if($resultado->mensajeError=='')
         {
@@ -33,7 +36,54 @@ class TareasComentariosRepositorio extends RepositorioBase implements ITareasCom
             {
                 if($sentencia->bind_param('iiiis', $id, $modelo->minutaId, $modelo->tareaId, $modelo->usuarioId, $modelo->comentario))
                 {
-                    if(!$sentencia->execute())
+                    if($sentencia->execute())
+                    {
+                        $llaves= (object)
+                        [
+                            'minutaId'=> $modelo->minutaId,
+                            'tareaId'=> $modelo->tareaId
+                        ];
+                        $sentencia->close();
+                        $repositorio = new MinutasRepositorio($this->conexion);
+                        $resultado = $repositorio->consultarTareaPorLlaves($llaves);
+                        if($resultado->correcto())
+                        {
+                            $tarea =  $resultado->valor;
+                            $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                            $resultado = $this->consultaUsuariosComentario($tarea->minutaId,$tarea->id);
+                            if($resultado->correcto())
+                            {
+                                $usuarios = $resultado->valor;
+                                
+                                if(!$usuariosRepositorio->existeUsuarioArreglo($tarea->usuarioId,$usuarios))
+                                {
+                                    $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$tarea->usuarioId]);
+                                    if($resultado->correcto())
+                                        array_push($usuarios, $resultado->valor);
+                                }
+                                
+                                if($usuario->supervisor1Id!=null)
+                                {
+                                    if(!$usuariosRepositorio->existeUsuarioArreglo($usuario->supervisor1Id,$usuarios))
+                                    {
+                                        $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$usuario->supervisor1Id]);
+                                        if($resultado->correcto())
+                                            array_push($usuarios, $resultado->valor);
+                                    }
+                                }
+                                
+                                
+                                $usuariosRepositorio->eliminarUsuarioArreglo($usuario->id,$usuarios);
+                                
+                                $resultado = $this->enviarNotificacionComentario($usuario,$usuarios,$tarea, $modelo->comentario);
+                                if($resultado->correcto())
+                                { 
+                                    $resultado->valor = $modelo->id;
+                                }
+                            }
+                        }
+                    }
+                    else
                         $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 }
                 else
@@ -42,8 +92,61 @@ class TareasComentariosRepositorio extends RepositorioBase implements ITareasCom
             else
                 $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' .$this->conexion->error;
         }
+        
+        if($resultado->correcto())
+            $this->conexion->commit();
+        else
+            $this->conexion->rollback();
         return $resultado;
     }
+    
+    public function enviarNotificacionComentario($usuario,$usuarios, $tarea, $comentario)
+    {
+        $resultado = new Resultado();
+        
+        $frasesRepositorio = new FrasesRepositorio($this->conexion);
+        $resultado = $frasesRepositorio->consultarAleatorio();
+        if($resultado->correcto())
+        {
+            
+            $frase = $resultado->valor;
+            
+            $nombreUsuario = $usuario->nombreCompleto;
+            $fotoPerfil = "https://api.apps-handel.com/" . $usuario->fotoPerfil;
+            $asunto  = $usuario->nombreCompleto . " hizo un comentario en tarea: " . $tarea->titulo;
+            $accion = " ha comentado en la conversación sobre la tarea: ";
+            
+            $asunto="=?UTF-8?B?".base64_encode($asunto)."?=";
+            
+            $tipo = "minuta" .$tarea->minutaId ."tarea" . $tarea->id;
+            $info = "";
+            $mensaje= file_get_contents('../plantillas_correo/notificacion_comentario_tarea.html');
+            
+            
+            $mensaje=  str_replace("@nombreUsuario",$nombreUsuario,$mensaje);
+            $mensaje=  str_replace("@accion",$accion,$mensaje);
+            $mensaje=  str_replace("@fotoPerfil",$fotoPerfil,$mensaje);
+            $mensaje=  str_replace("@nombreMinuta",$tarea->minutaTitulo,$mensaje);
+            $mensaje=  str_replace("@nombreTarea",$tarea->titulo,$mensaje);
+            $mensaje=  str_replace("@fechaVencimiento",$tarea->fechaCompromiso,$mensaje);
+            
+            $mensaje=  str_replace("@minutaId",$tarea->minutaId,$mensaje);
+            $mensaje=  str_replace("@tareaId",$tarea->id,$mensaje);
+            $mensaje=  str_replace("@texto",$comentario,$mensaje);
+            
+            
+            $mensaje=  str_replace("@frase",$frase->texto,$mensaje);
+            $mensaje=  str_replace("@autor",$frase->autor,$mensaje);
+            
+            
+            
+            $administrador_correo = new AdministradorCorreo();
+            $resultado = $administrador_correo->enviarCorreoUsuarios($tipo,$usuarios,$asunto, $mensaje, $info, "SAHA: Tareas");
+            //}
+        }
+        return $resultado;
+    }
+    
 
     public function actualizar(TareaComentario $modelo)
     {
@@ -205,4 +308,51 @@ class TareasComentariosRepositorio extends RepositorioBase implements ITareasCom
         
         return $registro;
     }
+    
+    public function consultaUsuariosComentario($minutaId, $tareaId)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $consulta = "SELECT U.id, U.nombre, U.apellido, U.nombre_usuario
+            FROM minutas_tareas_comentarios EC
+                INNER JOIN usuarios U ON U.id = EC.usuario_id
+        WHERE minuta_id = ? AND tarea_id = ?
+        GROUP BY   U.id, U.nombre, U.apellido, U.nombre_usuario ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("ii",$minutaId,$tareaId))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id, $nombre, $apellido, $nombreUsuario))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro= (object)
+                            [
+                                "id" => $id,
+                                "nombre" => $nombre,
+                                "apellido" => $apellido,
+                                "nombreUsuario" => $nombreUsuario
+                            ];
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        return $resultado;
+    }
+    
 }

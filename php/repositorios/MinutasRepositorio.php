@@ -201,11 +201,12 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
     public function consultarTareaPorLlaves($llaves)
     {
         $resultado = new Resultado();
-        $consulta = "SELECT T.minuta_id, T.id, RTRIM(titulo) titulo, IFNULL(DATE_FORMAT(T.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, IFNULL(DATE_FORMAT(T.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion,
+        $consulta = "SELECT M.id, M.titulo, T.id, RTRIM(T.titulo) titulo, IFNULL(DATE_FORMAT(T.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, IFNULL(DATE_FORMAT(T.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion,
             IFNULL(DATE_FORMAT(T.fecha_compromiso,'%d/%m/%Y'),'') as fecha_compromiso,
-            IFNULL(DATE_FORMAT(T.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, terminada, usuario_id, U.nombre, U.apellido
+            IFNULL(DATE_FORMAT(T.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, T.terminada, T.usuario_id, U.nombre, U.apellido
             FROM minutas_tareas T
                 INNER JOIN usuarios U ON U.id = T.usuario_id
+                INNER JOIN minutas M ON M.id = T.minuta_id
              WHERE minuta_id  = ?  AND T.id = ?
             ORDER BY orden";
         if($sentencia = $this->conexion->prepare($consulta))
@@ -214,13 +215,14 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($minutaId, $id, $titulo, $fechaAlta, $fechaModificacion, $fechaCompromiso, $fechaFinalizacion, $terminada, $usuarioId, $usuarioNombre, $usuarioApellido))
+                    if ($sentencia->bind_result($minutaId, $minutaTitulo, $id, $titulo, $fechaAlta, $fechaModificacion, $fechaCompromiso, $fechaFinalizacion, $terminada, $usuarioId, $usuarioNombre, $usuarioApellido))
                     {
                         if($sentencia->fetch())
                         {
                             $tarea= (object) [
                                 'id' =>  $id,
                                 'minutaId' => $minutaId,
+                                'minutaTitulo' => $minutaTitulo,
                                 'titulo' => $titulo,
                                 'fechaAlta' => $fechaAlta,
                                 'fechaModificacion' => $fechaModificacion,
@@ -1032,31 +1034,35 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         $resultado = $this->eliminarResponsablesTarea($llaves->minutaId,$llaves->tareaId);
         if($resultado->correcto())
         {
-            $consulta ="DELETE FROM minutas_tareas WHERE minuta_id = ? AND id = ?";
-            if($sentencia = $this->conexion->prepare($consulta))
+            $resultado = $this->eliminarComentariosTarea($llaves->minutaId,$llaves->tareaId);
+            if($resultado->correcto())
             {
-                if($sentencia->bind_param("ii",$llaves->minutaId,$llaves->tareaId))
+                $consulta ="DELETE FROM minutas_tareas WHERE minuta_id = ? AND id = ?";
+                if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    if($sentencia->execute())
+                    if($sentencia->bind_param("ii",$llaves->minutaId,$llaves->tareaId))
                     {
-                        $sentencia->close();
-                        $resultado = $this->actualizarMinuta($llaves->minutaId);
+                        if($sentencia->execute())
+                        {
+                            $sentencia->close();
+                            $resultado = $this->actualizarMinuta($llaves->minutaId);
+                        }
+                        else
+                        {
+                            $resultado->codigoError = $this->conexion->errno;
+                            $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                        }
+                        
                     }
                     else
-                    {
-                        $resultado->codigoError = $this->conexion->errno;
-                        $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
-                    }
-                    
+                        $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
                 }
                 else
-                    $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
-            }
-            else
-            {
-                $resultado->codigoError = $this->conexion->errno;
-                $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-                
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    
+                }
             }
         }
         if($resultado->correcto())
@@ -1072,6 +1078,38 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         $resultado = new Resultado();
         
         $consulta ="DELETE FROM minutas_tareas_responsables WHERE minuta_id = ? AND tarea_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("ii",$minutaId,$tareaId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
+    public function eliminarComentariosTarea($minutaId, $tareaId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta ="DELETE FROM minutas_tareas_comentarios WHERE minuta_id = ? AND tarea_id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param("ii",$minutaId,$tareaId))
@@ -1293,6 +1331,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         return $resultado;
     }
     
+   
     public function enviarNotificacionDuenoTareaTerminada($usuario,$minutaId, $tarea)
     {
         $resultado = new Resultado();

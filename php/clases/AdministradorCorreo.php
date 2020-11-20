@@ -284,6 +284,32 @@ class AdministradorCorreo
         return  $this->enviarCorreoUsuarios($tipo,$usuarios,$asunto, $mensaje, $info, "SAHA: Tareas");
     }
     
+    public function enviarNotificacionComentarioTarea($usuario, $usuarios, $tarea, $comentario)
+    {
+        
+        $nombreUsuario = $usuario->nombreCompleto;
+        $fotoPerfil = "https://api.apps-handel.com/" . $usuario->fotoPerfil;
+        $asunto  = $usuario->nombreCompleto . ": hizo un comentario en tarea " . $tarea->titulo;
+        
+        $asunto="=?UTF-8?B?".base64_encode($asunto)."?=";
+        
+        $tipo = "minuta" .$$tarea->minutaId ."tarea" . $tarea->id;
+        $info = "";
+        $mensaje= file_get_contents('../plantillas_correo/notificacion_comentario_tarea.html');
+        
+        //$titulo = "El usuario $usuario->nombreCompleto ha comentado en la conversación sobre la tarea: <label style='font-weight:bold'> $tarea->minutaTitulo - $tarea->titulo</label>";
+        
+        
+        //   $caricatura = "https://api.apps-handel.com/images/caricatura/Bonus_Shapes_and_Backgounds-12.png";
+        
+        $mensaje=  str_replace("@nombreUsuario",$nombreUsuario,$mensaje);
+        $mensaje=  str_replace("@fotoPerfil",$fotoPerfil,$mensaje);
+        $mensaje=  str_replace("@nombreMinuta",$tarea->minutaTitulo,$mensaje);
+        $mensaje=  str_replace("@nombreTarea",$tarea->titulo,$mensaje);
+        
+        return  $this->enviarCorreoUsuarios($tipo,$usuarios,$asunto, $mensaje, $info, "SAHA: Tareas");
+    }
+    
     
 //     public function enviarNotificacionComentario($usuario, $usuarios, $evidencia, $comentario)
 //     {
@@ -358,7 +384,7 @@ class AdministradorCorreo
         //$correos = "alanbazan@apps-handel.com, alanbazan@hotmail.com, alanbazan0@gmail.com";
         
         $errLevel = error_reporting(E_ALL ^ E_WARNING);
-        $resultadoMail = true;
+        $resultadoMail = false;
         $resultadoMail= mail("noreply@apps-handel.com", $asunto, $mensaje, $cabecera);
         error_reporting($errLevel);
         
@@ -376,7 +402,14 @@ class AdministradorCorreo
             $resultado->valor="OK";
             $this->mensajeLog($tipo,$correos, $mensaje, $info);
         }
-        
+        else
+        {
+            $resultado->mensajeError="No se pudo enviar el correo electrónico." . htmlspecialchars_decode($error["message"]) ;
+            $resultado->codigoError = 3;
+            
+            $this->mensajeLog($tipo."_error", $correos,$mensaje, $info);
+        }
+        var_dump($error);
        // var_dump($resultado);
         
         

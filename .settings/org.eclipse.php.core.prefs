@@ -1,2 +1,5 @@
 eclipse.preferences.version=1
 include_path=0;/handel_api
+phpVersion=php7.3
+useShortTags=true
+use_asp_tags_as_php=false
