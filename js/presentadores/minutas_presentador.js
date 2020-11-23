@@ -33,7 +33,7 @@ class MinutasPresentador extends CatalogoPresentador
 			this.vista.mostrarMensaje("Notificación","La información se guardó correctamente. Id: " + resultado.valor);
 			this.vista.salirFormularioAlta();
 			this.vista._llaves = {id : resultado.valor};
-			this.vista._registroSeleccionado.id = resultado.valor;
+			this.vista._registroSeleccionado = {id : resultado.valor};
 			this.vista.editar();
 		}
 		else
@@ -81,6 +81,7 @@ class MinutasPresentador extends CatalogoPresentador
 						{
 							componente.listaTareas.eliminarTarea(tarea.minutaId, tarea.id);
 						}
+						this.consultarPorcentajeAvance();
 					 }
 				 }
 				 else
@@ -90,6 +91,21 @@ class MinutasPresentador extends CatalogoPresentador
 			 },tarea.minutaId, tarea.id, campo, valor);
 		}
 	 }
+
+	consultarPorcentajeAvance()
+	{
+		 this._repositorio.consultarPorcentajeAvance(this,function(resultado)
+		 {		
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.porcentajeAvance = resultado.valor;
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error", resultado.mensajeError, resultado.codigoError);
+			 }
+		 },this.vista.minutaId);
+	}
 	 
 	 eliminarTarea()
 	 {

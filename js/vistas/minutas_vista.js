@@ -44,6 +44,11 @@ class MinutasVista extends CatalogoVista
 		var fecha = new Date();
 		this._time = fecha.getTime();
 		
+		$("#crearMinutaLink").click(function(){
+			$('.nav-tabs a[href="#minutas"]').tab('show');
+		});
+		
+		$('.colorpicker').colorpicker();
 	}
 	
 	
@@ -227,6 +232,9 @@ class MinutasVista extends CatalogoVista
 		{
 			$("#tituloH").html($("#tituloInput").val());
 		});
+		$("#acuerdosInput").change(this.cambiarCampo);
+		$("#participantesInput").change(this.cambiarCampo);
+		$("#colorInput").change(this.cambiarCampo);
 		
 	}
 	
@@ -236,6 +244,16 @@ class MinutasVista extends CatalogoVista
 		if(campo=="usuarios")
 		{
 			vista.presentador.actualizarUsuarios();
+		}
+		else if(campo=="color")
+		{
+			var valor = $(event.currentTarget).val();
+			var color = $(event.currentTarget).data("color");
+			if(valor!=color)
+			{
+				 $(event.currentTarget).data("color",valor);
+				vista.presentador.actualizarValor(campo,valor);
+			}
 		}
 		else
 		{
@@ -257,6 +275,7 @@ class MinutasVista extends CatalogoVista
 			{longitud:40, 	titulo:"Id",   	alias:"id", alineacion:"D" },
 			{longitud:200, 	titulo:"Título",   alias:"titulo", alineacion:"I" },
 			{longitud:300, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I" },
+			{longitud:50, 	titulo:"Color de etiqueta",   alias:"color", alineacion:"C", itemRenderer: this.renderColor },
 			{longitud:50, 	titulo:"Avance",   alias:"titulo", alineacion:"C", itemRenderer: this.rendererPorcentaje },
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogo},
 			{longitud:200, 	titulo:"Usuario que creó" ,   alias:"usuarioNombreCompleto", alineacion:"I",class: "desc" }, 
@@ -349,6 +368,13 @@ class MinutasVista extends CatalogoVista
 		return contenido;
 	}
 	
+	renderColor(renglon, campoBase)
+	{    
+		var contenido = "";
+		contenido += "<center><div style='background-color:"+renglon.color+"; width: 20px; height: 20px; border-radius: 3px;'></center>";
+		return contenido;
+	}
+	
 
 	
 	get criteriosSeleccion()
@@ -364,6 +390,7 @@ class MinutasVista extends CatalogoVista
 	{		
 		this.modeloEdicion = valor;
 		$('#tituloH').html(this.modeloEdicion.titulo);
+		$('#avanceH').html("("+this.modeloEdicion.porcentaje + " % de avance)");
 		$('#tituloInput').val(this.modeloEdicion.titulo);
 		$('#descripcionInput').val(this.modeloEdicion.descripcion);
 		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
@@ -391,6 +418,13 @@ class MinutasVista extends CatalogoVista
 					"</span> <span class='description' title='"+this.modeloEdicion.fechaAlta+"'  >Creada" +
 					"- " + fecha.fromNow() + "</span>";
 		$("#usuarioDiv").html(html);
+		
+		$('#acuerdosInput').val(this.modeloEdicion.acuerdos);
+		$('#participantesInput').val(this.modeloEdicion.participantes);
+		$("#colorInput").val(this.modeloEdicion.color);
+		var i = $('.input-group-addon').find("i");
+		i.css('backgroundColor',this.modeloEdicion.color);
+		$("#colorInput").data("color",this.modeloEdicion.color);
 		
 		
 		this.consultarResponsables();
@@ -759,7 +793,19 @@ class MinutasVista extends CatalogoVista
 		$('#tareasSectionContenido').hide();	
 		$('#tareasSection').hide();
 		$("#compartirGroup").hide();
-		this.consultar();
+		//this.consultar();
+		var target = $("ul#minutasNav li.active").find("a").attr("href");
+    	  switch(target)
+    	  {
+    	  	case "#minutas":
+    	  		//if(!this._consultoMinutas)
+    	  			this.consultar();	
+    		break;
+    	  	case "#tareas-pendientes":
+    	  		//if(!_this._consultoTareasPendientes)
+    	  			this.consultarMisTareasPendientes();	
+    		break;
+    	  }
 	}
 	
 	salirFormularioAlta()
@@ -996,6 +1042,11 @@ class MinutasVista extends CatalogoVista
 	set misTareasPendientes(misTareasPendientes)
 	{
 		this.listaTareasPendientes.tareas= misTareasPendientes;
+		if(misTareasPendientes.length==0)
+			$("#tareasPendientesDiv").fadeIn();
+		else
+			$("#tareasPendientesDiv").hide();
+			
 	}
 	
 	consultarNumeroComentariosTarea(listaTareas,minutaId, tareaId)
@@ -1007,6 +1058,10 @@ class MinutasVista extends CatalogoVista
 	setNumeroComentariosTarea(minutaId, tareaId, numeroComentarios)
 	{
 		this.listaTareasActual.setNumeroComentariosTarea(minutaId,tareaId, numeroComentarios);
+	}
+	
+	set porcentajeAvance(porcentaje){
+		$('#avanceH').html("("+porcentaje + " % de avance)");
 	}
 	
 }

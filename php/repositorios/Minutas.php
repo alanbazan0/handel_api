@@ -135,6 +135,10 @@ try
                     $tareaId = REQUEST('tareaId');
                     $resultado = $repositorio->consultarNumeroComentariosTarea($minutaId, $tareaId);
                 break;
+                case 'consultarPorcentajeAvance':
+                    $minutaId = REQUEST('minutaId');
+                    $resultado = $repositorio->consultarPorcentajeAvance($minutaId);
+                break;
                 default:
                     $resultado->mensajeError = 'Acción no implementada';
                 break;
