@@ -48,7 +48,17 @@ class MinutasVista extends CatalogoVista
 			$('.nav-tabs a[href="#minutas"]').tab('show');
 		});
 		
-		$('.colorpicker').colorpicker();
+		$('#colorPickerGroup').colorpicker();
+		
+		var _this = this;
+		$("#generarPDF1Button").click(function(){
+			_this._llaves = {id: _this.modeloEdicion.id};
+			_this.imprimirReporte();
+		});
+		$("#generarPDF2Button").click(function(){
+			_this._llaves = {id: _this.modeloEdicion.id};
+			_this.imprimirReporte();
+		});
 	}
 	
 	
@@ -281,13 +291,46 @@ class MinutasVista extends CatalogoVista
 			{longitud:200, 	titulo:"Usuario que creó" ,   alias:"usuarioNombreCompleto", alineacion:"I",class: "desc" }, 
 			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
 			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
-			{longitud:100, 	titulo:"Fecha de finalización",   alias:"fechaFinalizacion", alineacion:"I"}
+			{longitud:100, 	titulo:"Fecha de terminación",   alias:"fechaFinalizacion", alineacion:"I"}
 		]
 		
-		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
+		
+		
+		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='PDF'  type='button' class='imprimir btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active' style='background-color:#d62929'><span  data-toggle='tooltip' class='fa fa-file-pdf-o fa-lg'></span></button>" +
+		
+		"<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
 		"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
 		this.tabla.registros = [];
+	}
+	
+	inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave)
+	{
+		super.inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave);
+		var _this = this;
+		$(tbody).on("click", "button.imprimir", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.imprimirReporte();
+			}
+		});
+	}
+	
+	imprimirReporte()
+	{
+		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_minuta.php");
+		this.createNewFormElement(submitForm, "minutaId", this._llaves.id);	 
+	    submitForm.target= "_blank";
+	    submitForm.submit();
 	}
 	
 	renderLogo(renglon, type, set)
@@ -381,7 +424,8 @@ class MinutasVista extends CatalogoVista
 	{
 		 var criteriosSeleccion = 
 		 {				    
-			titulo:$('#tituloInputCriterio').val()
+			titulo:$('#tituloInputCriterio').val(),
+			terminada: $('#terminadaSelectCriterio').val()
 		 }
 		 return criteriosSeleccion;
 	}		
@@ -411,7 +455,7 @@ class MinutasVista extends CatalogoVista
 		moment.locale('es') ;
 		var fechaAlta = this.getFechaMDA(this.modeloEdicion.fechaAlta);
 		
-		var fecha = moment(fechaAlta);
+		var fecha = moment(fechaAlta,"MM/DD/YYYY");
 		
 		var html = "<img class='img-circle' src='"+foto+"' "+
 					"alt='User Image'> <span class='username'><a href='#'>" + this.modeloEdicion.usuarioNombreCompleto +"</a>" +

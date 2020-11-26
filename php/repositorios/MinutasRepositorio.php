@@ -25,9 +25,11 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         $this->conexion = $conexion;
         $this->consultaBase = "SELECT M.id, titulo, descripcion, IFNULL(DATE_FORMAT(M.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, usuario_id, terminada, IFNULL(DATE_FORMAT(M.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, IFNULL(DATE_FORMAT(M.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion, U.nombre, U.apellido,
                                 (SELECT count(*) FROM minutas_tareas T WHERE T.minuta_id = M.id) total,
-                               (SELECT count(*) FROM minutas_tareas T WHERE T.minuta_id = M.id AND T.terminada=1) terminadas, acuerdos, participantes, color
+                               (SELECT count(*) FROM minutas_tareas T WHERE T.minuta_id = M.id AND T.terminada=1) terminadas, acuerdos, participantes, color,
+                                U.empresa_id, E.nombre 
                                 FROM minutas M
-                                    INNER JOIN usuarios U ON U.id = M.usuario_id";
+                                    INNER JOIN usuarios U ON U.id = M.usuario_id
+                                    INNER JOIN empresas E ON E.id = U.empresa_id";
     }
 
     public function insertar(Minuta $modelo,$usuario)
@@ -100,6 +102,8 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         {
             if(isset($criteriosSeleccion->titulo) && $criteriosSeleccion->titulo!="")
                 array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'M','campo'=>'titulo','valor'=>$criteriosSeleccion->titulo]);
+                if(isset($criteriosSeleccion->terminada) && $criteriosSeleccion->terminada!="")
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'M','campo'=>'terminada','valor'=>$criteriosSeleccion->terminada]);
            
         }
         
@@ -124,11 +128,11 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $descripcion, $titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino, $fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas, $acuerdos, $participantes, $color))
+                    if($sentencia->bind_result($id, $descripcion, $titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino, $fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas, $acuerdos, $participantes, $color, $empresaId, $empresaNombre))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id,$descripcion, $titulo,$fechaAlta, $usuarioId, $terminada, $fechaTermino,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas, $acuerdos, $participantes, $color);
+                            $registro = $this->crearRegistro($id,$descripcion, $titulo,$fechaAlta, $usuarioId, $terminada, $fechaTermino,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas, $acuerdos, $participantes, $color, $empresaId, $empresaNombre);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -158,11 +162,11 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $descripcion,$titulo,$fechaAlta, $usuarioId, $terminada, $fechaTermino,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas,$acuerdos, $participantes, $color))
+                    if($sentencia->bind_result($id, $descripcion,$titulo,$fechaAlta, $usuarioId, $terminada, $fechaTermino,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas,$acuerdos, $participantes, $color, $empresaId, $empresaNombre))
                     {
                         if($sentencia->fetch())
                         {
-                            $minuta = $this->crearRegistro($id,$descripcion,$titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino, $fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas,$acuerdos, $participantes, $color);
+                            $minuta = $this->crearRegistro($id,$descripcion,$titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino, $fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas,$acuerdos, $participantes, $color, $empresaId, $empresaNombre);
                             $resultado->valor = $minuta;
                             
                             $sentencia->close();
@@ -311,7 +315,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         return $resultado;
     }
 
-    private function crearRegistro($id, $titulo,$descripcion,$fechaAlta, $usuarioId, $terminada, $fechaFinalizacion,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas, $acuerdos, $participantes, $color)
+    private function crearRegistro($id, $titulo,$descripcion,$fechaAlta, $usuarioId, $terminada, $fechaFinalizacion,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas, $acuerdos, $participantes, $color, $empresaId, $empresaNombre)
     {
         $registro= (object) 
         [
@@ -329,7 +333,9 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             'terminadas' => $terminadas,
             'acuerdos' => $acuerdos,
             'participantes' => $participantes,
-            'color' => $color
+            'color' => $color,
+            'empresaId' => $empresaId,
+            'empresaNombre' => $empresaNombre
         ];
         
         if($registro->color=="" || $registro->color==null)
@@ -419,6 +425,12 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                                 'usuarioApellido' => $usuarioApellido,
                                 'numeroComentarios' => $numeroComentarios
                             ];
+                            
+                            /*$tarea->titulo = preg_replace( "/<br>|\n/", "", $tarea->titulo );
+                            $tarea->titulo = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/u', '', $tarea->titulo);
+                            $tarea->titulo = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $tarea->titulo);
+                            $tarea->titulo = preg_replace('/[\x00-\x1F\x7F-\xA0\xAD\X28]/u', '', $tarea->titulo);*/
+                          
                             
                             if($tarea->minutaColor=="" || $tarea->minutaColor==null)
                                 $tarea->minutaColor="#000000";
@@ -754,10 +766,11 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
     {
         $resultado = new Resultado();
         $responsables = array();
-        $consulta = "SELECT id, usuario_id " .
-            "FROM minutas_tareas_responsables " .
-            " WHERE minuta_id = ? AND tarea_id = ? ".
-            "ORDER BY id";
+        $consulta = "SELECT MTR.id, usuario_id, U.nombre, U.apellido " .
+            "FROM minutas_tareas_responsables MTR
+                INNER JOIN usuarios U ON U.id = MTR.usuario_id
+             WHERE minuta_id = ? AND tarea_id = ? ".
+            "ORDER BY MTR.id";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             
@@ -765,14 +778,17 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,$usuarioId))
+                    if ($sentencia->bind_result($id,$usuarioId, $usuarioNombre, $usuarioApellido))
                     {
                         while($sentencia->fetch())
                         {
                             $responsable= (object) [
                                 'id' =>  $id,
-                                'usuarioId' =>  $usuarioId
+                                'usuarioId' =>  $usuarioId,
+                                'usuarioNombre' => $usuarioNombre,
+                                'usuarioApellido' => $usuarioApellido
                             ];
+                            $responsable->usuarioNombreCompleto = $responsable->usuarioNombre . " " . $responsable->usuarioApellido;
                             array_push($responsables,$responsable);
                         }
                         $resultado->valor = $responsables;
@@ -900,6 +916,9 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         $resultado = new Resultado();
         $this->conexion->autocommit(FALSE);
         $finalizacion = "";
+        
+       
+        
         if($campo=="terminada")
         {
             if($valor==1)

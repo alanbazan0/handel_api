@@ -409,7 +409,7 @@ class AdministradorCorreo
             
             $this->mensajeLog($tipo."_error", $correos,$mensaje, $info);
         }
-        var_dump($error);
+        //var_dump($error);
        // var_dump($resultado);
         
         

@@ -122,6 +122,7 @@ class MinutasPresentador extends CatalogoPresentador
 				 //var indice = this.vista.listaTareas.getIndice(tareaId);
 				
 				 this.vista.listaTareas.eliminarTarea(this.vista.minutaId, tareaId);
+				this.consultarPorcentajeAvance();
 			 }
 			 else
 			 {
@@ -147,6 +148,7 @@ class MinutasPresentador extends CatalogoPresentador
 				 this.vista.listaTareas.agregar(this.vista.minutaId,resultado.valor,modelo);
 				 this.vista.mostrarBotonAgregar();
 				 this.vista.agregarTarea();
+				 this.consultarPorcentajeAvance();
 				 //this.vista.seleccionarLeccion(null, resultado.valor);
 			 }
 			 else
