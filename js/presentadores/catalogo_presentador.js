@@ -269,7 +269,7 @@ class CatalogoPresentador
 			}
 			else
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
-		 },{"terminada":0});
+		 },{"terminada":"0"});
 	 }
 	 
 	 

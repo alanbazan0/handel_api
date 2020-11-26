@@ -75,6 +75,10 @@ class MinutasVista extends CatalogoVista
 			_this.consultar();
 		});
 		
+		$("#consultarTareasButton").click(function(){
+			_this.consultarMisTareas();
+		});
+		
 		$("#agregarButton").click(function(){
 			_this.agregar();
 		});
@@ -145,7 +149,7 @@ class MinutasVista extends CatalogoVista
 		else if(this.minutaIdParametro!=0)
 			this.mostrarMinutaParametro();
 		else
-			this.consultarMisTareasPendientes();
+			this.consultarMisTareas();
 	    
 	    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 	    	  var target = $(e.target).attr("href") // activated tab
@@ -157,7 +161,7 @@ class MinutasVista extends CatalogoVista
 	    		break;
 	    	  	case "#tareas-pendientes":
 	    	  		//if(!_this._consultoTareasPendientes)
-	    	  			_this.consultarMisTareasPendientes();	
+	    	  			_this.consultarMisTareas();	
 	    		break;
 	    	  }
 	    	});
@@ -177,10 +181,13 @@ class MinutasVista extends CatalogoVista
 		super.consultar();
 	}
 	
-	consultarMisTareasPendientes()
+	consultarMisTareas()
 	{
 		this._consultoTareasPendientes = true;
-		this.presentador.consultarMisTareasPendientes();
+		this.presentador.consultarMisTareas();
+		
+		this.consultarNumeroMensajesNoLeidos();
+		this.consultarTareasPendientes();
 	}
 	
 //	editarUsuariosCompartir()
@@ -429,6 +436,16 @@ class MinutasVista extends CatalogoVista
 		 }
 		 return criteriosSeleccion;
 	}		
+	
+	get criteriosSeleccionTareas()
+	{
+		 var criteriosSeleccion = 
+		 {				    
+			terminada: $('#tareaTerminadaSelectCriterio').val()
+		 }
+		 return criteriosSeleccion;
+	}		
+
 
 	set modelo(valor)
 	{		
@@ -847,7 +864,7 @@ class MinutasVista extends CatalogoVista
     		break;
     	  	case "#tareas-pendientes":
     	  		//if(!_this._consultoTareasPendientes)
-    	  			this.consultarMisTareasPendientes();	
+    	  			this.consultarMisTareas();	
     		break;
     	  }
 	}
@@ -1086,11 +1103,29 @@ class MinutasVista extends CatalogoVista
 	set misTareasPendientes(misTareasPendientes)
 	{
 		this.listaTareasPendientes.tareas= misTareasPendientes;
-		if(misTareasPendientes.length==0)
-			$("#tareasPendientesDiv").fadeIn();
+		/*if(misTareasPendientes.length==0)
+		{
+			var mostrar = $("tareaTerminadaSelectCriterio").val();
+			if(mostrar=="0")
+				$("#tareasPendientesDiv").fadeIn();
+		}
+		else
+			$("#tareasPendientesDiv").hide();*/
+			
+	}
+	
+	set tareasPendientes(tareasPendientes)
+	{
+		super.tareasPendientes = tareasPendientes;
+		
+		if(tareasPendientes.length==0)
+		{
+			var mostrar = $("#tareaTerminadaSelectCriterio").val();
+			if(mostrar=="0")
+				$("#tareasPendientesDiv").fadeIn();
+		}
 		else
 			$("#tareasPendientesDiv").hide();
-			
 	}
 	
 	consultarNumeroComentariosTarea(listaTareas,minutaId, tareaId)

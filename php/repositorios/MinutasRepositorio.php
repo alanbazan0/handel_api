@@ -102,8 +102,8 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         {
             if(isset($criteriosSeleccion->titulo) && $criteriosSeleccion->titulo!="")
                 array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'M','campo'=>'titulo','valor'=>$criteriosSeleccion->titulo]);
-                if(isset($criteriosSeleccion->terminada) && $criteriosSeleccion->terminada!="")
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'M','campo'=>'terminada','valor'=>$criteriosSeleccion->terminada]);
+            if(isset($criteriosSeleccion->terminada) && $criteriosSeleccion->terminada!="")
+                array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'M','campo'=>'terminada','valor'=>$criteriosSeleccion->terminada]);
            
         }
         
@@ -488,7 +488,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         if($criteriosSeleccion!=null)
         {
             //var_dump($criteriosSeleccion);
-            if(isset($criteriosSeleccion->terminada))
+            if(isset($criteriosSeleccion->terminada) && $criteriosSeleccion->terminada!="")
                 array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'T','campo'=>'terminada','valor'=>$criteriosSeleccion->terminada]);
                 
         }

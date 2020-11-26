@@ -5,6 +5,7 @@ use php\repositorios\UsuariosRepositorio;
 use php\modelos\Resultado;
 use php\repositorios\UsuariosProcedimientosRepositorio;
 use php\repositorios\MinutasRepositorio;
+use php\repositorios\FrasesRepositorio;
 use php\repositorios\TareasComentariosRepositorio;
 
 error_reporting(E_ALL);
@@ -22,6 +23,7 @@ require_once('../clases/DiaSemana.php');
 require_once('../repositorios/UsuariosRepositorio.php');
 require_once('../repositorios/MinutasRepositorio.php');
 require_once('../repositorios/TareasComentariosRepositorio.php');
+require_once('../repositorios/FrasesRepositorio.php');
 //require_once('../reportes/reporte_evidencias.php');
 
 $origin = "*";
@@ -93,52 +95,59 @@ try
          {
             $asunto = getAsunto($dia);
             
+            $frasesRepositorio = new FrasesRepositorio($conexion);
+            $resultado = $frasesRepositorio->consultarAleatorio();
+            if($resultado->correcto())
+            {
+                $frase = $resultado->valor;
 //             $usuariosProcedimientosRepositorio = new UsuariosProcedimientosRepositorio($conexion);
 //             $evidenciasRepositorio = new EvidenciasRepositorio($conexion);
-          
             
-            for ($i = 0; $i < count($usuarios); $i++)
-            {
-                $usuario = $usuarios[$i];
-              
-                $contenido = getContenido($conexion,$usuariosRepositorio,$minutasRepositorio, $tareasComentariosRepositorio,$usuario, $dia);
-                $mensaje="";
-                if($contenido!="")
+                for ($i = 0; $i < count($usuarios); $i++)
                 {
-                    $mensaje= file_get_contents('notificacion_tareas.html');
-                    $mensaje=  str_replace("@nombre",$usuario->nombre,$mensaje);
-                    $mensaje=  str_replace("@contenido",$contenido,$mensaje);
-                    
+                    $usuario = $usuarios[$i];
                   
-                    $cabecera = "From:  SAHA <noreply@apps-handel.com>\r\n";
-                    $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";
-                    
-                    $errLevel = error_reporting(E_ALL ^ E_WARNING);
-                    $resultadoMail = true;
-                    $resultadoMail= mail($usuario->nombreUsuario,$asunto, $mensaje, $cabecera);
-                    error_reporting($errLevel);
-                    
-                    $error = error_get_last();
-                    
-                    if ( $error["type"] == E_WARNING)
+                    $contenido = getContenido($conexion,$usuariosRepositorio,$minutasRepositorio, $tareasComentariosRepositorio,$usuario, $dia);
+                    $mensaje="";
+                    if($contenido!="")
                     {
-                        $resultado->mensajeError="No se pudo enviar el correo electrónico a $usuario->nombreUsuario.  ". htmlspecialchars_decode($error["message"]) ;
-                        $resultado->codigoError = 3;
-                        mensajeLog("error_envio_tareas",$i. " " .$resultado->mensajeError);
+                        $mensaje= file_get_contents('notificacion_tareas.html');
+                        $mensaje=  str_replace("@nombre",$usuario->nombre,$mensaje);
+                        $mensaje=  str_replace("@contenido",$contenido,$mensaje);
+                        
+                        $mensaje=  str_replace("@frase",$frase->texto,$mensaje);
+                        $mensaje=  str_replace("@autor",$frase->autor,$mensaje);
+                      
+                        $cabecera = "From:  SAHA <noreply@apps-handel.com>\r\n";
+                        $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";
+                        
+                        $errLevel = error_reporting(E_ALL ^ E_WARNING);
+                        $resultadoMail = true;
+                        $resultadoMail= mail($usuario->nombreUsuario,$asunto, $mensaje, $cabecera);
+                        error_reporting($errLevel);
+                        
+                        $error = error_get_last();
+                        
+                        if ( $error["type"] == E_WARNING)
+                        {
+                            $resultado->mensajeError="No se pudo enviar el correo electrónico a $usuario->nombreUsuario.  ". htmlspecialchars_decode($error["message"]) ;
+                            $resultado->codigoError = 3;
+                            mensajeLog("error_envio_tareas",$i. " " .$resultado->mensajeError);
+                        }
+                        else if($resultadoMail)
+                        {
+                            $resultado->valor="OK";
+                            mensajeLog("log_envio_tareas","$i Correo enviado a ".$usuario->nombreUsuario);
+                        }
+                        
+                        guardarEnvio($usuario,$asunto,$mensaje);
+                        
+                        sleep($tiempoEspera);
                     }
-                    else if($resultadoMail)
-                    {
-                        $resultado->valor="OK";
-                        mensajeLog("log_envio_tareas","$i Correo enviado a ".$usuario->nombreUsuario);
-                    }
-                    
-                    guardarEnvio($usuario,$asunto,$mensaje);
-                    
-                    sleep($tiempoEspera);
+              
+                    if($imprimirMensaje)
+                        echo $mensaje;
                 }
-          
-                if($imprimirMensaje)
-                    echo $mensaje;
             }
             mensajeLog("log_envio_tareas","Termimado!");
         }
@@ -246,93 +255,70 @@ function getImageLink($titulo, $link)
 function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,MinutasRepositorio $minutasRepositorio, TareasComentariosRepositorio $tareasComentariosRepositorio,$usuario,$dia)
 {
     $contenido = "";
-//     $ano =  date("Y",strtotime("-1 month"));
-//     $mes = date("m",strtotime("-1 month"));
     
-//     $criteriosSeleccion = (object) ['ano' => $ano, "mes"=> $mes];
-    
-//     $resultadoPorcentajes = $evidenciasRepositorio->consultarPorcentajesEvidencias($usuario, $criteriosSeleccion);
-//     $porcentajeCumplimiento = 0;
-//     if($resultadoPorcentajes->correcto())
-//     {
-//         $enviadas = getValor("Enviadas",$resultadoPorcentajes->valor);
-//         $jusitificadas = getValor("Justificadas",$resultadoPorcentajes->valor);
-//         $pendientes = getValor("Pendientes",$resultadoPorcentajes->valor);
-//         $total =$enviadas +  $jusitificadas + $pendientes;
-//         $cumplidas = $enviadas +  $jusitificadas;
-//         if($total!=0)
-//             $porcentajeCumplimiento = $cumplidas *100 / $total;
-            
-//     }
-//     else
-//     {
-//         mensajeLog("error_envio_tareas", $resultadoPorcentajes->mensajeError);
-//     }
-    
-    
-    
-    
-    $resultado = $minutasRepositorio->consultarTareasUsuario($usuario->id);
-    if($resultado->correcto())
-    {
-       $tareas = $resultado->valor;
-       if($tareas!=null && count($tareas)>0)
-       {
-           $contenido.="Tomemos unos minutos para recordar el avance a las tareas de SAHA durante esta semana:
-                <br>";
-           
-           
-           $contenido.="<div style='text-align:left;width:100%;background-color:#e6e7e8'>
-                <div style='text-align:left; display: inline-block; width:90%'>";
-           
-           $contenido .= "<br><span style='font-weight:bold; text-decoration: underline;'>Tus tareas:</span>";
-           $contenido .= "<br>";
-           for ($i = 0; $i < count($tareas); $i++) 
+   
+        $resultado = $minutasRepositorio->consultarTareasUsuario($usuario->id);
+        if($resultado->correcto())
+        {
+           $tareas = $resultado->valor;
+           if($tareas!=null && count($tareas)>0)
            {
-               $tarea = $tareas[$i];
-               $url = 'https://saha.apps-handel.com/minutas.php?id='.$tarea->minutaId.'_'.$tarea->id;
-               if($tarea->terminada==1)
-               {
-                   $contenido .= "<br>
-                                    <div style=' text-decoration:line-through;color: gray'>
-                                    <span style='font-weight:bold;'>$tarea->titulo</span> - <span style=''>$tarea->minutaTitulo</span> - 
-                                    <span>Completada el $tarea->fechaFinalizacion </span> -  
-                                    <a href='$url' target='_blank' style='color: gray;'>ver tarea o comentar</a>
-                                    </div>";
-                   $contenido .= "<br>";
-               }
-               else 
-               {
-                   if($tarea->vencida==1)
-                   {
-                       $contenido .= "<br>
-                                        <div style='color: red;'>
-                                        <span style='font-weight:bold;'>$tarea->titulo</span> - <span style=''>$tarea->minutaTitulo</span> -
-                                        <span>Venció el $tarea->fechaCompromiso </span> -
-                                        <a href='$url' target='_blank' style='color: red;'>ver tarea o comentar</a>
-                                        </div>";
-                       $contenido .= "<br>";
-                   }
-                   else
-                   {
-                       $contenido .= "<br>
-                                        <div>
-                                        <span style='font-weight:bold;'>$tarea->titulo</span> - <span style=''>$tarea->minutaTitulo</span>"; 
-                                       
-                       if($tarea->fechaCompromiso!="")
-                           $contenido .= " - <span>Vence el $tarea->fechaCompromiso </span>  " ;
-                       
-                       $contenido .= " - <a href='$url' target='_blank'>ver tarea o comentar</a>
-                                        </div>";
-                       $contenido .= "<br>";
-                   }
-               }
+               $contenido.="Tomemos unos minutos para recordar el avance a las tareas de SAHA durante esta semana:
+                    <br>";
                
+               
+               $contenido.="<div style='text-align:left;width:100%;background-color:#e6e7e8'>
+                    <div style='text-align:left; display: inline-block; width:90%'>";
+               
+               $contenido .= "<br><span style='font-weight:bold; text-decoration: underline;'>Tus tareas:</span>";
+               $contenido .= "<br>";
+               for ($i = 0; $i < count($tareas); $i++) 
+               {
+                   $tarea = $tareas[$i];
+                   $url = 'https://saha.apps-handel.com/minutas.php?id='.$tarea->minutaId.'_'.$tarea->id;
+                   if($tarea->terminada==1)
+                   {
+                       $contenido .= "<br>
+                                        <div style=' text-decoration:line-through;color: gray'>
+                                        <span style='font-weight:bold;'>$tarea->titulo</span> - <span style=''>$tarea->minutaTitulo</span> - 
+                                        <span>Completada el $tarea->fechaFinalizacion </span> -  
+                                        <a href='$url' target='_blank' style='color: gray;'>ver tarea o comentar</a>
+                                        </div>";
+                       $contenido .= "<br>";
+                   }
+                   else 
+                   {
+                       if($tarea->vencida==1)
+                       {
+                           $contenido .= "<br>
+                                            <div style='color: red;'>
+                                            <span style='font-weight:bold;'>$tarea->titulo</span> - <span style=''>$tarea->minutaTitulo</span> -
+                                            <span>Venció el $tarea->fechaCompromiso </span> -
+                                            <a href='$url' target='_blank' style='color: red;'>ver tarea o comentar</a>
+                                            </div>";
+                           $contenido .= "<br>";
+                       }
+                       else
+                       {
+                           $contenido .= "<br>
+                                            <div>
+                                            <span style='font-weight:bold;'>$tarea->titulo</span> - <span style=''>$tarea->minutaTitulo</span>"; 
+                                           
+                           if($tarea->fechaCompromiso!="")
+                               $contenido .= " - <span>Vence el $tarea->fechaCompromiso </span>  " ;
+                           
+                           $contenido .= " - <a href='$url' target='_blank'>ver tarea o comentar</a>
+                                            </div>";
+                           $contenido .= "<br>";
+                       }
+                   }
+                   
+               }
            }
            
            $contenido .= "</div>
                     </div>";
-       }
+       
        
     }
    

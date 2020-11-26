@@ -80,6 +80,7 @@ class MinutasPresentador extends CatalogoPresentador
 						if(componente.listaTareas.removerTerminada) 
 						{
 							componente.listaTareas.eliminarTarea(tarea.minutaId, tarea.id);
+							this.consultarTareasPendientes();
 						}
 						this.consultarPorcentajeAvance();
 					 }
@@ -263,7 +264,7 @@ class MinutasPresentador extends CatalogoPresentador
 		 },this.vista.minutaId, this.vista.usuarios);
 	 }
 	 
-	 consultarMisTareasPendientes()
+	 consultarMisTareas()
 	 {
 		// this.vista.mostrarIndicador();
 		 var repositorio = new MinutasRepositorio(this);		
@@ -274,7 +275,7 @@ class MinutasPresentador extends CatalogoPresentador
 			}
 			else
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
-		 },{"terminada":0});
+		 },this.vista.criteriosSeleccionTareas);
 	 }
 	 
 	 consultarNumeroComentariosTarea(minutaId, tareaId)
