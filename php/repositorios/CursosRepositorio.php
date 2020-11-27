@@ -1874,6 +1874,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                             FROM cursos C
                                 INNER JOIN cursos_lecciones CL ON CL.curso_id = C.id 
                             WHERE  ? IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)
+                             AND C.publicado = 1
                         )total, count(*)vistos, SUM(duracion) minutos
                     FROM usuarios_cursos_lecciones L
                     WHERE L.usuario_id = ? 
