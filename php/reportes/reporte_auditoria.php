@@ -599,7 +599,116 @@ class PDF extends FPDF
         $this->Cell(150,$tamanoLinea,$this->texto('   Mide la existencia de un proceso para evaluar de forma regular las prácticas de la'),$borde,1,'FJ',1);
         $this->Cell(150,$tamanoLinea,$this->texto('cadena de suministro así como las políticas de ajuste contra los requerimientos recién'),$borde,1,'FJ',1);
         $this->Cell(150,$tamanoLinea,$this->texto('establecidos al hacer mejoras según sea necesario. '),$borde,1,'L',1);
+        
+        $chartWidth= 100;
+        
+        $porcentajes = array();
+        
+        array_push($porcentajes,(object)["nombre"=>"Nivel de compromiso","nivelCompromiso"=>50]);
+        array_push($porcentajes,(object)["nombre"=>"Metodoliga","implementacion"=>60]);
+        array_push($porcentajes,(object)["nombre"=>"Metodoliga","verificacion"=>70]);
+        $pdfWidth = $this->GetPageWidth();
+        $chartWidth= 170;
+        $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
+        $image = $this->graficaMetodologia($porcentajes,$colores,true,100);
+        if($image!='')
+            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,130, $chartWidth);
     }
+    
+    function graficaMetodologia($rows,$colors, $showInLegend,$max)
+    {
+        $categories = array();
+        
+        $data1 = array();
+        $data2 = array();
+        $data3 = array();
+        
+        $newRow1= (object) [
+            'name' =>  "nivelCompromiso",
+            'y' => 85//,
+           // 'color' => "#00a65a"
+        ];
+        
+        $newRow2= (object) [
+            'name' =>  "implementacion",
+            'y' => 70//,
+           // 'color' => "#f39c12"
+            
+        ];
+        
+        $newRow3= (object) [
+            'name' =>  "verificacion",
+            'y' => 50//,
+           // 'color' => "#dd4b39"
+            
+            
+        ];
+            
+        array_push($categories, "nombre");
+
+        array_push($data1, $newRow1);
+        array_push($data2, $newRow2);
+        array_push($data3, $newRow3);
+        
+        $yAxis = (object) [ 'title' => (object) [ 'text'=> ""]];
+        if($max>0)
+        {
+            $yAxis->min= 0;
+            $yAxis->max= $max;
+            $yAxis->tickInterval= 10;
+        }
+        
+        $highchart = (object)
+        [
+            'chart' => (object) [ 'type' => "line"],
+            'title' => (object) [ 'text'=> ""],
+            'credits' => (object) ['enabled' => false],
+            'xAxis' => (object) [ 'categories' => $categories],
+            'yAxis' => $yAxis,
+            'series' => array(
+               
+                (object) ['name' => "Nivel de compromiso y manejo de amenazas", 'data' => $data1,  'showInLegend' => $showInLegend, "color"=>"#2e588c"],
+                (object) ['name' => "Implementación", 'data' => $data2,  'showInLegend' => $showInLegend, "color"=>"#5e9549"],
+                (object) ['name' => "Verificación y mejora continua", 'data' => $data3,  'showInLegend' => $showInLegend, "color"=>"#e8a13d"]
+            )
+        ];
+        
+        $data= (object) [
+            'async' =>  true,
+            'type' => 'image/jpeg',
+            'width' => 1080,
+            'options' => $highchart
+        ];
+        
+        $options = array(
+            'http' => array(
+                'method'  => 'POST',
+                'content' => json_encode( $data ),
+                'header'=>  "Content-Type: application/json\r\n" .
+                "Accept: application/json\r\n"
+            )
+        );
+        
+        $url = 'http://export.highcharts.com/';
+        
+        $context  = stream_context_create( $options );
+        
+        $result = file_get_contents( $url, false, $context );
+        
+        $charturl='';
+        if ($result === FALSE)
+        {
+            
+        }
+        else
+        {
+            $charturl = $url . $result;
+            
+        }
+        return $charturl;
+    }
+    
+    
     
     function graficosCompania()
     {
@@ -802,13 +911,34 @@ class PDF extends FPDF
                 $puntuacion = str_replace(".$decimales","",$puntuacion);
         }
         
+        $w = 5;
+        $y = 208;
+        $x = 78;
+        $nivelRiesgo = "";
+        if($puntuacion<=70)
+        {
+            $this->Image("../imagenes/circulo_rojo.png",$x,$y,$w,0);
+            $nivelRiesgo = "Alto";
+        }
+        else if($puntuacion>70 && $puntuacion<=80)
+        {
+            $this->Image("../imagenes/circulo_amarillo.png",$x,$y,$w,0);
+            $nivelRiesgo = "Medio";
+        }
+        else if($puntuacion>80)
+        {
+            $this->Image("../imagenes/circulo_verde.png",$x,$y,$w,0);
+            $nivelRiesgo = "Bajo";
+        }
+        
+        
         $this->Ln();
         $this->Ln();
         $this->SetLeftMargin(30);
         $this->SetFont($this->font, '', 10);
-        $this->Cell($w1, 10,$this->texto("Puntuación total: "), $borde, 0, 'L');
+        $this->Cell(55, 10,$this->texto("Puntuación total: "), $borde, 0, 'L');
         $this->SetFont($this->font, 'B', 10);
-        $this->Cell($w2, 10, $this->texto($puntuacion  . "%"), $borde, 0, 'L');
+        $this->Cell(55, 10, $this->texto($puntuacion  . "% Nivel de riesgo " .$nivelRiesgo), $borde, 0, 'L');
         
        
         $this->Ln();

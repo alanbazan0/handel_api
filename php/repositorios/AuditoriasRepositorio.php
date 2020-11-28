@@ -27,6 +27,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             " LEFT JOIN empresas E on A.empresa_id = E.id ";
            
     }
+     
     
     private function calcularContadorEmpresa($empresaId)
     {
@@ -137,7 +138,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     function consultarPuntuacionAuditoria($auditoriaId)
     {
         $resultado = new Resultado();
-        $consulta =  "SELECT SUM(AP.puntos)/SUM(AP.puntos_total)*100 porcentaje
+        $consulta =  "SELECT SUM(porcentaje) / COUNT(*) as porcentaje
                     FROM auditoria_preguntas AP
                     	INNER JOIN preguntas P ON P.plantilla_id = AP.plantilla_id AND P.seccion_id = AP.seccion_id AND P.id = AP.pregunta_id
                     WHERE P.tipo='e' AND auditoria_id = ?";

@@ -75,7 +75,7 @@ class AuditoriasVista extends CatalogoVista
 	
 	ejecutar()
 	{
-		var submitForm = this.getNewSubmitForm("auditoria.php","post");
+		var submitForm = this.getNewSubmitForm("auditoria.php","get");
 		//this.createNewFormElement(submitForm, "plantillaId", this._llaves.plantillaId);
 		this.createNewFormElement(submitForm, "auditoriaId", this._llaves.id);
 		this.createNewFormElement(submitForm, "modo", Modo.CAMBIO);
