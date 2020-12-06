@@ -176,7 +176,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                                     'porcentaje' =>  $porcentaje
                                    
                                 ];
-                             Porcentaje::formatearPorcentaje($registro, "porcentaje");
+                             Porcentaje::formatearPorcentaje($registro, "porcentaje",2);
                                     
                             array_push($registros,$registro);
                         }

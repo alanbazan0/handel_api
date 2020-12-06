@@ -23,10 +23,10 @@ class Porcentaje
             $registro->$campoPorcentaje = 0;
     }
     
-    public static function formatearPorcentaje(&$registro,$campoPorcentaje)
+    public static function formatearPorcentaje(&$registro,$campoPorcentaje, $numeroDecimales=1)
     {
             
-        $registro->$campoPorcentaje = bcdiv($registro->$campoPorcentaje, '1', 1);
+        $registro->$campoPorcentaje = bcdiv($registro->$campoPorcentaje, '1', $numeroDecimales);
         
         list($enteros, $decimales) = explode(".", $registro->$campoPorcentaje);
         if($decimales=="0")

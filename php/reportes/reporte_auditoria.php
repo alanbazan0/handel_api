@@ -1016,11 +1016,10 @@ class PDF extends FPDF
                         "inside"=> true,
                         'color'=> 'white',
                         'borderColor' => 'black',
-                        'borderWidth' => '1px',
                         'style'=> (object)
                         [
                             'fontSize' => 10,
-                            'textOutline' => '2px'
+                            'textOutline' => '1px'
                         ]
                     ]
                 ]
