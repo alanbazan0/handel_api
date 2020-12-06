@@ -22,5 +22,16 @@ class Porcentaje
         else
             $registro->$campoPorcentaje = 0;
     }
+    
+    public static function formatearPorcentaje(&$registro,$campoPorcentaje)
+    {
+            
+        $registro->$campoPorcentaje = bcdiv($registro->$campoPorcentaje, '1', 1);
+        
+        list($enteros, $decimales) = explode(".", $registro->$campoPorcentaje);
+        if($decimales=="0")
+            $registro->$campoPorcentaje = str_replace(".$decimales","",$registro->$campoPorcentaje);
+                
+    }
 }
 

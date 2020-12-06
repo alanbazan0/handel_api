@@ -23,14 +23,33 @@
 							<input id="nombreInput" name="nombreInput" class="form-control" type="text" maxlength="50" /> 
 						</div>
 					</div>
-					 <div class="form-group">
+					 
+                      <div class="form-group">
+                    	<div>
+							<label for="nivelCompromisoInput" class="control-label mb-1">Nivel de compromiso</label> 
+							<input id="nivelCompromisoInput" name="nivelCompromisoInput" class="form-control" type="text" maxlength="5" /> 
+						</div>
+					</div>
+					<div class="form-group">
+                    	<div>
+							<label for="implementacionInput" class="control-label mb-1">Implementación</label> 
+							<input id="implementacionInput" name="implementacionInput" class="form-control" type="text" maxlength="5" /> 
+						</div>
+					</div>
+					<div class="form-group">
+                    	<div>
+							<label for="verificacionInput" class="control-label mb-1">Verificación</label> 
+							<input id="verificacionInput" name="verificacionInput" class="form-control" type="text" maxlength="5" /> 
+						</div>
+					</div>
+					<div class="form-group">
                       		<label class="control-label mb-1">Activo</label>
                      		<label class="switch switch-3d switch-success mr-3">
                              <input id="estatusRadio" name="estatus" type="checkbox" class="switch-input" checked="true">
                              <span class="switch-label"></span>
                              <span class="switch-handle"></span>
                            </label>
-                      </div>  
+                      </div> 
 				</form>
 			</div>
 			<div class="modal-footer">

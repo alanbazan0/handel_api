@@ -75,7 +75,7 @@ class AuditoriasVista extends CatalogoVista
 	
 	ejecutar()
 	{
-		var submitForm = this.getNewSubmitForm("auditoria.php","get");
+		var submitForm = this.getNewSubmitForm("auditoria.php?auditoriaId="+this._llaves.id+"&modo="+Modo.CAMBIO,"get");
 		//this.createNewFormElement(submitForm, "plantillaId", this._llaves.plantillaId);
 		this.createNewFormElement(submitForm, "auditoriaId", this._llaves.id);
 		this.createNewFormElement(submitForm, "modo", Modo.CAMBIO);
@@ -127,6 +127,7 @@ class AuditoriasVista extends CatalogoVista
 			{longitud:200, 	titulo:"Plantilla",   alias:"plantillaNombre", alineacion:"I" }, 		
 			{longitud:300, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" }, 	
 			{longitud:250, 	titulo:"Fecha ejecución",   alias:"fechaEjecucion", alineacion:"I" },
+			{longitud:50, 	titulo:"Puntuacion",   alias:"puntuacion", alineacion:"C", itemRenderer: this.rendererPuntuacion },
 			{longitud:50, 	titulo:"Número",   alias:"contadorEmpresa", alineacion:"C" },
 			{longitud:200, 	titulo:"Referencia",   alias:"referencia", alineacion:"I" }
 		]
@@ -136,6 +137,32 @@ class AuditoriasVista extends CatalogoVista
 		
 		
 		this.tabla.registros = [];
+	}
+	
+	rendererPuntuacion(renglon, type, set)
+	{    
+		//if(renglon.fechaUltimaCapacitacion!=null)
+		//{
+			if(renglon.puntuacion==undefined)
+				renglon.puntuacion = 0;
+		
+			var porcentajeCumplimiento = parseFloat(renglon.puntuacion);
+			var color ="";
+			if(porcentajeCumplimiento <= 70)
+			{
+				color = "red";
+			}
+			else if(porcentajeCumplimiento > 70 && porcentajeCumplimiento <=80)
+			{
+				color = "#e9a13d";
+			}
+			else if(porcentajeCumplimiento > 80)
+			{
+				color = "green";
+			}
+			return "<span  style='font-weight:bold;color:"+color+";' >"+porcentajeCumplimiento+"%</span>";
+		//}
+		return "";
 	}
 	
 	renderIcono(renglon, type, set)
@@ -187,39 +214,7 @@ class AuditoriasVista extends CatalogoVista
 			submitForm.submit();
 		}
 	}
-	
-//	btnConsulta_onClick()
-//	{	
-//		this.presentador.consultar();
-//	}	
-//	
-//	btnGuardarFormulario_onClick()
-//	{		
-//		if(this.seccionEdicion!=null)
-//			this.seccionEdicion.preguntas = this.listaPreguntas.preguntas;
-//		 if(this.datosValidos())
-//		 {
-//			if(this.modo=='ALTA')
-//				this.presentador.insertar();
-//			else
-//				this.presentador.actualizar();
-//		 }		
-//		
-//	}
-//	
-//	btnSalir_onClick()
-//	{
-//		var confirmacion = confirm("¿Esta seguro que desea salir?")
-//	    if (confirmacion)
-//	    	{
-//		    	
-//	    	}
-//	}
-//	
-//	btnSalirFormulario_onClick()
-//	{		
-//		this.salirFormulario();
-//	}	
+
 	
 	set categorias(valor)
 	{

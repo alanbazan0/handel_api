@@ -7,17 +7,16 @@ class PaisesVista extends CatalogoVista
 		this._urlFormulario = "html/formularios/paises.php";
 	}
 	
-//	onLoad()
-//	{			
-//		this.crearColumnasGrid();		
-//		this.presentador.consultar();
-//	}
+
 	
 	crearColumnasGrid()
 	{
 		this.tabla.columnas = [
 			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
-			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I" }, 					
+			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I" }, 	
+			{longitud:50, 	titulo:"Nivel de compromiso",   alias:"nivelCompromiso", alineacion:"C" , itemRenderer: this.rendererNivelCompomiso}, 	
+			{longitud:50, 	titulo:"Implementación",   alias:"implementacion", alineacion:"C" , itemRenderer: this.rendererImplementacion }, 	
+			{longitud:50, 	titulo:"Verificación",   alias:"verificacion", alineacion:"C" , itemRenderer: this.rendererVerificacion  }, 				
 			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
 			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
 			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
@@ -28,6 +27,22 @@ class PaisesVista extends CatalogoVista
 
 		this.tabla.registros = [];
 	}
+	
+	rendererNivelCompomiso(renglon, type, set)
+	{    
+		return "<span  style='font-weight:bold;' >"+renglon.nivelCompromiso+"%</span>";
+	}
+	
+	rendererImplementacion(renglon, type, set)
+	{    
+		return "<span  style='font-weight:bold;' >"+renglon.implementacion+"%</span>";
+	}
+	
+	rendererVerificacion(renglon, type, set)
+	{    
+		return "<span  style='font-weight:bold;' >"+renglon.verificacion+"%</span>";
+	}
+	
 	
 	inicializarValidacionesFormulario()
 	{
@@ -60,107 +75,7 @@ class PaisesVista extends CatalogoVista
             }
         });
 	}
-//	
-//	renderEstatus(renglon, campoBase)
-//	{    
-//		var contenido = "";
-//		if(renglon.estatus==1)
-//			contenido += "<center><span class='fa "+ ICONO_ACTIVO +" fa-lg' style='color:"+COLOR_ACTIVO+"'></span></center>";
-//		else
-//			contenido += "<center><span class='fa "+ ICONO_INACTIVO+" fa-lg' style='color:"+COLOR_INACTIVO+"'></span></center>";
-//	    return contenido;
-//	}
 	
-	
-//	mostrarIndicador()
-//	{
-//		$('#indicador').show();				
-//	}
-//	
-//	ocultarIndicador()
-//	{		
-//		$('#indicador').hide();
-//	}
-//	
-//	btnBaja_onClick()
-//	{ 
-//		if(this.grid._selectedItem!=null)
-//		{
-//			var confirmacion = confirm("¿Esta seguro que desea eliminar el registro?")
-//		    if (confirmacion)
-//		    {
-//		    		this.presentador.eliminar();
-//		    }	
-//		}
-//		else
-//			this.mostrarMensaje("Acción no válida","Seleccione un registro para eliminar.");
-//	}
-//	
-//	btnAlta_onClick()
-//	{
-//		this.modo = "ALTA";
-//		this.ocultarIndicador();
-//		this.limpiarFormulario();	
-//		this.mostrarFormulario();
-//		$('#nombreInput').focus();
-//		
-//	}
-//	
-//	btnCambio_onClick()
-//	{
-//		if(this.grid._selectedItem!=null)
-//		{			
-//			this.modo = "CAMBIO";
-//			this.limpiarFormulario();	
-//			this.mostrarFormulario();
-//			$('#nombreInput').focus();				
-//			this.presentador.consultarPorLlaves();
-//		}
-//		else
-//			this.mostrarMensaje("Acción no válida","Seleccione un registro para modificar.");
-//				
-//	}
-//	
-//	btnConsulta_onClick()
-//	{	
-//		this.presentador.consultar();
-//	}	
-//	
-//	btnGuardarFormulario_onClick()
-//	{		
-//		 if(this.datosValidos())
-//		 {
-//			if(this.modo=='ALTA')
-//				this.presentador.insertar();
-//			else
-//				this.presentador.actualizar();
-//		 }		
-//		
-//	}
-//	
-//	btnSalir_onClick()
-//	{
-//		var confirmacion = confirm("¿Esta seguro que desea salir?")
-//	    if (confirmacion)
-//	    	{
-//		    	
-//	    	}
-//	}
-//	
-//	btnSalirFormulario_onClick()
-//	{		
-//		this.salirFormulario();
-//	}	
-//	
-//	get llaves()
-//	{
-//		var llaves =
-//		{
-//			id:this.grid._selectedItem.id	
-//		}
-//		return llaves;
-//	}
-//	
 	
 	get criteriosSeleccion()
 	{
@@ -170,19 +85,15 @@ class PaisesVista extends CatalogoVista
 		 }
 		 return criteriosSeleccion;
 	}		
-
-//	set datos(valor)
-//	{
-//		this.grid._dataProvider = valor;	
-//		this.grid.render();
-//	}
-//	
+	
 	set modelo(valor)
 	{		
 		this.modeloEdicion = valor;
 		$('#nombreInput').val(this.modeloEdicion.nombre);
 		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
-		//this.consultarEmpresas();
+		$('#nivelCompromisoInput').val(this.modeloEdicion.nivelCompromiso);
+		$('#implementacionInput').val(this.modeloEdicion.implementacion);
+		$('#verificacionInput').val(this.modeloEdicion.verificacion);
 	}
 	
 	get modelo()
@@ -190,27 +101,16 @@ class PaisesVista extends CatalogoVista
 		 var modelo = 
 		 {		
 			 nombre:$('#nombreInput').val(),			 
-			 estatus:$('#estatusRadio').is(':checked')?1:0
+			 estatus:$('#estatusRadio').is(':checked')?1:0,
+			nivelCompromiso: $('#nivelCompromisoInput').val(),
+			implementacion: $('#implementacionInput').val(),
+			verificacion: $('#verificacionInput').val()
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
 		 return modelo;
 	 }
 	 
-
-	
-//	mostrarFormulario()
-//	{
-//		$('#principalDiv').hide();	
-//		$('#formularioDiv').show();
-//	}
-//	
-//	salirFormulario()
-//	{
-//		$('#principalDiv').show()	
-//		$('#formularioDiv').hide();
-//	}
-//	
 	
 	datosValidos()
 	{
@@ -232,7 +132,6 @@ class PaisesVista extends CatalogoVista
 	limpiarFormulario()
 	{
 		$('#nombreInput').val("");
-		//this.cargandoOpciones('#empresaSelect');
 	}
 	
 	

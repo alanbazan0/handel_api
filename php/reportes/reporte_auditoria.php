@@ -602,21 +602,120 @@ class PDF extends FPDF
         
         $chartWidth= 100;
         
-        /*$porcentajes = array();
-        
-        array_push($porcentajes,(object)["nombre"=>"Nivel de compromiso","nivelCompromiso"=>$this->puntuacion]);
-        array_push($porcentajes,(object)["nombre"=>"Metodoliga","implementacion"=>$this->puntuacion]);
-        array_push($porcentajes,(object)["nombre"=>"Metodoliga","verificacion"=>$this->puntuacion]);*/
-        $nivelCompromiso = $this->puntuacion;
-        $implementacion = $this->puntuacion;
-        $verificacion = $this->puntuacion;
         
         $pdfWidth = $this->GetPageWidth();
         $chartWidth= 120;
         $y = 187;
-        $image = $this->graficaMetodologia($nivelCompromiso, $implementacion, $verificacion);
+        $image = $this->graficaMetodologia($this->modelo->nivelCompromiso, $this->modelo->implementacion, $this->modelo->verificacion);
         if($image!='')
             $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,$y, $chartWidth);
+    }
+    
+    function graficaCompania($title, $yTitle, $empresaNombre,$rows, $xField, $yField, $showInLegend,$max)
+    {
+        $categories = array();
+        $data = array();
+        
+        $data = array();
+        
+        $data1 = array();
+        $data2 = array();
+        $data3 = array();
+        
+        
+        for ($i = 0; $i < count($rows); $i++)
+        {
+            $row = $rows[$i];
+            
+            
+            $newRow1= (object) [
+                'name' =>  $row->$xField,
+                'y' => floatval($row->empresa)
+            ];
+            
+            $newRow2= (object) [
+                'name' =>  $row->$xField,
+                'y' =>  floatval($row->pais)
+                
+            ];
+            
+            $newRow3= (object) [
+                'name' =>  $row->$xField,
+                'y' => floatval($row->sector)
+                
+                
+            ];
+            
+            array_push($categories, $row->$xField);
+            array_push($data1, $newRow1);
+            array_push($data2, $newRow2);
+            array_push($data3, $newRow3);
+        }
+        
+        $yAxis = (object) [ 'title' => (object) [ 'text'=> $yTitle]];
+        if($max>0)
+        {
+            $yAxis->min= 0;
+            $yAxis->max= $max;
+            $yAxis->tickInterval= 10;
+        }
+        
+        
+        
+        
+        $highchart = (object)
+        [
+            'chart' => (object) [ 'type' => "line"],
+            'title' => (object) [ 'text'=> $title],
+            'credits' => (object) ['enabled' => false],
+            'xAxis' => (object) [ 'categories' => $categories],
+            'yAxis' => $yAxis,
+            'series' => array(
+               
+                (object) ['name' => $empresaNombre, 'data' => $data1,  'showInLegend' => $showInLegend, "color"=>"#52a7f9"],
+                (object) ['name' => "Pais", 'data' => $data2,  'showInLegend' => $showInLegend, "color"=>"#6fbf41"],
+                (object) ['name' => "Sector", 'data' => $data3,  'showInLegend' => $showInLegend, "color"=>"#fce12b"]
+            )
+        ];
+        
+        $data= (object) [
+            'async' =>  true,
+            'type' => 'image/jpeg',
+            'width' => 1080,
+            'options' => $highchart
+        ];
+        
+        $options = array(
+            'http' => array(
+                'method'  => 'POST',
+                'content' => json_encode( $data ),
+                'header'=>  "Content-Type: application/json\r\n" .
+                "Accept: application/json\r\n"
+            )
+        );
+        
+        $url = 'http://export.highcharts.com/';
+        
+        $context  = stream_context_create( $options );
+        
+        
+        
+        $result = file_get_contents( $url, false, $context );
+        
+        $charturl='';
+        if ($result === FALSE)
+        {
+            
+        }
+        else
+        {
+            $charturl = $url . $result;
+            
+        }
+        return $charturl;
+        
+        //  return 'ok';
+        
     }
     
     function graficaMetodologia($nivelCompromiso, $implementacion, $verificacion)
@@ -661,7 +760,19 @@ class PDF extends FPDF
         
         $highchart = (object)
         [
-            'chart' => (object) [ 'type' => "column"],
+            'chart' => (object) [ 'type' => "column", 
+                'options3d' => (object) [ 
+                    'enabled' => true, 
+                     'alpha'=> 15, 
+                    'beta' => 15,
+                    'depth' => 50,
+                    'viewDistance' => 25
+            ]],
+            'plotOptions' => (object) [ 
+                   'column' => (object) [ 
+                       'depth' => 100 ]
+               
+                   ],
             'title' => (object) [ 'text'=> ""],
             'credits' => (object) ['enabled' => false],
             'xAxis' => (object) [ 'categories' => $categories],
@@ -760,6 +871,24 @@ class PDF extends FPDF
         $this->Cell($w1, 10,$this->texto("Sector de la industria"), $borde, 0, 'L',1);
         $this->SetFont($this->font, '', 10);
         $this->Cell($w2, 10, $this->texto("Puntaje promedio de empresas evaluadas en el sector especifco "), $borde, 0, 'L',1);
+        
+        
+        
+        
+        $rows = array();
+        $nivelCompromiso = (object) ["nombre"=> "Nivel de compromiso","empresa" => $this->modelo->nivelCompromiso, "pais" => $this->modelo->paisNivelCompromiso,  "sector" => $this->modelo->tipoEmpresaNivelCompromiso];
+        $implementacion = (object) ["nombre"=> "Implementación","empresa" => $this->modelo->implementacion, "pais" => $this->modelo->paisImplementacion,  "sector" => $this->modelo->tipoEmpresaImplementacion];
+        $verificacion = (object) ["nombre"=> "Verificación y mejora continua","empresa" => $this->modelo->verificacion, "pais" => $this->modelo->paisVerificacion,  "sector" => $this->modelo->tipoEmpresaVerificacion];
+        array_push($rows,$nivelCompromiso );
+        array_push($rows,$implementacion );
+        array_push($rows,$verificacion );
+        
+        $pdfWidth = $this->GetPageWidth();
+        $chartWidth= 160;
+        $y = 150;
+        $image = $this->graficaCompania("", "",$this->modelo->empresaNombre, $rows, "nombre", "puntuacion", true, 100);
+        if($image!='')
+            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,$y, $chartWidth);
        
     }
     
@@ -809,6 +938,135 @@ class PDF extends FPDF
         $this->Cell(170, 6,$this->texto("Ilustra el estado actual de la compañía en los puntos básicos de seguridad del programa"), $borde, 1, 'FJ',1);
         $this->Cell(170, 6,$this->texto("C-TPAT	referente a empresas de transporte."), $borde, 1, 'L',1);
         
+        $this->SetX(0);
+        $y = 80;
+        $pdfWidth = $this->w;
+        $chartWidth = 180;
+        $repositorio = new AuditoriasRepositorio($this->conexion);
+        $resultado = $repositorio->consultarPorcentajesSecciones($this->modelo->id);
+        if($resultado->correcto())
+        {
+            $porcentajes = $resultado->valor;
+            $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
+            $image = $this->graficaReferenciaGlobal("",'','Usuarios',$porcentajes,"texto","porcentaje",$colores,false,100);
+            if($image!='')
+                $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,$y, $chartWidth);
+        }
+        
+    }
+    
+    function graficaReferenciaGlobal($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colors, $showInLegend,$max)
+    {
+        $categories = array();
+        $data = array();
+        
+        $c = 0;
+        for ($i = 0; $i < count($rows); $i++)
+        {
+            $row = $rows[$i];
+            $category = $row->$xField;
+            $value = (float)$row->$yField;
+            
+           /* if($value>=0 && $value<51)
+                $color="#dd4b39";
+            else if($value>=51 &&   $value <100)
+                $color="#f39c12";
+            else iF($value>=100)
+                $color="#00a65a";*/
+            
+            $color = "#1a78d1";
+                        
+                        
+            $newRow= (object) [
+                'name' =>  $category,
+                'y' => $value,
+                'color' => $color
+            ];
+            
+            $c++;
+            if($c>count($colors)-1)
+                $c = 0;
+                
+                array_push($categories, $category);
+                array_push($data, $newRow);
+        }
+        
+        $yAxis = (object) [ 'title' => (object) [ 'text'=> $yTitle]];
+        if($max>0)
+        {
+            $yAxis->min= 0;
+            $yAxis->max= $max;
+            $yAxis->tickInterval= 10;
+        }
+        
+        $highchart = (object)
+        [
+            'chart' => (object) [ 'type' => "column"],
+            'title' => (object) [ 'text'=> $title],
+            'credits' => (object) ['enabled' => false],
+            'xAxis' => (object) [ 'categories' => $categories],
+            'plotOptions' => (object)
+            [
+                'column'=> (object)[
+                    'dataLabels'=>(object)
+                    [
+                        'enabled'=>true,
+                        'crop'=>false,
+                        'overflow' =>'none',
+                        "inside"=> true,
+                        'color'=> 'white',
+                        'borderColor' => 'black',
+                        'borderWidth' => '1px',
+                        'style'=> (object)
+                        [
+                            'fontSize' => 10,
+                            'textOutline' => '2px'
+                        ]
+                    ]
+                ]
+            ],
+            'yAxis' => $yAxis,
+            'series' => array(
+                (object) ['name' => $serieTitle, 'data' => $data,  'showInLegend' => $showInLegend]
+            )
+        ];
+        
+        $data= (object) [
+            'async' =>  true,
+            'type' => 'image/jpeg',
+            'width' => 1080,
+            'options' => $highchart
+        ];
+        
+        $options = array(
+            'http' => array(
+                'method'  => 'POST',
+                'content' => json_encode( $data ),
+                'header'=>  "Content-Type: application/json\r\n" .
+                "Accept: application/json\r\n"
+            )
+        );
+        
+        $url = 'http://export.highcharts.com/';
+        
+        $context  = stream_context_create( $options );
+        
+        
+        
+        $result = file_get_contents( $url, false, $context );
+        
+        $charturl='';
+        if ($result === FALSE)
+        {
+            
+        }
+        else
+        {
+            $charturl = $url . $result;
+            
+        }
+        return $charturl;
+            
     }
     
     
@@ -901,32 +1159,34 @@ class PDF extends FPDF
         $this->Line(30, $y, 210-30, $y);
         
         //Puntuacion
-        $repositorio  = new AuditoriasRepositorio($this->conexion);
+        //$repositorio  = new AuditoriasRepositorio($this->conexion);
         $puntuacion = 0;
-        $resultado = $repositorio->consultarPuntuacionAuditoria($this->modelo->id);
+        /*$resultado = $repositorio->consultarPuntuacionAuditoria($this->modelo->id);
         if($resultado->correcto())
         {
             $this->puntuacion = bcdiv($resultado->valor, '1', 1);
             list($enteros, $decimales) = explode(".", $this->puntuacion);
             if($decimales=="0")
                 $puntuacion = str_replace(".$decimales","",$this->puntuacion);
-        }
+        }*/
+            
+        //$this->puntuacion = $this->modelo->puntuacion;
         
         $w = 5;
         $y = 208;
         $x = 78;
         $nivelRiesgo = "";
-        if($this->puntuacion<=70)
+        if($this->modelo->puntuacion<=70)
         {
             $this->Image("../imagenes/circulo_rojo.png",$x,$y,$w,0);
             $nivelRiesgo = "Alto";
         }
-        else if($this->puntuacion>70 && $this->puntuacion<=80)
+        else if($this->modelo->puntuacion>70 && $this->modelo->puntuacion<=80)
         {
             $this->Image("../imagenes/circulo_amarillo.png",$x,$y,$w,0);
             $nivelRiesgo = "Medio";
         }
-        else if($this->puntuacion>80)
+        else if($this->modelo->puntuacion>80)
         {
             $this->Image("../imagenes/circulo_verde.png",$x,$y,$w,0);
             $nivelRiesgo = "Bajo";
@@ -939,7 +1199,7 @@ class PDF extends FPDF
         $this->SetFont($this->font, '', 10);
         $this->Cell(55, 10,$this->texto("Puntuación total: "), $borde, 0, 'L');
         $this->SetFont($this->font, 'B', 10);
-        $this->Cell(55, 10, $this->texto($puntuacion  . "% Nivel de riesgo " .$nivelRiesgo), $borde, 0, 'L');
+        $this->Cell(55, 10, $this->texto($this->modelo->puntuacion  . "% Nivel de riesgo " .$nivelRiesgo), $borde, 0, 'L');
         
        
         $this->Ln();

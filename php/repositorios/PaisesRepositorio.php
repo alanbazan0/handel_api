@@ -4,10 +4,12 @@ namespace php\repositorios;
 use php\interfaces\IPaisesRepositorio;
 use php\modelos\Pais;
 use php\modelos\Resultado;
+use php\clases\Porcentaje;
 
 include "../interfaces/IPaisesRepositorio.php";
 include "../modelos/Pais.php";
 include "RepositorioBase.php";
+require_once '../clases/Porcentaje.php';
 require_once("../clases/Resultado.php");
 
 class PaisesRepositorio extends RepositorioBase implements IPaisesRepositorio
@@ -17,7 +19,7 @@ class PaisesRepositorio extends RepositorioBase implements IPaisesRepositorio
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = " SELECT P.id, P.nombre, P.fecha_alta, P.fecha_modificacion, P.estatus " .
+        $this->consultaBase = " SELECT P.id, P.nombre, P.fecha_alta, P.fecha_modificacion, P.estatus, P.nivel_compromiso, P.implementacion, P.verificacion " .
             " FROM paises P";
            
     }
@@ -28,11 +30,11 @@ class PaisesRepositorio extends RepositorioBase implements IPaisesRepositorio
         if($resultado->mensajeError=="")
         {
             $id = $resultado->valor;
-            $consulta = "INSERT INTO paises(id, nombre, fecha_alta, fecha_modificacion, estatus) " .
-                "VALUE(?, ?, NOW(), NOW(), ?)";
+            $consulta = "INSERT INTO paises(id, nombre, fecha_alta, fecha_modificacion, estatus, nivel_compromiso, implementacion, verificacion) " .
+                "VALUE(?, ?, NOW(), NOW(), ?, ?, ?, ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if( $sentencia->bind_param("isi", $id, $modelo->nombre, $modelo->estatus))
+                if( $sentencia->bind_param("isisss", $id, $modelo->nombre, $modelo->estatus, $modelo->nivelCompromiso, $modelo->implementacion, $modelo->verificacion))
                 {
                     if(!$sentencia->execute())
                         $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
@@ -49,15 +51,18 @@ class PaisesRepositorio extends RepositorioBase implements IPaisesRepositorio
     public function actualizar(Pais $modelo)
     {
         $resultado = new Resultado();
-        $consulta = " UPDATE paises " .
-            "SET nombre = ?, " .            
-            "  estatus = ?, " .
-            "  fecha_modificacion= NOW() " .
-            "WHERE id = ? ";
+        $consulta = " UPDATE paises 
+            SET nombre = ?,         
+              estatus = ?, 
+                nivel_compromiso = ?,
+                implementacion = ?,
+                verificacion = ?,
+              fecha_modificacion= NOW() 
+            WHERE id = ? ";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if( $sentencia->bind_param("sii", $modelo->nombre, $modelo->estatus,$modelo->id ))
+            if( $sentencia->bind_param("sisssi", $modelo->nombre, $modelo->estatus,$modelo->nivelCompromiso, $modelo->implementacion, $modelo->verificacion,$modelo->id ))
             {
                 if($sentencia->execute())
                 {
@@ -94,11 +99,11 @@ class PaisesRepositorio extends RepositorioBase implements IPaisesRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombre, $fechaAlta, $fechaModificacion, $estatus))
+                    if ($sentencia->bind_result($id, $nombre, $fechaAlta, $fechaModificacion, $estatus, $nivelCompromiso, $implementacion, $verificacion))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombre,$fechaAlta, $fechaModificacion, $estatus);
+                            $registro = $this->crearRegistro($id, $nombre,$fechaAlta, $fechaModificacion, $estatus, $nivelCompromiso, $implementacion, $verificacion);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -130,11 +135,11 @@ class PaisesRepositorio extends RepositorioBase implements IPaisesRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombre, $fechaAlta, $fechaModificacion, $estatus))
+                    if ($sentencia->bind_result($id, $nombre, $fechaAlta, $fechaModificacion, $estatus, $nivelCompromiso, $implementacion, $verificacion))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombre, $fechaAlta, $fechaModificacion, $estatus);
+                            $registro = $this->crearRegistro($id, $nombre, $fechaAlta, $fechaModificacion, $estatus, $nivelCompromiso, $implementacion, $verificacion);
                             $resultado->valor = $registro;
                         }
                         else
@@ -154,15 +159,23 @@ class PaisesRepositorio extends RepositorioBase implements IPaisesRepositorio
             return $resultado;
     }
     
-    private function crearRegistro($id, $nombre, $fechaAlta, $fechaModificacion, $estatus)
+    private function crearRegistro($id, $nombre, $fechaAlta, $fechaModificacion, $estatus, $nivelCompromiso, $implementacion, $verificacion)
     {
         $registro= (object) [
             'id' =>  $id,
             'nombre' => $nombre,            
             'fechaAlta' => $fechaAlta,
             'fechaModificacion' => $fechaModificacion,
-            'estatus' => $estatus
+            'estatus' => $estatus,
+            'nivelCompromiso' => $nivelCompromiso,
+            'implementacion' => $implementacion,
+            'verificacion' => $verificacion
         ];
+        
+        Porcentaje::formatearPorcentaje($registro, "nivelCompromiso");
+        Porcentaje::formatearPorcentaje($registro, "implementacion");
+        Porcentaje::formatearPorcentaje($registro, "verificacion");
+      
         return $registro;
     }
     

@@ -6,11 +6,13 @@ use php\modelos\Auditoria;
 use php\modelos\Resultado;
 use php\clases\AdministradorConexion;
 use php\clases\AdministradorArchivos;
+use php\clases\Porcentaje;
 
 include "../interfaces/IAuditoriasRepositorio.php";
 include "../modelos/Auditoria.php";
 include "RepositorioBase.php";
 require_once("../clases/Resultado.php");
+require_once("../clases/Porcentaje.php");
 require_once('../clases/AdministradorArchivos.php');
 require_once('../clases/AdministradorConexion.php');
 
@@ -21,10 +23,18 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = " SELECT A.id, A.plantilla_id, P.nombre, IFNULL(DATE_FORMAT(A.fecha_ejecucion,'%d/%m/%Y %H:%i:%s'),'')fecha_ejecucion, A.empresa_id, E.nombre, IFNULL(E.nombre_corto,'')nombre_corto, A.contador_empresa,tipo_auditoria_id " .
-            " FROM auditorias A " .
-            " INNER JOIN plantillas P on A.plantilla_id = P.id  " .
-            " LEFT JOIN empresas E on A.empresa_id = E.id ";
+        $this->consultaBase = " SELECT A.id, A.plantilla_id, P.nombre, IFNULL(DATE_FORMAT(A.fecha_ejecucion,'%d/%m/%Y %H:%i:%s'),'')fecha_ejecucion, A.empresa_id, E.nombre, IFNULL(E.nombre_corto,'')nombre_corto, A.contador_empresa,tipo_auditoria_id,
+                (SELECT SUM(porcentaje) / COUNT(*) as porcentaje
+                    FROM auditoria_preguntas AP
+                    	INNER JOIN preguntas P ON P.plantilla_id = AP.plantilla_id AND P.seccion_id = AP.seccion_id AND P.id = AP.pregunta_id
+                    WHERE P.tipo='e' AND auditoria_id = A.id) puntuacion, A.nivel_compromiso, A.implementacion, A.verificacion,
+                        TE.nivel_compromiso, TE.implementacion, TE.verificacion, 
+                        PS.nivel_compromiso, PS.implementacion, PS.verificacion
+             FROM auditorias A 
+             INNER JOIN plantillas P on A.plantilla_id = P.id 
+            LEFT JOIN empresas E on A.empresa_id = E.id 
+            LEFT JOIN tipos_empresa TE ON TE.id = E.tipo_empresa_id
+            LEFT JOIN paises PS ON PS.id = E.pais_id";
            
     }
      
@@ -133,6 +143,57 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         else
             $resultado->mensajeError = __FUNCTION_." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             return $resultado;
+    }
+    
+    function consultarPorcentajesSecciones($auditoriaId)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        
+        $consulta = "SELECT S.id, S.texto, SUM(puntos) / SUM(puntos_total) * 100
+                FROM auditoria_preguntas AP
+                	INNER JOIN preguntas P ON P.plantilla_id = AP.plantilla_id AND P.seccion_id = AP.seccion_id AND P.id = AP.pregunta_id
+                    INNER JOIN secciones S ON P.plantilla_id = S.plantilla_id AND P.seccion_id = S.id
+                WHERE P.tipo='e' AND auditoria_id = ?
+                GROUP BY AP.seccion_id, S.texto
+                LIMIT 1,100	";
+            
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($sentencia->bind_param('i',$auditoriaId))
+                {
+                    if($sentencia->execute())
+                    {
+                        if($sentencia->bind_result($id, $texto,$porcentaje))
+                        {
+                            while($sentencia->fetch())
+                            {
+                                $registro= (object) [
+                                    'id' =>  $id,
+                                    'texto' =>  $texto,
+                                    'porcentaje' =>  $porcentaje
+                                   
+                                ];
+                             Porcentaje::formatearPorcentaje($registro, "porcentaje");
+                                    
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
+    }
+    else
+        $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        return $resultado;
     }
     
     function consultarPuntuacionAuditoria($auditoriaId)
@@ -590,7 +651,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("ssiisiii",$seccion->hallazgo,$seccion->recomendacion, $seccion->responsable, $seccion->puntos, $seccion->puntosTotal, $seccion->porcentaje,$auditoriaId,$plantillaId,$seccion->id))
+            if($sentencia->bind_param("ssiisiiii",$seccion->hallazgo,$seccion->recomendacion, $seccion->responsable, $seccion->puntos, $seccion->puntosTotal, $seccion->porcentaje,$auditoriaId,$plantillaId,$seccion->id))
             {
                 if($sentencia->execute())
                 {
@@ -617,18 +678,18 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                                     else
                                     {
                                         $resultado->codigoError = $this->conexion->errno;
-                                        $resultado->mensajeError = __FUNCTION___. "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                                        $resultado->mensajeError = __FUNCTION__. "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
                                     }
                                 }
                                 else
                                 {
-                                    $resultado->mensajeError = __FUNCTION___. "Falló el enlace de parámetros";
+                                    $resultado->mensajeError = __FUNCTION__. "Falló el enlace de parámetros";
                                 }
                             }
                             else
                             {
                                 $resultado->codigoError = $this->conexion->errno;
-                                $resultado->mensajeError = __FUNCTION___. "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                                $resultado->mensajeError = __FUNCTION__. "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
                             }
                         }
                         
@@ -639,18 +700,18 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 else
                 {
                     $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError =  __FUNCTION___. "Falló la ejecución update (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    $resultado->mensajeError =  __FUNCTION__. "Falló la ejecución update (" . $this->conexion->errno . ") " . $this->conexion->error;
                 }
             }
             else
             {
-                $resultado->mensajeError =  __FUNCTION___. "Falló el enlace de parámetros update";
+                $resultado->mensajeError =  __FUNCTION__. "Falló el enlace de parámetros update";
             }
         }
         else
         {
             $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError =  __FUNCTION___. "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            $resultado->mensajeError =  __FUNCTION__. "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
         }
             
             
@@ -1064,20 +1125,30 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                     $resultado->valor=true;
                     $sentencia->close();
                     
-                    $resultado = $this->insertarDatosAuditoria($modelo);
+                    $resultado = $this->consultarPuntuacionAuditoria($modelo->id);
                     if($resultado->correcto())
                     {
-                        $resultado = $this->actualizarUltimoUso($modelo->plantillaId);
+                        $puntuacion = $resultado->valor;
+                        
+                        $resultado = $this->insertarDatosAuditoria($modelo);
                         if($resultado->correcto())
                         {
-                            $resultado = $this->consultarEncabezado($modelo->id);
+                            $resultado = $this->actualizarUltimoUso($modelo->plantillaId);
                             if($resultado->correcto())
                             {
+                                $resultado = $this->consultarEncabezado($modelo->id);
+                                if($resultado->correcto())
+                                {
+                                    $auditoria = $resultado->valor;
+                                    if($puntuacion!=$auditoria->puntuacion)
+                                    {
+                                        $this->calcularAleatorios($modelo->id,$auditoria->puntuacion);
+                                    }
+                                }
                                 
                             }
-                            
+                                
                         }
-                            
                     }
                 }
                 else
@@ -1093,6 +1164,66 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             $this->conexion->commit();
         else
            $this->conexion->rollback();
+        return $resultado;
+    }
+    
+    private function calcularAleatorios($auditoriaId,$porcentaje)
+    {
+        $resultado = new Resultado();
+        
+        $nivelCompromiso = floatval($porcentaje) + (random_int(-30, 30) / 10 );
+        $implementacion = floatval($porcentaje) + (random_int(-30, 30) / 10 );
+        $verificacion = floatval($porcentaje) + (random_int(-30, 30) / 10 );
+        
+        if($nivelCompromiso>100)
+            $nivelCompromiso = 100;
+        if($implementacion>100)
+            $implementacion = 100;
+        if($verificacion>100)
+            $verificacion = 100;
+        
+        if($nivelCompromiso<0)
+            $nivelCompromiso = 0;
+        if($implementacion<0)
+            $implementacion = 0;
+        if($verificacion<0)
+                $verificacion = 0;
+        
+        $consulta = "UPDATE auditorias " .
+            "SET nivel_compromiso = ?,  implementacion = ?,  verificacion = ? ".
+            "WHERE id=?";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("sssi",$nivelCompromiso, $implementacion, $verificacion, $auditoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                    
+                   
+                    
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError =  __FUNCTION__. "Falló la ejecución update (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+            }
+            else
+            {
+                $resultado->mensajeError =  __FUNCTION__. "Falló el enlace de parámetros update";
+            }
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError =  __FUNCTION__. "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        }
+        
+        
+        
         return $resultado;
     }
     
@@ -1163,11 +1294,13 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId);
+                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion);
+                           
+                            
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -1199,11 +1332,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion))
                     {
                         if($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId);
+                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion);
                             $resultado->valor = $registro;
                         }
                     }
@@ -1316,11 +1449,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion))
                     {
                         if($sentencia->fetch())
                         {
-                            $plantilla = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId);
+                            $plantilla = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion);
                            
                             
                             $resultado->valor = $plantilla;
@@ -1909,7 +2042,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             return $resultado;
     }
     
-    private function crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa, $tipoAuditoriaId)
+    private function crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa, $tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion)
     {
 //         $archivoIcono = '../../php/iconos/icono'.$plantillaId.'.png';
 //         $icono = 'default.png';
@@ -1942,9 +2075,21 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             'empresaNombreCorto' => $empresaNombreCorto,   
             'contadorEmpresa' => $contadorEmpresa ,
             'referencia' => $referencia,
-            'tipoAuditoriaId' => $tipoAuditoriaId
-            
+            'tipoAuditoriaId' => $tipoAuditoriaId,
+            'puntuacion' => $puntuacion,
+            'nivelCompromiso' => $nivelCompromiso,
+            'implementacion' => $implementacion,
+            'verificacion' => $verificacion,
+            'paisNivelCompromiso' => $paisNivelCompromiso,
+            'paisImplementacion' => $paisImplementacion,
+            'paisVerificacion' => $paisVerificacion,
+            'tipoEmpresaNivelCompromiso' => $tipoEmpresaNivelCompromiso,
+            'tipoEmpresaImplementacion' => $tipoEmpresaImplementacion,
+            'tipoEmpresaVerificacion' => $tipoEmpresaVerificacion
         ];
+        
+        Porcentaje::formatearPorcentaje($registro, "puntuacion");
+        
         
         return $registro;
     }

@@ -4,11 +4,13 @@ namespace php\repositorios;
 use php\interfaces\ITiposEmpresaRepositorio;
 use php\modelos\TipoEmpresa;
 use php\modelos\Resultado;
+use php\clases\Porcentaje;
 
 include "../interfaces/ITiposEmpresaRepositorio.php";
 include "../modelos/TipoEmpresa.php";
 include "RepositorioBase.php";
 require_once("../clases/Resultado.php");
+require_once("../clases/Porcentaje.php");
 
 class TiposEmpresaRepositorio extends RepositorioBase implements ITiposEmpresaRepositorio
 {
@@ -17,7 +19,7 @@ class TiposEmpresaRepositorio extends RepositorioBase implements ITiposEmpresaRe
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = " SELECT T.id, T.nombre, T.fecha_alta, T.fecha_modificacion, T.estatus " .
+        $this->consultaBase = " SELECT T.id, T.nombre, T.fecha_alta, T.fecha_modificacion, T.estatus,T.nivel_compromiso, T.implementacion, T.verificacion " .
             " FROM tipos_empresa T";
            
     }
@@ -28,11 +30,11 @@ class TiposEmpresaRepositorio extends RepositorioBase implements ITiposEmpresaRe
         if($resultado->mensajeError=="")
         {
             $id = $resultado->valor;
-            $consulta = "INSERT INTO tipos_empresa(id, nombre, fecha_alta, fecha_modificacion, estatus) " .
-                "VALUE(?, ?, NOW(), NOW(), ?)";
+            $consulta = "INSERT INTO tipos_empresa(id, nombre, fecha_alta, fecha_modificacion, estatus, nivel_compromiso, implementacion, verificacion) " .
+                "VALUE(?, ?, NOW(), NOW(), ?, ?, ?, ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if( $sentencia->bind_param("isi", $id, $modelo->nombre, $modelo->estatus))
+                if( $sentencia->bind_param("isisss", $id, $modelo->nombre, $modelo->estatus, $modelo->nivelCompromiso, $modelo->implementacion, $modelo->verificacion))
                 {
                     if(!$sentencia->execute())
                         $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
@@ -49,15 +51,18 @@ class TiposEmpresaRepositorio extends RepositorioBase implements ITiposEmpresaRe
     public function actualizar(TipoEmpresa $modelo)
     {
         $resultado = new Resultado();
-        $consulta = " UPDATE tipos_empresa " .
-            "SET nombre = ?, " .            
-            "  estatus = ?, " .
-            "  fecha_modificacion= NOW() " .
-            "WHERE id = ? ";
+        $consulta = " UPDATE tipos_empresa 
+            SET nombre = ?, 
+              estatus = ?, 
+             nivel_compromiso = ?,
+            implementacion = ?,
+            verificacion = ?,
+              fecha_modificacion= NOW() 
+            WHERE id = ? ";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if( $sentencia->bind_param("sii", $modelo->nombre, $modelo->estatus,$modelo->id ))
+            if( $sentencia->bind_param("sisssi", $modelo->nombre, $modelo->estatus,$modelo->nivelCompromiso, $modelo->implementacion, $modelo->verificacion,$modelo->id ))
             {
                 if($sentencia->execute())
                 {
@@ -94,11 +99,11 @@ class TiposEmpresaRepositorio extends RepositorioBase implements ITiposEmpresaRe
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombre, $fechaAlta, $fechaModificacion, $estatus))
+                    if ($sentencia->bind_result($id, $nombre, $fechaAlta, $fechaModificacion, $estatus, $nivelCompromiso, $implementacion, $verificacion))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombre,$fechaAlta, $fechaModificacion, $estatus);
+                            $registro = $this->crearRegistro($id, $nombre,$fechaAlta, $fechaModificacion, $estatus, $nivelCompromiso, $implementacion, $verificacion);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -130,11 +135,11 @@ class TiposEmpresaRepositorio extends RepositorioBase implements ITiposEmpresaRe
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombre, $fechaAlta, $fechaModificacion, $estatus))
+                    if ($sentencia->bind_result($id, $nombre, $fechaAlta, $fechaModificacion, $estatus, $nivelCompromiso, $implementacion, $verificacion))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombre, $fechaAlta, $fechaModificacion, $estatus);
+                            $registro = $this->crearRegistro($id, $nombre, $fechaAlta, $fechaModificacion, $estatus, $nivelCompromiso, $implementacion, $verificacion);
                             $resultado->valor = $registro;
                         }
                         else
@@ -154,15 +159,23 @@ class TiposEmpresaRepositorio extends RepositorioBase implements ITiposEmpresaRe
             return $resultado;
     }
     
-    private function crearRegistro($id, $nombre, $fechaAlta, $fechaModificacion, $estatus)
+    private function crearRegistro($id, $nombre, $fechaAlta, $fechaModificacion, $estatus, $nivelCompromiso, $implementacion, $verificacion)
     {
         $registro= (object) [
             'id' =>  $id,
             'nombre' => $nombre,            
             'fechaAlta' => $fechaAlta,
             'fechaModificacion' => $fechaModificacion,
-            'estatus' => $estatus
+            'estatus' => $estatus,
+            'nivelCompromiso' => $nivelCompromiso,
+            'implementacion' => $implementacion,
+            'verificacion' => $verificacion
         ];
+        
+        Porcentaje::formatearPorcentaje($registro, "nivelCompromiso");
+        Porcentaje::formatearPorcentaje($registro, "implementacion");
+        Porcentaje::formatearPorcentaje($registro, "verificacion");
+        
         return $registro;
     }
     
