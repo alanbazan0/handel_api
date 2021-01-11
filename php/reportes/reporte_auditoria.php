@@ -253,7 +253,7 @@ class PDF extends FPDF
     {
         $this->SetLineWidth(1);
         $this->SetDrawColor(197,93,90);
-        $y = 275;
+        $y = 276;
         $this->Line(10, $y, 210-10, $y);
         
         $logo = "../imagenes/telefono_naranja.png";
@@ -919,6 +919,49 @@ class PDF extends FPDF
         $this->Cell(170, 6,$this->texto("En esta seccion aparecerá un comparativo de las gráficas conforme se avance en el"), $borde, 1, 'FJ',1);
         $this->Cell(170, 6,$this->texto("paquete de mantenimiento contratado con Händel SCE."), $borde, 1, 'L',1);
         
+        $this->SetX(0);
+        $y = 80;
+        $pdfWidth = $this->w;
+        $chartWidth = 170;
+        $repositorio = new AuditoriasRepositorio($this->conexion);
+        $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
+        //$resultado = $repositorio->consultarPorcentajesSecciones($this->modelo->id);
+        $resultado = $repositorio->consultarAuditoriaAnterior($this->modelo->empresaId, $this->modelo->plantillaId, $this->modelo->id);
+        if($resultado->correcto())
+        {
+            $auditoriaAnteriorId = $resultado->valor->id;
+            $fechaAnterior = substr($resultado->valor->fechaEjecucion,0,10);
+            if($auditoriaAnteriorId!=-1)
+            {
+                $resultado = $repositorio->consultarPorcentajesSeccionesComparativo($this->modelo->id,$auditoriaAnteriorId);
+                if($resultado->correcto())
+                {
+                    $porcentajes = $resultado->valor;
+                    $fecha = substr($this->modelo->fechaEjecucion,0,10);
+                    
+                    $image = $this->graficaReferenciaComparativo("",'',$fecha,$fechaAnterior,$porcentajes,"texto","porcentajeActual","porcentajeAnterior",$colores,false,105);
+                    if($image!='')
+                        $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,$y, $chartWidth);
+                }
+                    
+            }
+            else 
+            {
+                $resultado = $repositorio->consultarPorcentajesSecciones($this->modelo->id);
+                if($resultado->correcto())
+                {
+                    $porcentajesActual = $resultado->valor;
+                    $fecha = substr($this->modelo->fechaEjecucion,0,10);
+                    $image = $this->graficaReferenciaGlobal("",'',$fecha,$porcentajesActual,"texto","porcentaje",$colores,true,105);
+                    if($image!='')
+                        $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,$y, $chartWidth);
+                }
+            }
+          
+          
+        }
+           
+        
        
     }
     
@@ -941,21 +984,22 @@ class PDF extends FPDF
         $this->SetX(0);
         $y = 80;
         $pdfWidth = $this->w;
-        $chartWidth = 180;
+        $chartWidth = 170;
         $repositorio = new AuditoriasRepositorio($this->conexion);
         $resultado = $repositorio->consultarPorcentajesSecciones($this->modelo->id);
         if($resultado->correcto())
         {
             $porcentajes = $resultado->valor;
             $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-            $image = $this->graficaReferenciaGlobal("",'','Usuarios',$porcentajes,"texto","porcentaje",$colores,false,100);
+            $fecha = substr($this->modelo->fechaEjecucion,0,10);
+            $image = $this->graficaReferenciaGlobal("",'',$fecha,$porcentajes,"texto","porcentaje",$colores,false,105);
             if($image!='')
                 $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,$y, $chartWidth);
         }
         
     }
     
-    function graficaReferenciaGlobal($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colors, $showInLegend,$max)
+    function graficaReferenciaGlobal($title, $yTitle, $fecha, $rows, $xField, $yField,$colors, $showInLegend,$max)
     {
         $categories = array();
         $data = array();
@@ -991,29 +1035,35 @@ class PDF extends FPDF
                 array_push($data, $newRow);
         }
         
-        $yAxis = (object) [ 'title' => (object) [ 'text'=> $yTitle]];
+        $yAxis = (object) [ 'title' => (object) [ 'text'=> $yTitle, 'align' => 'high'], 'labels' => (object) [ 'overflow'=> 'justify']];
         if($max>0)
         {
             $yAxis->min= 0;
             $yAxis->max= $max;
             $yAxis->tickInterval= 10;
+            
         }
         
         $highchart = (object)
         [
-            'chart' => (object) [ 'type' => "column"],
+            'chart' => (object) [ 'type' => "bar"],
             'title' => (object) [ 'text'=> $title],
             'credits' => (object) ['enabled' => false],
             'xAxis' => (object) [ 'categories' => $categories],
+           /* 'legend' => (object)[
+                'layout'=> 'vertical',
+                'align'=> 'right',
+                'verticalAlign'=> 'middle'
+            ],*/
             'plotOptions' => (object)
             [
-                'column'=> (object)[
+                'bar'=> (object)[
                     'dataLabels'=>(object)
                     [
                         'enabled'=>true,
                         'crop'=>false,
                         'overflow' =>'none',
-                        "inside"=> true,
+                        "inside"=> false,
                         'color'=> 'white',
                         'borderColor' => 'black',
                         'style'=> (object)
@@ -1026,7 +1076,7 @@ class PDF extends FPDF
             ],
             'yAxis' => $yAxis,
             'series' => array(
-                (object) ['name' => $serieTitle, 'data' => $data,  'showInLegend' => $showInLegend]
+                (object) ['name' => $fecha, 'data' => $data,  'showInLegend' => true]
             )
         ];
         
@@ -1068,6 +1118,127 @@ class PDF extends FPDF
             
     }
     
+    function graficaReferenciaComparativo($title, $yTitle, $serieTitle,$serieTitleAnterior, $rows, $xField, $yFieldActual, $yFieldAnterior, $colors, $showInLegend,$max)
+    {
+        $categories = array();
+        $data1 = array();
+        $data2 = array();
+        
+        for ($i = 0; $i < count($rows); $i++)
+        {
+            $row = $rows[$i];
+            $category = $row->$xField;
+            //$value = (float)$row->$yField;
+            
+            /* if($value>=0 && $value<51)
+             $color="#dd4b39";
+             else if($value>=51 &&   $value <100)
+             $color="#f39c12";
+             else iF($value>=100)
+             $color="#00a65a";*/
+             
+             
+             
+             $newRow1= (object) [
+                 'name' =>  $category,
+                 'y' => floatval($row->$yFieldActual)
+                 
+             ];
+             
+             $newRow2= (object) [
+                 'name' =>  $category,
+                 'y' => floatval($row->$yFieldAnterior)
+             ];
+             
+             array_push($categories, $category);
+             array_push($data1, $newRow1);
+             array_push($data2, $newRow2);
+        }
+        
+        $yAxis = (object) [ 'title' => (object) [ 'text'=> $yTitle, 'align' => 'high'], 'labels' => (object) [ 'overflow'=> 'justify']];
+        if($max>0)
+        {
+            $yAxis->min= 0;
+            $yAxis->max= $max;
+            $yAxis->tickInterval= 10;
+            
+        }
+        
+        $highchart = (object)
+        [
+            'chart' => (object) [ 'type' => "bar"],
+            'title' => (object) [ 'text'=> $title],
+            'credits' => (object) ['enabled' => false],
+            'xAxis' => (object) [ 'categories' => $categories, "tickLength"=> 10],
+            'plotOptions' => (object)
+            [
+                'bar'=> (object)[
+                    'dataLabels'=>(object)
+                    [
+                        'enabled'=>true,
+                        'crop'=>false,
+                        'overflow' =>'none',
+                        "inside"=> false,
+                        'color'=> 'white',
+                        'borderColor' => 'black',
+                        'style'=> (object)
+                        [
+                            'fontSize' => 10,
+                            'textOutline' => '1px'
+                        ]
+                    ]
+                ],
+                'series' => (object)[
+                    "groupPadding" => 0.1,
+                    "pointPadding" => 0.1,
+                    "borderWidth" =>0
+                ]
+            ],
+            'yAxis' => $yAxis,
+            'series' => array(
+                (object) ['name' => $serieTitle, 'data' => $data1, 'color' => "#1a78d1",  'showInLegend' => true],
+                (object) ['name' => $serieTitleAnterior, 'data' => $data2, 'color' => "#3aa437", 'showInLegend' => true]
+            )
+        ];
+        
+        $data= (object) [
+            'async' =>  true,
+            'type' => 'image/jpeg',
+            'width' => 1080,
+            'options' => $highchart
+        ];
+        
+        $options = array(
+            'http' => array(
+                'method'  => 'POST',
+                'content' => json_encode( $data ),
+                'header'=>  "Content-Type: application/json\r\n" .
+                "Accept: application/json\r\n"
+            )
+        );
+        
+        $url = 'http://export.highcharts.com/';
+        
+        $context  = stream_context_create( $options );
+        
+        
+        
+        $result = file_get_contents( $url, false, $context );
+        
+        $charturl='';
+        if ($result === FALSE)
+        {
+            
+        }
+        else
+        {
+            $charturl = $url . $result;
+            
+        }
+        return $charturl;
+        
+    }
+    
     
     function observaciones()
     {
@@ -1084,7 +1255,114 @@ class PDF extends FPDF
         $this->SetFont($this->font, '', 10);
         $this->Cell(170, 6,$this->texto("Se	identifican los aspectos encontrados durante la inspección realizada."), $borde, 1, 'L',1);
         
+        $this->SetFont($this->font, '', 9);
+        $this->SetLeftMargin(5);
+        
+        $this->Ln();
+        $borde = 1;
+        
+        $this->cMargin = 1;
+        $this->SetLeftMargin(20);
+        $this->fontSizes = array(9, 9, 9, 9);
+        $this->fontWeights = array("B","B","B","B");
+        $this->aligns = array("C","C","C","C");
+        $this->widths = array(15, 45, 35, 75);
+        $this->textColors = array("#000000","#000000","#000000","#000000");
+        $this->borders = array(1,1,1,1);
+        $this->borderColors = array("#afb2b0","#afb2b0","#afb2b0","#afb2b0");
+        $this->backgroundColors = array("#bdc1bf","#bdc1bf","#bdc1bf","#bdc1bf");
+        //  $this->SetFillColor(189, 193, 191);
+        $this->Row2(array("Item","Criterio","Departamento","Hallazgo"),5);
+        $this->fontWeights = array("B","","","");
+        $this->aligns = array("C","L","L","L");
+        
+        $repositorio = new AuditoriasRepositorio($this->conexion);
+        $resultado = $repositorio->getObservaciones($this->secciones);
+        if($resultado->correcto())
+        {
+            $observaciones = $resultado->valor;
+            for($i = 0; $i < count($observaciones); $i++)
+            {
+                $observacion = $observaciones[$i];
+                $color = "";
+                if($i%2==0)
+                    $color = "#ffffff";
+                else
+                    $color = "#f5f5f5";
+                $this->backgroundColors = array("#e6e6e6",$color,$color,$color,$color);
+                
+                $this->Row2(array($i+1,$this->texto($observacion->criterio),$this->texto($observacion->departamento),$this->texto($observacion->hallazgo)),5);
+            }
+        }
+       
+        
+       
+        
     }
+    
+    function CheckPageBreak($h)
+    {
+        //If the height h would cause an overflow, add a new page immediately
+        if($this->GetY()+$h>$this->PageBreakTrigger)
+        {
+            $this->AddPage($this->CurOrientation);
+            $this->SetY(25);
+            $this->SetX(0);
+            $this->SetLeftMargin(20);
+        }
+    }
+    
+    function NbLines($w,$txt)
+    {
+        //Computes the number of lines a MultiCell of width w will take
+        $cw=&$this->CurrentFont['cw'];
+        if($w==0)
+            $w=$this->w-$this->rMargin-$this->x;
+            $wmax=($w-2*$this->cMargin)*1000/$this->FontSize;
+            $s=str_replace("\r",'',$txt);
+            $nb=strlen($s);
+            if($nb>0 and $s[$nb-1]=="\n")
+                $nb--;
+                $sep=-1;
+                $i=0;
+                $j=0;
+                $l=0;
+                $nl=1;
+                while($i<$nb)
+                {
+                    $c=$s[$i];
+                    if($c=="\n")
+                    {
+                        $i++;
+                        $sep=-1;
+                        $j=$i;
+                        $l=0;
+                        $nl++;
+                        continue;
+                    }
+                    if($c==' ')
+                        $sep=$i;
+                        $l+=$cw[$c];
+                        if($l>$wmax)
+                        {
+                            if($sep==-1)
+                            {
+                                if($i==$j)
+                                    $i++;
+                            }
+                            else
+                                $i=$sep+1;
+                                $sep=-1;
+                                $j=$i;
+                                $l=0;
+                                $nl++;
+                        }
+                        else
+                            $i++;
+                }
+                return $nl;
+    }
+    
     
     function incidencias()
     {
@@ -1232,6 +1510,61 @@ class PDF extends FPDF
         return $fecha;
     }
     
+    function Row2($data, $height)
+    {
+        //Calculate the height of the row
+        $nb=0;
+        for($i=0;$i<count($data);$i++)
+            $nb=max($nb,$this->NbLines($this->widths[$i],$data[$i]));
+            $h=$height*$nb;
+            //Issue a page break first if needed
+            $this->CheckPageBreak($h);
+            //Draw the cells of the row
+            for($i=0;$i<count($data);$i++)
+            {
+                $w=$this->widths[$i];
+                $a=isset($this->aligns[$i]) ? $this->aligns[$i] : 'L';
+                //Save the current position
+                $x=$this->GetX();
+                $y=$this->GetY();
+                
+                $colorHex = $this->backgroundColors[$i];
+                $rgb = $this->toRGB($colorHex);
+                
+                //Draw background
+                $this->SetFillColor($rgb->r, $rgb->g, $rgb->b);
+                $this->Rect($x,$y,$w,$h,"F");
+                
+                if($this->borders[$i]==1)
+                {
+                    $colorHex = $this->borderColors[$i];
+                    $rgb = $this->toRGB($colorHex);
+                    $this->SetDrawColor($rgb->r, $rgb->g, $rgb->b);
+                    $this->Rect($x,$y,$w,$h,"D");
+                }
+                
+                //$this->SetFillColor($rgb->red, $rgb->green, $rgb->blue);
+                
+                $this->SetFont($this->fontNames[$i],$this->fontWeights[$i],$this->fontSizes[$i]);
+                //Print the text
+                $this->MultiCell($w,$height,$data[$i],0,$a);
+                //Put the position to the right of the cell
+                $this->SetXY($x+$w,$y);
+            }
+            
+            //Go to the next line
+            $this->Ln($h);
+    }
+    
+    function toRGB($hex)
+    {
+        $values = str_replace( '#', '', $hex );
+        $split = str_split($values, 2);
+        $r = hexdec($split[0]);
+        $g = hexdec($split[1]);
+        $b = hexdec($split[2]);
+        return  (object)["r"=> $r, "g" => $g, "b" => $b];
+    }
    
     function correctImageOrientation($filename) {
         

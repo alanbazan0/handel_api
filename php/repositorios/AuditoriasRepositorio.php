@@ -145,6 +145,47 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             return $resultado;
     }
     
+    function consultarAuditoriaAnterior($empresaId, $plantillaId, $auditoriaId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta = "SELECT id, DATE_FORMAT(fecha_ejecucion,'%d/%m/%Y %H:%i:%s')
+                    FROM auditorias
+                    WHERE empresa_id = ? and plantilla_id = ? and id < ?
+                    ORDER BY id DESC
+                    LIMIT 1";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param('iii',$empresaId, $plantillaId,$auditoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id,$fechaEjecucion))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $registro = (object)["id"=>$id, "fechaEjecucion"=> $fechaEjecucion];
+                            $resultado->valor = $registro;
+                        }
+                        else
+                            $resultado->valor = -1;
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        return $resultado;
+    }
+    
     function consultarPorcentajesSecciones($auditoriaId)
     {
         $resultado = new Resultado();
@@ -160,24 +201,24 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 LIMIT 1,100	";
             
             
-            if($sentencia = $this->conexion->prepare($consulta))
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param('i',$auditoriaId))
             {
-                if($sentencia->bind_param('i',$auditoriaId))
+                if($sentencia->execute())
                 {
-                    if($sentencia->execute())
+                    if($sentencia->bind_result($id, $texto,$porcentaje))
                     {
-                        if($sentencia->bind_result($id, $texto,$porcentaje))
+                        while($sentencia->fetch())
                         {
-                            while($sentencia->fetch())
-                            {
-                                $registro= (object) [
-                                    'id' =>  $id,
-                                    'texto' =>  $texto,
-                                    'porcentaje' =>  $porcentaje
-                                   
-                                ];
-                             Porcentaje::formatearPorcentaje($registro, "porcentaje",2);
-                                    
+                            $registro= (object) [
+                                'id' =>  $id,
+                                'texto' =>  $texto,
+                                'porcentaje' =>  $porcentaje
+                               
+                            ];
+                            Porcentaje::formatearPorcentaje($registro, "porcentaje",2);
+                                
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -190,10 +231,71 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             }
             else
                 $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
-    }
-    else
-        $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
         return $resultado;
+    }
+    
+    function consultarPorcentajesSeccionesComparativo($auditoriaId,$auditoriaAnteriorId)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        
+        $consulta = "SELECT A.id, A.texto, A.porcentaje, B.porcentaje FROM(SELECT S.id, S.texto, SUM(puntos) / SUM(puntos_total) * 100 porcentaje
+                    FROM auditoria_preguntas AP
+                    	INNER JOIN preguntas P ON P.plantilla_id = AP.plantilla_id AND P.seccion_id = AP.seccion_id AND P.id = AP.pregunta_id
+                        INNER JOIN secciones S ON P.plantilla_id = S.plantilla_id AND P.seccion_id = S.id
+                    WHERE P.tipo='e' AND auditoria_id = ?
+                    GROUP BY AP.seccion_id) A
+                    INNER JOIN
+                    (SELECT S.id, S.texto, 0 actual, SUM(puntos) / SUM(puntos_total) * 100 porcentaje
+                    FROM auditoria_preguntas AP
+                    	INNER JOIN preguntas P ON P.plantilla_id = AP.plantilla_id AND P.seccion_id = AP.seccion_id AND P.id = AP.pregunta_id
+                        INNER JOIN secciones S ON P.plantilla_id = S.plantilla_id AND P.seccion_id = S.id
+                    WHERE P.tipo='e' AND auditoria_id = ?
+                    GROUP BY AP.seccion_id	)B
+                    WHERE A.id = B.id
+                     LIMIT 1,100;";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param('ii',$auditoriaId,$auditoriaAnteriorId))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id, $texto,$porcentajeActual, $porcentajeAnterior))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro= (object) [
+                                'id' =>  $id,
+                                'texto' =>  $texto,
+                                'porcentajeActual' =>  $porcentajeActual,
+                                'porcentajeAnterior' => $porcentajeAnterior
+                                
+                            ];
+                            Porcentaje::formatearPorcentaje($registro, "porcentajeActual",2);
+                            Porcentaje::formatearPorcentaje($registro, "porcentajeAnterior",2);
+                            
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
     }
     
     function consultarPuntuacionAuditoria($auditoriaId)
@@ -252,11 +354,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 $modelo->contadorEmpresa = $this->calcularContadorEmpresa($modelo->empresaId);
                 
                 
-                $consulta = "INSERT INTO auditorias(id, plantilla_id, fecha_ejecucion, empresa_id, contador_empresa) " .
-                    "VALUE(?, ?, NOW(),  ?, ?)";
+                $consulta = "INSERT INTO auditorias(id, plantilla_id, fecha_ejecucion, empresa_id, contador_empresa, tipo_auditoria_id) " .
+                    "VALUE(?, ?, NOW(),  ?, ?, ?)";
                 if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    if( $sentencia->bind_param("iiii", $modelo->id, $modelo->plantillaId, $modelo->empresaId, $modelo->contadorEmpresa ))
+                    if( $sentencia->bind_param("iiiis", $modelo->id, $modelo->plantillaId, $modelo->empresaId, $modelo->contadorEmpresa, $modelo->tipoAuditoriaId ))
                     {
                         if($sentencia->execute())
                         {
@@ -548,9 +650,23 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             
             $pregunta = $preguntas[$i];
             
-            $consulta = "UPDATE auditoria_preguntas " .
-                        "SET valor = ?,  puntos = ?, puntos_total = ?, porcentaje = ? ". 
-                        "WHERE auditoria_id=? AND plantilla_id = ? AND seccion_id = ? AND pregunta_id = ?";
+            if(isset($pregunta->responsable))
+            {
+                if($pregunta->responsable=="")
+                 $pregunta->responsable = null;
+            }
+            else
+                $pregunta->responsable = null;
+            
+            $consulta = "UPDATE auditoria_preguntas 
+                        SET valor = ?,  
+                        puntos = ?, 
+                        puntos_total = ?, 
+                        porcentaje = ?,
+                        responsable_id = ?,
+                        reporte = ?,
+                        notificacion = ?
+                        WHERE auditoria_id=? AND plantilla_id = ? AND seccion_id = ? AND pregunta_id = ?";
             
 //             if(substr( $pregunta->valor, 0, 10 ) === "data:image")
 //             {
@@ -562,7 +678,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param("siisiiii",$pregunta->valor,$pregunta->puntos, $pregunta->puntosTotal, $pregunta->porcentaje,$auditoriaId,$plantillaId,$seccionId, $pregunta->id))
+                if($sentencia->bind_param("siisiiiiiii",$pregunta->valor,$pregunta->puntos, $pregunta->puntosTotal, $pregunta->porcentaje,$pregunta->responsable, $pregunta->reporte, $pregunta->notificacion,$auditoriaId,$plantillaId,$seccionId, $pregunta->id))
                 {
                     if($sentencia->execute())
                     {
@@ -578,11 +694,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                             
                             if($count==0)
                             {
-                                $consulta = "INSERT INTO auditoria_preguntas(auditoria_id, plantilla_id, seccion_id, pregunta_id, valor, puntos, puntos_total, porcentaje) " .
-                                    "VALUE(?, ?, ?, ?, ?, ?, ?, ?)";
+                                $consulta = "INSERT INTO auditoria_preguntas(auditoria_id, plantilla_id, seccion_id, pregunta_id, valor, puntos, puntos_total, porcentaje, responsable_id, reporte, notificacion) " .
+                                    "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                                 if($sentencia = $this->conexion->prepare($consulta))
                                 {
-                                    if($sentencia->bind_param("iiiisiis",$auditoriaId,$plantillaId,$seccionId, $pregunta->id, $pregunta->valor,$pregunta->puntos, $pregunta->puntosTotal, $pregunta->porcentaje))
+                                    if($sentencia->bind_param("iiiisiisiii",$auditoriaId,$plantillaId,$seccionId, $pregunta->id, $pregunta->valor,$pregunta->puntos, $pregunta->puntosTotal, $pregunta->porcentaje, $pregunta->responsable, $pregunta->reporte, $pregunta->notificacion))
                                     {
                                         if($sentencia->execute())
                                         {
@@ -1493,10 +1609,14 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         
         $resultado = new Resultado();
         $preguntas = array();
-        $consulta = "SELECT A.seccion_id, pregunta_id, RTRIM(texto) texto, P.peso, RTRIM(tipo) tipo, RTRIM(hallazgo) hallazgo, RTRIM(recomendacion)recomendacion, RTRIM(practicas)practicas, RTRIM(observaciones)observaciones, RTRIM(valor) valor  " .
-            "FROM auditoria_preguntas A " .
-            "  INNER JOIN preguntas P ON A.plantilla_id = P.plantilla_id AND A.seccion_id = P.seccion_id AND A.pregunta_id = P.id ".
-            " WHERE A.plantilla_id  = ? AND A.auditoria_id = ? AND A.seccion_id = ? ";
+        $consulta = "SELECT A.seccion_id, pregunta_id, RTRIM(texto) texto, P.peso, RTRIM(tipo) tipo, RTRIM(hallazgo) hallazgo, RTRIM(recomendacion)recomendacion, RTRIM(practicas)practicas, RTRIM(observaciones)observaciones, RTRIM(valor) valor, responsable_id, reporte, notificacion, D.id, D.nombre departamentoNombre 
+            FROM auditoria_preguntas A
+            INNER JOIN preguntas P ON A.plantilla_id = P.plantilla_id AND A.seccion_id = P.seccion_id AND A.pregunta_id = P.id 
+            LEFT JOIN usuarios U ON A.responsable_id = U.id
+            LEFT JOIN departamentos D ON U.departamento_id = D.id
+            WHERE A.plantilla_id  = ? AND A.auditoria_id = ? AND A.seccion_id = ? ";
+        
+       
         if($sentencia = $this->conexion->prepare($consulta))
         {
             
@@ -1504,7 +1624,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($seccionId, $preguntaId, $texto, $peso, $tipo , $hallazgo, $recomendacion, $practicas, $observaciones, $valor))
+                    if ($sentencia->bind_result($seccionId, $preguntaId, $texto, $peso, $tipo , $hallazgo, $recomendacion, $practicas, $observaciones, $valor, $responsable, $reporte, $notificacion, $departamentoId, $departamentoNombre))
                     {   
                         while($sentencia->fetch())
                         {
@@ -1519,7 +1639,12 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                                 'recomendacion' => $recomendacion,
                                 'practicas' => $practicas,
                                 'observciones' => $observaciones,
-                                'valor' => $valor
+                                'valor' => $valor,
+                                'responsable' => $responsable,
+                                'reporte' => $reporte,
+                                'notificacion' => $notificacion,
+                                'departamentoId' => $departamentoId,
+                                'departamentoNombre' => $departamentoNombre
                             ];
                             array_push($preguntas,$pregunta);
                         }
@@ -1763,17 +1888,28 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         
         $resultado = new Resultado();
         $respuestas = array();
-        $consulta = "SELECT respuesta_id, valor, responsable_id, reporte, notificacion " .
-            "FROM auditoria_respuestas_si " .
-            " WHERE auditoria_id = ? AND plantilla_id  = ? AND seccion_id= ? AND pregunta_id = ? ";
-            "ORDER BY respuesta_id";
+       /* $consulta = "SELECT respuesta_id, valor, responsable_id, reporte, notificacion, D.id, D.nombre, R.hallazgo, R.recomendacion
+            FROM auditoria_respuestas_si  RS
+                  INNER JOIN respuestas_si R ON RS.plantilla_id = R.plantilla_id AND RS.seccion_id = R.seccion_id AND RS.pregunta_id = R.pregunta_id
+                LEFT JOIN usuarios U ON RS.responsable_id = U.id
+                LEFT JOIN departamentos D ON U.departamento_id = D.id
+            WHERE auditoria_id = ? AND plantilla_id  = ? AND seccion_id= ? AND pregunta_id = ? 
+            ORDER BY respuesta_id";*/
+        
+        $consulta = "SELECT respuesta_id, valor, responsable_id, reporte, notificacion, D.id, D.nombre, R.hallazgo, R.recomendacion
+            FROM auditoria_respuestas_si  RS
+                    INNER JOIN respuestas_si R ON RS.plantilla_id = R.plantilla_id AND RS.seccion_id = R.seccion_id AND RS.pregunta_id = R.pregunta_id AND RS.respuesta_id = R.id
+                LEFT JOIN usuarios U ON RS.responsable_id = U.id
+                LEFT JOIN departamentos D ON U.departamento_id = D.id
+            WHERE RS.auditoria_id = ? AND RS.plantilla_id  = ? AND RS.seccion_id= ? AND RS.pregunta_id = ?
+            ORDER BY respuesta_id";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param("iiii",$auditoriaId,$plantillaId,$seccionId,$preguntaId))
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($respuestaId, $valor, $responsable, $reporte, $notificacion))
+                    if ($sentencia->bind_result($respuestaId, $valor, $responsable, $reporte, $notificacion,$departamentoId, $departamentoNombre, $hallazgo, $recomendacion))
                     {
                         while($sentencia->fetch())
                         {
@@ -1782,7 +1918,12 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                                 'valor' => $valor,
                                 'responsable' => $responsable,
                                 'reporte' => $reporte,
-                                'notificacion' => $notificacion
+                                'notificacion' => $notificacion,
+                                'departamentoId' => $departamentoId,
+                                'departamentoNombre' => $departamentoNombre,
+                                'hallazgo' => $hallazgo,
+                                'recomendacion' => $recomendacion
+                              
                             ];
                             array_push($respuestas,$respuesta);
                         }
@@ -2170,6 +2311,58 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         return $resultado;
     }
     
+    public function getObservaciones($secciones)
+    {
+        $resultado = new Resultado();
+        $observaciones = array();
+        for ($s = 0; $s < count($secciones); $s++) 
+        {
+            $seccion = $secciones[$s];
+            for ($p = 0; $p < count($seccion->preguntas); $p++)
+            {
+                $pregunta = $seccion->preguntas[$p];
+                if($pregunta->tipo=="sn")
+                {
+                    $elementos = explode(". ", $seccion->texto);
+                    if(count($elementos)>1)
+                    {
+                        $criterio = $elementos[1];
+                        switch($pregunta->valor)
+                        {
+                            case "S":
+                                for ($r = 0; $r < count($pregunta->respuestas_si); $r++)
+                                {
+                                    $respuesta = $pregunta->respuestas_si[$r];
+                                   
+                                    if($respuesta->reporte==1)
+                                    {
+                                        $departamento = $respuesta->departamentoNombre;
+                                        if($departamento=="")
+                                            $departamento = "No asignado";
+                                        $observacion = (object)['criterio' =>$criterio, 'departamento' => $departamento, 'hallazgo' => $respuesta->hallazgo];
+                                        array_push($observaciones,$observacion);
+                                    }
+                                }
+                            break;
+                            case "N":
+                                if($pregunta->reporte==1)
+                                {
+                                    $departamento = $pregunta->departamentoNombre;
+                                    if($departamento=="")
+                                        $departamento = "No asignado";
+                                    $observacion = (object)['criterio' =>$criterio, 'departamento' => $departamento, 'hallazgo' => $pregunta->hallazgo];
+                                    array_push($observaciones,$observacion);
+                                }
+                            break;
+                        }
+                    }
+                   
+                }
+            }
+        }
+        $resultado->valor = $observaciones;
+        return $resultado;
+    }
     
 }
 

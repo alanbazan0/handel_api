@@ -584,8 +584,7 @@ class GraficaCapacitacionesAvanceDepartamentoVista extends CatalogoVista
 			empresaId: $('#empresaSelectCriterio').val(),
 			sedeId: $('#sedeSelectCriterio').val(),
 			departamentoId: $('#departamentoSelectCriterio').val(),
-			cursoId : $('#cursoSelectCriterio').val(),
-			tipoReporte: 1
+			cursoId : $('#cursoSelectCriterio').val()
 		 }
 		 return criteriosSeleccion;
 	}	

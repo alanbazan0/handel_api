@@ -578,7 +578,7 @@ abstract class PDF extends FPDF
         $this->Row2(array("Item","Tarea","Asignado a","Fecha compromiso",$this->texto("Fecha terminación")),5);
         
         $this->fontWeights = array("B","","","","");
-        $this->aligns = array("C","L","L","C","C");#
+        $this->aligns = array("C","L","L","C","C");
        
         for($i = 0; $i < count($this->minuta->tareas); $i++)
         {

@@ -342,13 +342,15 @@ class AuditoriaVista extends Vista
 		$("#referenciaDiv").show();
 		if(modeloDatos!=null)
 		{
+			this.listaPreguntas.empresaId = modeloDatos.empresaId;
+			this.listaPreguntas.tipoAuditoriaId = modeloDatos.tipoAuditoriaId;
 			$("#referenciaLabel").html(modeloDatos.referencia);
 			if( modeloDatos.preguntas!=null)
 			{
 				for(var i=0; i < modeloDatos.preguntas.length; i++)
 				{
 					var pregunta = modeloDatos.preguntas[i];
-					this.listaPreguntas.setValor(pregunta.seccionId, pregunta.preguntaId, pregunta.valor);
+					this.listaPreguntas.setValor(pregunta.seccionId, pregunta.preguntaId, pregunta.valor, pregunta.responsable, pregunta.reporte, pregunta.notificacion);
 		//			if(pregunta.tipo="sn")
 		//			{
 		//				//if(pregunta.valor=="S")
@@ -359,8 +361,7 @@ class AuditoriaVista extends Vista
 				}
 			}
 			
-			this.listaPreguntas.empresaId = modeloDatos.empresaId;
-			this.listaPreguntas.tipoAuditoriaId = modeloDatos.tipoAuditoriaId;
+			
 		}
 
 		this.calcularPorcentajes();
@@ -424,7 +425,11 @@ class AuditoriaVista extends Vista
 									puntosTotal : componente.pregunta.puntosTotal,
 									porcentaje : componente.pregunta.porcentaje,
 									respuestas_si: componente.respuestasSi,
-									respuestas_no: componente.respuestasNo}; ;
+									respuestas_no: componente.respuestasNo,
+									responsable : componente.responsable,
+									reporte: componente.reporte,
+									notificacion: componente.notificacion
+									}; 
 					preguntas.push(pregunta);
 				}
 			}

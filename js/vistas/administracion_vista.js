@@ -408,6 +408,7 @@ class AdministracionVista extends CatalogoVista
 			 sedeId:$('#sedeSelect').val(),
 			 puestoId:$('#puestoSelect').val(),
 			 areaId:$('#areaSelect').val(),
+			 departamentoId:$('#departamentoSelect').val(),
 			 supervisor1Id:$('#supervisor1Select').val(),
 			 supervisor2Id:$('#supervisor2Select').val(),
 			 supervisor3Id:$('#supervisor3Select').val(),

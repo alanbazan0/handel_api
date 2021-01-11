@@ -13,5 +13,6 @@ class Auditoria
     public $referencia;
     public $tipoAuditoriaId;
     public $seccion;
+    
 }
 

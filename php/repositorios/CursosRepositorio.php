@@ -4235,6 +4235,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         
         $consulta = $this->getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario);
         
+        //var_dump($consulta);
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -4573,6 +4574,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 "\n) AS A " .
                 "\nGROUP BY departamentoId,departamentoNombre";
             "\nORDER BY departamentoNombre";
+            
             
             
             if($sentencia = $this->conexion->prepare($consulta))

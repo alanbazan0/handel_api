@@ -749,7 +749,10 @@ class GraficaCapacitacionesTiempoUsuarioVista extends CatalogoVista
 		for(var i=0; i < porcentajesAreas.length;i++)
 		{
 			var registro = porcentajesAreas[i];
-			registro.tiempo = moment("2015-01-01").startOf('day').minutes(registro.tiempoVisto).format('H:mm');
+			if(registro.tiempoVisto!=null)
+				registro.tiempo = moment("2015-01-01").startOf('day').minutes(registro.tiempoVisto).format('H:mm');
+			else
+				registro.tiempo = 0;
 		}
 		
 		am4core.ready(function() {
