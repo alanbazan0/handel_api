@@ -22,7 +22,7 @@ class AuditoriaVista extends Vista
 		if(this._modo==""  || this._modo==undefined)
 			this._modo = Modo.ALTA;
 		
-		
+		this._auditoria = {};
 		
 	}
 	
@@ -217,14 +217,25 @@ class AuditoriaVista extends Vista
 			$("#hallazgoInput").val(seccionActual.hallazgo);
 			$("#recomendacionInput").val(seccionActual.recomendacion);
 			//$("#responsableSelect").val(seccionActual.responsable);
-			if(seccionActual.reporte)
-				$("#reporteCheck").prop('checked', true);
-			else
-				$("#reporteCheck").prop('checked', false);
-			if(seccionActual.notificacion)
+			
+				
+			var tipoAuditoriaId = this.tipoAuditoriaId;
+			if(tipoAuditoriaId=="AI")	
+			{
 				$("#notificacionCheck").prop('checked', true);
+				$("#reporteCheck").prop('checked', true);
+			}
 			else
-				$("#notificacionCheck").prop('checked', false);
+			{
+				if(seccionActual.reporte)
+					$("#reporteCheck").prop('checked', true);
+				else
+					$("#reporteCheck").prop('checked', false);
+				if(seccionActual.notificacion)
+					$("#notificacionCheck").prop('checked', true);
+				else
+					$("#notificacionCheck").prop('checked', false);
+			}
 			
 			_this.consultarUsuariosSeccion();
 			 
@@ -237,6 +248,34 @@ class AuditoriaVista extends Vista
 			seccionActual.responsable = $("#responsableSelect").val();
 			seccionActual.reporte =  $("#reporteCheck").is(':checked')?1:0;
 			seccionActual.notificacion =  $("#notificacionCheck").is(':checked')?1:0;
+			$("#modalAlta").modal('hide');
+		});
+	}
+	
+	mostrarObservacionesGenerales()
+	{
+		var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/formularios/observaciones_generales.php",this, null, function()
+		{
+			$("#observacionesInput").val(this._auditoria.observaciones);
+			
+		},null,"","","guardarButton",function()
+		{
+			_this._auditoria.observaciones = $("#observacionesInput").val();
+			$("#modalAlta").modal('hide');
+		});
+	}
+	
+	mostrarBuenasPracticas()
+	{
+		var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/formularios/buenas_practicas.php",this, null, function()
+		{
+			$("#buenasPracticasInput").val(this._auditoria.buenasPracticas);
+			
+		},null,"","","guardarButton",function()
+		{
+			_this._auditoria.buenasPracticas = $("#buenasPracticasInput").val();
 			$("#modalAlta").modal('hide');
 		});
 	}
@@ -339,12 +378,14 @@ class AuditoriaVista extends Vista
 	
 	set modeloDatos(modeloDatos)
 	{
+		this._auditoria = modeloDatos;
 		$("#referenciaDiv").show();
 		if(modeloDatos!=null)
 		{
 			this.listaPreguntas.empresaId = modeloDatos.empresaId;
 			this.listaPreguntas.tipoAuditoriaId = modeloDatos.tipoAuditoriaId;
 			$("#referenciaLabel").html(modeloDatos.referencia);
+			this.listaPreguntas.seccionActual = modeloDatos.seccion;
 			if( modeloDatos.preguntas!=null)
 			{
 				for(var i=0; i < modeloDatos.preguntas.length; i++)
@@ -451,7 +492,9 @@ class AuditoriaVista extends Vista
 			 tipoAuditoriaId: this.tipoAuditoriaId,		
 			 seccionId:this.seccionId,	
 			 plantillaId:this.plantillaId,	
-			 seccion: this.seccionActual
+			 seccion: this.seccionActual,
+			 observaciones : this._auditoria.observaciones,
+			 buenasPracticas : this._auditoria.buenasPracticas
 			 //preguntas: this.preguntasAuditoria
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)

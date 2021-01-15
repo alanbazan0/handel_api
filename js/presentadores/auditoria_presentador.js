@@ -138,7 +138,8 @@ class AuditoriaPresentador extends CatalogoPresentador
 		repositorio.consultar(this,function(resultado)
 		{
 			this.vista.usuariosSeccion = resultado.valor;
-		},{empresaId: this.vista.empresaId, permisoSIVAH: "1"});
+		},{empresaId: this.vista.empresaId});
+		//},{empresaId: this.vista.empresaId, permisoSIVAH: "1"});
 	 }
 	 
 	 consultarUsuariosResultado(resultado)

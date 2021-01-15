@@ -29,7 +29,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                     	INNER JOIN preguntas P ON P.plantilla_id = AP.plantilla_id AND P.seccion_id = AP.seccion_id AND P.id = AP.pregunta_id
                     WHERE P.tipo='e' AND auditoria_id = A.id) puntuacion, A.nivel_compromiso, A.implementacion, A.verificacion,
                         TE.nivel_compromiso, TE.implementacion, TE.verificacion, 
-                        PS.nivel_compromiso, PS.implementacion, PS.verificacion
+                        PS.nivel_compromiso, PS.implementacion, PS.verificacion, observaciones, buenas_practicas
              FROM auditorias A 
              INNER JOIN plantillas P on A.plantilla_id = P.id 
             LEFT JOIN empresas E on A.empresa_id = E.id 
@@ -761,13 +761,14 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     
         
         $consulta = "UPDATE auditoria_secciones " .
-            "SET hallazgo = ?,  recomendacion = ?,  responsable = ?, puntos = ?, puntos_total = ?, porcentaje = ? ".
+            "SET hallazgo = ?,  recomendacion = ?,  responsable = ?, puntos = ?, puntos_total = ?, porcentaje = ?,
+                reporte = ?, notificacion = ? ".
             "WHERE auditoria_id=? AND plantilla_id = ? AND seccion_id = ?";
         
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("ssiisiiii",$seccion->hallazgo,$seccion->recomendacion, $seccion->responsable, $seccion->puntos, $seccion->puntosTotal, $seccion->porcentaje,$auditoriaId,$plantillaId,$seccion->id))
+            if($sentencia->bind_param("ssiisiiiiii",$seccion->hallazgo,$seccion->recomendacion, $seccion->responsable, $seccion->puntos, $seccion->puntosTotal, $seccion->porcentaje,$seccion->reporte, $seccion->notificacion,$auditoriaId,$plantillaId,$seccion->id))
             {
                 if($sentencia->execute())
                 {
@@ -781,11 +782,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                         
                         if($count==0)
                         {
-                            $consulta = "INSERT INTO auditoria_secciones(auditoria_id, plantilla_id, seccion_id, hallazgo, recomendacion, responsable,puntos, puntos_total, porcentaje) " .
-                                "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                            $consulta = "INSERT INTO auditoria_secciones(auditoria_id, plantilla_id, seccion_id, hallazgo, recomendacion, responsable,puntos, puntos_total, porcentaje, reporte, notificacion) " .
+                                "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                             if($sentencia = $this->conexion->prepare($consulta))
                             {
-                                if($sentencia->bind_param("iiissiiis",$auditoriaId,$plantillaId,$seccion->id, $seccion->hallazgo, $seccion->recomendacion, $seccion->responsable,$seccion->puntos, $seccion->puntosTotal, $seccion->porcentaje))
+                                if($sentencia->bind_param("iiissiiisii",$auditoriaId,$plantillaId,$seccion->id, $seccion->hallazgo, $seccion->recomendacion, $seccion->responsable,$seccion->puntos, $seccion->puntosTotal, $seccion->porcentaje,$seccion->reporte,$seccion->notificacion))
                                 {
                                     if($sentencia->execute())
                                     {
@@ -1229,12 +1230,14 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         $consulta = " UPDATE auditorias 
             SET empresa_id = ?, 
                    tipo_auditoria_id = ?,   
-              fecha_ejecucion = NOW() 
+                    fecha_ejecucion = NOW(),
+                    observaciones = ?,
+                    buenas_practicas = ? 
             WHERE id = ? ";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if( $sentencia->bind_param("isi", $modelo->empresaId,$modelo->tipoAuditoriaId,$modelo->id))
+            if( $sentencia->bind_param("isssi", $modelo->empresaId,$modelo->tipoAuditoriaId,$modelo->observaciones,$modelo->buenasPracticas,$modelo->id))
             {
                 if($sentencia->execute())
                 {
@@ -1410,11 +1413,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion);
+                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas);
                            
                             
                             array_push($registros,$registro);
@@ -1448,11 +1451,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas))
                     {
                         if($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion);
+                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas);
                             $resultado->valor = $registro;
                         }
                     }
@@ -1478,12 +1481,17 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         $llaves->id = $llaves->auditoriaId;
         
         $resultado = $this->consultarPorLlaves($llaves);
-        if($resultado->mensajeError=="")
+        if($resultado->correcto())
         {
             $resultadoPreguntas = $this->consultarPreguntas($llaves->plantillaId, $llaves->auditoriaId, $llaves->seccionId);
-            if($resultado->mensajeError=="")
+            if($resultadoPreguntas->correcto())
             {
-                $resultado->valor->preguntas = $resultadoPreguntas->valor;
+                $resultadoSeccion = $this->consultarSeccionPorLlaves($llaves);
+                if($resultadoSeccion->correcto())
+                {
+                    $resultado->valor->seccion = $resultadoSeccion->valor;
+                    $resultado->valor->preguntas = $resultadoPreguntas->valor;
+                }
             }
             else
                 $resultado->mensajeError = $resultadoPreguntas->mensajeError;
@@ -1495,27 +1503,36 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     
     public function consultarValoresSecciones($llaves)
     {
-        
         $resultado = new Resultado();
         
         $secciones = array();
-        $consulta = "SELECT id, RTRIM(texto) texto " .
-            "FROM secciones " .
-            " WHERE plantilla_id  = ? ".
-            "ORDER BY id";
+        $consulta = "SELECT S.id, RTRIM(S.texto) texto, hallazgo, recomendacion, reporte, notificacion, responsable, D.id, D.nombre 
+                    FROM auditoria_secciones ASS
+                    	INNER JOIN secciones S ON S.plantilla_id = ASS.plantilla_id AND S.id =ASS.seccion_id
+                    	LEFT JOIN usuarios U ON U.id = ASS.responsable
+                    	LEFT JOIN departamentos D ON U.departamento_id = D.id
+                    WHERE ASS.plantilla_id  = ? AND ASS.auditoria_id = ?
+                    ORDER BY S.id";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("i",$llaves->plantillaId))
+            if($sentencia->bind_param("ii",$llaves->plantillaId, $llaves->auditoriaId))
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $texto))
+                    if ($sentencia->bind_result($id, $texto, $hallazgo, $recomendacion, $reporte, $notificacion, $responsable, $departamentoId, $departamentoNombre))
                     {
                         while($sentencia->fetch())
                         {
                             $seccion= (object) [
                                 'id' =>  $id,
-                                'texto' => $texto
+                                'texto' => $texto,
+                                'hallazgo' => $hallazgo,
+                                'recomendacion' => $recomendacion,
+                                'reporte' => $reporte,
+                                'notificacion' => $notificacion,
+                                'responsable' => $responsable,
+                                'departamentoId' => $departamentoId,
+                                'departamentoNombre' => $departamentoNombre
                             ];
                             array_push($secciones,$seccion);
                         }
@@ -1565,11 +1582,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas))
                     {
                         if($sentencia->fetch())
                         {
-                            $plantilla = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion);
+                            $plantilla = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion,$observaciones, $buenasPracticas);
                            
                             
                             $resultado->valor = $plantilla;
@@ -1600,6 +1617,55 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
         
        return $resultado;
+    }
+    
+    public function consultarSeccionPorLlaves($llaves)
+    {
+        $resultado = new Resultado();
+        ini_set('max_execution_time', 300);
+        $consulta = "SELECT seccion_id, hallazgo, recomendacion, responsable, reporte, notificacion
+                    FROM auditoria_secciones
+                     WHERE plantilla_id = ? AND auditoria_id = ? AND seccion_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("iii",$llaves->plantillaId, $llaves->auditoriaId, $llaves->seccionId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $hallazgo, $recomendacion, $responsable,$reporte, $notificacion))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $seccion= (object) [
+                                'id' =>  $id,
+                                'hallazgo' => $hallazgo,
+                                'recomendacion' => $recomendacion,
+                                'responsable' => $responsable,
+                                'reporte' => $reporte,
+                                'notificacion' => $notificacion
+                            ];
+                            
+                            $resultado->valor = $seccion;
+                            
+                            $sentencia->close();
+                            
+                        }
+                        else
+                            $resultado->mensajeError = __FUNCTION__. ". No se encontró ningún resultado.";
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__. ". Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__. ". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. ". Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__. ". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
     }
     
    
@@ -2183,7 +2249,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             return $resultado;
     }
     
-    private function crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa, $tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion)
+    private function crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa, $tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas)
     {
 //         $archivoIcono = '../../php/iconos/icono'.$plantillaId.'.png';
 //         $icono = 'default.png';
@@ -2226,7 +2292,9 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             'paisVerificacion' => $paisVerificacion,
             'tipoEmpresaNivelCompromiso' => $tipoEmpresaNivelCompromiso,
             'tipoEmpresaImplementacion' => $tipoEmpresaImplementacion,
-            'tipoEmpresaVerificacion' => $tipoEmpresaVerificacion
+            'tipoEmpresaVerificacion' => $tipoEmpresaVerificacion,
+            'observaciones' => $observaciones,
+            'buenasPracticas' => $buenasPracticas
         ];
         
         Porcentaje::formatearPorcentaje($registro, "puntuacion");
@@ -2318,47 +2386,61 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         for ($s = 0; $s < count($secciones); $s++) 
         {
             $seccion = $secciones[$s];
-            for ($p = 0; $p < count($seccion->preguntas); $p++)
+            $elementos = explode(". ", $seccion->texto);
+            if(count($elementos)>1)
             {
-                $pregunta = $seccion->preguntas[$p];
-                if($pregunta->tipo=="sn")
+                $criterio = $elementos[1];
+                for ($p = 0; $p < count($seccion->preguntas); $p++)
                 {
-                    $elementos = explode(". ", $seccion->texto);
-                    if(count($elementos)>1)
+                    $pregunta = $seccion->preguntas[$p];
+                    if($pregunta->tipo=="sn")
                     {
-                        $criterio = $elementos[1];
-                        switch($pregunta->valor)
+                       /* $elementos = explode(". ", $seccion->texto);
+                        if(count($elementos)>1)
                         {
-                            case "S":
-                                for ($r = 0; $r < count($pregunta->respuestas_si); $r++)
-                                {
-                                    $respuesta = $pregunta->respuestas_si[$r];
-                                   
-                                    if($respuesta->reporte==1)
+                            $criterio = $elementos[1];*/
+                            switch($pregunta->valor)
+                            {
+                                case "S":
+                                    for ($r = 0; $r < count($pregunta->respuestas_si); $r++)
                                     {
-                                        $departamento = $respuesta->departamentoNombre;
+                                        $respuesta = $pregunta->respuestas_si[$r];
+                                       
+                                        if($respuesta->reporte==1)
+                                        {
+                                            $departamento = $respuesta->departamentoNombre;
+                                            if($departamento=="")
+                                                $departamento = "No asignado";
+                                            $observacion = (object)['criterio' =>$criterio, 'departamento' => $departamento, 'hallazgo' => $respuesta->hallazgo];
+                                            array_push($observaciones,$observacion);
+                                        }
+                                    }
+                                break;
+                                case "N":
+                                    if($pregunta->reporte==1)
+                                    {
+                                        $departamento = $pregunta->departamentoNombre;
                                         if($departamento=="")
                                             $departamento = "No asignado";
-                                        $observacion = (object)['criterio' =>$criterio, 'departamento' => $departamento, 'hallazgo' => $respuesta->hallazgo];
+                                        $observacion = (object)['criterio' =>$criterio, 'departamento' => $departamento, 'hallazgo' => $pregunta->hallazgo];
                                         array_push($observaciones,$observacion);
                                     }
-                                }
-                            break;
-                            case "N":
-                                if($pregunta->reporte==1)
-                                {
-                                    $departamento = $pregunta->departamentoNombre;
-                                    if($departamento=="")
-                                        $departamento = "No asignado";
-                                    $observacion = (object)['criterio' =>$criterio, 'departamento' => $departamento, 'hallazgo' => $pregunta->hallazgo];
-                                    array_push($observaciones,$observacion);
-                                }
-                            break;
-                        }
+                                break;
+                            }
+                        //}
                     }
-                   
+                  
                 }
+                if($seccion->reporte==1 && $seccion->hallazgo!="")
+                 {
+                     $departamento = $seccion->departamentoNombre;
+                     if($departamento=="")
+                     $departamento = "No asignado";
+                     $observacion = (object)['criterio' =>$criterio, 'departamento' => $departamento, 'hallazgo' => $seccion->hallazgo];
+                     array_push($observaciones,$observacion);
+                 }
             }
+            
         }
         $resultado->valor = $observaciones;
         return $resultado;

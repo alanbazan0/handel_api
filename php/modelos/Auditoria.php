@@ -13,6 +13,8 @@ class Auditoria
     public $referencia;
     public $tipoAuditoriaId;
     public $seccion;
+    public $observaciones;
+    public $buenasPracticas;
     
 }
 

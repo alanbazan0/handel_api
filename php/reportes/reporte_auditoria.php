@@ -327,6 +327,7 @@ class PDF extends FPDF
         $this->comparacionGlobal();
         $this->observaciones();
         $this->incidencias();
+        $this->buenasPracticas();
                         
     }
     
@@ -1366,19 +1367,71 @@ class PDF extends FPDF
     
     function incidencias()
     {
-        $this->AddPage();
-        $this->imprimirTituloHoja("VII. Incidencias y observaciones varias");
-        
-        $borde = 0;
-        $this->Ln();
-        $this->Ln();
-        $this->cMargin=10;
-        $this->SetFillColor(242, 242, 242);
-        $this->SetLeftMargin(20);
-        $this->SetTextColor(0, 0, 0);
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(170, 6,$this->texto("Se	listan a continuación incidentes menores	observados durante	la visita de inspección."), $borde, 1, 'L',1);
-        
+        //if($this->modelo->observaciones!=null && $this->modelo->observaciones!="")
+        //{
+            $this->AddPage();
+            $this->imprimirTituloHoja("VII. Incidencias y observaciones varias");
+            
+            $borde = 0;
+            $this->Ln();
+            $this->Ln();
+            $this->cMargin=10;
+            $this->SetFillColor(242, 242, 242);
+            $this->SetLeftMargin(20);
+            $this->SetTextColor(0, 0, 0);
+            $this->SetFont($this->font, '', 10);
+            $this->Cell(170, 6,$this->texto("Se	listan a continuación incidentes menores	observados durante	la visita de inspección."), $borde, 1, 'L',1);
+            $this->Ln();
+            $observaciones = explode("\n", $this->modelo->observaciones);
+            $indice = 1;
+            for($i = 0; $i < count($observaciones); $i++)
+            {
+                $observacion = $observaciones[$i];
+                if($observacion!="")
+                {
+                    $texto =  $indice .". " . $observacion;
+                    $this->Cell(170, 6,$this->texto($texto), $borde, 1, 'L');
+                    $this->Ln();
+                    $indice++;
+                }
+            }
+        //}
+    }
+    
+    function buenasPracticas()
+    {
+        //if($this->modelo->buenasPracticas!=null && $this->modelo->buenasPracticas!="")
+        //{
+            $this->AddPage();
+            $this->imprimirTituloHoja("VIII. Buenas prácticas");
+            
+            $borde = 0;
+            $this->Ln();
+            $this->Ln();
+            $this->cMargin=10;
+            $this->SetFillColor(242, 242, 242);
+            $this->SetLeftMargin(20);
+            $this->SetTextColor(0, 0, 0);
+            $this->SetFont($this->font, '', 10);
+            //$this->MultiCell(170,12,"Se indican en esta sección las prácticas que exceden los requerimientos minimos de seguridad aplicables a la certificación.",0,"L");
+            $this->Cell(170, 6,$this->texto("Se	indican en esta sección las prácticas que exceden los requerimientos minimos de seguridad"), $borde, 1, 'L',1);
+            $this->Cell(170, 6,$this->texto("aplicables a la certificación."), $borde, 1, 'L',1);
+            
+            $this->Ln();
+            $practicas = explode("\n", $this->modelo->buenasPracticas);
+            $indice = 1;
+            for($i = 0; $i < count($practicas); $i++)
+            {
+                $practica = $practicas[$i];
+                if($practica!="")
+                {
+                    $texto =  $indice .". " . $practica;
+                    $this->Cell(170, 6,$this->texto($texto), $borde, 1, 'L');
+                    $this->Ln();
+                    $indice++;
+                }
+            }
+     //   }
     }
     
     
