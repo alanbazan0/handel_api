@@ -137,6 +137,9 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
                         {
                             $sentencia->close();
                             $resultado->valor = $id;
+                            
+                            //$this->insertarPregunta($plantillaId, $id, "e");
+                            
                         }
                         else
                         {

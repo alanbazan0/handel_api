@@ -12,8 +12,179 @@ class Vista
 			$("#enviarMensajeLink").click(this.enviarMensajeLinkClick);
 		this.toastr = null;
 		this.toastrData = null;
-		this.actualizarSesion();	
+		//this.actualizarSesion();	
+		
+		
+		//this.inicializarSesion();
+		
+
+
 	}
+	
+	inicializarSesion()
+	{
+		//var segundosVerificacion = 600;
+		var segundosVerificacion = 60;
+		this._tiempoVerificacion = 1000 * segundosVerificacion; // ping every 60 seconds
+		this._tiempoAdvertencia = 120; // warning at 2 mins left
+		
+		$(document) // various events that can reset idle time
+			.on("mousemove", this.actualizarSesion)
+			    .on("click", this.actualizarSesion)
+			    .on("keydown", this.actualizarSesion)
+			    .children("body")
+			    .on("scroll", this.actualizarSesion);
+
+		//this.verificarSesion();
+		this.iniciarVerificacion();
+		//this.verificarSesion();
+		//setInterval(this.IdleCounter, 1000); // fire every second
+		
+			
+	}
+	
+	iniciarVerificacion()
+	{
+		//this.detenerConteo();
+		if(vista._verificacionInterval==null)
+			vista._verificacionInterval =setInterval(vista.verificarSesion, vista._tiempoVerificacion);
+	}
+	
+	detenerVerificacion()
+	{
+		if(vista._verificacionInterval!=null)
+		{
+			clearInterval(vista._verificacionInterval); 
+			vista._verificacionInterva = null;
+		}
+	}
+	
+	verificarSesion() 
+	{
+		console.log("Verificando sesion");
+		  $.ajax({
+	       url:  HANDEL_API  + '/php/verificar_sesion.php',
+	       cache: false,
+	       complete: function (respuesta) 
+	       {
+			
+				vista.tiempoSesion = respuesta.responseText;
+	           	if(vista.tiempoSesion>0 && vista.tiempoSesion<=vista._tiempoAdvertencia)
+				{
+					vista.detenerVerificacion();
+					vista.mostrarAdvertenciaSesion();
+					vista.iniciarConteo()
+					console.log("Sesion activa. Tiempo restante." + vista.tiempoSesion );
+				}
+	   		 	else if(vista.tiempoSesion=="")
+				{
+					vista.detenerVerificacion();
+					vista.salirSesionCaducada();
+					
+				}
+				else if(vista.tiempoSesion<=0)
+				{  
+					vista.detenerVerificacion();
+					vista.salirSesionCaducada();
+				}
+				else if(vista.tiempoSesion>vista._tiempoAdvertencia)
+				{
+					console.log("Sesion activa. Tiempo restante." + vista.tiempoSesion );
+				}
+	       }
+		});
+
+   
+	}
+
+ mostrarAdvertenciaSesion() {
+	
+	
+	vista.tiempoRestante = vista._tiempoAdvertencia;
+	swal({
+            title: "Advertencia",
+			html: true,
+            text: "La sesión caducara en <span id='tiempoSesionSpan'>" + vista.tiempoRestante + "</span> segundos,¿Desea continuar?",
+            type: "warning",
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Continuar",
+            closeOnConfirm: true,
+            showLoaderOnConfirm: true,
+        },
+        function(isConfirm)
+        {
+            if (isConfirm) 
+            {
+            	vista.actualizarSesion();
+		 		vista.detenerConteo();
+				
+            }
+			else
+				vista.cerrarSesion();
+        });
+
+		
+
+	}
+	
+	iniciarConteo()
+	{
+		if(vista._conteoInterval==null)
+		{
+			vista._conteoInterval = setInterval(function()
+			{
+				if(vista.tiempoRestante>0)
+				{
+					vista.tiempoRestante--;
+		
+					$("#tiempoSesionSpan").html(vista.tiempoRestante);
+				}
+				else 
+				{
+					//vista.detenerConteo();
+					vista.cerrarSesion();
+				}
+			}, 1000);
+		}
+	}
+
+	detenerConteo()
+	{
+		if(vista._conteoInterval!=null)
+		{
+			clearInterval(vista._conteoInterval);
+			vista._conteoInterval = null;
+		}
+	}
+
+	actualizarSesion() 
+	{
+	  	$.ajax({
+		       url:  HANDEL_API  + '/php/actualizar_sesion.php',
+		       cache: false,
+		       complete: function (respuesta) 
+		       {
+					vista.tiempoSesion = respuesta.responseText;
+			   		vista.iniciarVerificacion();
+					console.log("Sesión reiniciada. Tiempo restante.." +vista.tiempoSesion );
+		       }
+		    });
+	}
+	/*
+		actualizarSesion()
+		{
+			var _this = this;
+			 $.ajax({
+	           url:  HANDEL_API  + '/php/actualizar_sesion.php',
+	           cache: false,
+	           complete: function (respuesta) 
+	           {
+	        	   	_this.iniciarVerificacion();
+					_this.detenerConteo();
+	           }	
+	        });
+		}
+		*/
 	salir()
 	{
 		var _this = this;
@@ -37,7 +208,34 @@ class Vista
 	            		window.close();
 	 	            }, 1000);
 	            }
+				else
+				
+					vista.actualizarSesion();
 	        });
+			
+			
+	}
+	
+	salirSesionCaducada()
+	{
+		console.log("Sesion caducada.");
+		 vista.detenerVerificacion();
+		vista.detenerConteo();
+		swal({
+	            title: "Sesión caducada",
+	            text: "Inicie sesión",
+	            type: "error",
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Aceptar",
+	            closeOnConfirm: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+			
+				vista.cerrarSesion();
+	        });
+			
 	}
 	
 	set usuario(usuario)
@@ -173,32 +371,36 @@ class Vista
 	
 	mostrarMensajeError(titulo, mensaje, codigoError)
 	{
-		 toastr.error(mensaje,titulo,{
-		        "positionClass": "toast-bottom-right",
-		        timeOut: 5000,
-		        "closeButton": true,
-		        "debug": false,
-		        "newestOnTop": true,
-		        "progressBar": true,
-		        "preventDuplicates": true,
-		        "onclick": null,
-		        "showDuration": "300",
-		        "hideDuration": "1000",
-		        "extendedTimeOut": "1000",
-		        "showEasing": "swing",
-		        "hideEasing": "linear",
-		        "showMethod": "fadeIn",
-		        "hideMethod": "fadeOut",
-		        "tapToDismiss": false
-
-		    });
-		 
-		 var _this = this;
-		 if(codigoError==5000)
+		if(codigoError==5000)
 		{
-			 setTimeout(() => {
-				this.cerrarSesion();
-			}, 2000);
+			 var _this = this;
+		
+				 setTimeout(() => 
+				{
+					_this.salirSesionCaducada();
+				}, 2000);
+		}
+		else
+		{
+			 toastr.error(mensaje,titulo,{
+			        "positionClass": "toast-bottom-right",
+			        timeOut: 5000,
+			        "closeButton": true,
+			        "debug": false,
+			        "newestOnTop": true,
+			        "progressBar": true,
+			        "preventDuplicates": true,
+			        "onclick": null,
+			        "showDuration": "300",
+			        "hideDuration": "1000",
+			        "extendedTimeOut": "1000",
+			        "showEasing": "swing",
+			        "hideEasing": "linear",
+			        "showMethod": "fadeIn",
+			        "hideMethod": "fadeOut",
+			        "tapToDismiss": false
+	
+			    });
 		}
 	}
 	
@@ -688,27 +890,7 @@ class Vista
 			}
 		}
 		
-		actualizarSesion()
-		{
-			var _this = this;
-			var minutos = 5;
-			var time = minutos * 60000;
-			 setTimeout(
-			        function ()
-			        {
-			        $.ajax({
-			           url:  HANDEL_API  + '/php/actualizar_sesion.php',
-			           cache: false,
-			           complete: function (respuesta) 
-			           {
-			        	   _this.actualizarSesion();
-			           }
-			        });
-			    },
-			    time
-			);
-		}
-		
+	
 		get aplicacionId()
 		{
 			return $("body").attr("data-aplicacionId");

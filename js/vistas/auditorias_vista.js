@@ -133,8 +133,9 @@ class AuditoriasVista extends CatalogoVista
 		]
 		
 		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Ejecutar'  type='button' class='ejecutar btn-circle mr-0 botones-icon btn btn-sm float-left btn-success active'><span  data-toggle='tooltip' class='fa fa-play-circle fa-lg'></span></button>" +
-		 								"<button data-toggle='tooltip' data-placemen='bottom' title='Reporte'  type='button' class='reporte btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fas fa-file-pdf fa-lg'></span></button>";
-		
+		 								"<button data-toggle='tooltip' data-placemen='bottom' title='Reporte'  type='button' class='reporte btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fas fa-file-pdf fa-lg'></span></button>" +
+									"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+
 		
 		this.tabla.registros = [];
 	}
@@ -246,14 +247,14 @@ class AuditoriasVista extends CatalogoVista
 		}
 	}
 
-	get llaves()
+	/*get llaves()
 	{
 		var llaves =
 		{
 			id:this.grid._selectedItem.id	
 		}
 		return llaves;
-	}
+	}*/
 	
 	get criteriosSeleccion()
 	{
@@ -495,10 +496,19 @@ class AuditoriasVista extends CatalogoVista
 			{
 				this.preguntaEdicion.respuestas_si = this.listaRespuestas.respuestas;
 				var peso = this.listaPreguntas.getPeso(this.preguntaEdicion.id);
-				if(peso==0)
+				var pesoRespuestas = 0;
+				for(var i=0; i < this.preguntaEdicion.respuestas_si.length; i++)
 				{
-					this.listaPreguntas.setPeso(this.preguntaEdicion.id,this.preguntaEdicion.respuestas_si.length+1);
+					var respuesta = this.preguntaEdicion.respuestas_si[i];
+					
+					pesoRespuestas+=parseInt(respuesta.peso);
 				}
+				this.listaPreguntas.setPeso(this.preguntaEdicion.id,pesoRespuestas+1);
+				
+				//if(peso==0)
+				//{
+				//	this.listaPreguntas.setPeso(this.preguntaEdicion.id,this.preguntaEdicion.respuestas_si.length+1);
+				//}
 			}
 			else
 				this.preguntaEdicion.respuestas_no = this.listaRespuestas.respuestas;

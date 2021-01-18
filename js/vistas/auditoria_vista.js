@@ -499,6 +499,13 @@ class AuditoriaVista extends Vista
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
+		
+		 if(modelo.observaciones==undefined)
+			modelo.observaciones = "";
+			
+		 if(modelo.buenasPracticas==undefined)
+			modelo.buenasPracticas = "";
+		
 		 return modelo;
 	 }
 	

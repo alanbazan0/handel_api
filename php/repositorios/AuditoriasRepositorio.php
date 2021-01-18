@@ -576,13 +576,13 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         return $resultado;
     }
     
-    private function eliminarPreguntas($plantillaId)
+    private function eliminarPreguntas($auditoriaId)
     {
         $resultado = new Resultado();
-        $consulta ="DELETE FROM preguntas WHERE plantilla_id = ?";
+        $consulta ="DELETE FROM auditoria_preguntas WHERE auditoria_id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("i",$plantillaId))
+            if($sentencia->bind_param("i",$auditoriaId))
             {
                 if($sentencia->execute())
                 {
@@ -591,29 +591,29 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 else
                 {
                     $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = "Falló la ejecución eliminarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. ". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
                 }
                 
             }
             else
-                $resultado->mensajeError = "Falló el enlace de parámetros";
+                $resultado->mensajeError = __FUNCTION__. ". Falló el enlace de parámetros";
         }
         else
         {
             $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. ". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
         }
         return $resultado;
     }
     
-    private function eliminarSecciones($plantillaId)
+    private function eliminarSecciones($auditoriaId)
     {
         $resultado = new Resultado();
-        $consulta ="DELETE FROM secciones WHERE plantilla_id = ?";
+        $consulta ="DELETE FROM auditoria_secciones WHERE auditoria_id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("i",$plantillaId))
+            if($sentencia->bind_param("i",$auditoriaId))
             {
                 if($sentencia->execute())
                 {
@@ -622,17 +622,17 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 else
                 {
                     $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = "Falló la ejecución eliminarSecciones(" . $this->conexion->errno . ") " . $this->conexion->error;
+                    $resultado->mensajeError =  __FUNCTION__.". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
                 }
                 
             }
             else
-                $resultado->mensajeError = "Falló el enlace de parámetros";
+                $resultado->mensajeError = __FUNCTION__.". Falló el enlace de parámetros";
         }
         else
         {
             $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__.". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
         }
         return $resultado;
@@ -895,6 +895,70 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         {
             $resultado->codigoError = $this->conexion->errno;
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
+    private function eliminarRespuestasNoAuditoria($auditoriaId)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM auditoria_respuestas_no WHERE auditoria_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$auditoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                    
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__ .". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError =  __FUNCTION__ .".Falló el enlace de parámetros ";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError =  __FUNCTION__ .".Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
+    private function eliminarRespuestasSiAuditoria($auditoriaId)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM auditoria_respuestas_si WHERE auditoria_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$auditoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                    
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__ .". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError =  __FUNCTION__ .".Falló el enlace de parámetros ";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError =  __FUNCTION__ .".Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
         }
         return $resultado;
@@ -1403,7 +1467,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             $where = $this->where($filtros);
         }
         $consulta = $this->consultaBase .
-        $where . " order by fecha_ejecucion desc";
+        $where . " order by UNIX_TIMESTAMP(fecha_ejecucion) desc";
         
       
         
@@ -2305,54 +2369,45 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     
     public function eliminar($llaves)
     {
-        $resultado = $this->eliminarRespuestasNoCategorias($llaves->id);
-        if($resultado->mensajeError=="")
+        $resultado = $this->eliminarRespuestasNoAuditoria($llaves->id);
+        if($resultado->correcto())
         {
-            $resultado = $this->eliminarRespuestasNo($llaves->id);
-            if($resultado->mensajeError=="")
+            $resultado = $this->eliminarRespuestasSiAuditoria($llaves->id);
+            if($resultado->correcto())
             {
-                $resultado = $this->eliminarRespuestasSiCategorias($llaves->id);
-                if($resultado->mensajeError=="")
+                $resultado = $this->eliminarPreguntas($llaves->id);
+                if($resultado->correcto())
                 {
-                    $resultado = $this->eliminarRespuestasSi($llaves->id);
-                    if($resultado->mensajeError=="")
+                    $resultado = $this->eliminarSecciones($llaves->id);
+                    if($resultado->correcto())
                     {
-                        
-                        $resultado = $this->eliminarPreguntas($llaves->id);
-                        if($resultado->mensajeError=="")
-                        {
-                            $resultado = $this->eliminarSecciones($llaves->id);
-                            if($resultado->mensajeError=="")
+                        //$sentencia->close();
+                        $consulta = " DELETE FROM auditorias "
+                            . "  WHERE id  = ? ";
+                            if($sentencia = $this->conexion->prepare($consulta))
                             {
-                                //$sentencia->close();
-                                $consulta = " DELETE FROM plantillas "
-                                    . "  WHERE id  = ? ";
-                                    if($sentencia = $this->conexion->prepare($consulta))
+                                if($sentencia->bind_param("i",$llaves->id))
+                                {
+                                    if($sentencia->execute())
                                     {
-                                        if($sentencia->bind_param("i",$llaves->id))
-                                        {
-                                            if($sentencia->execute())
-                                            {
-                                                $resultado->valor = $llaves->id;
-                                            }
-                                            else
-                                            {
-                                                $resultado->codigoError = $this->conexion->errno;
-                                                $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
-                                            }
-                                        }
-                                        else
-                                            $resultado->mensajeError = "Falló el enlace de parámetros";
+                                        $resultado->valor = $llaves->id;
                                     }
                                     else
                                     {
                                         $resultado->codigoError = $this->conexion->errno;
-                                        $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-                                        
+                                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
                                     }
-                                    
+                                }
+                                else
+                                    $resultado->mensajeError = "Falló el enlace de parámetros";
                             }
-                        }
+                            else
+                            {
+                                $resultado->codigoError = $this->conexion->errno;
+                                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                                
+                            }
+                            
                     }
                 }
             }

@@ -54,8 +54,42 @@ class PlantillasVista extends CatalogoVista
 		    tolerance: "pointer",
 		    update: function( event, ui ) {
 		    	var seleccion = $( "#listaPreguntas" ).sortable( "serialize", { key: "sort" });
-				_this.presentador.ordenarPreguntas(seleccion);
-			}
+ 				var indice = ui.item.index();
+				var pregunta  =ui.item.data("registro");
+				
+				
+				if(indice==0)
+				{
+					if(pregunta.tipo!="e")
+					{
+						
+						_this.mostrarMensajeAdvertencia("","No se puede mover a esta posición, esta reservada para un encabezado");
+						$(this).sortable("cancel");;
+						event.stopPropagation();
+					}
+				}
+				else
+				{
+					pregunta.indice=indice;
+					_this.presentador.ordenarPreguntas(seleccion);
+				}		
+					
+			},
+			  start: function(event, ui) { 
+				var pregunta  =ui.item.data("registro");
+				var indice = ui.item.index();
+				
+           		if(indice==0 && pregunta.tipo=="e")
+				{
+					
+					pregunta.indice = indice;
+					_this.mostrarMensajeAdvertencia("","No se puede mover este escabezado");
+					 $(this).sortable("cancel");
+					event.stopPropagation();
+				}
+				//else
+					//pregunta.indice = indice;
+        	}
 		});
 	    $( "#listaPreguntas" ).disableSelection();
 	    
@@ -619,6 +653,17 @@ class PlantillasVista extends CatalogoVista
 	eliminarPregunta(event, preguntaId)
 	{
 		//this.confirmar("¿Desea eliminar esta pregunta?",this.listaPreguntas,this.listaPreguntas.eliminarPregunta,preguntaId);
+		var pregunta = this.listaPreguntas.getPregunta(preguntaId);
+		if(pregunta.tipo=="e")
+		{
+			if(pregunta.indice==0)
+			{
+				this.mostrarMensajeAdvertencia("","No se puede eliminar este escabezado");
+				return;
+			}
+		}
+		
+		
 		var _this = this;
 		this.confirmar("¿Desea eliminar esta pregunta?",this,function(preguntaId)
 		{
@@ -708,6 +753,9 @@ class PlantillasVista extends CatalogoVista
 			this.listaPreguntas.preguntas = [];
 		
 		this._seccionIdSeleccionada = seccion;
+		
+		if(this.listaPreguntas.preguntas.length==0)
+			this.agregarPregunta("e");
 	}
 	
 	get seccionIdSeleccionada()
@@ -785,8 +833,19 @@ class PlantillasVista extends CatalogoVista
 				var peso = this.listaPreguntas.getPeso(this.preguntaEdicion.id);
 				//if(peso==0)
 				//{
-					this.listaPreguntas.setPeso(this.preguntaEdicion.id,this.preguntaEdicion.respuestas_si.length+1);
+				//	this.listaPreguntas.setPeso(this.preguntaEdicion.id,this.preguntaEdicion.respuestas_si.length+1);
 				//}
+				
+				//var peso = this.listaPreguntas.getPeso(this.preguntaEdicion.id);
+				var pesoRespuestas = 0;
+				for(var i=0; i < this.preguntaEdicion.respuestas_si.length; i++)
+				{
+					var respuesta = this.preguntaEdicion.respuestas_si[i];
+					
+					pesoRespuestas+=parseInt(respuesta.peso);
+				}
+				this.listaPreguntas.setPeso(this.preguntaEdicion.id,pesoRespuestas+1);
+				
 				if(this.modo==Modo.CAMBIO)
 					this.presentador.guardarRespuestasSi();
 			}
