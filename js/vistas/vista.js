@@ -12,18 +12,40 @@ class Vista
 			$("#enviarMensajeLink").click(this.enviarMensajeLinkClick);
 		this.toastr = null;
 		this.toastrData = null;
-		//this.actualizarSesion();	
+		this.actualizarSesion();	
 		
 		
 		//this.inicializarSesion();
 		
 
 
+
+
 	}
 	
-	inicializarSesion()
+	actualizarSesion()
+		{
+			var _this = this;
+			var minutos = 5;
+			var time = minutos * 60000;
+			 setTimeout(
+			        function ()
+			        {
+			        $.ajax({
+			           url:  HANDEL_API  + '/php/actualizar_sesion.php',
+			           cache: false,
+			           complete: function (respuesta) 
+			           {
+			        	   _this.actualizarSesion();
+			           }
+			        });
+			    },
+			    time
+			);
+		}
+	
+	/*inicializarSesion()
 	{
-		//var segundosVerificacion = 600;
 		var segundosVerificacion = 60;
 		this._tiempoVerificacion = 1000 * segundosVerificacion; // ping every 60 seconds
 		this._tiempoAdvertencia = 120; // warning at 2 mins left
@@ -35,14 +57,11 @@ class Vista
 			    .children("body")
 			    .on("scroll", this.actualizarSesion);
 
-		//this.verificarSesion();
 		this.iniciarVerificacion();
-		//this.verificarSesion();
-		//setInterval(this.IdleCounter, 1000); // fire every second
 		
 			
-	}
-	
+	}*/
+	/*
 	iniciarVerificacion()
 	{
 		//this.detenerConteo();
@@ -58,7 +77,9 @@ class Vista
 			vista._verificacionInterva = null;
 		}
 	}
+	*/
 	
+	/*
 	verificarSesion() 
 	{
 		console.log("Verificando sesion");
@@ -96,7 +117,8 @@ class Vista
 
    
 	}
-
+*/
+/*
  mostrarAdvertenciaSesion() {
 	
 	
@@ -104,7 +126,7 @@ class Vista
 	swal({
             title: "Advertencia",
 			html: true,
-            text: "La sesión caducara en <span id='tiempoSesionSpan'>" + vista.tiempoRestante + "</span> segundos,¿Desea continuar?",
+            text: "La sesión caducara en <span id='tiempoSesionSpan'>" +vista.convertirMMSS(vista.tiempoRestante) + "</span>,¿Desea continuar?",
             type: "warning",
             confirmButtonColor: "#DD6B55",
             confirmButtonText: "Continuar",
@@ -136,8 +158,8 @@ class Vista
 				if(vista.tiempoRestante>0)
 				{
 					vista.tiempoRestante--;
-		
-					$("#tiempoSesionSpan").html(vista.tiempoRestante);
+					var tiempo = vista.convertirMMSS(vista.tiempoRestante);
+					$("#tiempoSesionSpan").html(tiempo);
 				}
 				else 
 				{
@@ -156,8 +178,8 @@ class Vista
 			vista._conteoInterval = null;
 		}
 	}
-
-	actualizarSesion() 
+*/
+	/*actualizarSesion() 
 	{
 	  	$.ajax({
 		       url:  HANDEL_API  + '/php/actualizar_sesion.php',
@@ -169,7 +191,7 @@ class Vista
 					console.log("Sesión reiniciada. Tiempo restante.." +vista.tiempoSesion );
 		       }
 		    });
-	}
+	}*/
 	/*
 		actualizarSesion()
 		{
@@ -208,9 +230,9 @@ class Vista
 	            		window.close();
 	 	            }, 1000);
 	            }
-				else
+				//else
 				
-					vista.actualizarSesion();
+				//	vista.actualizarSesion();
 	        });
 			
 			
@@ -921,6 +943,70 @@ class Vista
 				}
 			}
 			return "";
+		}
+		
+		habilitarExportacionExcel()
+		{
+			var _this = this;
+			var buttonCommon = {
+			   text:      '<i class="fa fa-file-excel-o"></i> Exportar',
+		        exportOptions: {
+		        	 modifier: {
+	                        selected: null
+	                    },
+		            format: {
+		                body: function ( data, row, column, node ) 
+		                {
+		                	if(column==ArrayUtils.indexWithValues("alias",["logo"],_this.tabla.columnas))
+		                	{
+		                		return "";
+		                	} 
+		                	else if(column==ArrayUtils.indexWithValues("alias",["estatus"],_this.tabla.columnas))
+		                	{
+	                		  if(data.includes("fa-check"))
+		                		   return "Activo";
+		                	   else
+		                		   return "Inactivo";
+		                	}
+		                	else if(node.innerHTML.includes("button"))
+		                		return "";
+							else if(node.innerHTML.includes("<label>"))
+								return "";
+		                	return data;
+		                 
+		                }
+		            }
+		        }
+		    };
+		 
+		
+
+
+		 this.tabla.botones =  {
+			      buttons: [
+			    	  $.extend( true, {}, buttonCommon, {
+			                extend: 'excel',"className": 'btn btn-success' 
+			            } ),
+			               ],
+			       dom: {
+					  button: {
+					  className: 'btn'
+				         }
+			       }
+		 };
+		}
+		
+		convertirMMSS(valor)
+		{
+			var sec_num = parseInt(valor); // don't forget the second param
+		    var hours   = Math.floor(sec_num / 3600);
+		    var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+		    var seconds = sec_num - (hours * 3600) - (minutes * 60);
+		
+		    if (hours   < 10) {hours   = "0"+hours;}
+		    if (minutes < 10) {minutes = "0"+minutes;}
+		    if (seconds < 10) {seconds = "0"+seconds;}
+		    return minutes+':'+seconds;
 		}
 		
 }

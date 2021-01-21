@@ -4,7 +4,7 @@ use php\clases\JsonMapper;
 use php\modelos\Sede;
 use php\repositorios\SedesRepositorio;
 use php\modelos\Resultado;
-
+use php\clases\CodigoError;
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -13,7 +13,7 @@ include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/SedesRepositorio.php';
-
+include '../clases/CodigoError.php';
 
 $origin = "*";
 if(isset($_SERVER['HTTP_ORIGIN']))
@@ -27,65 +27,69 @@ $resultado = new Resultado();
 $conexion=null;
 try
 {
-    $conexion = $administrador_conexion->abrir();
-    if($conexion)
+    session_start();
+    $usuario = null;
+    if(isset($_SESSION['usuario']))
+        $usuario = $_SESSION['usuario'];
+    if($usuario!=null)
     {
-        $accion = REQUEST('accion');
-        $repositorio = new SedesRepositorio($conexion);
-        switch ($accion)
-        {           
-            case 'insertar':               
-                $json = json_decode(REQUEST('modelo'));
-                $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Sede());                   
-                $resultado = $repositorio->insertar($modelo);                
-            break;
-            case 'actualizar':
-                $json = json_decode(REQUEST('modelo'));
-                $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Sede());
-                $resultado = $repositorio->actualizar($modelo) ;
-            break;
-            case 'consultar':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $opcional = REQUEST('opcional');
-                $resultado = $repositorio->consultar($criteriosSeleccion,$opcional,$usuario);               
-            break;
-            case 'consultarPorLlaves':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->consultarPorLlaves($llaves);
-            break;
-            case 'consultarPorEmpresa':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $empresaId = REQUEST('empresaId');
-                $opcional = REQUEST('opcional');
-                $resultado = $repositorio->consultarPorEmpresa($empresaId,$opcional,$usuario);
-            break;
-            case 'consultarPorEmpresaUsuario':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
+        
+        $conexion = $administrador_conexion->abrir();
+        if($conexion)
+        {
+            $accion = REQUEST('accion');
+            $repositorio = new SedesRepositorio($conexion);
+            switch ($accion)
+            {           
+                case 'insertar':               
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Sede());                   
+                    $resultado = $repositorio->insertar($modelo);                
+                break;
+                case 'actualizar':
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Sede());
+                    $resultado = $repositorio->actualizar($modelo) ;
+                break;
+                case 'consultar':
+                   
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $opcional = REQUEST('opcional');
+                    $resultado = $repositorio->consultar($criteriosSeleccion,$opcional,$usuario);               
+                break;
+                case 'consultarPorLlaves':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarPorLlaves($llaves);
+                break;
+                case 'consultarPorEmpresa':
+                  
                     $empresaId = REQUEST('empresaId');
                     $opcional = REQUEST('opcional');
-               $resultado = $repositorio->consultarPorEmpresaUsuario($empresaId,$opcional,$usuario);
-             break;
-            case 'eliminar':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->eliminar($llaves);
-            break;
-            default:
-                $resultado->mensajeError = "Acción no válida";
-            break;
-            
+                    $resultado = $repositorio->consultarPorEmpresa($empresaId,$opcional,$usuario);
+                break;
+                case 'consultarPorEmpresaUsuario':
+                   
+                    $empresaId = REQUEST('empresaId');
+                    $opcional = REQUEST('opcional');
+                   $resultado = $repositorio->consultarPorEmpresaUsuario($empresaId,$opcional,$usuario);
+                 break;
+                case 'eliminar':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->eliminar($llaves);
+                break;
+                default:
+                    $resultado->mensajeError = "Acción no válida";
+                break;
+                
+            }
         }
+    }
+    else
+    {
+        $resultado->mensajeError = "La sesión caducó. Inicie sesión e intente de nuevo.";
+        $resultado->codigoError = CodigoError::SESION_CADUCADA;
     }
     
 }

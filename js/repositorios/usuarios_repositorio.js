@@ -156,6 +156,28 @@ class UsuariosRepositorio extends Repositorio
        });
 	}
 	
+	consultarUsuariosCorportarivoYAdministradoresPorEmpresa(contexto,funcion, empresaId)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+           url: url,
+           type: 'POST',
+           data: {accion : "consultarUsuariosCorportarivoYAdministradoresPorEmpresa", empresaId: empresaId},
+           success: function( data, textStatus, jQxhr )
+           {
+               funcion.call(contexto,data);
+           },
+           error: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : errorThrown});
+           },
+           fail: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : errorThrown});
+           }
+       });
+	}
+	
 	
 	consultarPorEmpresaSede(contexto,funcion, empresaId, sedeId, opcional)
 	{		

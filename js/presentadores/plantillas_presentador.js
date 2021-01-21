@@ -297,5 +297,26 @@ class PlantillasPresentador extends CatalogoPresentador
 				
 		 },this.vista.plantillaId,seleccion);
 	 }
+
+	 copiar()
+	 {
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.copiar(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+		 	this.vista.cerrarConfirmacionEliminar();
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.mostrarMensaje("Notificación","La plantilla se copió correctamente." + resultado.valor);
+				 this.consultar();
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al copiar la plantilla. " + resultado.mensajeError, resultado.codigoError);
+			 }
+		 },this.vista.llaves);
+	 }
+	 
+	 
 	 
 }

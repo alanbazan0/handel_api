@@ -43,6 +43,9 @@ class UsuariosProcedimientosVista extends CatalogoVista
 										"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>"; 
 //										"<button data-toggle='tooltip' data-placemen='bottom' title='Cancelar'  type='button' class='cancelar btn-circle mr-0 botones-icon btn btn-sm float-left btn-warning active'><span  data-toggle='tooltip' class='fa fa-ban fa-lg'></span></button>";
 
+		this.habilitarExportacionExcel();
+
+
 		this.tabla.registros = [];		
 	}
 	

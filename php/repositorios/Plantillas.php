@@ -125,6 +125,21 @@ try
                     $nombreArchivo = "plantilla".$llaves->id.".png";
                     $resultado=$adminstradorArchivos->eliminar($carpeta,$nombreArchivo);
                 }
+                
+            break;
+            case 'copiar':
+                $llaves = json_decode(REQUEST('llaves'));
+                $resultado = $repositorio->copiar($llaves);
+                if($resultado->correcto())
+                {
+                    $id =  $resultado->valor;
+                    $adminstradorArchivos = new AdministradorArchivos();
+                    $carpeta = "iconos_plantillas";
+                    $nombreArchivo = "plantilla".$llaves->id.".png";
+                    $nombreArchivoCopia = "plantilla".$id.".png";
+                    $resultado=$adminstradorArchivos->copiar($carpeta,$nombreArchivo,$nombreArchivoCopia);
+                    $resultado->valor = $id;
+                }
             break;
             case 'guardarRespuestasSi':
                 $plantillaId = REQUEST('plantillaId');

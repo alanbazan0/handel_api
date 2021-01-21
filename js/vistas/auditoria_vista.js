@@ -748,6 +748,40 @@ class AuditoriaVista extends Vista
 		}
 		
 		this.calcularPuntuacionSeccion(puntuaciones);
+		this.calcularPreguntasSinContestar();
+	}
+	
+	calcularPreguntasSinContestar()
+	{
+		var preguntasSinContestar = 0;
+		var preguntas = this.preguntas;
+		for(var i=0; i < preguntas.length; i++)
+		{
+			var pregunta = preguntas[i];
+			if(pregunta.tipo=="sn")
+			{
+				if(pregunta.valor=="")
+				{
+					preguntasSinContestar++;	
+				}
+			}
+		}
+		var indice = $("#secciones").prop('selectedIndex');
+		var seccionId = this.listaPreguntas.secciones[indice].id;
+		
+		var html = "";
+		if(preguntasSinContestar>0)
+		{
+			var textoPreguntas = "";
+			if(preguntasSinContestar==1)
+				textoPreguntas="pregunta";
+			else
+				textoPreguntas="preguntas";
+		 	html = "<small class='labelAdvertencia'><i class='fas fa-exclamation-triangle'></i> "+preguntasSinContestar+ " "+ textoPreguntas +" sin contestar</small>";
+        }
+		
+		$("#preguntasSinContestarDiv"+seccionId).html(html);
+		
 	}
 	
 	calcularPuntuacionSeccion(puntuaciones)
@@ -774,11 +808,13 @@ class AuditoriaVista extends Vista
 			textoPorcentaje =  textoPorcentaje.split(".")[0];
 		}
 		
-		var puntuacionTexto = x + "/" + y + " (" +  textoPorcentaje + "%)";
-		
 		var indice = $("#secciones").prop('selectedIndex');
 		var seccionId = this.listaPreguntas.secciones[indice].id;
-		//if(indice!=0)
+		
+		
+		var puntuacionTexto ="<span id='preguntasSinContestarDiv"+seccionId+"'></span>" + x + "/" + y + " (" +  textoPorcentaje + "%)";
+		
+		
 		$("#listaPreguntas_labelPuntuacion"  +seccionId).html(puntuacionTexto);
 		
 		this.listaPreguntas.secciones[indice].puntos = x;
@@ -842,6 +878,7 @@ class AuditoriaVista extends Vista
 				pregunta.puntos = x;
 				pregunta.puntosTotal = y;
 				pregunta.porcentaje = porcentaje;
+				//pregunta.preguntasSinContestar = preguntasSinContestar;
 			}
 			this.listaPreguntas.setValor(this.seccionId,encabezado.id,puntuacionTexto);
 		}

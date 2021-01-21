@@ -109,6 +109,11 @@ try
                     $usuario = $_SESSION['usuario'];
                 $resultado = $repositorio->consultarUsuariosCorportarivoYAdministradores($usuario);
             break;
+            
+            case 'consultarUsuariosCorportarivoYAdministradoresPorEmpresa':
+                $empresaId = REQUEST('empresaId');
+                $resultado = $repositorio->consultarUsuariosCorportarivoYAdministradoresPorEmpresa($empresaId);
+            break;
             case 'consultarPorEmpresaSede':
                 session_start();
                 $usuario = null;
@@ -216,7 +221,6 @@ try
                                         if($resultado->valor->tipoUsuarioId == TipoUsuario::ADMINISTRADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::COORDINADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::SUPERVISOR ||  $resultado->valor->tipoUsuarioId == TipoUsuario::USUARIO)
                                         {
                                             $_SESSION['usuario']=$resultado->valor;
-                                            $_SESSION['tiempo_sesion']=time();
                                             $historialAccesoRepositorio = new HistorialAccesoRepositorio($conexion);
                                             $historialAccesoRepositorio->insertar($nombreUsuario,$aplicacionId,$aplicacionVersion);
                                         }
@@ -225,14 +229,12 @@ try
                                             $resultado->valor = null;
                                             $resultado->mensajeError="El acceso a la plataforma en linea esta restringido a usuarios autorizados, si necesita ingresar para realizar cambios por favor solicite los cambios con su supervisor autorizado.";
                                             unset($_SESSION['usuario']);
-                                            unset($_SESSION['tiempo_sesion']);
                                         }
                                     break;
                                     case "SIVAH":
                                         if($resultado->valor->tipoUsuarioId == TipoUsuario::ADMINISTRADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::COORDINADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::SUPERVISOR)
                                         {
                                             $_SESSION['usuario']=$resultado->valor;
-                                            $_SESSION['tiempo_sesion']=time();
                                             $historialAccesoRepositorio = new HistorialAccesoRepositorio($conexion);
                                             $historialAccesoRepositorio->insertar($nombreUsuario,$aplicacionId,$aplicacionVersion);
                                         }
@@ -258,7 +260,6 @@ try
                                                 $resultado->valor = null;
                                                 $resultado->mensajeError="El acceso a la plataforma en linea esta restringido a usuarios autorizados, si necesita ingresar para realizar cambios por favor solicite los cambios con su supervisor autorizado.";
                                                 unset($_SESSION['usuario']);
-                                                unset($_SESSION['tiempo_sesion']);
                                             }
                                         }
                                         else
@@ -266,7 +267,6 @@ try
                                             if($resultado->valor->tipoUsuarioId == TipoUsuario::COORDINADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::SUPERVISOR || $resultado->valor->tipoUsuarioId == TipoUsuario::USUARIO)
                                             {
                                                 $_SESSION['usuario']=$resultado->valor;
-                                                $_SESSION['tiempo_sesion']=time();
                                                 $historialAccesoRepositorio = new HistorialAccesoRepositorio($conexion);
                                                 $historialAccesoRepositorio->insertar($nombreUsuario,$aplicacionId,$aplicacionVersion);
                                             }
@@ -275,7 +275,6 @@ try
                                                 $resultado->valor = null;
                                                 $resultado->mensajeError="El acceso a la plataforma en linea esta restringido a usuarios autorizados, si necesita ingresar para realizar cambios por favor solicite los cambios con su supervisor autorizado.";
                                                 unset($_SESSION['usuario']);
-                                                unset($_SESSION['tiempo_sesion']);
                                             }
                                         }
                                             
@@ -297,7 +296,6 @@ try
 //                                             if($resultado->valor->permisoCAVIH==1)
 //                                             {
                                                 $_SESSION['usuario']=$resultado->valor;
-                                                $_SESSION['tiempo_sesion']=time();
                                                 $historialAccesoRepositorio = new HistorialAccesoRepositorio($conexion);
                                                 $historialAccesoRepositorio->insertar($nombreUsuario,$aplicacionId,$aplicacionVersion);
 //                                             }
@@ -312,7 +310,6 @@ try
                                         $resultado->valor = null;
                                         $resultado->mensajeError="El acceso a la plataforma en linea esta restringido a usuarios autorizados, si necesita ingresar para realizar cambios por favor solicite los cambios con su supervisor autorizado.";
                                         unset($_SESSION['usuario']);
-                                        unset($_SESSION['tiempo_sesion']);
                                     break;
                                 }
                             
@@ -323,14 +320,12 @@ try
                             $resultado->valor = null;
                             $resultado->mensajeError="El acceso a la plataforma en linea esta restringido a usuarios autorizados, si necesita ingresar para realizar cambios por favor solicite los cambios con su supervisor autorizado.";
                             unset($_SESSION['usuario']);
-                            unset($_SESSION['tiempo_sesion']);
                             
                         }
                     }
                     else 
                     {
                         $_SESSION['usuario']=$resultado->valor;
-                        $_SESSION['tiempo_sesion']=time();
                         $historialAccesoRepositorio = new HistorialAccesoRepositorio($conexion);
                         $historialAccesoRepositorio->insertar($nombreUsuario,$aplicacionId,$aplicacionVersion);
                     }

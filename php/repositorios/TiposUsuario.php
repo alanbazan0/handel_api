@@ -2,6 +2,7 @@
 use php\clases\AdministradorConexion;
 use php\modelos\Resultado;
 use php\repositorios\TiposUsuarioRepositorio;
+use php\clases\CodigoError;
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -10,6 +11,7 @@ include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/TiposUsuarioRepositorio.php';
+include '../clases/CodigoError.php';
 
 $origin = "*";
 if(isset($_SERVER['HTTP_ORIGIN']))
@@ -23,26 +25,34 @@ $resultado = new Resultado();
 $conexion=null;
 try
 {
-    $conexion = $administrador_conexion->abrir();
-    if($conexion)
+    session_start();
+    $usuario = null;
+    if(isset($_SESSION['usuario']))
+        $usuario = $_SESSION['usuario'];
+    if($usuario!=null)
     {
-        $accion = REQUEST('accion');
-        $repositorio = new TiposUsuarioRepositorio($conexion);
-        switch ($accion)
-        {           
-            case 'consultar':               
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                 $resultado = $repositorio->consultar($usuario);               
-            break;
-            default:
-                $resultado->mensajeError = "Acción no válida";
-            break;
+        $conexion = $administrador_conexion->abrir();
+        if($conexion)
+        {
+            $accion = REQUEST('accion');
+            $repositorio = new TiposUsuarioRepositorio($conexion);
+            switch ($accion)
+            {           
+                case 'consultar':               
+                   
+                     $resultado = $repositorio->consultar($usuario);               
+                break;
+                default:
+                    $resultado->mensajeError = "Acción no válida";
+                break;
+            }
         }
     }
-    
+    else 
+    {
+        $resultado->mensajeError = "La sesión caducó. Inicie sesión e intente de nuevo.";
+        $resultado->codigoError = CodigoError::SESION_CADUCADA;
+    }
 }
 catch(Exception $e)
 {   

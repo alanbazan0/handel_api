@@ -224,7 +224,8 @@ class PlantillasVista extends CatalogoVista
 		
 		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Ejecutar'  type='button' class='ejecutar btn-circle mr-0 botones-icon btn btn-sm float-left btn-success active'><span  data-toggle='tooltip' class='fa fa-play-circle fa-lg'></span></button>"+
 		 								"<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
-		 								"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+		 								"<button data-toggle='tooltip' data-placemen='bottom' title='Crear copia'  type='button' class='copiar btn-circle mr-0 botones-icon btn btn-sm float-left btn-warning active'><span  data-toggle='tooltip' class='fa fa-copy fa-lg'></span></button>"+
+										"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
 		
 //		this.grid._origen="vista";
@@ -271,6 +272,22 @@ class PlantillasVista extends CatalogoVista
 			{
 				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
 				_this.ejecutar();
+			}
+		});
+		
+		$(tbody).on("click", "button.copiar", function()
+		{			
+			var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.copiar();
 			}
 		});
 	}
@@ -955,6 +972,33 @@ class PlantillasVista extends CatalogoVista
 		}
 		return null;	
 		
+	}
+	
+	copiar()
+	{
+		var texto ="Se crear\u00e1 una copia de esta plantilla";
+		var _this = this;
+		swal({
+	            title: "\u00bfEst\u00E1 seguro?",
+	            text: texto,
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Si, crear copia!!",
+	            cancelButtonText: "No",
+	            closeOnConfirm: false,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	 setTimeout(function(){
+	            		 _this.presentador.copiar();
+	 	            }, 1000);
+	            }
+	        });
 	}
 	
 	

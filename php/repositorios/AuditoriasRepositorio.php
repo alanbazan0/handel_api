@@ -374,12 +374,9 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                                     $resultado = $this->consultarEncabezado($modelo->id);
                                     if($resultado->mensajeError=="")
                                     {
-                                        $this->conexion->commit();
                                     }
                                    
                                 }
-                                else
-                                    $this->conexion->rollback();
                                
                             }
     
@@ -387,23 +384,28 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                         else
                         {
                             $resultado->mensajeError = "Falló la ejecución insertar(" . $this->conexion->errno . ") " . $this->conexion->error;
-                            $this->conexion->rollback();
                         }
                     }
                     else
                     {
                         $resultado->mensajeError = "Falló el enlace de parámetros";
-                        $this->conexion->rollback();
                     }
                 }
                 else
                 {
                     $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-                    $this->conexion->rollback();
                 }
         
             }
         }
+        
+        if($resultado->correcto())
+        {
+            $this->conexion->commit();
+            $resultado->valor = $llaves->id;;
+        }
+        else
+            $this->conexion->rollback();
 
         return $resultado;
     }
@@ -707,20 +709,20 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                                         else
                                         {
                                             $resultado->codigoError = $this->conexion->errno;
-                                            $resultado->mensajeError = "Falló la ejecución insertarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
+                                            $resultado->mensajeError = __FUNCTION__.". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
                                             break;
                                         }
                                     }
                                     else
                                     {
-                                        $resultado->mensajeError = "Falló el enlace de parámetros";
+                                        $resultado->mensajeError = __FUNCTION__.". Falló el enlace de parámetros";
                                         break;
                                     }
                                 }
                                 else
                                 {
                                     $resultado->codigoError = $this->conexion->errno;
-                                    $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                                    $resultado->mensajeError = __FUNCTION__.". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
                                     break;
                                 }
                             }
@@ -732,7 +734,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                     else
                     {
                         $resultado->codigoError = $this->conexion->errno;
-                        $resultado->mensajeError = "Falló la ejecución update insertarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
+                        $resultado->mensajeError = __FUNCTION__.". Falló la ejecución update (" . $this->conexion->errno . ") " . $this->conexion->error;
                         break;
                     }
                 }
@@ -764,7 +766,14 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             "SET hallazgo = ?,  recomendacion = ?,  responsable = ?, puntos = ?, puntos_total = ?, porcentaje = ?,
                 reporte = ?, notificacion = ? ".
             "WHERE auditoria_id=? AND plantilla_id = ? AND seccion_id = ?";
-        
+       
+        if(isset($seccion->responsable))
+        {
+            if($seccion->responsable=="")
+                 $seccion->responsable = null;
+        }
+        else 
+            $seccion->responsable = null;
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -1291,7 +1300,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         if($modelo->empresaId=="")
             $modelo->empresaId = null;
         
-        $consulta = " UPDATE auditorias 
+        $consulta = " UPDATE auditorias     
             SET empresa_id = ?, 
                    tipo_auditoria_id = ?,   
                     fecha_ejecucion = NOW(),
@@ -2367,8 +2376,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         return $registro;
     }
     
+   
+    
     public function eliminar($llaves)
     {
+        $this->conexion->autocommit(FALSE);
         $resultado = $this->eliminarRespuestasNoAuditoria($llaves->id);
         if($resultado->correcto())
         {
@@ -2412,8 +2424,17 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 }
             }
         }
+        if($resultado->correcto())
+        {
+            $this->conexion->commit();
+            $resultado->valor = $llaves->id;;
+        }
+        else
+            $this->conexion->rollback();
         return $resultado;
     }
+
+    
     
     public function consultarPorcentajesCumplimientoSeccion($auditoriaId)
     {

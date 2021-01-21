@@ -75,6 +75,7 @@ try
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);
             break;
+            
             default:
                 $resultado->mensajeError = "Acción no válida";
             break;
@@ -89,6 +90,7 @@ catch(Exception $e)
 }
 finally
 {
+    $administrador_conexion->cerrar($conexion);
     if($resultado!=null)
     {
         $json = json_encode($resultado, JSON_UNESCAPED_UNICODE);
@@ -97,7 +99,7 @@ finally
             else
                 echo $json;
     }
-    $administrador_conexion->cerrar($conexion);
+    
 }
 
 

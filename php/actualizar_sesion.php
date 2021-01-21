@@ -13,13 +13,13 @@ session_start();
 //if (isset($_SESSION['usuario']))
 
 $_SESSION['usuario'] = $_SESSION['usuario']; 
-$_SESSION['tiempo_sesion'] = time();
+//$_SESSION['tiempo_sesion'] = time();
 
-$secondsInactive = time() - $_SESSION['tiempo_sesion'];
+//$secondsInactive = time() - $_SESSION['tiempo_sesion'];
 
 //Convert our minutes into seconds.
 
-echo($expireAfter - $secondsInactive);
+//echo($expireAfter - $secondsInactive);
 
 
 

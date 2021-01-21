@@ -528,81 +528,80 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         
         if($usuario!=null)
         {
-        
-        if($usuario->recursosHumanos==1)
-        {
-            if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+            if($usuario->recursosHumanos==1)
             {
-                array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+                if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+                {
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+                }
+                else
+                {
+                    $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                    $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+                    if($resultado->correcto())
+                    {
+                        $empresasIds = implode(",", $resultado->valor);
+                        array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','operador'=>'IN','valor'=>$empresasIds]);
+                    }
+                }
             }
             else
             {
-                $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
-                $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
-                if($resultado->correcto())
+                switch ($usuario->tipoUsuarioId)
                 {
-                    $empresasIds = implode(",", $resultado->valor);
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','operador'=>'IN','valor'=>$empresasIds]);
-                }
-            }
-        }
-        else
-        {
-            switch ($usuario->tipoUsuarioId)
-            {
-                case \TipoUsuario::SUPERVISOR:
-                    $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
-                    $resultado = $usuariosRepositorio->consultarIdsUsuarios($usuario);
-                    if($resultado->correcto())
-                    {
-                        $usuariosIds = implode(",", $resultado->valor);
-                        //$and =" AND U.id IN($usuariosIds)";
-                        array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','operador'=>'IN','valor'=>$usuariosIds]);
-                    }
-                break;
-                case \TipoUsuario::COORDINADOR:
-                    if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
-                    {
-                        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
-                    }
-                    else
-                    {
+                    case \TipoUsuario::SUPERVISOR:
                         $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
-                        $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+                        $resultado = $usuariosRepositorio->consultarIdsUsuarios($usuario);
                         if($resultado->correcto())
                         {
-                            $empresasIds = implode(",", $resultado->valor);
-                            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','operador'=>'IN','valor'=>$empresasIds]);
+                            $usuariosIds = implode(",", $resultado->valor);
+                            //$and =" AND U.id IN($usuariosIds)";
+                            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','operador'=>'IN','valor'=>$usuariosIds]);
                         }
-                    }
-                break;
-                    
-                    
-                case \TipoUsuario::ADMINISTRADOR:
-                    if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
-                    {
-                        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
-                    }
-                    
-                break;
-                
-                default:
-                    if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
-                    {
-                        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
-                    }
-                    else
-                    {
+                    break;
+                    case \TipoUsuario::COORDINADOR:
                         if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
                         {
-                            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>9999999999]);
+                            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+                        }
+                        else
+                        {
+                            $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                            $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+                            if($resultado->correcto())
+                            {
+                                $empresasIds = implode(",", $resultado->valor);
+                                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','operador'=>'IN','valor'=>$empresasIds]);
+                            }
+                        }
+                    break;
+                        
+                        
+                    case \TipoUsuario::ADMINISTRADOR:
+                        if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+                        {
+                            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
                         }
                         
-                    }
+                    break;
                     
-                break;
+                    default:
+                        if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+                        {
+                            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+                        }
+                        else
+                        {
+                           // if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+                            //{
+                                array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>9999999999]);
+                            //}
+                            
+                        }
+                        
+                    break;
+                }
             }
-        }
         }
         else
         {
@@ -627,24 +626,6 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'U','campo'=>'nombre','valor'=>$criteriosSeleccion->nombre]);
             if(isset($criteriosSeleccion->apellido))
                 array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'U','campo'=>'apellido','valor'=>$criteriosSeleccion->apellido]);
-//             if(isset($criteriosSeleccion->empresaId))
-//             {
-//                 if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
-//                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
-//                 else
-//                 {
-//                     if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
-//                     {
-//                        // $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
-//                         $resultado = $this->consultarIdsEmpresas($usuario->empresaId);
-//                         if($resultado->correcto())
-//                         {
-//                             $empresasIds = implode(",", $resultado->valor);
-//                             array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','operador'=>'IN','valor'=>$empresasIds]);
-//                         }
-//                     }
-//                 }
-//             }
             if(isset($criteriosSeleccion->nombreUsuario))
             {
                 if($criteriosSeleccion->nombreUsuario!="" && $criteriosSeleccion->nombreUsuario!=null)
@@ -990,6 +971,45 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
         //}
         return $resultado;
+    }   
+    
+    public function consultarUsuariosCorportarivoYAdministradoresPorEmpresa($empresaId)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+       
+        $resultado = $this->consultarIdsEmpresasCorporativo($empresaId);
+        if($resultado->correcto())
+        {
+            $empresasIds = implode(",", $resultado->valor);
+            
+            $consulta =   $this->consultaBase .
+            " WHERE (U.empresa_id IN ($empresasIds)  AND U.permiso_saha = 1) " .
+            " OR U.tipo_usuario_id = 1  order by U.nombre, U.apellido";
+        }
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->execute())
+            {
+                if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre,$permisoCAVIH, $perfilId, $perfilNombre, $recursosHumanos, $numeroEmpleado)  )
+                {
+                    while($row = $sentencia->fetch())
+                    {
+                        $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre,$permisoCAVIH, $perfilId, $perfilNombre, $recursosHumanos, $numeroEmpleado);
+                        array_push($registros,$registro);
+                    }
+                    $resultado->valor = $registros;
+                }
+                else
+                    $resultado->mensajeError = "Falló el enlace del resultado.";
+            }
+            else
+             $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            return $resultado;
     }   
     
     public function consultarUsuariosPorEmpresa($empresaId)

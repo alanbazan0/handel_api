@@ -116,6 +116,17 @@ class AdministradorArchivos
         return $resultado;
     }
     
+    public function copiar($carpeta, $nombreArchivo, $nombreArchivoCopia)
+    {
+        $resultado = new Resultado();
+        $origen = "../" .$carpeta . "/" . $nombreArchivo;
+        $destino = "../".  $carpeta . "/" . $nombreArchivoCopia;
+        if(file_exists($origen))
+            copy($origen, $destino);
+        
+        return $resultado;
+    }
+    
     
 }
 
