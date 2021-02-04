@@ -924,6 +924,7 @@ class PlantillasVista extends CatalogoVista
 	
 	cambiarLogo(input)
 	{
+		var _this = this;
 		if (input.files && input.files[0]) 
 		{
             var reader = new FileReader();
@@ -931,6 +932,7 @@ class PlantillasVista extends CatalogoVista
             reader.onload = function (e)
             {
                 $('#logoImage').attr('src', e.target.result);
+				_this.presentador.actualizarLogo();
             };
             reader.readAsDataURL(input.files[0]);
         }

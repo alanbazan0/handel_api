@@ -28,10 +28,4 @@ RewriteEngine on
 # Use PHP71 as default
 AddHandler application/x-httpd-php71 .php
 
-<IfModule mod_php5.c>
-    #Session timeout
-    #Session timeout, 2628000 sec = 1 month, 604800 = 1 week, 57600 = 16 hours, 86400 = 1 day
 
-    php_value session.cookie_lifetime 57600
-    php_value session.gc_maxlifetime 57600
-</IfModule>

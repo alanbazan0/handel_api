@@ -1278,7 +1278,7 @@ class PDF extends FPDF
         $this->aligns = array("C","L","L","L");
         
         $repositorio = new AuditoriasRepositorio($this->conexion);
-        $resultado = $repositorio->getObservaciones($this->secciones);
+        $resultado = $repositorio->getHallazgos($this->secciones,"reporte");
         if($resultado->correcto())
         {
             $observaciones = $resultado->valor;

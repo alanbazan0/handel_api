@@ -223,6 +223,25 @@ class PlantillasPresentador extends CatalogoPresentador
 			 },this.vista.plantillaId, campo, valor);
 		}
 	 }
+
+	actualizarLogo()
+	 {
+		 this.vista.mostrarIndicador();	
+		 //var preguntaId = this.vista.llavesPregunta.preguntaId;
+		 this._repositorio.actualizarLogo(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 //this.vista.cerrarConfirmacionEliminar();
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.mostrarMensaje("","Guardado.");
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
+			 }
+		 },this.vista.plantillaId, this.vista.logo);
+	 }
 	 
 	 actualizarValorPregunta(preguntaId,campo,valor)
 	 {

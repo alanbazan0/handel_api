@@ -158,4 +158,26 @@ class AuditoriaPresentador extends CatalogoPresentador
 				
 		}
 	 }
+
+	iniciarSeguimiento()
+	{
+	 	var llaves ={plantillaId: this.vista.modeloEdicion.plantillaId,
+			 	id: this.vista.modeloEdicion.id
+	 			};
+		this.vista.mostrarIndicador();	
+		 this._repositorio.iniciarSeguimiento(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+		 	 this.vista.cerrarConfirmacionEliminar();
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.mostrarMensaje("Notificación","Se inició el seguimiento correctamente.");
+				 this.vista.cerrar();
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error. " + resultado.mensajeError, resultado.codigoError);
+			 }
+		 },llaves);
+	}
 }

@@ -472,7 +472,7 @@ class MinutasVista extends CatalogoVista
 		moment.locale('es') ;
 		var fechaAlta = this.getFechaMDA(this.modeloEdicion.fechaAlta);
 		
-		var fecha = moment(fechaAlta,"MM/DD/YYYY");
+		var fecha = moment(fechaAlta,"MM/DD/YYYY h:mm:ss");
 		
 		var html = "<img class='img-circle' src='"+foto+"' "+
 					"alt='User Image'> <span class='username'><a href='#'>" + this.modeloEdicion.usuarioNombreCompleto +"</a>" +

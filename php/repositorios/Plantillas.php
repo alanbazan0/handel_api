@@ -68,6 +68,20 @@ try
                     $resultado->valor = $id;
                 }
             break;
+            case 'actualizarLogo':
+                
+                $plantillaId = REQUEST('plantillaId');
+                $adminstradorArchivos = new AdministradorArchivos();
+                $archivo = FILES("file");
+                if($archivo!=null)
+                {
+                    $carpeta = "iconos_plantillas";
+                    $nombreArchivo = "plantilla".$plantillaId.".png";
+                    $resultado=$adminstradorArchivos->subirImagen($carpeta,$archivo,$nombreArchivo);
+                    $resultado->valor = $plantillaId;
+                }
+                
+            break;
             case 'consultar':
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 $resultado = $repositorio->consultar($criteriosSeleccion);               

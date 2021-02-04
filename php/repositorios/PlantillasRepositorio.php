@@ -348,17 +348,17 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
                 else
                 {
                     $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = "Falló la ejecución eliminarRespuestasNoPregunta(" . $this->conexion->errno . ") " . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__ .". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
                 }
                 
             }
             else
-                $resultado->mensajeError = "Falló el enlace de parámetros";
+                $resultado->mensajeError = __FUNCTION__ .". Falló el enlace de parámetros";
         }
         else
         {
             $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__ .". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
         }
         return $resultado;
@@ -700,12 +700,12 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
         {
             $seccion= $secciones[$i];
           
-            $consulta = "INSERT INTO secciones(plantilla_id, id, texto ) " .
-                "VALUE(?, ?, ?)";
+            $consulta = "INSERT INTO secciones(plantilla_id, id, texto, orden ) " .
+                "VALUE(?, ?, ?, ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
               
-                if($sentencia->bind_param("iis",$plantillaId,$seccion->id, $seccion->texto))
+                if($sentencia->bind_param("iisi",$plantillaId,$seccion->id, $seccion->texto, $seccion->orden))
                 {
                     if($sentencia->execute())
                     {
@@ -716,21 +716,21 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
                     else
                     {
                         $resultado->codigoError = $this->conexion->errno;
-                        $resultado->mensajeError = "Falló la ejecución insertarSecciones(" . $this->conexion->errno . ") " . $this->conexion->error;
+                        $resultado->mensajeError = __FUNCTION__." .Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
                         break;
                     }
                     
                 }
                 else
                 {
-                    $resultado->mensajeError = "Falló el enlace de parámetros";
+                    $resultado->mensajeError = __FUNCTION__." .Falló el enlace de parámetros";
                     break;
                 }
             }
             else
             {
                 $resultado->codigoError = $this->conexion->errno;
-                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                $resultado->mensajeError = __FUNCTION__." .Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
                 break;
             }
         }
@@ -751,11 +751,11 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
             for ($j = 0; $j < count($seccion->preguntas); $j++)
             {
                 $pregunta = $seccion->preguntas[$j];
-                $consulta = "INSERT INTO preguntas(plantilla_id, seccion_id, id, texto, hallazgo, recomendacion, colapsado, tipo, practicas, observaciones, peso) " .
-                    "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $consulta = "INSERT INTO preguntas(plantilla_id, seccion_id, id, texto, hallazgo, recomendacion, colapsado, tipo, practicas, observaciones, peso, orden) " .
+                    "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    if($sentencia->bind_param("iiisssisssi",$plantillaId,$seccion->id, $pregunta->id, $pregunta->texto, $pregunta->hallazgo, $pregunta->recomendacion, $pregunta->colapsado, $pregunta->tipo,$pregunta->practicas, $pregunta->observaciones, $pregunta->peso))
+                    if($sentencia->bind_param("iiisssisssii",$plantillaId,$seccion->id, $pregunta->id, $pregunta->texto, $pregunta->hallazgo, $pregunta->recomendacion, $pregunta->colapsado, $pregunta->tipo,$pregunta->practicas, $pregunta->observaciones, $pregunta->peso, $pregunta->orden))
                     {
                         if($sentencia->execute())
                         {
@@ -765,21 +765,21 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
                         else
                         {
                             $resultado->codigoError = $this->conexion->errno;
-                            $resultado->mensajeError = "Falló la ejecución insertarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
+                            $resultado->mensajeError = __FUNCTION__ . ". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
                             break;
                         }
                         
                     }
                     else
                     {
-                        $resultado->mensajeError = "Falló el enlace de parámetros";
+                        $resultado->mensajeError = __FUNCTION__ . ". Falló el enlace de parámetros";
                         break;
                     }
                 }
                 else
                 {
                     $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__ . ". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
                     break;
                 }
             }
@@ -1557,7 +1557,7 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
         
         $resultado = new Resultado();
         $preguntas = array();
-        $consulta = "SELECT id, RTRIM(texto) texto, IFNULL(hallazgo,'') hallazgo, IFNULL(recomendacion,'') recomendacion, tipo, IFNULL(colapsado,0) colapsado,IFNULL(practicas,'') practicas,IFNULL(observaciones,'') observaciones, IFNULL(peso,0) peso  " .
+        $consulta = "SELECT id, RTRIM(texto) texto, IFNULL(hallazgo,'') hallazgo, IFNULL(recomendacion,'') recomendacion, tipo, IFNULL(colapsado,0) colapsado,IFNULL(practicas,'') practicas,IFNULL(observaciones,'') observaciones, IFNULL(peso,0) peso, orden  " .
                      "FROM preguntas " .        
                     " WHERE plantilla_id  = ? AND seccion_id = ? ".
                     "ORDER BY orden";
@@ -1568,7 +1568,7 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $texto, $hallazgo, $recomendacion, $tipo, $colapsado, $practicas, $observaciones, $peso))
+                    if ($sentencia->bind_result($id, $texto, $hallazgo, $recomendacion, $tipo, $colapsado, $practicas, $observaciones, $peso, $orden))
                     {
                        
                         while($sentencia->fetch())
@@ -1583,7 +1583,8 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
                                 'colapsado' => $colapsado,
                                 'practicas' => $practicas,
                                 'observaciones' => $observaciones,
-                                'peso' => $peso 
+                                'peso' => $peso,
+                                'orden' => $orden 
                                 
                             ];
                             array_push($preguntas,$pregunta);
@@ -1653,7 +1654,7 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
     {
         $resultado = new Resultado();
         $secciones = array();
-        $consulta = "SELECT id, RTRIM(texto) texto " .
+        $consulta = "SELECT id, RTRIM(texto) texto, orden " .
             "FROM secciones " .
             " WHERE plantilla_id  = ? ".
             "ORDER BY orden";
@@ -1663,13 +1664,14 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $texto))
+                    if ($sentencia->bind_result($id, $texto, $orden))
                     {
                         while($sentencia->fetch())
                         {
                             $seccion= (object) [
                                 'id' =>  $id,
-                                'texto' => $texto
+                                'texto' => $texto,
+                                'orden' => $orden
                             ];
                             array_push($secciones,$seccion);
                         }
@@ -1986,32 +1988,62 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
     
     public function eliminarPregunta($llaves)
     {
+        $this->conexion->autocommit(FALSE);
         $resultado = new Resultado();
-        $consulta ="DELETE FROM preguntas WHERE plantilla_id = ? AND seccion_id = ? AND id = ?";
-        if($sentencia = $this->conexion->prepare($consulta))
+        
+        $resultado = $this->eliminarRespuestasSiCategoriasPregunta($llaves->plantillaId,$llaves->seccionId,$llaves->preguntaId);
+        if($resultado->correcto())
         {
-            if($sentencia->bind_param("iii",$llaves->plantillaId,$llaves->seccionId,$llaves->preguntaId))
+            $resultado = $this->eliminarRespuestasSiPregunta($llaves->plantillaId,$llaves->seccionId,$llaves->preguntaId);
+            if($resultado->correcto())
             {
-                if($sentencia->execute())
+                $resultado = $this->eliminarRespuestasNoCategoriasPregunta($llaves->plantillaId,$llaves->seccionId,$llaves->preguntaId);
+                if($resultado->correcto())
                 {
-                    $sentencia->close();
+                    $resultado = $this->eliminarRespuestasNoPregunta($llaves->plantillaId,$llaves->seccionId,$llaves->preguntaId);
+                    if($resultado->correcto())
+                    {
+                        
+                        $consulta ="DELETE FROM preguntas WHERE plantilla_id = ? AND seccion_id = ? AND id = ?";
+                        if($sentencia = $this->conexion->prepare($consulta))
+                        {
+                            if($sentencia->bind_param("iii",$llaves->plantillaId,$llaves->seccionId,$llaves->preguntaId))
+                            {
+                                if($sentencia->execute())
+                                {
+                                    $sentencia->close();
+                                    
+                                    
+                                }
+                                else
+                                {
+                                    $resultado->codigoError = $this->conexion->errno;
+                                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución eliminarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
+                                }
+                                
+                            }
+                            else
+                                $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+                        }
+                        else
+                        {
+                            $resultado->codigoError = $this->conexion->errno;
+                            $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                            
+                        }
+                        
+                    }
                 }
-                else
-                {
-                    $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución eliminarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
-                }
-                
             }
-            else
-                $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
         }
+        
+       
+        
+        if($resultado->correcto())
+            $this->conexion->commit();
         else
-        {
-            $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-            
-        }
+            $this->conexion->rollback();
+        
         return $resultado;
     }
     

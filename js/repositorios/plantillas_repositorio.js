@@ -91,6 +91,26 @@ class PlantillasRepositorio extends Repositorio
 		xhr.send( data );  
 	}
 	
+	actualizarLogo(contexto,funcionResultado, plantillaId, logo)
+	{		
+		var data = new FormData();
+		data.append("accion", "actualizarLogo");
+		data.append("plantillaId", plantillaId);
+    	data.append("file", logo );
+    	var url = HANDEL_API + "/" + this.servicio;
+        var xhr = new XMLHttpRequest();
+        xhr.open( 'POST',url, true );
+		xhr.onreadystatechange = function ( resultado ) 
+		{
+		    if (this.readyState == 4 && this.status == 200) 
+		    {
+		    	var datos = JSON.parse(resultado.target.response);
+		    	funcionResultado.call(contexto,datos);
+		    }
+		};
+		xhr.send( data );  
+	}
+	
 	ordenarPreguntas(contexto,funcion,plantillaId, seccionId, seleccion)
 	{		
 		var respuestasString =  JSON.stringify(seleccion);

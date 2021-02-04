@@ -200,6 +200,8 @@ class AuditoriaVista extends Vista
 		this.listaPreguntas.mostrarSeccion(indice);
 		if(this._modo==Modo.CAMBIO)
 			this.presentador.consultarValores();
+		else
+			this.calcularPorcentajes();
 	}
 	
 	siguiente()
@@ -895,6 +897,33 @@ class AuditoriaVista extends Vista
 //		if(responsableId!=null)
 //			if(responsableId!="")
 //				$("#resposableSelect").val(responsableId);
+	}
+	
+	iniciarSeguimiento()
+	{
+		var texto ="Se iniciar\u00e1 el seguimiento de esta auditoría";
+		var _this = this;
+		swal({
+	            title: "\u00bfEst\u00E1 seguro?",
+	            text: texto,
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Si, iniciar seguimiento!!",
+	            cancelButtonText: "No",
+	            closeOnConfirm: false,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	 setTimeout(function(){
+	            		 _this.presentador.iniciarSeguimiento();
+	 	            }, 1000);
+	            }
+	        });
 	}
 	
 }

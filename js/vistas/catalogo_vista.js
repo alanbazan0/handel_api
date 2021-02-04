@@ -333,10 +333,7 @@ class CatalogoVista extends Vista
 	        });
 	}
 	
-	cerrarConfirmacionEliminar()
-	{
-		swal.close();
-	}
+	
 	
 	get llaves()
 	{

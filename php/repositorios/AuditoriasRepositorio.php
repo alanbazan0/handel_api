@@ -29,7 +29,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                     	INNER JOIN preguntas P ON P.plantilla_id = AP.plantilla_id AND P.seccion_id = AP.seccion_id AND P.id = AP.pregunta_id
                     WHERE P.tipo='e' AND auditoria_id = A.id) puntuacion, A.nivel_compromiso, A.implementacion, A.verificacion,
                         TE.nivel_compromiso, TE.implementacion, TE.verificacion, 
-                        PS.nivel_compromiso, PS.implementacion, PS.verificacion, observaciones, buenas_practicas
+                        PS.nivel_compromiso, PS.implementacion, PS.verificacion, observaciones, buenas_practicas, seguimiento, IFNULL(DATE_FORMAT(A.fecha_seguimiento,'%d/%m/%Y %H:%i:%s'),'')fecha_seguimiento
              FROM auditorias A 
              INNER JOIN plantillas P on A.plantilla_id = P.id 
             LEFT JOIN empresas E on A.empresa_id = E.id 
@@ -107,6 +107,42 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         else
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
        return $resultado;
+    }
+    
+    function numeroRegistrosRecomendaciones($auditoriaId,$hallazgoId)
+    {
+        $resultado = new Resultado();
+        $consulta =  "SELECT COUNT(*) id FROM recomendaciones WHERE auditoria_id = ? AND edt=?";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("is",$auditoriaId,$hallazgoId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($count))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $resultado->valor = $count;
+                            $sentencia->close();
+                        }
+                        else
+                            $resultado->mensajeError = "No se encontró ningún resultado";
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            return $resultado;
     }
     
     function numeroRegistrosSecciones($plantillaId, $auditoriaId, $seccionId)
@@ -1277,6 +1313,34 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
        return $resultado;
     }
+    
+    public function actualizarSeguimiento($auditoriaId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta = " UPDATE auditorias 
+            SET seguimiento = 1,
+                fecha_seguimiento = NOW()
+            WHERE id = ? ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("i", $auditoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__.". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__.". Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__.". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        return $resultado;
+    }
         
     
     public function actualizar(Auditoria $modelo)
@@ -1486,11 +1550,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas);
+                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento);
                            
                             
                             array_push($registros,$registro);
@@ -1524,11 +1588,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento))
                     {
                         if($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas);
+                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento);
                             $resultado->valor = $registro;
                         }
                     }
@@ -1655,11 +1719,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento))
                     {
                         if($sentencia->fetch())
                         {
-                            $plantilla = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion,$observaciones, $buenasPracticas);
+                            $plantilla = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion,$observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento);
                            
                             
                             $resultado->valor = $plantilla;
@@ -1741,7 +1805,66 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             return $resultado;
     }
     
-   
+    public function consultarRecomendaciones($auditoriaId)
+    {
+        $resultado = new Resultado();
+        $hallazgos = array();
+        $consulta = "SELECT H.id, titulo, responsable_id, U.nombre, U.apellido,  IFNULL(DATE_FORMAT(H.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta, IFNULL(cumplimiento,0) cumplimiento, IFNULL(DATE_FORMAT(H.fecha_vencimiento,'%d/%m/%Y %H:%i:%s'),'') fecha_vencimiento
+                    FROM recomendaciones H
+                        LEFT JOIN usuarios U ON U.id = H.responsable_id
+                WHERE H.auditoria_id = ?";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            
+            if($sentencia->bind_param("i",$auditoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $titulo, $responsableId,$responsableNombre,$responsableApellido,$fechaAlta, $cumplimiento, $fechaVencimiento))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $hallazgo= (object) [
+                                'id' =>  $id,
+                                'titulo' => $titulo,
+                                'responsableId' => $responsaleId,
+                                'responsableNombre' => $responsableNombre,
+                                'responsableApellido' => $responsableApellido,
+                                'fechaAlta' => $fechaAlta,
+                                'cumplimiento' => $cumplimiento,
+                                'fechaVencimiento' =>$fechaVencimiento
+                            ];
+                            
+                            $hallazgo->responsableNombreCompleto = $hallazgo->responsableNombre . " " . $hallazgo->responsableApellido;
+                            $hallazgo->fotoPerfil =  "../fotos/usuario". $hallazgo->id .".jpg";
+                            if(file_exists($hallazgo->fotoPerfil))
+                                $hallazgo->fotoPerfil =  "php/fotos/usuario". $hallazgo->responsableId .".jpg";
+                            else
+                                $hallazgo->fotoPerfil =  "php/fotos/default.jpg";
+                            
+                            array_push($hallazgos,$hallazgo);
+                        }
+                        $resultado->valor = $hallazgos;
+                        
+                        $sentencia->close();
+                        
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
  
     private function consultarPreguntas($plantillaId,$auditoriaId,$seccionId)
     {
@@ -2322,7 +2445,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             return $resultado;
     }
     
-    private function crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa, $tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas)
+    private function crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa, $tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento)
     {
 //         $archivoIcono = '../../php/iconos/icono'.$plantillaId.'.png';
 //         $icono = 'default.png';
@@ -2367,7 +2490,9 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             'tipoEmpresaImplementacion' => $tipoEmpresaImplementacion,
             'tipoEmpresaVerificacion' => $tipoEmpresaVerificacion,
             'observaciones' => $observaciones,
-            'buenasPracticas' => $buenasPracticas
+            'buenasPracticas' => $buenasPracticas,
+            'seguimiento' => $seguimiento,
+            'fechaSeguimiento' => $fechaSeguimiento
         ];
         
         Porcentaje::formatearPorcentaje($registro, "puntuacion");
@@ -2455,7 +2580,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         return $resultado;
     }
     
-    public function getObservaciones($secciones)
+    public function getHallazgos($secciones,$tipo)
     {
         $resultado = new Resultado();
         $observaciones = array();
@@ -2471,54 +2596,213 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                     $pregunta = $seccion->preguntas[$p];
                     if($pregunta->tipo=="sn")
                     {
-                       /* $elementos = explode(". ", $seccion->texto);
-                        if(count($elementos)>1)
+                        switch($pregunta->valor)
                         {
-                            $criterio = $elementos[1];*/
-                            switch($pregunta->valor)
-                            {
-                                case "S":
-                                    for ($r = 0; $r < count($pregunta->respuestas_si); $r++)
+                            case "S":
+                                for ($r = 0; $r < count($pregunta->respuestas_si); $r++)
+                                {
+                                    $respuesta = $pregunta->respuestas_si[$r];
+                                   
+                                    if($respuesta->$tipo==1)
                                     {
-                                        $respuesta = $pregunta->respuestas_si[$r];
-                                       
-                                        if($respuesta->reporte==1)
-                                        {
-                                            $departamento = $respuesta->departamentoNombre;
-                                            if($departamento=="")
-                                                $departamento = "No asignado";
-                                            $observacion = (object)['criterio' =>$criterio, 'departamento' => $departamento, 'hallazgo' => $respuesta->hallazgo];
-                                            array_push($observaciones,$observacion);
-                                        }
-                                    }
-                                break;
-                                case "N":
-                                    if($pregunta->reporte==1)
-                                    {
-                                        $departamento = $pregunta->departamentoNombre;
+                                        $departamento = $respuesta->departamentoNombre;
                                         if($departamento=="")
                                             $departamento = "No asignado";
-                                        $observacion = (object)['criterio' =>$criterio, 'departamento' => $departamento, 'hallazgo' => $pregunta->hallazgo];
+                                        $observacion = (object)['criterio' =>$criterio, 
+                                            'departamento' => $departamento, 
+                                            'responsableId' => $respuesta->responsable,
+                                            'hallazgo' => $respuesta->hallazgo,
+                                            'recomendacion' => $respuesta->recomendacion,
+                                            'seccionId' => $seccion->id,
+                                            'preguntaId' => $pregunta->preguntaId,
+                                            'respuestaId' => $respuesta->id
+                                        ];
+                                            
                                         array_push($observaciones,$observacion);
                                     }
-                                break;
-                            }
-                        //}
+                                }
+                            break;
+                            case "N":
+                                if($pregunta->$tipo==1)
+                                {
+                                    $departamento = $pregunta->departamentoNombre;
+                                    if($departamento=="")
+                                        $departamento = "No asignado";
+                                    $observacion = (object)['criterio' =>$criterio, 
+                                        'departamento' => $departamento, 
+                                        'responsableId' => $pregunta->responsable,
+                                        'hallazgo' => $pregunta->hallazgo,
+                                        'recomendacion' => $pregunta->recomendacion,
+                                        'seccionId' => $seccion->id,
+                                        'preguntaId' => $pregunta->preguntaId,
+                                        'respuestaId' => null
+                                    ];
+                                    array_push($observaciones,$observacion);
+                                }
+                            break;
+                        }
                     }
-                  
                 }
-                if($seccion->reporte==1 && $seccion->hallazgo!="")
+                if($seccion->$tipo==1 && $seccion->hallazgo!="")
                  {
                      $departamento = $seccion->departamentoNombre;
                      if($departamento=="")
                      $departamento = "No asignado";
-                     $observacion = (object)['criterio' =>$criterio, 'departamento' => $departamento, 'hallazgo' => $seccion->hallazgo];
+                     $observacion = (object)['criterio' =>$criterio, 
+                         'departamento' => $departamento, 
+                         'responsableId' => $seccion->responsable,
+                         'hallazgo' => $seccion->hallazgo,
+                         'recomendacion' => $seccion->recomendacion,
+                         'seccionId' => $seccion->id,
+                         'preguntaId' => null,
+                         'respuestaId' => null
+                     ];
                      array_push($observaciones,$observacion);
                  }
             }
             
         }
         $resultado->valor = $observaciones;
+        return $resultado;
+    }
+    
+    public function iniciarSeguimiento($llaves)
+    {
+        $resultado = new Resultado();
+        $this->conexion->autocommit(FALSE);
+        $resultado = $this->actualizarSeguimiento($llaves->id);
+        if($resultado->correcto())
+        {
+            $llaves= (object) [
+                'auditoriaId' =>  $llaves->id,
+                'plantillaId' =>  $llaves->plantillaId
+            ];
+            $secciones = array();
+            $resultado = $this->consultarValoresSecciones($llaves);
+            if($resultado->correcto())
+            {
+                $secciones = $resultado->valor;
+                $resultado = $this->getHallazgos($secciones,"notificacion");
+                if($resultado->correcto())
+                {
+                    $hallazgos = $resultado->valor;
+                    $resultado = $this->insertarRecomendaciones($llaves->auditoriaId,$hallazgos);
+                }
+            }
+           
+        }
+        if($resultado->correcto())
+        {
+            $this->conexion->commit();
+            $resultado->valor = $llaves->auditoriaId;;
+        }
+        else
+            $this->conexion->rollback();
+        return $resultado;
+    }
+    
+    
+    
+    function insertarRecomendaciones($auditoriaId,$hallazgos)
+    {
+        $resultado = new Resultado();
+        for ($i = 0; $i <  count($hallazgos); $i++)
+        {
+            $hallazgo = $hallazgos[$i];
+            
+            if(isset($hallazgo->responsableId))
+            {
+                if($hallazgo->responsableId=="")
+                    $hallazgo->responsableId = null;
+            }
+            else
+                $hallazgo->responsableId = null;
+                
+            $consulta = "UPDATE recomendaciones
+                    SET titulo = ?,
+                        responsable_id = ?,
+                        fecha_modificacion = NOW()
+                    WHERE auditoria_id=? AND edt = ?";
+            
+            $edt = $auditoriaId ."." .$hallazgo->seccionId; 
+            
+            if($hallazgo->preguntaId!=null)
+                $edt.= "." . $hallazgo->preguntaId;
+            if($hallazgo->respuestaId!=null)
+                $edt.= "." . $hallazgo->respuestaId;
+                    
+                    
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($sentencia->bind_param("siis",$hallazgo->recomendacion,$hallazgo->responsableId, $auditoriaId, $edt))
+                {
+                    if($sentencia->execute())
+                    {
+                        $sentencia->close();
+                        
+                        $resultado = $this->numeroRegistrosRecomendaciones($auditoriaId,$edt);
+                        if($resultado->correcto())
+                        {
+                            $count = $resultado->valor;
+                            
+                            if($count==0)
+                            {
+                                $consulta = "INSERT INTO recomendaciones(edt, auditoria_id, seccion_id, pregunta_id, respuesta_id, responsable_id, titulo, fecha_alta, fecha_modificacion, cumplimiento, fecha_vencimiento) " .
+                                    "VALUE(?, ?, ?, ?, ?, ?, ?, NOW(),NOW(), 0,  NOW() + INTERVAL 3 MONTH)";
+                                if($sentencia = $this->conexion->prepare($consulta))
+                                {
+                                    if($sentencia->bind_param("siiiiis", $edt,$auditoriaId, $hallazgo->seccionId, $hallazgo->preguntaId,$hallazgo->respuestaId,$hallazgo->responsableId, $hallazgo->recomendacion))
+                                    {
+                                        if($sentencia->execute())
+                                        {
+                                            $sentencia->close();
+                                        }
+                                        else
+                                        {
+                                            $resultado->codigoError = $this->conexion->errno;
+                                            $resultado->mensajeError = __FUNCTION__.". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                                            break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        $resultado->mensajeError = __FUNCTION__.". Falló el enlace de parámetros";
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    $resultado->codigoError = $this->conexion->errno;
+                                    $resultado->mensajeError = __FUNCTION__.". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                                    break;
+                                }
+                            }
+                            
+                        }
+                        
+                        
+                    }
+                    else
+                    {
+                        $resultado->codigoError = $this->conexion->errno;
+                        $resultado->mensajeError = __FUNCTION__.". Falló la ejecución update (" . $this->conexion->errno . ") " . $this->conexion->error;
+                        break;
+                    }
+                }
+                else
+                {
+                    $resultado->mensajeError = "Falló el enlace de parámetros update";
+                    break;
+                }
+            }
+            else
+            {
+                $resultado->codigoError = $this->conexion->errno;
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                break;
+            }
+                    
+        }
         return $resultado;
     }
     

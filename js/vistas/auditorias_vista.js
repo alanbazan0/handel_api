@@ -31,10 +31,28 @@ class AuditoriasVista extends CatalogoVista
 		this.crearFecha();
 		
 		
-	
+		$(window).data("_this",this);
+		$(window).focusin(this.enfocarVentana);
 
 	}
+	
+	enfocarVentana()
+	{
+		var _this = $(window).data("_this");
+		if(_this._registroSeleccionado !=null)
+		{
+			if(_this.ejecutandoAuditoriaId!="")
+			{
+				_this.ejecutandoAuditoriaId = "";
+				_this.consultarPorLlaves();
+			}
+		}
+	}
 
+	consultarPorLlaves()
+	{
+		this.presentador.consultarPorLlaves();
+	}
 	
 	
 	inicializarEventosTabla(tbody, table)
@@ -71,7 +89,25 @@ class AuditoriasVista extends CatalogoVista
 				_this.imprimirReporte();
 			}
 		});
+		
+		$(tbody).on("click", "button.exportarActionTracker", function()
+		{			
+			var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.exportarActionTracker();
+			}
+		});
 	}
+	
+	
 	
 	ejecutar()
 	{
@@ -81,11 +117,20 @@ class AuditoriasVista extends CatalogoVista
 		this.createNewFormElement(submitForm, "modo", Modo.CAMBIO);
 		submitForm.target= "auditoria" + Math.floor(Math.random()*10000);
 		submitForm.submit();
+		this.ejecutandoAuditoriaId = this._llaves.id;
 	}
 	
 	imprimirReporte()
 	{
 		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_auditoria.php");
+		this.createNewFormElement(submitForm, "auditoriaId", JSON.stringify(this._llaves.id));	 
+	    submitForm.target= "_blank";
+	    submitForm.submit();
+	}
+	
+	exportarActionTracker()
+	{
+		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/excel/action_tracker.php");
 		this.createNewFormElement(submitForm, "auditoriaId", JSON.stringify(this._llaves.id));	 
 	    submitForm.target= "_blank";
 	    submitForm.submit();
@@ -124,21 +169,36 @@ class AuditoriasVista extends CatalogoVista
 		this.tabla.columnas = [
 			{longitud:50, 	titulo:"",   	alias:"icono", alineacion:"D", itemRenderer:this.renderIcono},
 			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
-			{longitud:200, 	titulo:"Plantilla",   alias:"plantillaNombre", alineacion:"I" }, 		
+			{longitud:200, 	titulo:"Plantilla",   alias:"plantillaNombre", alineacion:"I" }, 
+			{longitud:200, 	titulo:"Seguimiento iniciado",   alias:"seguimiento", alineacion:"D", itemRenderer:this.renderSeguimiento},		
 			{longitud:300, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" }, 	
 			{longitud:250, 	titulo:"Fecha ejecución",   alias:"fechaEjecucion", alineacion:"I" },
 			{longitud:50, 	titulo:"Puntuacion",   alias:"puntuacion", alineacion:"C", itemRenderer: this.rendererPuntuacion },
 			{longitud:50, 	titulo:"Número",   alias:"contadorEmpresa", alineacion:"C" },
-			{longitud:200, 	titulo:"Referencia",   alias:"referencia", alineacion:"I" }
+			{longitud:200, 	titulo:"Referencia",   alias:"referencia", alineacion:"I" },
+			{longitud:50, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderExportarActionTracker}
+			
 		]
 		
 		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Ejecutar'  type='button' class='ejecutar btn-circle mr-0 botones-icon btn btn-sm float-left btn-success active'><span  data-toggle='tooltip' class='fa fa-play-circle fa-lg'></span></button>" +
 		 								"<button data-toggle='tooltip' data-placemen='bottom' title='Reporte'  type='button' class='reporte btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fas fa-file-pdf fa-lg'></span></button>" +
 									"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
-		
+			
 		this.tabla.registros = [];
 	}
+	
+	renderSeguimiento(renglon, type, set)
+	{    
+		var id = "seguimientoCenter" + renglon.id;
+		var contenido = "";
+		if(renglon.seguimiento==1)
+			contenido += "<center id='"+id+"'><span class='fa fa-check fa-lg text-success'></span> "+renglon.fechaSeguimiento+"</center>";
+		else
+			contenido += "<center id='a"+id+"'>-</center>";
+	    return contenido;
+	}
+	
 	
 	rendererPuntuacion(renglon, type, set)
 	{    
@@ -546,6 +606,32 @@ class AuditoriasVista extends CatalogoVista
 		$('#ventanaSeccionesContenedor').fadeOut( this.velocidadAnimacion );
 	}
 	
+	set modelo(modelo)
+	{
+		if(this._registroSeleccionado)
+		{
+			this._registroSeleccionado.seguimiento = modelo.seguimiento;
+			this._registroSeleccionado.fechaSeguimiento = modelo.fechaSeguimiento;
+			
+			var id = "seguimientoCenter" + this._registroSeleccionado.id;
+			var contenido = "";
+			if(this._registroSeleccionado.seguimiento==1)
+				contenido = "<span class='fa fa-check fa-lg text-success'></span> "+this._registroSeleccionado.fechaSeguimiento;
+			else
+				contenido = "-";
+		    $("#"+ id).html(contenido);
+		}	
+	}
+	
+	renderExportarActionTracker(renglon, type, set)
+	{    
+		var contenido = "";
+		if(renglon.seguimiento == 1)
+		{
+			contenido += "<button data-toggle='tooltip' data-placemen='bottom' title='Action Tracker'  type='button' class='exportarActionTracker btn-circle mr-0 botones-icon btn btn-sm float-right btn-info active'><span  data-toggle='tooltip' class='fa fa-file-excel fa-lg'></span></button>";
+		}
+	    return contenido;
+	}
 	
 	
 }

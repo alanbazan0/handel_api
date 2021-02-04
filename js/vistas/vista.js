@@ -238,6 +238,13 @@ class Vista
 			
 	}
 	
+	cerrar()
+	{
+		 setTimeout(function(){
+			window.close();
+	    }, 1000);
+	}
+	
 	salirSesionCaducada()
 	{
 		console.log("Sesion caducada.");
@@ -1007,6 +1014,11 @@ class Vista
 		    if (minutes < 10) {minutes = "0"+minutes;}
 		    if (seconds < 10) {seconds = "0"+seconds;}
 		    return minutes+':'+seconds;
+		}
+		
+		cerrarConfirmacionEliminar()
+		{
+			swal.close();
 		}
 		
 }

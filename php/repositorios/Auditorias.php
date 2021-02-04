@@ -75,7 +75,14 @@ try
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);
             break;
-            
+            case 'iniciarSeguimiento':
+                $llaves = json_decode(REQUEST('llaves'));
+                $resultado = $repositorio->iniciarSeguimiento($llaves);
+            break;
+            case 'consultarSeguimiento':
+                $auditoriaId = REQUEST('auditoriaId');
+                $resultado = $repositorio->consultarSeguimiento($auditoriaId);
+                break;
             default:
                 $resultado->mensajeError = "Acción no válida";
             break;
