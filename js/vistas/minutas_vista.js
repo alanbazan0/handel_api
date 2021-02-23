@@ -661,10 +661,12 @@ class MinutasVista extends CatalogoVista
 				_this.ocultarIndicador();
 				$("body").append(html);
 				$("#modalAlta").on("hidden.bs.modal", function () {
+					$("#compartirGroup").show();
 					clearInterval(_this.cometariosIntervalId);
 					$("#modalAlta").remove();
 					_this._tareaEdicionFormulario = null;
 					_this.consultarNumeroComentariosTarea(listaTareas,minutaId, tareaId);
+					
 //					if($("#minutasSection").is(":visible"))
 //						_this.consultar();
 					
@@ -672,6 +674,7 @@ class MinutasVista extends CatalogoVista
 				
 				$("#modalAlta").on("show.bs.modal", function () 
 				{
+					$("#compartirGroup").hide();
 					_this._llavesTarea = {minutaId : minutaId, tareaId: tareaId};
 					_this.consultarTareaPorLlaves();
 					

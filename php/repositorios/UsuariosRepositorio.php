@@ -984,7 +984,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             $empresasIds = implode(",", $resultado->valor);
             
             $consulta =   $this->consultaBase .
-            " WHERE (U.empresa_id IN ($empresasIds)  AND U.permiso_saha = 1) " .
+            " WHERE (U.empresa_id IN ($empresasIds)) " .
             " OR U.tipo_usuario_id = 1  order by U.nombre, U.apellido";
         }
         

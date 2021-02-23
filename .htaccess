@@ -1,31 +1,12 @@
-# BEGIN custom php.ini PHP71
-<IfModule mod_suphp.c>
-    suPHP_ConfigPath /home/appshand/api.apps-handel.com
-</IfModule>
 
-#SetEnvIf Origin "^(.*\.apps-handel\.com)$" ORIGIN_SUB_DOMAIN=$1
-#<FilesMatch "\.(woff|pdf|woff2|html)$">
-#    Header set Access-Control-Allow-Origin "%{ORIGIN_SUB_DOMAIN}e" env=ORIGIN_SUB_DOMAIN
-#</FilesMatch>
+<IfModule mime_module>
+  AddHandler application/x-httpd-ea-php73 .php .php7 .phtml
+</IfModule>
 
 SetEnvIf Origin "^(.*\.apps-handel\.com)$" ORIGIN_SUB_DOMAIN=$1
 <FilesMatch "\.(woff|pdf|woff2|html)$">
 	Header set Access-Control-Allow-Origin: *
 </FilesMatch>
 
-
-
-
-# ----------------------------------------------------------------------
-# Allow loading of external fonts
-# ----------------------------------------------------------------------
-
-# END custom php.ini
-
-
-
 RewriteEngine on
-# Use PHP71 as default
-AddHandler application/x-httpd-php71 .php
-
 

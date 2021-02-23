@@ -185,6 +185,7 @@ try
                 $resultado = $repositorio->consultarUsuario($nombreUsuario,$contrasena);
                 if($resultado->valor!=null)
                 {
+                    $resultado->valor->contrasena = "*****";
                     $validarSeguridad = true;
                     if($validarSeguridad)
                     {

@@ -159,13 +159,13 @@ class PlantillasRepositorio extends Repositorio
       });
 	}
 	
-	insertarPregunta(contexto,funcion,plantillaId, seccionId, tipo)
+	insertarPregunta(contexto,funcion,plantillaId, seccionId, tipo, peso)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
           url: url,
           type: 'POST',
-          data: {accion : "insertarPregunta",plantillaId: plantillaId,seccionId: seccionId,tipo: tipo},
+          data: {accion : "insertarPregunta",plantillaId: plantillaId,seccionId: seccionId,tipo: tipo, peso:peso},
           success: function( data, textStatus, jQxhr )
           {
               funcion.call(contexto,data);

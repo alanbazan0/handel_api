@@ -67,6 +67,11 @@ class PlantillasVista extends CatalogoVista
 						$(this).sortable("cancel");;
 						event.stopPropagation();
 					}
+					else
+					{
+						pregunta.indice=indice;
+						_this.presentador.ordenarPreguntas(seleccion);
+					}
 				}
 				else
 				{
@@ -130,6 +135,7 @@ class PlantillasVista extends CatalogoVista
 	{
 		vista.presentador.actualizarValorPregunta(preguntaId,campo,valor);
 	}
+	
 	
 	cambiarCategoriasPregunta(preguntaId,categorias)
 	{

@@ -24,12 +24,14 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     {
         $this->conexion = $conexion;
         $this->consultaBase = " SELECT A.id, A.plantilla_id, P.nombre, IFNULL(DATE_FORMAT(A.fecha_ejecucion,'%d/%m/%Y %H:%i:%s'),'')fecha_ejecucion, A.empresa_id, E.nombre, IFNULL(E.nombre_corto,'')nombre_corto, A.contador_empresa,tipo_auditoria_id,
-                (SELECT SUM(porcentaje) / COUNT(*) as porcentaje
-                    FROM auditoria_preguntas AP
-                    	INNER JOIN preguntas P ON P.plantilla_id = AP.plantilla_id AND P.seccion_id = AP.seccion_id AND P.id = AP.pregunta_id
-                    WHERE P.tipo='e' AND auditoria_id = A.id) puntuacion, A.nivel_compromiso, A.implementacion, A.verificacion,
-                        TE.nivel_compromiso, TE.implementacion, TE.verificacion, 
-                        PS.nivel_compromiso, PS.implementacion, PS.verificacion, observaciones, buenas_practicas, seguimiento, IFNULL(DATE_FORMAT(A.fecha_seguimiento,'%d/%m/%Y %H:%i:%s'),'')fecha_seguimiento
+                (SELECT SUM(porcentaje) / COUNT(*) as porcentaje 
+                        FROM auditoria_secciones ASS
+                        	INNER JOIN auditorias A1 ON A1.id = ASS.auditoria_id
+                        	INNER JOIN secciones S ON S.plantilla_id = A1.plantilla_id AND S.id= ASS.seccion_id
+                        WHERE S.orden>1 AND A1.id = A.id ) puntuacion, 
+                A.nivel_compromiso, A.implementacion, A.verificacion,
+                TE.nivel_compromiso, TE.implementacion, TE.verificacion, 
+                PS.nivel_compromiso, PS.implementacion, PS.verificacion, observaciones, buenas_practicas, seguimiento, IFNULL(DATE_FORMAT(A.fecha_seguimiento,'%d/%m/%Y %H:%i:%s'),'')fecha_seguimiento
              FROM auditorias A 
              INNER JOIN plantillas P on A.plantilla_id = P.id 
             LEFT JOIN empresas E on A.empresa_id = E.id 
@@ -438,7 +440,8 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         if($resultado->correcto())
         {
             $this->conexion->commit();
-            $resultado->valor = $llaves->id;;
+            //$resultado->valor = $modelo->id;
+            //$resultado->valor = $modelo;
         }
         else
             $this->conexion->rollback();
@@ -813,7 +816,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("ssiisiiiiii",$seccion->hallazgo,$seccion->recomendacion, $seccion->responsable, $seccion->puntos, $seccion->puntosTotal, $seccion->porcentaje,$seccion->reporte, $seccion->notificacion,$auditoriaId,$plantillaId,$seccion->id))
+            if($sentencia->bind_param("ssiiisiiiii",$seccion->hallazgo,$seccion->recomendacion, $seccion->responsable, $seccion->puntos, $seccion->puntosTotal, $seccion->porcentaje,$seccion->reporte, $seccion->notificacion,$auditoriaId,$plantillaId,$seccion->id))
             {
                 if($sentencia->execute())
                 {
@@ -840,18 +843,18 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                                     else
                                     {
                                         $resultado->codigoError = $this->conexion->errno;
-                                        $resultado->mensajeError = __FUNCTION__. "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                                        $resultado->mensajeError = __FUNCTION__. ". Falló la ejecución insert(" . $this->conexion->errno . ") " . $this->conexion->error;
                                     }
                                 }
                                 else
                                 {
-                                    $resultado->mensajeError = __FUNCTION__. "Falló el enlace de parámetros";
+                                    $resultado->mensajeError = __FUNCTION__. ". Falló el enlace de parámetros insert";
                                 }
                             }
                             else
                             {
                                 $resultado->codigoError = $this->conexion->errno;
-                                $resultado->mensajeError = __FUNCTION__. "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                                $resultado->mensajeError = __FUNCTION__. ". Falló la preparación insert: (" . $this->conexion->errno . ") " . $this->conexion->error;
                             }
                         }
                         
@@ -862,18 +865,18 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 else
                 {
                     $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError =  __FUNCTION__. "Falló la ejecución update (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    $resultado->mensajeError =  __FUNCTION__. ". Falló la ejecución update (" . $this->conexion->errno . ") " . $this->conexion->error;
                 }
             }
             else
             {
-                $resultado->mensajeError =  __FUNCTION__. "Falló el enlace de parámetros update";
+                $resultado->mensajeError =  __FUNCTION__. ". Falló el enlace de parámetros update";
             }
         }
         else
         {
             $resultado->codigoError = $this->conexion->errno;
-            $resultado->mensajeError =  __FUNCTION__. "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            $resultado->mensajeError =  __FUNCTION__. ". Falló la preparación update: (" . $this->conexion->errno . ") " . $this->conexion->error;
         }
             
             
@@ -2605,20 +2608,25 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                                    
                                     if($respuesta->$tipo==1)
                                     {
-                                        $departamento = $respuesta->departamentoNombre;
-                                        if($departamento=="")
-                                            $departamento = "No asignado";
-                                        $observacion = (object)['criterio' =>$criterio, 
-                                            'departamento' => $departamento, 
-                                            'responsableId' => $respuesta->responsable,
-                                            'hallazgo' => $respuesta->hallazgo,
-                                            'recomendacion' => $respuesta->recomendacion,
-                                            'seccionId' => $seccion->id,
-                                            'preguntaId' => $pregunta->preguntaId,
-                                            'respuestaId' => $respuesta->id
-                                        ];
-                                            
-                                        array_push($observaciones,$observacion);
+                                        if($respuesta->valor==1)
+                                        {
+                                            $departamento = $respuesta->departamentoNombre;
+                                            if($respuesta->responsable=="")
+                                                $departamento = "No asignado";
+                                            else if($departamento=="")
+                                                $departamento = "Sin departamento";
+                                            $observacion = (object)['criterio' =>$criterio, 
+                                                'departamento' => $departamento, 
+                                                'responsableId' => $respuesta->responsable,
+                                                'hallazgo' => $respuesta->hallazgo,
+                                                'recomendacion' => $respuesta->recomendacion,
+                                                'seccionId' => $seccion->id,
+                                                'preguntaId' => $pregunta->preguntaId,
+                                                'respuestaId' => $respuesta->id
+                                            ];
+                                                
+                                            array_push($observaciones,$observacion);
+                                        }
                                     }
                                 }
                             break;
@@ -2626,8 +2634,10 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                                 if($pregunta->$tipo==1)
                                 {
                                     $departamento = $pregunta->departamentoNombre;
-                                    if($departamento=="")
+                                    if($pregunta->responsable=="")
                                         $departamento = "No asignado";
+                                    else if($departamento=="")
+                                        $departamento = "Sin departamento";
                                     $observacion = (object)['criterio' =>$criterio, 
                                         'departamento' => $departamento, 
                                         'responsableId' => $pregunta->responsable,
@@ -2646,8 +2656,10 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 if($seccion->$tipo==1 && $seccion->hallazgo!="")
                  {
                      $departamento = $seccion->departamentoNombre;
-                     if($departamento=="")
-                     $departamento = "No asignado";
+                     if($seccion->responsable=="")
+                         $departamento = "No asignado";
+                     else if($departamento=="")
+                        $departamento = "Sin departamento";
                      $observacion = (object)['criterio' =>$criterio, 
                          'departamento' => $departamento, 
                          'responsableId' => $seccion->responsable,

@@ -147,7 +147,9 @@ class PlantillasPresentador extends CatalogoPresentador
 	 insertarPregunta(tipo)
 	 {
 		 this.vista.mostrarIndicador();	
-		 //var preguntaId = this.vista.llavesPregunta.preguntaId;
+		 var peso =  0;
+		 if(tipo=="sn")
+			peso = 1;
 		 this._repositorio.insertarPregunta(this,function(resultado)
 		 {		
 			 this.vista.ocultarIndicador();	
@@ -155,13 +157,13 @@ class PlantillasPresentador extends CatalogoPresentador
 			 if(resultado.mensajeError=="")
 			 {
 				 this.vista.mostrarMensaje("","Guardado.");
-				 this.vista.listaPreguntas.agregar(tipo,resultado.valor);
+				 this.vista.listaPreguntas.agregar(tipo,resultado.valor, peso);
 			 }
 			 else
 			 {
 				 this.vista.mostrarMensajeError("Error", resultado.mensajeError);
 			 }
-		 },this.vista.plantillaId, this.vista.seccionIdSeleccionada, tipo);
+		 },this.vista.plantillaId, this.vista.seccionIdSeleccionada, tipo, peso);
 	 }
 	 
 	 insertarResultado(resultado)

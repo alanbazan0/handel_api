@@ -128,7 +128,7 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
     }
     
     
-    public function insertarPregunta($plantillaId, $seccionId, $tipo)
+    public function insertarPregunta($plantillaId, $seccionId, $tipo, $peso)
     {
         $resultado =  $this->calcularIdPregunta($plantillaId, $seccionId,"id");
         if($resultado->correcto())
@@ -137,12 +137,14 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
             $resultado =  $this->calcularIdPregunta($plantillaId, $seccionId,"orden");
             if($resultado->correcto())
             {
+                if($peso=="" || $peso==null)
+                    $peso = 0;
                 $orden =  $resultado->valor;
                 $consulta = "INSERT INTO preguntas(plantilla_id, seccion_id, id, orden, tipo, texto, hallazgo, recomendacion, colapsado, practicas, observaciones, peso) " .
-                    "VALUE(?, ?, ?, ?, ?, '', '', '', 0,'','','')";
+                    "VALUE(?, ?, ?, ?, ?, '', '', '', 0,'','',?)";
                 if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    if($sentencia->bind_param("iiiis",$plantillaId,$seccionId, $id, $orden, $tipo))
+                    if($sentencia->bind_param("iiiisi",$plantillaId,$seccionId, $id, $orden, $tipo, $peso))
                     {
                         if($sentencia->execute())
                         {

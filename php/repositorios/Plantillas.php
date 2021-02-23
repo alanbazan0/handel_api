@@ -117,7 +117,8 @@ try
                 $plantillaId = REQUEST('plantillaId');
                 $seccionId = REQUEST('seccionId');
                 $tipo = REQUEST('tipo');
-                $resultado = $repositorio->insertarPregunta($plantillaId, $seccionId,  $tipo);
+                $peso = REQUEST('peso');
+                $resultado = $repositorio->insertarPregunta($plantillaId, $seccionId,  $tipo, $peso);
             break;
             case 'actualizarValor':
                 $plantillaId = REQUEST('plantillaId');

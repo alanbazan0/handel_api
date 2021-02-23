@@ -249,7 +249,10 @@ class UsuariosVista extends CatalogoVista
                 "empresaSelect": {required: !0},
                 "sedeSelect": {required: !0},
                 "puestoSelect": {required: !0},
-                "areaSelect": {required: !0}
+                "areaSelect": {required: !0},
+ 				"departamentoSelect": {required: !0}
+
+
                
             },
             messages: {
@@ -260,7 +263,8 @@ class UsuariosVista extends CatalogoVista
                 "empresaSelect": "Por favor seleccione una empresa",
                 "sedeSelect": "Por favor seleccione una sede",
                 "puestoSelect": "Por favor seleccione un puesto",
-                "areaSelect": "Por favor seleccione un área"
+                "areaSelect": "Por favor seleccione un área",
+				"departamentoSelect": "Por favor seleccione un departamento"
                 	
                 
             },
@@ -294,7 +298,8 @@ class UsuariosVista extends CatalogoVista
                 "empresaSelect": {required: !0},
                 "sedeSelect": {required: !0},
                 "puestoSelect": {required: !0},
-                "perfilSelect": {required: !0}
+                "perfilSelect": {required: !0},
+				"departamentoSelect": {required: !0}
                
             },
             messages: {
@@ -305,7 +310,8 @@ class UsuariosVista extends CatalogoVista
                 "empresaSelect": "Por favor seleccione una empresa",
                 "sedeSelect": "Por favor seleccione una sede",
                 "puestoSelect": "Por favor seleccione un puesto",
-                "perfilSelect": "Por favor seleccione un perfil"
+                "perfilSelect": "Por favor seleccione un perfil",
+				"departamentoSelect": "Por favor seleccione un departamento"
                 	
                 
             },

@@ -398,6 +398,7 @@ function actualizar($modelo,$conexion,$repositorio,$diaLimite)
         {
             if(!$modelo->cambioArchivo)
                 $nombreArchivoSubido = $modelo->nombreArchivo;
+            $nombreArchivoSubido = str_replace(" ","_",$nombreArchivoSubido);
         }
         
         $conexion->autocommit(FALSE);
