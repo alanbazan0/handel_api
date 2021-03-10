@@ -661,7 +661,7 @@ class PlantillasVista extends CatalogoVista
 		{
 			//this.listaSecciones.eliminarSeccion(seccionId);
 			//this.confirmar("¿Desea eliminar esta sección?",this.listaSecciones,this.listaSecciones.eliminarSeccion,seccionId);
-			var _this = this;d
+			var _this = this;
 			this.confirmar("¿Desea eliminar esta sección?",this,function(seccionId)
 			{
 				_this._llavesSeccion = {plantillaId : _this.plantillaId, seccionId: seccionId};

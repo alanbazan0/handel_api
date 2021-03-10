@@ -1,5 +1,6 @@
 <?php
 use php\clases\AdministradorConexion;
+use php\clases\CodigoError;
 use php\clases\JsonMapper;
 use php\modelos\Auditoria;
 use php\repositorios\AuditoriasRepositorio;
@@ -28,68 +29,96 @@ $resultado = new Resultado();
 $conexion=null;
 try
 {
-    $conexion = $administrador_conexion->abrir();
-    if($conexion)
+    session_start();
+    $usuario = null;
+    if(isset($_SESSION['usuario']))
+        $usuario = $_SESSION['usuario'];
+    if($usuario!=null)
     {
-        $accion = REQUEST('accion');
-        $repositorio = new AuditoriasRepositorio($conexion);
-        switch ($accion)
-        {           
-            case 'insertar':               
-                $json = json_decode(REQUEST('modelo'));
-                $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Auditoria());         
-                $resultado = $repositorio->insertar($modelo);                
-            break;
-            case 'actualizar':
-                $json = json_decode(REQUEST('modelo'));
-                $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Auditoria());
-                $resultado = $repositorio->actualizar($modelo) ;
-            break;
-            case 'consultar':
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultar($criteriosSeleccion);               
-            break;
-            case 'consultarPorLlaves':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->consultarPorLlaves($llaves);
-            break;    
-            case 'consultarPlantillaId':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->consultarPorLlaves($llaves);
-            break;
-            case 'consultarValoresSeccion':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->consultarValoresSeccion($llaves);
-            break;     
-            case 'consultarValoresSecciones':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->consultarValoresSecciones($llaves);
-            break;     
-            case 'consultarPorcentajesCumplimientoSeccion':
-                $auditoriaId = REQUEST('auditoriaId');
-                $resultado = $repositorio->consultarPorcentajesCumplimientoSeccion($auditoriaId);
-            break;     
-            case 'eliminar':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->eliminar($llaves);
-            break;
-            case 'iniciarSeguimiento':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->iniciarSeguimiento($llaves);
-            break;
-            case 'consultarSeguimiento':
-                $auditoriaId = REQUEST('auditoriaId');
-                $resultado = $repositorio->consultarSeguimiento($auditoriaId);
+        $conexion = $administrador_conexion->abrir();
+        if($conexion)
+        {
+            $accion = REQUEST('accion');
+            $repositorio = new AuditoriasRepositorio($conexion);
+            switch ($accion)
+            {           
+                case 'insertar':               
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Auditoria());         
+                    $resultado = $repositorio->insertar($modelo);                
                 break;
-            default:
-                $resultado->mensajeError = "Acción no válida";
-            break;
-            
+                case 'actualizar':
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Auditoria());
+                    $resultado = $repositorio->actualizar($modelo) ;
+                break;
+                case 'consultar':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultar($criteriosSeleccion);               
+                break;
+                case 'consultarActivasPorUsuario':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarActivasPorUsuario($criteriosSeleccion,$usuario);
+                break;
+                case 'consultarRecomendacionesPendientesUsuario':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarRecomendacionesPendientesUsuario($llaves,$usuario);
+                break;
+                case 'consultarAvancesRecomendacion':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarAvancesRecomendacion($llaves,$usuario);
+                break;
+                case 'consultarArchivosAvance':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarArchivosAvance($llaves,$usuario);
+                break;
+                case 'consultarPorLlaves':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarPorLlaves($llaves);
+                break;    
+                case 'consultarPlantillaId':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarPorLlaves($llaves);
+                break;
+                case 'consultarValoresSeccion':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarValoresSeccion($llaves);
+                break;     
+                case 'consultarValoresSecciones':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarValoresSecciones($llaves);
+                break;     
+                case 'consultarPorcentajesCumplimientoSeccion':
+                    $auditoriaId = REQUEST('auditoriaId');
+                    $resultado = $repositorio->consultarPorcentajesCumplimientoSeccion($auditoriaId);
+                break;     
+                case 'eliminar':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->eliminar($llaves);
+                break;
+                case 'iniciarSeguimiento':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->iniciarSeguimiento($llaves);
+                break;
+                case 'consultarSeguimiento':
+                    $auditoriaId = REQUEST('auditoriaId');
+                    $resultado = $repositorio->consultarSeguimiento($auditoriaId);
+                    break;
+                default:
+                    $resultado->mensajeError = "Acción no válida";
+                break;
+                
+            }
         }
     }
-    
+    else
+    {
+        $resultado->mensajeError = "La sesión caducó. Inicie sesión e intente de nuevo.";
+        $resultado->codigoError = CodigoError::SESION_CADUCADA;
+    }
+        
 }
 catch(Exception $e)
 {   

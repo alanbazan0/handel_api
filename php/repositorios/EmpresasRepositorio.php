@@ -5,8 +5,8 @@ use php\interfaces\IEmpresasRepositorio;
 use php\modelos\Empresa;
 use php\modelos\Resultado;
 
-include "../interfaces/IEmpresasRepositorio.php";
-include "../modelos/Empresa.php";
+require_once("../interfaces/IEmpresasRepositorio.php");
+require_once("../modelos/Empresa.php");
 require_once("RepositorioBase.php");
 require_once("../clases/TipoUsuario.php");
 require_once("../clases/Resultado.php");

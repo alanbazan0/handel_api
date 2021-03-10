@@ -61,23 +61,6 @@ class SeguimientoPresentador extends CatalogoPresentador
 		
 	 }
 	 
-	 consultarTiposArea()	
-	 {
-		 var repositorio = new TiposAreaRepositorio(this);		
-		 repositorio.consultar(this,this.consultarTiposAreaResultado,null);
-	 }
-	 
-	 consultarTiposAreaResultado(resultado)
-	 {
-		if(resultado.mensajeError=="")
-		{
-			this.vista.tiposArea= resultado.valor;
-			
-		}
-		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-		
-	 }
 	 
 	 consultarEmpresasCriterio()	
 	 {
@@ -117,8 +100,60 @@ class SeguimientoPresentador extends CatalogoPresentador
 
 	consultar()
 	{
-		
+		vista.mostrarIndicador();
+		var repositorio = new AuditoriasRepositorio();
+		repositorio.consultarActivasPorUsuario(this, function(resultado){
+			vista.ocultarIndicador();
+			if(resultado.mensajeError=="")
+			{
+				vista.auditorias = resultado.valor;
+			}
+			else
+				vista.mostrarMensajeError("Error",resultado.mensajeError)
+		});
 	}	
+	
+	consultarRecomendacionesPendientesUsuario()
+	{
+		vista.mostrarIndicador();
+		//var repositorio = new AuditoriasRepositorio();
+		this._repositorio.consultarRecomendacionesPendientesUsuario(this, function(resultado){
+			vista.ocultarIndicador();
+			if(resultado.mensajeError=="")
+			{
+				vista.recomendaciones = resultado.valor;
+			}
+			else
+				vista.mostrarMensajeError("Error",resultado.mensajeError)
+		},this.vista.llaves);
+	}
+	
+	consultarAvancesRecomendacion()	
+	 {
+		 this._repositorio.consultarAvancesRecomendacion(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.avances = resultado.valor;				
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },this.vista.llavesRecomendacion);
+	 }
+
+	consultarArchivosAvance()	
+	 {
+		 this._repositorio.consultarArchivosAvance(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.archivos = resultado.valor;				
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },this.vista.llavesAvance);
+	 }
+	 
 	
 	 
 }

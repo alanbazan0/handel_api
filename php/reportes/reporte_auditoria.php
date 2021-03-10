@@ -9,13 +9,14 @@ require('../vendor/fpdf181/fpdf.php');
 include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/AuditoriasRepositorio.php';
-include '../repositorios/EmpresasRepositorio.php';
+require_once('../repositorios/EmpresasRepositorio.php');
 require_once('../highcharts/highchartutils.php');
 
 class VariableStream
 {
     private $varname;
     private $position;
+    
     
     function stream_open($path, $mode, $options, &$opened_path)
     {
@@ -70,6 +71,8 @@ class PDF extends FPDF
     private $empresa;
     private $secciones;
     private $conexion;
+    private $apiKey = "AIzaSyB7dydU6J78km_U76v44CHP5M3vol2igM8";
+   // private $apiKey = "AIzaSyB0xfZC35A5kb5qr8HR7uya8KrZf5OyER0";
     
     function __construct($orientation='P', $unit='mm', $format='A4')
     {
@@ -447,14 +450,45 @@ class PDF extends FPDF
                          $lat =   str_replace('lat:','',$lat);
                          $lng =   str_replace('lng:','',$lng);
                          
-                         $imagen = "http://maps.googleapis.com/maps/api/staticmap?zoom=13&size=400x200&maptype=roadmap&markers=color:red|label:Ubicación|$lat,$lng&key=AIzaSyB7dydU6J78km_U76v44CHP5M3vol2igM8";
+                         
+                        //$imagen = "https://maps.googleapis.com/maps/api/staticmap?zoom=13&size=400x200&maptype=roadmap&markers=color:red|label:Ubicación|$lat,$lng&key=$this->apiKey";
                          
                          
-                         $this->setY($this->GetY() + 15,$altoFoto,null);
-                         $logo = file_get_contents($imagen);
+                         $errLevel = error_reporting(E_ALL ^ E_WARNING);
                          
-                         if($logo!=null)
-                            $this->MemImage($logo, 50, null);
+                         
+                        // $imagen = "https://maps.googleapis.com/maps/api/staticmap?zoom=13&size=400x200&maptype=roadmap&markers=color:red|label:Ubicación|$lat,$lng&key=$this->apiKey";
+                         //$logo = file_get_contents($imagen);
+                         
+                         $query_array = array (
+                             'zoom' => 13,
+                             'size' => "400x200",
+                             'maptype' => "roadmap",
+                             'markers' => "color:red|label:Ubicación|$lat,$lng",
+                             'key' => $this->apiKey
+                          );
+                         $query = http_build_query($query_array);
+                         $logo = file_get_contents("https://maps.googleapis.com/maps/api/staticmap?" . $query);
+                         
+                         error_reporting($errLevel);
+                         $error = error_get_last();
+                         if ( $error["type"] == E_WARNING)
+                         {
+                             $this->Ln();
+                             $this->SetTextColor(0, 0, 0);
+                             $this->SetFillColor(242, 242, 242);
+                             $this->SetFont($this->font, 'B', 10);
+                             $this->Cell(170, 10,$this->texto("Ocurrió un error al cargar el mapa"), $borde, 0, 'L',1);
+                         }
+                         else
+                         {
+                             $this->setY($this->GetY() + 15,$altoFoto,null);
+                             if($logo!=null)
+                                 $this->MemImage($logo, 50, null);
+                         }
+                         
+                         
+                         
                      }  
                      
                    

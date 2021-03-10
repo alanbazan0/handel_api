@@ -19,6 +19,7 @@ class Tabla
 		this._ajustarColumnas = false;
 		this._botones = [];
 		this._campoId = "id";
+		this.tamanoPagina= 100;
 	}
 	
 	set botones(botones)
@@ -197,7 +198,7 @@ class Tabla
 			    dom: 'Bfrtip',
 			    "info":true,
 		        "searching":this._buscar,
-		        "pageLength": 25,
+		        "pageLength": this.tamanoPagina,
 				"destroy":true,
 				"responsive":{details: true},
 			    "select":true,

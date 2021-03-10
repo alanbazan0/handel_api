@@ -76,8 +76,7 @@ class InicioSesionVista extends Vista
             },
             rules: {
                 "nombreUsuarioInput": {
-                    required: !0,
-                    email: !0
+                    required: !0
                 },
                 "contrasenaInput": {
                     required: !0

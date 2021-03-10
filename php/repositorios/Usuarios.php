@@ -114,6 +114,11 @@ try
                 $empresaId = REQUEST('empresaId');
                 $resultado = $repositorio->consultarUsuariosCorportarivoYAdministradoresPorEmpresa($empresaId);
             break;
+            
+            case 'consultarUsuariosCorportarivoYAdministradoresPorEmpresaSIVAH':
+                $empresaId = REQUEST('empresaId');
+                $resultado = $repositorio->consultarUsuariosCorportarivoYAdministradoresPorEmpresaSIVAH($empresaId);
+                break;
             case 'consultarPorEmpresaSede':
                 session_start();
                 $usuario = null;
@@ -233,18 +238,18 @@ try
                                         }
                                     break;
                                     case "SIVAH":
-                                        if($resultado->valor->tipoUsuarioId == TipoUsuario::ADMINISTRADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::COORDINADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::SUPERVISOR)
-                                        {
+                                        //if($resultado->valor->tipoUsuarioId == TipoUsuario::ADMINISTRADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::COORDINADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::SUPERVISOR)
+                                       // {
                                             $_SESSION['usuario']=$resultado->valor;
                                             $historialAccesoRepositorio = new HistorialAccesoRepositorio($conexion);
                                             $historialAccesoRepositorio->insertar($nombreUsuario,$aplicacionId,$aplicacionVersion);
-                                        }
-                                        else
-                                        {
-                                            $resultado->valor = null;
-                                            $resultado->mensajeError="El acceso a la plataforma en linea esta restringido a usuarios autorizados, si necesita ingresar para realizar cambios por favor solicite los cambios con su supervisor autorizado.";
-                                            unset($_SESSION['usuario']);
-                                        }
+//                                         }
+//                                         else
+//                                         {
+//                                             $resultado->valor = null;
+//                                             $resultado->mensajeError="El acceso a la plataforma en linea esta restringido a usuarios autorizados, si necesita ingresar para realizar cambios por favor solicite los cambios con su supervisor autorizado.";
+//                                             unset($_SESSION['usuario']);
+//                                         }
                                     break;
                                     case "10y7":
                                         if($aplicacionVersion=="html")
