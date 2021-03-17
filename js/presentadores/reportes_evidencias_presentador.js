@@ -7,18 +7,23 @@ class ReportesEvidenciasPresentador extends CatalogoPresentador
 	 
 	 consultar()
 	 {
-		 this.vista.mostrarIndicador();
-		 this._repositorio.consultarAnosMeses(this,function(resultado)
-		 {
-			 this.vista.ocultarIndicador();	
-			if(resultado.mensajeError=="")
-			{
-				this.validarMeses(resultado.valor);
-				this.vista.datos = resultado.valor;
-			}
-			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-		 },{supervisorCoordinadorId: this.vista.criteriosSeleccion.supervisorCoordinadorId});
+		if(this.vista.criteriosSeleccion.supervisorCoordinadorId!=null)
+		{
+			 this.vista.mostrarIndicador();
+			 this._repositorio.consultarAnosMeses(this,function(resultado)
+			 {
+				 this.vista.ocultarIndicador();	
+				if(resultado.mensajeError=="")
+				{
+					this.validarMeses(resultado.valor);
+					this.vista.datos = resultado.valor;
+				}
+				else
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			 },{supervisorCoordinadorId: this.vista.criteriosSeleccion.supervisorCoordinadorId});
+		}
+		else
+			vista.mostrarMensajeAdvertencia("Advertencia","Seleccione un coordinador o supervisor")
 	 }
 	 
 	 validarMeses(anoMes)

@@ -9,7 +9,7 @@ require('../vendor/fpdf181/fpdf.php');
 include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/AuditoriasRepositorio.php';
-include '../repositorios/EmpresasRepositorio.php';
+require_once('../repositorios/EmpresasRepositorio.php');
 require_once("../../vendor/autoload.php");
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;

@@ -98,7 +98,7 @@ class SeguimientoPresentador extends CatalogoPresentador
 			this.vista.mostrarMensaje("Error",resultado.mensajeError);
 	 }
 
-	consultar()
+	consultarAuditorias()
 	{
 		vista.mostrarIndicador();
 		var repositorio = new AuditoriasRepositorio();
@@ -153,6 +153,96 @@ class SeguimientoPresentador extends CatalogoPresentador
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		 },this.vista.llavesAvance);
 	 }
+	 
+	actualizarAvance()
+	 {
+		 this.vista.guardando = true;
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.actualizarAvance(this,function(resultado)
+		 {
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {	
+				this.vista.mostrarMensaje("Notificación","La información se actualizó correctamente.");
+				this.vista.salirModalArchivos();
+				this.consultarAvancesRecomendacion();
+			 }
+			 else
+				this.vista.mostrarMensajeError("Error","Ocurrió un error al actualizar el registro. " + resultado.mensajeError, resultado.codigoError);		
+			 setTimeout(function()
+			{
+				 this.vista.guardando = false;
+	         }, 2000);
+		 },this.vista.llavesRecomendacion.id, this.vista.modeloAvance);
+	 }
+	 
+
+	insertarAvance()
+	 {
+		 this.vista.guardando = true;
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.insertarAvance(this, function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+			{	
+				this.vista.mostrarMensaje("Notificación","La información se guardó correctamente. Id: " + resultado.valor);
+				this.vista.salirModalArchivos();
+				this.consultarAvancesRecomendacion();
+			}
+			else
+				this.vista.mostrarMensajeError("Error","Ocurrió un error al guardar el registro. " + resultado.mensajeError, resultado.codigoError);	
+			
+			 setTimeout(function()
+			{
+				 this.vista.guardando = false;
+	         }, 2000);
+			
+				
+		 },this.vista.llavesRecomendacion.id,this.vista.modeloAvance);	
+	 }
+	 
+	 consultarAvancePorLlaves()
+	 {
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.consultarAvancePorLlaves(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.modeloAvance = resultado.valor;
+			 }
+			 else
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError, resultado.codigoError);
+		 },this.vista.llavesAvance);
+	 }
+	 
+	 
+	eliminarAvance()
+	 {
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.eliminarAvance(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 this.vista.cerrarConfirmacionEliminar();
+			 if(resultado.mensajeError=="")
+			 {
+				
+				 this.vista.mostrarMensaje("Notificación","El avance se eliminó correctamente.");
+				 this.consultarAvancesRecomendacion();
+			 }
+			 else
+			 {
+				 if(resultado.codigoError==1451)
+					 this.vista.mostrarMensajeAdvertencia("Error","No se puede eliminar el registro porque esta relacionado con otro catálogo. ") ;
+				 else
+					 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar el registro. " + resultado.mensajeError, resultado.codigoError);
+			 }
+		 },this.vista.llavesAvance);
+	 }
+	 
+	 
+	
 	 
 	
 	 

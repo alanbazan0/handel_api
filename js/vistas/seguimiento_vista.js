@@ -4,9 +4,7 @@ class SeguimientoVista extends CatalogoVista
 	{	
 		super(ventana);
 		this.presentador = new SeguimientoPresentador(this);
-		//this._urlFormulario = "html/formularios/areas.php";
 		this.consultoGrid = false;
-		//this.recomendacionesTabla = new Tabla("recomendacionesTabla");	
 	}
 	
 	inicializar()
@@ -50,10 +48,10 @@ class SeguimientoVista extends CatalogoVista
 			
 			this.recomendacionesTabla.columnas = [
 				//º	{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"C" },
-					{longitud:80, 	titulo:"Fecha de creación",   alias:"fechaAlta", alineacion:"I" }, 
-					{longitud:400, 	titulo:"Acciones",   alias:"titulo", alineacion:"I" }, 	
+					{longitud:70, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" }, 
+					{longitud:300, 	titulo:"Acciones",   alias:"titulo", alineacion:"I" }, 	
 					{longitud:110, 	titulo:"% Cumplimiento",   alias:"cumplimiento", alineacion:"C", itemRenderer: this.rendererCumplimiento  }, 	
-					{longitud:80, 	titulo:"Fecha compromiso",   alias:"fechaVencimiento", alineacion:"I" }, 	
+					{longitud:70, 	titulo:"Fecha compromiso",   alias:"fechaVencimiento", alineacion:"C" }, 	
 					//{longitud:50, 	titulo:"Número",   alias:"contadorEmpresa", alineacion:"C" },
 					//{longitud:200, 	titulo:"Referencia",   alias:"referencia", alineacion:"I" },
 					
@@ -61,8 +59,8 @@ class SeguimientoVista extends CatalogoVista
 					
 			if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR || this.usuario.tipoUsuarioId == TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId == TipoUsuario.SUPERVISOR)
 			{
-				this.recomendacionesTabla.columnas.push({longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoUsuario});
-				this.recomendacionesTabla.columnas.push({longitud:100, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I"});
+				this.recomendacionesTabla.columnas.push({longitud:40, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoUsuario});
+				this.recomendacionesTabla.columnas.push({longitud:120, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I", itemRenderer: this.renderNombreUsuario});
 			}
 			
 					
@@ -81,7 +79,13 @@ class SeguimientoVista extends CatalogoVista
 		{
 			var fecha = new Date();
 			//if($("#mesSelectCriterio").val()==  fecha.getMonth() +1 && $("#anoSelectCriterio").val() ==fecha.getFullYear() )
-			contenido += "<button data-toggle='tooltip' data-placemen='bottom' title='Avance'  type='button' class='avance btn-circle mr-0 botones-icon btn btn-sm float-right btn-info active'><span  data-toggle='tooltip' class='fa fa-flag-checkered fa-lg'></span></button>";
+			contenido += "<button data-toggle='tooltip' data-placemen='bottom' title='Avance'  type='button' class='avance btn-circle mr-0 botones-icon btn btn-sm btn-info'><span  data-toggle='tooltip' class='fa fa-flag-checkered fa-lg'></span></button>";
+		}
+		else
+		{
+			if(vista.usuario.tiopUsuarioId != TipoUsuario.ADMINISTRADOR)
+				contenido += "<button data-toggle='tooltip' data-placemen='bottom' title='Avance'  type='button' class='avance btn-circle mr-0 botones-icon btn btn-sm btn-light'><span  data-toggle='tooltip' class='fas fa-eye fa-lg'></span></button>";
+
 		}
 	    return contenido;
 	}
@@ -94,10 +98,24 @@ class SeguimientoVista extends CatalogoVista
 			foto = renglon.fotoPerfil;
 		else
 			foto = renglon.fotoPerfil+"?"+vista.time;
-		
-		var url = HANDEL_API+ "/"+foto;
-		contenido += "<center><img src='" + url + "' style='width:30px;height:30px;border-radius: 50%'></img></center>";
+		if(renglon.usuarioId!=null)
+		{
+			var url = HANDEL_API+ "/"+foto;
+			contenido += "<center><img src='" + url + "' style='width:30px;height:30px;border-radius: 50%'></img></center>";
+		}		
 	    return contenido;
+	}
+	
+	renderNombreUsuario(renglon, type, set)
+	{    
+		if(renglon.usuarioId!=null)
+		{
+			return renglon.usuarioNombreCompleto;
+		}		
+		else
+		{
+			return "<small class='labelAdvertencia'><i class='fas fa-exclamation-triangle''></i> Sin asignar</small>";	
+		}
 	}
 	
 	
@@ -172,7 +190,40 @@ class SeguimientoVista extends CatalogoVista
 			}
 		});
 		
+		
+		
+		
 	}
+	
+	
+	eliminarAvance()
+	{ 
+		var _this = this;
+		swal({
+	            title: "\u00bfEst\u00E1 seguro de eliminar?",
+	            text: "Se eliminar\u00e1 este avance !!",
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Si, eliminar!!",
+	            cancelButtonText: "No",
+	            closeOnConfirm: false,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	 setTimeout(function(){
+	            		 _this.presentador.eliminarAvance();
+	 	            }, 1000);
+	            }
+	        });
+	}
+	
+	
+	
 	
 	inicializarEventosBotonesTablaAvances(tbody, table)
 	{
@@ -189,7 +240,24 @@ class SeguimientoVista extends CatalogoVista
 			if (_this._avanceSeleccionado != undefined)
 			{
 				_this._llavesAvance= _this.copiarPropiedadesObjeto(_this._avanceSeleccionado, ["id"]);
-				_this.mostrarFormularioAvance();
+				_this.mostrarFormularioAvance(Modo.CAMBIO);
+			}
+		});
+		
+		$(tbody).on("click", "button.eliminar", function()
+		{
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+		    _this._avanceSeleccionado  = table.row( tr ).data();
+			if (_this._avanceSeleccionado != undefined)
+			{
+				_this._llavesAvance = _this.copiarPropiedadesObjeto(_this._avanceSeleccionado, ["id"]);
+				//_this._llavesRecomendacion.recomendacionId = _this._llaves.id;
+				_this.eliminarAvance();
 			}
 		});
 		
@@ -482,63 +550,136 @@ class SeguimientoVista extends CatalogoVista
 		var _this = this;
 		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/recomendaciones_avances.php",this, null, function()
 		{
+			$("#registrarAvanceButton").click(function(){_this.mostrarFormularioAvance(Modo.ALTA);});
+			$("#accionAvanceLabel").html(_this._recomendacionSeleccionada.titulo);
 			this.crearTablaAvances();
+			this.consultarAvances();
 			
-		},null,"avancesModal","","");
+		},null,"avancesModal","","guardarAvanceButton", function()
+		{
+			
+		});
 
 	}
 	
-	mostrarFormularioAvance()
+	mostrarFormularioAvance(modo)
 	{
-		//var _this = this;
+		var _this = this;
+		this.modoAvance = modo;
 		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/recomendaciones_avances_archivos.php",this, null, function()
 		{
 			this.crearTablaArchivos();
 			
-		},null,"archivosModal","","");
+			//$("#accionInput").val(_this._recomendacionSeleccionada.titulo);
+			$("#accionLabel").html(_this._recomendacionSeleccionada.titulo);
+			if(modo==Modo.CAMBIO)
+			{
+				this.consultarAvancePorLlaves();
+				this.consultarArchivos();
+			}
+			
+		},null,"archivosModal","","guardarAvanceButton",function()
+		{
+			if(modo==Modo.CAMBIO)	
+				this.actualizarAvance();
+			else
+				this.insertarAvance();
+		});
 
+	}
+	
+	consutarArchivos()
+	{
+		//this.presentador.consultarArchivos();
+	}
+	
+	actualizarAvance()
+	{
+		this.presentador.actualizarAvance();
+	}
+	
+	insertarAvance()
+	{
+		this.presentador.insertarAvance();	
+	}
+	
+	set modeloAvance(modeloAvance)
+	{
+		this._modeloAvance = modeloAvance;
+		$('#cumplimientoSelect').val(this._modeloAvance.cumplimiento);
+		$('#comentarioInput').val(this._modeloAvance.comentario);
+	}
+	
+	get modeloAvance()
+	{
+		var modelo = 
+		 {		
+			 cumplimiento:$('#cumplimientoSelect').val(),
+			 comentario:$('#comentarioInput').val()
+		 };
+		 if(this.modoAvance ==Modo.CAMBIO && this._modeloAvance!=null)
+			 modelo.id = this._modeloAvance.id;
+		 return modelo;
+	}
+	
+	consultarAvancePorLlaves()
+	{
+		this.presentador.consultarAvancePorLlaves();
 	}
 	
 	crearTablaAvances()
 	{
 		this.avancesTabla = new Tabla("avancesTabla");
 		this.avancesTabla.buscar = false;
-		this.avancesTabla.paginacion = false;
-		this.avancesTabla.columnas = [
-			{longitud:50, 	titulo:"Fecha",   alias:"fecha", alineacion:"C"} ,
-			{longitud:300, 	titulo:"% Cumplimiento",   alias:"cumplimiento", alineacion:"C", itemRenderer: this.rendererCumplimiento } ,
-			{longitud:50, 	titulo:"Evidencias",   alias:"nombreArchivo", alineacion:"C", itemRenderer:this.renderClip},
-			{longitud:300, 	titulo:"Comentarios",   alias:"comentario", alineacion:"I" } ,
+		this.avancesTabla.paginacion = true;
+		this.avancesTabla.alto = 300;
+		this.avancesTabla.columnas = [];
 		
-		]
-		this.avancesTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>";
+		this.avancesTabla.columnas.push({longitud:50, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"C"});
+		this.avancesTabla.columnas.push({longitud:110, 	titulo:"% Cumplimiento",   alias:"cumplimiento", alineacion:"C", itemRenderer: this.rendererCumplimiento});
+		this.avancesTabla.columnas.push({longitud:50, 	titulo:"Evidencias",   alias:"nombreArchivo", alineacion:"C", itemRenderer:this.renderClip});
+		this.avancesTabla.columnas.push({longitud:300, 	titulo:"Comentario",   alias:"comentario", alineacion:"I" });
+		this.avancesTabla.columnas.push({longitud:100, 	titulo:"Fecha de ultima modificación",   alias:"fechaModificacion", alineacion:"I" } );
+		
+		//if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR || this.usuario.tipoUsuarioId == TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId == TipoUsuario.SUPERVISOR)
+		//{
+			this.avancesTabla.columnas.push({longitud:40, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoUsuario});
+			this.avancesTabla.columnas.push({longitud:100, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I"});
+
+		//}
+		this.avancesTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
+												"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+
 
 	
 		this.avancesTabla.textoTablaVacia = "";
 		this.avancesTabla.registros = [];
 		
 		
-		this.consultarAvances();
+		
 	}
 	
 	crearTablaArchivos()
 	{
 		this.archivosTabla = new Tabla("archivosTabla");
+		this.archivosTabla.alto = 180;
 		this.archivosTabla.buscar = false;
 		this.archivosTabla.paginacion = false;
 		this.archivosTabla.columnas = [
 			{longitud:50, 	titulo:"",   alias:"nombre", alineacion:"C", itemRenderer:this.renderArchivo},
-			{longitud:100, 	titulo:"Evidencia",   alias:"nombre", alineacion:"I"},
+			{longitud:100, 	titulo:"",   alias:"nombre", alineacion:"I"},
 		
 		]
-		this.archivosTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>";
+		this.archivosTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
 	
-		this.archivosTabla.textoTablaVacia = "";
+		
+		this.archivosTabla.textoTablaVacia = "No hay archivos adjuntos";
+		this.archivosTabla.textoSinRegistros= "No hay archivos adjuntos";
 		this.archivosTabla.registros = [];
 		
 		
-		this.consultarArchivos();
+		
 	}
 	
 	renderClip(renglon, type, set)
@@ -635,6 +776,11 @@ class SeguimientoVista extends CatalogoVista
 		return iconoColor;
 	}
 
+	consultar()
+	{
+		if($("#auditoriasTabla").length!=0)
+			this.presentador.consultarAuditorias();
+	}
 
 	consultarAvances()
 	{
@@ -661,7 +807,7 @@ class SeguimientoVista extends CatalogoVista
 	
 	set archivos(archivos)
 	{
-		this.archivosTabla.textoTablaVacia = "No hay archivos asociados a este registro de avance";
+		//this.archivosTabla.textoTablaVacia = "No hay archivos asociados a este registro de avance";
 		this.archivosTabla.registros = archivos;
 		this.inicializarEventosBotonesTablaArchivos("#" + this.archivosTabla._id+"Table tbody",this.archivosTabla.datatable.DataTable());
 	}
@@ -686,10 +832,20 @@ class SeguimientoVista extends CatalogoVista
 			if (_this._archivoSeleccionado != undefined)
 			{
 				_this._llavesArchivo= _this.copiarPropiedadesObjeto(_this._archivoSeleccionado, ["id"]);
-				//_this.mostrarFormularioAvance();
 			}
 		});
 		
+	}
+	
+	set guardando(guardando)
+	{
+		super.guardando = guardando;
+		$("#guardarAvanceButton").attr("disabled",guardando);
+	}
+	
+	salirModalArchivos()
+	{
+		$('#archivosModal').modal('hide')
 	}
 }
 var vista = new SeguimientoVista(this);

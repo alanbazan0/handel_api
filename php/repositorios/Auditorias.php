@@ -3,6 +3,7 @@ use php\clases\AdministradorConexion;
 use php\clases\CodigoError;
 use php\clases\JsonMapper;
 use php\modelos\Auditoria;
+use php\modelos\Avance;
 use php\repositorios\AuditoriasRepositorio;
 use php\modelos\Resultado;
 
@@ -13,6 +14,7 @@ ini_set('display_errors', 1);
 include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
+include '../modelos/Avance.php';
 include '../repositorios/AuditoriasRepositorio.php';
 
 
@@ -105,7 +107,29 @@ try
                 case 'consultarSeguimiento':
                     $auditoriaId = REQUEST('auditoriaId');
                     $resultado = $repositorio->consultarSeguimiento($auditoriaId);
-                    break;
+                break;
+                case 'insertarAvance':
+                    $recomendacionId = REQUEST('recomendacionId');
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Avance());
+                    $resultado = $repositorio->insertarAvance($recomendacionId,$modelo,$usuario);
+                break;
+                case 'actualizarAvance':
+                    $recomendacionId = REQUEST('recomendacionId');
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Avance());
+                    $resultado = $repositorio->actualizarAvance($recomendacionId,$modelo,$usuario) ;
+                break;
+                case 'consultarAvancePorLlaves':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarAvancePorLlaves($llaves);
+                break;  
+                case 'eliminarAvance':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->eliminarAvance($llaves);
+                break;
                 default:
                     $resultado->mensajeError = "Acción no válida";
                 break;

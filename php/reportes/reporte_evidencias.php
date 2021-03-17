@@ -1512,7 +1512,7 @@ function graficaBarrasMesActualAnterior($title, $yTitle, $serieTitle, $rows, $xF
         )
     );
     
-    $url = 'http://export.highcharts.com/';
+    $url = 'https://export.highcharts.com/';
     
     $context  = stream_context_create( $options );
     

@@ -454,7 +454,7 @@ class PDF extends FPDF
                         //$imagen = "https://maps.googleapis.com/maps/api/staticmap?zoom=13&size=400x200&maptype=roadmap&markers=color:red|label:Ubicación|$lat,$lng&key=$this->apiKey";
                          
                          
-                         $errLevel = error_reporting(E_ALL ^ E_WARNING);
+                         //$errLevel = error_reporting(E_ALL ^ E_WARNING);
                          
                          
                         // $imagen = "https://maps.googleapis.com/maps/api/staticmap?zoom=13&size=400x200&maptype=roadmap&markers=color:red|label:Ubicación|$lat,$lng&key=$this->apiKey";
@@ -468,24 +468,26 @@ class PDF extends FPDF
                              'key' => $this->apiKey
                           );
                          $query = http_build_query($query_array);
-                         $logo = file_get_contents("https://maps.googleapis.com/maps/api/staticmap?" . $query);
+                         $imagen = "https://maps.googleapis.com/maps/api/staticmap?" . $query;
+                        // echo $imagen;
+                         $logo = file_get_contents($imagen);
                          
-                         error_reporting($errLevel);
-                         $error = error_get_last();
-                         if ( $error["type"] == E_WARNING)
-                         {
-                             $this->Ln();
-                             $this->SetTextColor(0, 0, 0);
-                             $this->SetFillColor(242, 242, 242);
-                             $this->SetFont($this->font, 'B', 10);
-                             $this->Cell(170, 10,$this->texto("Ocurrió un error al cargar el mapa"), $borde, 0, 'L',1);
-                         }
-                         else
-                         {
+                         //error_reporting($errLevel);
+                         //$error = error_get_last();
+//                          if ( $error["type"] == E_WARNING)
+//                          {
+//                              $this->Ln();
+//                              $this->SetTextColor(0, 0, 0);
+//                              $this->SetFillColor(242, 242, 242);
+//                              $this->SetFont($this->font, 'B', 10);
+//                              $this->Cell(170, 10,$this->texto("Ocurrió un error al cargar el mapa"), $borde, 0, 'L',1);
+//                          }
+//                          else
+                         //
                              $this->setY($this->GetY() + 15,$altoFoto,null);
-                             if($logo!=null)
-                                 $this->MemImage($logo, 50, null);
-                         }
+                              if($logo!=null)
+                                  $this->MemImage($logo, 50, null);
+                        //º }
                          
                          
                          
@@ -729,7 +731,7 @@ class PDF extends FPDF
             )
         );
         
-        $url = 'http://export.highcharts.com/';
+        $url = 'https://export.highcharts.com/';
         
         $context  = stream_context_create( $options );
         
@@ -836,7 +838,7 @@ class PDF extends FPDF
             )
         );
         
-        $url = 'http://export.highcharts.com/';
+        $url = 'https://export.highcharts.com/';
         
         $context  = stream_context_create( $options );
         
@@ -848,10 +850,12 @@ class PDF extends FPDF
             
         }
         else
-        {
+        {   
             $charturl = $url . $result;
             
         }
+        
+        
         return $charturl;
     }
     
@@ -1131,7 +1135,7 @@ class PDF extends FPDF
             )
         );
         
-        $url = 'http://export.highcharts.com/';
+        $url = 'https://export.highcharts.com/';
         
         $context  = stream_context_create( $options );
         
@@ -1252,7 +1256,7 @@ class PDF extends FPDF
             )
         );
         
-        $url = 'http://export.highcharts.com/';
+        $url = 'https://export.highcharts.com/';
         
         $context  = stream_context_create( $options );
         

@@ -1132,111 +1132,6 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         return $resultado;
     }
     
-//     private function insertarRespuestasNo($plantillaId,$secciones)
-//     {
-//         $resultado = new Resultado();
-        
-//         for ($i = 0; $i <  count($secciones); $i++)
-//         {
-//             $seccion = $secciones[$i];
-            
-//             for ($j = 0; $j < count($seccion->preguntas); $j++)
-//             {
-//                 $pregunta = $seccion->preguntas[$j];
-                
-//                 for ($k = 0; $k< count($pregunta->respuestas_no); $k++)
-//                 {
-//                     $respuesta = $pregunta->respuestas_no[$k];
-                    
-//                     $consulta = "INSERT INTO respuestas_no(plantilla_id, seccion_id, pregunta_id, id, texto, peso, hallazgo, recomendacion) " .
-//                         "VALUE(?, ?, ?, ?, ?, ?, ?, ?)";
-//                     if($sentencia = $this->conexion->prepare($consulta))
-//                     {
-//                         if($sentencia->bind_param("iiiisiss",$plantillaId,$seccion->id, $pregunta->id,$respuesta->id, $respuesta->texto,$respuesta->peso,$respuesta->hallazgo,$respuesta->recomendacion))
-//                         {
-//                             if($sentencia->execute())
-//                             {
-//                                 $sentencia->close();
-//                             }
-//                             else
-//                             {
-//                                 $resultado->codigoError = $this->conexion->errno;
-//                                 $resultado->mensajeError = "Falló la ejecución insertarRespuestasNo(" . $this->conexion->errno . ") " . $this->conexion->error;
-//                                 break;
-//                             }
-                            
-//                         }
-//                         else
-//                         {
-//                             $resultado->mensajeError = "Falló el enlace de parámetros";
-//                             break;
-//                         }
-//                     }
-//                     else
-//                     {
-//                         $resultado->codigoError = $this->conexion->errno;
-//                         $resultado->mensajeError = "Falló la preparación: insertarRespuestasNo(" . $this->conexion->errno . ") " . $this->conexion->error;
-//                         break;
-//                     }
-//                 }
-//             }
-            
-//         }
-//         return $resultado;
-//     }
-    
-//     private function insertarRespuestasSiCategorias($plantillaId,$secciones)
-//     {
-//         $resultado = new Resultado();
-        
-//         for ($i = 0; $i <  count($secciones); $i++)
-//         {
-//             $seccion = $secciones[$i];
-//             for ($j = 0; $j < count($seccion->preguntas); $j++)
-//             {
-//                 $pregunta = $seccion->preguntas[$j];
-//                 for ($k = 0; $k< count($pregunta->respuestas_si); $k++)
-//                 {
-//                     $respuesta = $pregunta->respuestas_si[$k];
-//                     for ($l = 0; $l< count($respuesta->categorias); $l++)
-//                     {
-//                         $categoria = $respuesta->categorias[$l];
-                        
-//                         $consulta = "INSERT INTO respuestas_si_categorias(plantilla_id, seccion_id, pregunta_id, respuesta_si_id, id, categoria_id) " .
-//                             "VALUE(?, ?, ?, ?, ?, ?)";
-//                         if($sentencia = $this->conexion->prepare($consulta))
-//                         {
-//                             if($sentencia->bind_param("iiiiii",$plantillaId,$seccion->id, $pregunta->id,$respuesta->id, $categoria->id, $categoria->categoriaId))
-//                             {
-//                                 if($sentencia->execute())
-//                                 {
-//                                     $sentencia->close();
-//                                 }
-//                                 else
-//                                 {
-//                                     $resultado->codigoError = $this->conexion->errno;
-//                                     $resultado->mensajeError = "Falló la ejecución insertarRespuestasSiCategorias(" . $this->conexion->errno . ") " . $this->conexion->error;
-//                                     break;
-//                                 }
-//                             }
-//                             else
-//                             {
-//                                 $resultado->mensajeError = "Falló el enlace de parámetros";
-//                                 break;
-//                             }
-//                         }
-//                         else
-//                         {
-//                             $resultado->codigoError = $this->conexion->errno;
-//                             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-//                             break;
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//         return $resultado;
-//     }
     
 //     private function insertarRespuestasNoCategorias($plantillaId,$secciones)
 //     {
@@ -1759,6 +1654,54 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
         
        return $resultado;
+    }
+    
+    public function consultarAvancePorLlaves($llaves)
+    {
+        $resultado = new Resultado();
+        ini_set('max_execution_time', 300);
+        $consulta = "SELECT RA.id, comentario, cumplimiento, IFNULL(DATE_FORMAT(RA.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, archivos
+                       FROM recomendaciones_avances RA
+                      WHERE id = ?
+                       ORDER BY RA.id";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$llaves->id))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $comentario, $cumplimiento, $fecha, $archivos ))   
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $registro =  (object)[
+                                "id" => $id,
+                                "comentario" => $comentario,
+                                "cumplimiento" => $cumplimiento,
+                                "fecha" => $fecha,
+                                "archivos" => $archivos
+                                
+                            ];
+                            $resultado->valor = $registro;
+                            
+                            $sentencia->close();
+                        }
+                        else
+                            $resultado->mensajeError = "No se encontró ningún resultado.";
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
     }
     
     public function consultarSeccionPorLlaves($llaves)
@@ -2772,10 +2715,10 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         $and = $this->and($filtros);
         $consulta = "SELECT RC.id, edt, titulo, responsable_id, U.nombre, U.apellido,  IFNULL(DATE_FORMAT(RC.fecha_alta,'%d/%m/%Y'),'')fechaAlta, prioridad, cumplimiento,  IFNULL(DATE_FORMAT(RC.fecha_vencimiento,'%d/%m/%Y'),'')fechaVencimiento, fecha_finalizacion
                        FROM recomendaciones RC 
-                       INNER JOIN usuarios U ON U.id =  RC.responsable_id
-                       INNER JOIN tipos_usuario TU ON TU.id = U.tipo_usuario_id
-                       INNER JOIN empresas E1 ON E1.id = U.empresa_id
-                       WHERE RC.cumplimiento!=100 $and 
+                       LEFT JOIN usuarios U ON U.id =  RC.responsable_id
+                       LEFT JOIN tipos_usuario TU ON TU.id = U.tipo_usuario_id
+                       LEFT JOIN empresas E1 ON E1.id = U.empresa_id
+                       WHERE RC.cumplimiento<100 $and 
                        ORDER BY TU.orden, U.nombre, RC.titulo";
 
         if($sentencia = $this->conexion->prepare($consulta))
@@ -2924,7 +2867,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         {
             case \TipoUsuario::USUARIO:
                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','operador'=>'IN','valor'=>$usuario->id]);
-                break;
+            break;
             case \TipoUsuario::SUPERVISOR:
                 if(isset($criteriosSeleccion->usuarioId) && $criteriosSeleccion->usuarioId!="")
                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','valor'=>$criteriosSeleccion->usuarioId]);
@@ -2938,7 +2881,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                             array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','operador'=>'IN','valor'=>$usuariosIds]);
                         }
                     }
-                    break;
+            break;
             case \TipoUsuario::COORDINADOR:
                     if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
                         array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E1', 'campo'=>'id','valor'=>$criteriosSeleccion->empresaId]);
@@ -2952,13 +2895,12 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                             array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E1', 'campo'=>'id','operador'=>'IN','valor'=>$empresasIds]);
                         }
                     }
-                    break;
+            break;
             case \TipoUsuario::ADMINISTRADOR:
                 if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'EM', 'campo'=>'id','valor'=>$criteriosSeleccion->empresaId]);
-                    
             break;
-             default:
+            default:
                  array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','operador'=>'IN','valor'=>$usuario->id]);
             break;
         }
@@ -2966,13 +2908,6 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'S', 'campo'=>'id','valor'=> $criteriosSeleccion->sedeId]);
         if(isset($criteriosSeleccion->departamentoId) && $criteriosSeleccion->departamentoId!="")
             array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'D', 'campo'=>'id','valor'=> $criteriosSeleccion->departamentoId]);
-//         if($agregarFiltrosFecha)
-//         {
-//             if(isset($criteriosSeleccion->ano)  && $criteriosSeleccion->ano!="")
-//                 array_push($filtros,(object)['tipoDato'=>'int','campo'=>'YEAR(E.fecha_alta)','valor'=>$criteriosSeleccion->ano]);
-//             if(isset($criteriosSeleccion->mes)  && $criteriosSeleccion->mes!="")
-//                 array_push($filtros,(object)['tipoDato'=>'int','campo'=>'MONTH(E.fecha_alta)','valor'=>$criteriosSeleccion->mes]);
-//         }
         return $filtros;
     }
     
@@ -2985,8 +2920,9 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         //array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'RC','campo'=>'auditoria_id','valor'=>$llaves->id]);
         //array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'RC','campo'=>'auditoria_id','valor'=>$llaves->id]);
         //$and = $this->and($filtros);
-        $consulta = "SELECT RA.id, comentario, cumplimiento, IFNULL(DATE_FORMAT(RA.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, archivos
-                       FROM recomendaciones_avances RA
+        $consulta = "SELECT RA.id, comentario, cumplimiento, IFNULL(DATE_FORMAT(RA.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta,IFNULL(DATE_FORMAT(RA.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, archivos, RA.usuario_id, U.nombre, U.apellido
+                     FROM recomendaciones_avances RA
+                        LEFT JOIN usuarios U ON RA.usuario_id = U.id
                       WHERE recomendacion_id = ?
                        ORDER BY RA.id";
         
@@ -2996,7 +2932,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $comentario, $cumplimiento, $fecha, $archivos ))
+                    if ($sentencia->bind_result($id, $comentario, $cumplimiento, $fechaAlta, $fechaModificacion, $archivos, $usuarioId, $usuarioNombre, $usuarioApellido ))
                     {
                         while($row = $sentencia->fetch())
                         {
@@ -3004,10 +2940,23 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                                 "id" => $id,
                                 "comentario" => $comentario,
                                 "cumplimiento" => $cumplimiento,
-                                "fecha" => $fecha,
-                                "archivos" => $archivos
+                                "fechaAlta" => $fechaAlta,
+                                "fechaModificacion" => $fechaModificacion,
+                                "archivos" => $archivos,
+                                "usuarioId" => $usuarioId,
+                                "usuarioNombre" => $usuarioNombre,
+                                "usuarioApellido" => $usuarioApellido
                                
                             ];
+                            
+                            $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
+                            //$registro->nombreId =  $registro->usuarioNombreCompleto ." (".$registro->id.")";
+                            $registro->fotoPerfil =  "../fotos/usuario". $registro->usuarioId .".jpg";
+                            if(file_exists($registro->fotoPerfil))
+                                $registro->fotoPerfil =  "php/fotos/usuario". $registro->usuarioId .".jpg";
+                            else
+                                $registro->fotoPerfil =  "php/fotos/default.jpg";
+                            
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -3073,6 +3022,133 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
             return $resultado;
+    }
+    
+    public function insertarAvance($recomendacionId,$modelo,$usuario)
+    {
+        $resultado =  $this->calcularId("id","recomendaciones_avances");
+        if($resultado->mensajeError=="")
+        {
+            $id = $resultado->valor;
+            $consulta = "INSERT INTO recomendaciones_avances(id, recomendacion_id, fecha_alta, fecha_modificacion, cumplimiento, comentario, usuario_id) " .
+                "VALUE(?, ?,NOW(), NOW(), ?, ?,?)";
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if( $sentencia->bind_param("iiisi", $id, $recomendacionId,$modelo->cumplimiento, $modelo->comentario, $usuario->id))
+                {
+                    if(!$sentencia->execute())
+                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = "Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        }
+        return $resultado;
+    }
+    
+    public function actualizarAvance($recomendacionId,$modelo,$usuario)
+    {
+        $resultado = new Resultado();
+        $consulta = " UPDATE recomendaciones_avances " .
+            "SET cumplimiento = ?, " .
+            "  comentario = ?, " .
+            "  fecha_modificacion= NOW(), " .
+            " usuario_id = ? " .
+            "WHERE id = ? ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("isii", $modelo->cumplimiento, $modelo->comentario,$usuario->id,$modelo->id ))
+            {
+                if($sentencia->execute())
+                {
+                    $resultado->valor=true;
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else  $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            return $resultado;
+    }
+    
+    public function eliminarAvance($llaves)
+    {
+        $this->conexion->autocommit(FALSE);
+        $resultado = new Resultado();
+        $resultado = $this->eliminarArchivosAvance($llaves->id);
+        if($resultado->correcto())
+        {
+            $consulta = "DELETE FROM recomendaciones_avances WHERE id = ?";
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($sentencia->bind_param('i',$llaves->id))
+                {
+                    if($sentencia->execute())
+                    {
+                        $resultado->valor = $llaves->id;
+                    }
+                    else
+                    {
+                        $resultado->codigoError = $this->conexion->errno;
+                        $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    }
+                }
+                else
+                    $resultado->mensajeError = 'Falló el enlace de parámetros';
+            }
+            else
+            {
+                $resultado->codigoError = $this->conexion->errno;
+                $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+        }
+        
+        if($resultado->correcto())
+        {
+            $this->conexion->commit();
+            $resultado->valor = $llaves->id;;
+        }
+        else
+            $this->conexion->rollback();
+            
+        return $resultado;
+    }
+    
+    public function eliminarArchivosAvance($avanceId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta ="DELETE FROM recomendaciones_avances_archivos WHERE avance_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$avanceId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
     }
     
 }

@@ -79,7 +79,7 @@ function getChartImage($type, $title, $yTitle, $serieTitle, $categories, $data)
       )
     );
 
-    $url = 'http://export.highcharts.com/';
+    $url = 'https://export.highcharts.com/';
 
     $context  = stream_context_create( $options );
 	
@@ -203,7 +203,7 @@ function toColumnChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$co
         )
     );
     
-    $url = 'http://export.highcharts.com/';
+    $url = 'https://export.highcharts.com/';
     
     $context  = stream_context_create( $options );
     
@@ -345,7 +345,7 @@ function toLineChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colo
         )
     );
     
-    $url = 'http://export.highcharts.com/';
+    $url = 'https://export.highcharts.com/';
     
     $context  = stream_context_create( $options );
     
@@ -438,7 +438,7 @@ function toPieChart( $title, $yTitle, $serieTitle, $rows, $xField, $yField, $col
         )
     );
     
-    $url = 'http://export.highcharts.com/';
+    $url = 'https://export.highcharts.com/';
     
     $context  = stream_context_create( $options );
     
@@ -482,7 +482,7 @@ function getImage($highchart)
   
  
 
-  $url = 'http://export.highcharts.com/';
+  $url = 'https://export.highcharts.com/';
 
   $context  = stream_context_create( $options );
   $result = file_get_contents( $url, false, $context );

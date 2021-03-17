@@ -16,6 +16,7 @@ class Tabla
 		this._buscar = true;
 		this._paginacion = true;
 		this._textoTablaVacia = "Ning&uacute;n dato disponible en esta tabla";
+		this._textoSinRegistros = "No se encontraron resultados";
 		this._ajustarColumnas = false;
 		this._botones = [];
 		this._campoId = "id";
@@ -36,6 +37,11 @@ class Tabla
 	set textoTablaVacia(textoTablaVacia)
 	{
 		this._textoTablaVacia = textoTablaVacia;
+	}
+	
+	set textoSinRegistros(textoSinRegistros)
+	{
+		this._textoSinRegistros = textoSinRegistros;	
 	}
 	
 	set ajustarColumnas(ajustarColumnas)
@@ -91,8 +97,18 @@ class Tabla
 	set registros(registros)
 	{
 		this._registros = registros;
+		var table = this.datatable.DataTable();
+		var datatable = $("#" + this._id);
+		var scrollBody = datatable.find('.dataTables_scrollBody');
+		//var scrollBody = $('.dataTables_scrollBody');
+		var scrollTop = scrollBody.scrollTop();
+		var scroller = table.scroller();
+		var scrollPos = scroller.pixelsToRow(scrollTop);
 		this.renderizar();
 		setTimeout(function(){$($.fn.dataTable.tables(true)).DataTable().columns.adjust();}, 1000);
+		if(scrollPos !=null)
+			table.draw().scroller.toPosition(this.scrollPos,false);
+			
 	}
 	
 	get registros()
@@ -188,6 +204,7 @@ class Tabla
 		
 		$('#'+this._id+"Table").DataTable( {
 			  data: this._registros,
+	 			
 			  "drawCallback": function( settings ) {
 				  $(".paginate_button").attr("href","#");
 			    },
@@ -213,9 +230,9 @@ class Tabla
 			    "language": {	         	 
 					"sProcessing":     "Procesando...",
 					"sLengthMenu":     "Mostrar _MENU_ registros",
-					"sZeroRecords":    "No se encontraron resultados",
+					"sZeroRecords":    this._textoSinRegistros,
 					"sEmptyTable":     this._textoTablaVacia,
-					"sInfo":           "Del _START_ al _END_ de  _TOTAL_ registros",
+					"sInfo":           "Del _START_ al _END_ de  _TOTAL_ registrots",
 					"sInfoEmpty":      "Del 0 al 0 de 0 registros",
 					"sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
 					"sInfoPostFix":    "",
