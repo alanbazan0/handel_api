@@ -295,6 +295,7 @@ class Vista
 	
 	mostrarIndicador()
 	{
+		$('#indicador').css('z-index', 10000);	
 		$('#indicador').show();				
 	}
 	
@@ -811,7 +812,7 @@ class Vista
 			return null;
 		}
 		
-		mostrarFormularioHTML(url,contexto,funcionConsultarPorLlaves, functionConsultarCombos,functionInicializarValidacionesHTML,id, formulario, guardarButton, funcionGuardar)
+		mostrarFormularioHTML(url,contexto,funcionConsultarPorLlaves, functionConsultarCombos,functionInicializarValidacionesHTML,id, formulario, guardarButton, funcionGuardar, funcionCerrar)
 		{
 			var modal = id;
 			if(modal==undefined || modal=="")
@@ -822,7 +823,7 @@ class Vista
 				guardarButton="guardarButton";
 			if($("#"+modal).length ==0)
 			{
-				this.renderizarFormularioHTML(url,contexto,funcionConsultarPorLlaves, functionConsultarCombos,functionInicializarValidacionesHTML,modal,formulario, guardarButton,funcionGuardar);
+				this.renderizarFormularioHTML(url,contexto,funcionConsultarPorLlaves, functionConsultarCombos,functionInicializarValidacionesHTML,modal,formulario, guardarButton,funcionGuardar,funcionCerrar);
 			}
 			else
 			{
@@ -831,7 +832,7 @@ class Vista
 			}
 		}
 		
-		renderizarFormularioHTML(url,contexto,funcionConsultarPorLlaves, functionConsultarCombos,functionInicializarValidacionesHTML,modal,formulario,guardarButton, funcionGuardar)
+		renderizarFormularioHTML(url,contexto,funcionConsultarPorLlaves, functionConsultarCombos,functionInicializarValidacionesHTML,modal,formulario,guardarButton, funcionGuardar, funcionCerrar)
 		{
 			//var url = this._urlFormulario;
 			this.mostrarIndicador();
@@ -842,6 +843,8 @@ class Vista
 				$("body").append(html);
 				$("#"+modal).on("hidden.bs.modal", function () {
 					$("#"+modal).remove();
+					if(funcionCerrar!=null)
+						funcionCerrar.call(contexto);
 				});
 				
 				$("#"+modal).on("show.bs.modal", function () {

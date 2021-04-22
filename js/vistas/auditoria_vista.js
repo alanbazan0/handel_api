@@ -369,13 +369,28 @@ class AuditoriaVista extends Vista
 	
 	get empresaId()
 	{
-		return this.listaPreguntas.empresaId;
+		return this.listaPreguntas.getValorCampo("empresaId");
 		
 	}
 	
 	get tipoAuditoriaId()
 	{
-		return this.listaPreguntas.tipoAuditoriaId;
+		return this.listaPreguntas.getValorCampo("tipoAuditoriaId");
+	}
+	
+	get sedeId()
+	{
+		return this.listaPreguntas.getValorCampo("sedeId");
+	}
+	
+	get fecha()
+	{
+		return this.listaPreguntas.getValorCampo("fecha");
+	}
+	
+	get hora()
+	{
+		return this.listaPreguntas.getValorCampo("hora");
 	}
 	
 	set modeloDatos(modeloDatos)
@@ -384,8 +399,24 @@ class AuditoriaVista extends Vista
 		$("#referenciaDiv").show();
 		if(modeloDatos!=null)
 		{
-			this.listaPreguntas.empresaId = modeloDatos.empresaId;
-			this.listaPreguntas.tipoAuditoriaId = modeloDatos.tipoAuditoriaId;
+			//this.listaPreguntas.empresaId = modeloDatos.empresaId;
+			this.listaPreguntas.setValorCampo("empresaId",modeloDatos.empresaId);
+			this.listaPreguntas.setValorCampo("tipoAuditoriaId",modeloDatos.tipoAuditoriaId);
+			//this.listaPreguntas.setValorCampo("sedeId",modeloDatos.sedeId);
+			this.listaPreguntas.setValorCampo("fecha",modeloDatos.fecha);
+			this.listaPreguntas.setValorCampo("hora",modeloDatos.hora);
+			
+			var _this = this;
+			var componenteSede = this.listaPreguntas.getComponenteCampoId("sedeId");
+			componenteSede.empresaId = modeloDatos.empresaId;
+			if(componenteSede!=null)
+				componenteSede.consultar(this,function(){
+						_this.listaPreguntas.setValorCampo("sedeId",modeloDatos.sedeId);
+				});	
+			//this.listaPreguntas.tipoAuditoriaId = modeloDatos.tipoAuditoriaId;
+			/*this.listaPreguntas.sedeId = modeloDatos.sedeId;
+			this.listaPreguntas.fecha = modeloDatos.fecha;
+			this.listaPreguntas.hora = modeloDatos.hora;*/
 			$("#referenciaLabel").html(modeloDatos.referencia);
 			this.listaPreguntas.seccionActual = modeloDatos.seccion;
 			if( modeloDatos.preguntas!=null)
@@ -460,7 +491,7 @@ class AuditoriaVista extends Vista
 			for(var i=0;  i  < componentesPreguntas.length;i++ )
 			{
 				var componente = componentesPreguntas[i];
-				if(componente.pregunta.tipo!="cat")
+				if(componente.pregunta.tipo!="cat" && componente.pregunta.campoId==null)
 				{
 					var pregunta ={ id: componente.pregunta.id, 
 									valor:  componente.valor,
@@ -490,13 +521,21 @@ class AuditoriaVista extends Vista
 	{
 		 var modelo = 
 		 {		
-			 empresaId: this.empresaId,		
-			 tipoAuditoriaId: this.tipoAuditoriaId,		
+			 //empresaId: this.empresaId,	
+			empresaId: this.listaPreguntas.getValorCampo("empresaId"),
+			tipoAuditoriaId: this.listaPreguntas.getValorCampo("tipoAuditoriaId"),
+			// tipoAuditoriaId: this.tipoAuditoriaId,		
 			 seccionId:this.seccionId,	
 			 plantillaId:this.plantillaId,	
 			 seccion: this.seccionActual,
 			 observaciones : this._auditoria.observaciones,
-			 buenasPracticas : this._auditoria.buenasPracticas
+			 buenasPracticas : this._auditoria.buenasPracticas,
+			sedeId: this.listaPreguntas.getValorCampo("sedeId"),
+			fecha: this.listaPreguntas.getValorCampo("fecha"),
+			hora: this.listaPreguntas.getValorCampo("hora"),
+		 	// sedeId: this.sedeId,	
+	 		//fecha: this.fecha,	
+ 			//hora: this.hora
 			 //preguntas: this.preguntasAuditoria
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
@@ -507,6 +546,18 @@ class AuditoriaVista extends Vista
 			
 		 if(modelo.buenasPracticas==undefined)
 			modelo.buenasPracticas = "";
+		
+		if(modelo.empresaId==undefined)
+			modelo.empresaId = "";	
+			
+		 if(modelo.sedeId==undefined)
+			modelo.sedeId = "";
+		
+		if(modelo.fecha==undefined)
+			modelo.fecha = "";
+			
+		if(modelo.hora==undefined)
+			modelo.hora = "";
 		
 		 return modelo;
 	 }

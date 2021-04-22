@@ -272,7 +272,8 @@ class PDF extends FPDF
         $this->Cell(60, $altoLinea ,'http://www.handel-sce.com/',$borde,'','',false, "http://www.handel-sce.com/");
         $this->SetFont($this->font,'I',8);
         $this->SetTextColor(130,130,130);
-        $this->Cell(120, $altoLinea, $this->texto("©Handel SCE 2019. Todos los derechos reservados. La información"), $borde, 0, 'R');
+        $ano = date("Y");
+        $this->Cell(120, $altoLinea, $this->texto("©Handel SCE $ano. Todos los derechos reservados. La información"), $borde, 0, 'R');
         
         $this->Ln();
         $this->SetLeftMargin(20);
@@ -307,14 +308,16 @@ class PDF extends FPDF
     
     private function calcularFolio()
     {
-        $folio ="";
+      /*  $folio ="";
         $folio.=$this->modelo->empresaNombreCorto;
                 
         $fecha = substr($this->modelo->fechaEjecucion,0,10);
         list($dia, $mes, $ano) = explode("/", $fecha);
         $folio.=$dia.$mes.$ano;
                 
-        $folio.="-".$this->modelo->contadorEmpresa;
+        $folio.="-".$this->modelo->contadorEmpresa;*/
+        
+        $folio.=$this->modelo->referencia;
         return $folio;
     }
     
@@ -599,12 +602,12 @@ class PDF extends FPDF
         //Print 2 Cells
         $tamanoLinea = 6;
         $this->Ln();
-        $this->Cell(150,$tamanoLinea,$this->texto('    Esta autoevaluación fue diseñada utilizando como referencia las guías de seguridad'),$borde,1,'FJ',1);
-        $this->Cell(150,$tamanoLinea,$this->texto('del	programa C-TPAT	(Custom	Trade Partnership Against Terrorism) en	sus	requisitos'),$borde,1,'FJ',1);
-        $this->Cell(150,$tamanoLinea,$this->texto('mínimos	de	seguridad, las gráficas de referencia fueron tomadas de evaluaciones en'),$borde,1,'FJ',1);
-        $this->Cell(150,$tamanoLinea,$this->texto('empresas similares en rama a la	suya según se indica individualmente. Los porcentajes'),$borde,1,'FJ',1);
-        $this->Cell(150,$tamanoLinea,$this->texto('que	aparecen son aproximados en	base a la auditoría	realizada.'),$borde,1,'L',1);
-
+        $this->Cell(150,$tamanoLinea,$this->texto('    Esta autoevaluación fue diseñada utilizando como referencia los criterios'),$borde,1,'FJ',1);
+        $this->Cell(150,$tamanoLinea,$this->texto('mínimos de seguridad de los programas CTPAT (CustomTrade Partnership Against Terrorism)'),$borde,1,'FJ',1);
+        $this->Cell(150,$tamanoLinea,$this->texto('y OEA (Operador Económico Autorizado) Según aplique, las gráficas de referencia'),$borde,1,'FJ',1);
+        $this->Cell(150,$tamanoLinea,$this->texto('fueron empresas similares en rama a la	suya según se indica individualmente. Los porcentajes'),$borde,1,'FJ',1);
+        $this->Cell(150,$tamanoLinea,$this->texto('que aparecen son aproximados en base a la auditoría realizada'),$borde,1,'L',1);
+        
         $this->Cell(150,$tamanoLinea,'',$borde,1,'L',1);
         $this->Cell(150,$tamanoLinea,$this->texto('En este punto se indica su estado en tres aspectos:'),$borde,1,'L',1);
         
@@ -965,18 +968,20 @@ class PDF extends FPDF
         $repositorio = new AuditoriasRepositorio($this->conexion);
         $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
         //$resultado = $repositorio->consultarPorcentajesSecciones($this->modelo->id);
-        $resultado = $repositorio->consultarAuditoriaAnterior($this->modelo->empresaId, $this->modelo->plantillaId, $this->modelo->id);
+        $resultado = $repositorio->consultarAuditoriaAnterior($this->modelo->empresaId,$this->modelo->sedeId, $this->modelo->plantillaId, $this->modelo->id);
+        
         if($resultado->correcto())
         {
             $auditoriaAnteriorId = $resultado->valor->id;
-            $fechaAnterior = substr($resultado->valor->fechaEjecucion,0,10);
+            //var_dump($auditoriaAnteriorId);
             if($auditoriaAnteriorId!=-1)
             {
+                $fechaAnterior = substr($resultado->valor->fecha,0,10);
                 $resultado = $repositorio->consultarPorcentajesSeccionesComparativo($this->modelo->id,$auditoriaAnteriorId);
                 if($resultado->correcto())
                 {
                     $porcentajes = $resultado->valor;
-                    $fecha = substr($this->modelo->fechaEjecucion,0,10);
+                    $fecha = substr($this->modelo->fecha,0,10);
                     
                     $image = $this->graficaReferenciaComparativo("",'',$fecha,$fechaAnterior,$porcentajes,"texto","porcentajeActual","porcentajeAnterior",$colores,false,105);
                     if($image!='')
@@ -986,15 +991,17 @@ class PDF extends FPDF
             }
             else 
             {
+                /*
                 $resultado = $repositorio->consultarPorcentajesSecciones($this->modelo->id);
                 if($resultado->correcto())
                 {
                     $porcentajesActual = $resultado->valor;
-                    $fecha = substr($this->modelo->fechaEjecucion,0,10);
+                    $fecha = substr($this->modelo->fecha,0,10);
                     $image = $this->graficaReferenciaGlobal("",'',$fecha,$porcentajesActual,"texto","porcentaje",$colores,true,105);
                     if($image!='')
                         $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,$y, $chartWidth);
                 }
+                */
             }
           
           
@@ -1030,7 +1037,7 @@ class PDF extends FPDF
         {
             $porcentajes = $resultado->valor;
             $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-            $fecha = substr($this->modelo->fechaEjecucion,0,10);
+            $fecha = substr($this->modelo->fecha,0,10);
             $image = $this->graficaReferenciaGlobal("",'',$fecha,$porcentajes,"texto","porcentaje",$colores,false,105);
             if($image!='')
                 $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,$y, $chartWidth);
@@ -1509,6 +1516,22 @@ class PDF extends FPDF
         $this->Cell($w1, 10,$this->texto("Compañia:"), $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
         $this->Cell($w2, 10, $this->texto($this->modelo->empresaNombre), $borde, 0, 'L');
+        //Sede
+        $this->Ln();
+        $this->SetLeftMargin(30);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell($w1, 10,$this->texto("Sede:"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($w2, 10, $this->texto($this->modelo->sedeNombre), $borde, 0, 'L');
+        //Tipo de auditoria
+        $this->Ln();
+        $this->SetLeftMargin(30);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell($w1, 10,$this->texto("Tipo de auditoría:"), $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell($w2, 10, $this->texto($this->modelo->tipoAuditoriaNombre), $borde, 0, 'L');
         //Fecha
         $this->Ln();
         $this->SetLeftMargin(30);
@@ -1516,7 +1539,8 @@ class PDF extends FPDF
         $this->SetFont($this->font, 'B', 10);
         $this->Cell($w1, 10,$this->texto("Fecha de auditoría"), $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
-        $this->Cell($w2, 10, $this->texto($this->modelo->fechaEjecucion), $borde, 0, 'L');
+        $this->Cell($w2, 10, $this->texto($this->modelo->fecha. " " . $this->modelo->hora), $borde, 0, 'L');
+        
         
         $this->SetDrawColor(130,130,130);
         $y = 175;
@@ -1524,6 +1548,10 @@ class PDF extends FPDF
         $y = 185;
         $this->Line(30, $y, 210-30, $y);
         $y = 195;
+        $this->Line(30, $y, 210-30, $y);
+        $y = 205;
+        $this->Line(30, $y, 210-30, $y);
+        $y = 215;
         $this->Line(30, $y, 210-30, $y);
         
         //Puntuacion
@@ -1541,7 +1569,7 @@ class PDF extends FPDF
         //$this->puntuacion = $this->modelo->puntuacion;
         
         $w = 5;
-        $y = 208;
+        $y = 227.5;
         $x = 78;
         $nivelRiesgo = "";
         if($this->modelo->puntuacion<=70)
@@ -1580,14 +1608,14 @@ class PDF extends FPDF
         $this->Cell(35, 10, $this->texto("81-100 Bajo"), $borde, 0, 'C');
       
         $w = 5;
-        $y = 217.5;
+        $y = 237.5;
         $this->Image("../imagenes/circulo_rojo.png",78,$y,$w,0);
         $this->Image("../imagenes/circulo_amarillo.png",110,$y,$w,0);
         $this->Image("../imagenes/circulo_verde.png",146,$y,$w,0);
        
         
         $this->SetDrawColor(118, 159, 209);
-        $y = 240;
+        $y = 260;
         $this->Line(30, $y, 210-30, $y);
     }
     

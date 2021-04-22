@@ -113,7 +113,7 @@ class SeguimientoPresentador extends CatalogoPresentador
 		});
 	}	
 	
-	consultarRecomendacionesPendientesUsuario()
+	consultarRecomendaciones()
 	{
 		vista.mostrarIndicador();
 		//var repositorio = new AuditoriasRepositorio();
@@ -130,8 +130,10 @@ class SeguimientoPresentador extends CatalogoPresentador
 	
 	consultarAvancesRecomendacion()	
 	 {
+		 this.vista.mostrarIndicador();	
 		 this._repositorio.consultarAvancesRecomendacion(this, function(resultado)
 		 {
+			this.vista.ocultarIndicador();	
 			if(resultado.mensajeError=="")
 			{
 				this.vista.avances = resultado.valor;				
@@ -139,6 +141,21 @@ class SeguimientoPresentador extends CatalogoPresentador
 			else
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		 },this.vista.llavesRecomendacion);
+	 }
+
+	consultarArchivos()	
+	 {
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.consultarArchivosAvance(this, function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+			{
+				this.vista.archivos = resultado.valor;				
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },{id:this.vista.modeloAvance.id});
 	 }
 
 	consultarArchivosAvance()	
@@ -153,6 +170,22 @@ class SeguimientoPresentador extends CatalogoPresentador
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		 },this.vista.llavesAvance);
 	 }
+
+	consultarEstatusValidacion()	
+	 {
+		var repositorio = new EstatusValidacionRepositorio();
+		 repositorio.consultar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.estatusValidacion = resultado.valor;				
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 });
+	 }
+
+
 	 
 	actualizarAvance()
 	 {
@@ -163,18 +196,50 @@ class SeguimientoPresentador extends CatalogoPresentador
 			 this.vista.ocultarIndicador();	
 			 if(resultado.mensajeError=="")
 			 {	
-				this.vista.mostrarMensaje("Notificación","La información se actualizó correctamente.");
-				this.vista.salirModalArchivos();
-				this.consultarAvancesRecomendacion();
+					this.subirArchivos(this.vista.modeloAvance.id);
+				
 			 }
 			 else
 				this.vista.mostrarMensajeError("Error","Ocurrió un error al actualizar el registro. " + resultado.mensajeError, resultado.codigoError);		
+				
+			
+		 },this.vista.llavesRecomendacion.id, this.vista.modeloAvance);
+	 }
+
+	subirArchivos(avanceId)
+	{
+		 this.vista.guardando = true;
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.subirArchivosAvance(this, function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+			{	
+				this.vista.mostrarMensaje("Notificación","La información se actualizó correctamente.");
+				this.vista.salirModalArchivos();
+				if(this.vista.modoAvance==Modo.CAMBIO)	
+					this.consultarAvancePorLlaves(avanceId);
+				else
+					this.consultarAvancesRecomendacion();
+					
+				this.consultarRecomendacionPorLlaves();
+			}
+			else
+				this.vista.mostrarMensajeError("Error","Ocurrió un error al subir los archivos. " + resultado.mensajeError, resultado.codigoError);	
+			
 			 setTimeout(function()
 			{
 				 this.vista.guardando = false;
 	         }, 2000);
-		 },this.vista.llavesRecomendacion.id, this.vista.modeloAvance);
-	 }
+			
+				
+		 }, function(event)
+		{
+			var porcentaje = event.loaded / event.total * 100;
+			this.vista.progresoArchivos =  parseInt(porcentaje);
+			
+		},this.vista.llavesRecomendacion.id,avanceId, this.vista.archivos);
+	}
 	 
 
 	insertarAvance()
@@ -186,23 +251,19 @@ class SeguimientoPresentador extends CatalogoPresentador
 			this.vista.ocultarIndicador();	
 			if(resultado.mensajeError=="")
 			{	
-				this.vista.mostrarMensaje("Notificación","La información se guardó correctamente. Id: " + resultado.valor);
-				this.vista.salirModalArchivos();
-				this.consultarAvancesRecomendacion();
+				this.vista.modeloAvance.id = resultado.valor;
+				this.subirArchivos(resultado.valor);
+			
 			}
 			else
 				this.vista.mostrarMensajeError("Error","Ocurrió un error al guardar el registro. " + resultado.mensajeError, resultado.codigoError);	
 			
-			 setTimeout(function()
-			{
-				 this.vista.guardando = false;
-	         }, 2000);
 			
 				
 		 },this.vista.llavesRecomendacion.id,this.vista.modeloAvance);	
 	 }
 	 
-	 consultarAvancePorLlaves()
+	 consultarAvancePorLlaves(avanceId)
 	 {
 		 this.vista.mostrarIndicador();	
 		 this._repositorio.consultarAvancePorLlaves(this,function(resultado)
@@ -214,7 +275,7 @@ class SeguimientoPresentador extends CatalogoPresentador
 			 }
 			 else
 				 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError, resultado.codigoError);
-		 },this.vista.llavesAvance);
+		 },{id: avanceId});
 	 }
 	 
 	 
@@ -230,6 +291,7 @@ class SeguimientoPresentador extends CatalogoPresentador
 				
 				 this.vista.mostrarMensaje("Notificación","El avance se eliminó correctamente.");
 				 this.consultarAvancesRecomendacion();
+				 this.consultarRecomendacionPorLlaves();
 			 }
 			 else
 			 {
@@ -242,7 +304,111 @@ class SeguimientoPresentador extends CatalogoPresentador
 	 }
 	 
 	 
+	consultarRecomendacionValidacionPorLlaves()
+	{
+		this.vista.mostrarIndicador();	
+		 this._repositorio.consultarRecomendacionPorLlaves(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.modeloRecomendacionValidacion = resultado.valor;
+			 }
+			 else
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError, resultado.codigoError);
+		 },this.vista.llavesRecomendacion);
+	}
 	
+	consultarRecomendacionPorLlaves()
+	{
+		this.vista.mostrarIndicador();	
+		 this._repositorio.consultarRecomendacionPorLlaves(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.modeloRecomendacion = resultado.valor;
+			 }
+			 else
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError, resultado.codigoError);
+		 },this.vista.llavesRecomendacion);
+	}
+	 
+	validarRecomendacion()
+	 {
+		 this.vista.guardando = true;
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.validarRecomendacion(this,function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+			{	
+				this.vista.mostrarMensaje("Notificación","Guardado. Id: " + resultado.valor);
+				this.vista.salirFormularioValidacion();
+				this.vista.salirFormularioAvances();
+				this.vista.consultarRecomendaciones();
+			}
+			else
+			{
+				this.vista.mostrarMensajeError("Error","No se guardo la información. " + resultado.mensajeError);	
+					
+			}
+			
+			 setTimeout(function()
+			{
+				 this.vista.guardando = false;
+	       }, 2000);
+			
+				
+		 }	,this.vista.modeloRecomendacionValidacion);	
+	 }
+	 
+	consultarComentariosRecomendacion()
+	 {
+		// this.vista.mostrarIndicador();
+		 var repositorio = new RecomendacionesComentariosRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+			//this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.comentariosRecomendacion = resultado.valor;
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },{recomendacionId: this.vista._recomendacionSeleccionada.id});
+	 }
+	
+	 
+	enviarComentarioRecomendacion()
+	 {
+		 if(this.vista.modeloCometarioRecomendacion.comentario!="" && this.vista.modeloCometarioRecomendacion.comentario!=undefined)
+		 {
+			 var repositorio = new RecomendacionesComentariosRepositorio(this);		
+			 repositorio.insertar(this,	 function(resultado)
+			 {
+				this.vista.ocultarIndicador();	
+				if(resultado.mensajeError=="")
+					this.vista.consultarComentariosRecomendacion();
+				else
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				
+			 },this.vista.modeloCometarioRecomendacion);
+		}
+	 }
+	
+	 guardarAvance()
+	{
+		if(this.vista.modeloAvance.cumplimiento==100 && this.vista.archivos.length==0)
+			this.vista.mostrarMensajeAdvertencia("Advertencia","Es necesario adjuntar archivos de evidencias");
+		else
+		{
+			if(this.vista.modoAvance==Modo.CAMBIO)	
+				this.actualizarAvance();
+			else
+				this.insertarAvance();
+		}
+	}
+
 	 
 	
 	 

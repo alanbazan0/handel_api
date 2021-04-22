@@ -23,8 +23,15 @@
     							<label for="accionAvanceLabel" class="control-label mb-1">Acción</label>
     							<span id="accionAvanceLabel" class="mb-2 " style='display:block;font-size:13px;'></span>
 							</div>
-						</div>
-					<button id="registrarAvanceButton" class='btn btn-success float-right'><i class='fa fa-plus'></i> Registrar avance</button>
+					</div>
+					<div class="form-group">
+    						<div>
+    							<i id='estatusValidacionIcono'></i>
+    							<label id="estatusValidacionLabel" class="mb-2 " style='font-size:13px;'></label>
+							</div>
+					</div>
+					<button id="validarRecomendacionButton" style='display:none' class='btn btn-success float-right'><i class='fas fa-check-double'></i> Validar</button>
+					<button id="registrarAvanceButton"  style='display:none' class='btn btn-primary float-right'><i class='fa fa-plus'></i> Registrar avance</button>
 				</div>
             	<!-- /.chat -->
             	<div class="box-footer">

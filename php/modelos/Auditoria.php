@@ -15,6 +15,9 @@ class Auditoria
     public $seccion;
     public $observaciones;
     public $buenasPracticas;
+    public $sedeId;
+    public $fecha;
+    public $hora;
     
 }
 

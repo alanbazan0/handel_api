@@ -253,4 +253,23 @@ class ArrayUtils
 			}				
 		return index;
 	}
+	
+	static getMax(arreglo,propiedad)
+	{
+		var max = 0;
+		if(arreglo!=null)
+			if(arreglo.length>0)
+			{
+				var elemento = arreglo[0];
+				max = elemento[propiedad];
+				for(var i =1;i<arreglo.length;i++)
+				{
+					elemento = arreglo[i];
+					if(elemento[propiedad]>max)
+						max = elemento[propiedad];
+				} 	
+			}				
+		return max;
+	}
+
 }

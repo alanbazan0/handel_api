@@ -6,5 +6,6 @@ class Avance
     public $id;
     public $cumplimiento;  
     public $comentario;
+    public $archivosEliminados;
 }
 

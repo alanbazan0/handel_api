@@ -72,6 +72,18 @@ class AdministradorArchivos
         return $resultado;
     }
     
+    public function eliminarDirectorio($dir) {
+        if (!file_exists($dir)) return true;
+        if (!is_dir($dir) || is_link($dir)) return unlink($dir);
+        foreach (scandir($dir) as $item) {
+            if ($item == '.' || $item == '..') continue;
+            if (!$this->eliminarDirectorio($dir . "/" . $item)) {
+                chmod($dir . "/" . $item, 0777);
+                if (!$this->eliminarDirectorio($dir . "/" . $item)) return false;
+            };
+        }
+        return rmdir($dir);
+    }
     
     public function subirArchivo($carpeta,$archivo,$nombreArchivo)
     {

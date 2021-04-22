@@ -5,6 +5,7 @@ class SeguimientoVista extends CatalogoVista
 		super(ventana);
 		this.presentador = new SeguimientoPresentador(this);
 		this.consultoGrid = false;
+		this._time =  new Date().getTime();
 	}
 	
 	inicializar()
@@ -13,7 +14,9 @@ class SeguimientoVista extends CatalogoVista
 		this.crearTablas();
 		
 		var _this = this;
-		$("#tituloAuditoriaDiv").click(function(){_this.mostrarAuditorias();});
+		
+		
+		$('#consultarRecomendacionesButton').click(function(){_this.consultarRecomendaciones();});
 		//this.consultarEmpresasCriterio();
 	}
 	
@@ -25,10 +28,13 @@ class SeguimientoVista extends CatalogoVista
 			this.auditoriasTabla.columnas = [
 					{longitud:50, 	titulo:"",   	alias:"icono", alineacion:"D", itemRenderer:this.renderIcono},
 					{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
-					{longitud:200, 	titulo:"Plantilla",   alias:"plantillaNombre", alineacion:"I" }, 
+					//{longitud:200, 	titulo:"Plantilla",   alias:"plantillaNombre", alineacion:"I" }, 
 					//{longitud:200, 	titulo:"Seguimiento iniciado",   alias:"seguimiento", alineacion:"D", itemRenderer:this.renderSeguimiento},		
-					{longitud:300, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" }, 	
-					{longitud:250, 	titulo:"Fecha de auditoria",   alias:"fechaEjecucion", alineacion:"I" },
+					{longitud:300, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" }, 
+					{longitud:300, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" }, 	
+					{longitud:250, 	titulo:"Fecha de auditoría",   alias:"fecha", alineacion:"C",itemRenderer:this.renderFechaAuditoria },
+					//{longitud:250, 	titulo:"Hora",   alias:"hora", alineacion:"C" },
+					//{longitud:250, 	titulo:"Fecha de auditoria",   alias:"fechaEjecucion", alineacion:"I" },
 					{longitud:50, 	titulo:"Puntuación",   alias:"puntuacion", alineacion:"C", itemRenderer: this.rendererPuntuacion },
 					{longitud:50, 	titulo:"Total de acciones recomendadas",   	alias:"recomendacionesTotal", alineacion:"C" },
 					{longitud:50, 	titulo:"Acciones pendientes",   alias:"recomendacionesPendientes", alineacion:"C" },
@@ -36,8 +42,16 @@ class SeguimientoVista extends CatalogoVista
 					//{longitud:200, 	titulo:"Referencia",   alias:"referencia", alineacion:"I" },
 					
 					];
+					
+			if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR || this.usuario.tipoUsuarioId == TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId == TipoUsuario.SUPERVISOR)
+			{
+				this.auditoriasTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporte});
+				this.auditoriasTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderExportarActionTracker});
+			}
+			this.auditoriasTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderRecomendaciones});
 		
-			this.auditoriasTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Ver acciones recomendadas'  type='button' class='recomendaciones btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-list fa-lg'></span></button>";
+		
+			//this.auditoriasTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Ver acciones recomendadas'  type='button' class='recomendaciones btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-list fa-lg'></span></button>";
 
 			this.auditoriasTabla.registros = [];
 		}
@@ -50,7 +64,7 @@ class SeguimientoVista extends CatalogoVista
 				//º	{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"C" },
 					{longitud:70, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" }, 
 					{longitud:300, 	titulo:"Acciones",   alias:"titulo", alineacion:"I" }, 	
-					{longitud:110, 	titulo:"% Cumplimiento",   alias:"cumplimiento", alineacion:"C", itemRenderer: this.rendererCumplimiento  }, 	
+					{longitud:110, 	titulo:"% Cumplimiento",   alias:"cumplimiento", alineacion:"C", itemRenderer: this.renderCumplimientoRecomendacion  }, 	
 					{longitud:70, 	titulo:"Fecha compromiso",   alias:"fechaVencimiento", alineacion:"C" }, 	
 					//{longitud:50, 	titulo:"Número",   alias:"contadorEmpresa", alineacion:"C" },
 					//{longitud:200, 	titulo:"Referencia",   alias:"referencia", alineacion:"I" },
@@ -59,17 +73,86 @@ class SeguimientoVista extends CatalogoVista
 					
 			if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR || this.usuario.tipoUsuarioId == TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId == TipoUsuario.SUPERVISOR)
 			{
-				this.recomendacionesTabla.columnas.push({longitud:40, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoUsuario});
-				this.recomendacionesTabla.columnas.push({longitud:120, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I", itemRenderer: this.renderNombreUsuario});
+				//this.recomendacionesTabla.columnas.push({longitud:40, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoUsuario});
+				//this.recomendacionesTabla.columnas.push({longitud:120, 	titulo:"Responsable",   alias:"usuarioNombreCompleto", alineacion:"I", itemRenderer: this.renderNombreUsuario});
+				this.recomendacionesTabla.columnas.push({longitud:40, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoUsuarioRecomendacion});
+				this.recomendacionesTabla.columnas.push({longitud:100, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I",itemRenderer:this.renderNombreUsuarioRecomendacion});
+
 			}
 			
-					
-			this.recomendacionesTabla.columnas.push({longitud:50, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderAvance});
+			this.recomendacionesTabla.columnas.push({longitud:30, 	titulo:"",   alias:"terminada", alineacion:"I", itemRenderer: this.renderEstatusValidacionRecomendacion}),
+			this.recomendacionesTabla.columnas.push({longitud:30, 	titulo:"",   alias:"comentarios", alineacion:"I", itemRenderer:this.renderComentariosRecomendacion}),		
+			this.recomendacionesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderAvance});
 
 			this.recomendacionesTabla.textoTablaVacia = "Cargando información";
 			this.recomendacionesTabla.registros = [];
 			this.recomendacionesTabla.textoTablaVacia = "No hay recomendaciones";
 		}
+	}
+	
+	renderFechaAuditoria(renglon)
+	{
+		var fecha = "";
+		if(renglon.fecha!=null)
+			fecha+= renglon.fecha;
+		if(renglon.hora!=null)
+			fecha+= " " +renglon.hora;
+		return fecha; 
+	}
+	
+	getComentariosRecomendacion(renglon)
+	{    
+		var contenido = "";
+		var comentarios ="";
+		if(renglon.numeroComentarios>0)
+			comentarios = "<span class='label-warning notificacion'>"+renglon.numeroComentarios+"</span>";
+		contenido = "<span style='cursor:pointer;margin-left:15px;width:50px;height:30px;color:gray;' data-toggle='tooltip' data-placemen='bottom' title='Comentarios' type='button' class='comentarios text-blue'><span  data-toggle='tooltip' class='fas fa-comments fa-lg'>"+comentarios+"</span>";;
+	    return contenido;
+	}
+	
+	getEstatusValidacionRecomendacion(renglon)
+	{    
+		var contenido = "";
+		/*
+		if(renglon.validada==1)
+		{
+			if(renglon.terminada==1)
+				contenido += "<center><span data-toggle='tooltip' data-placemen='bottom' title='Validada' class='fas fa-check-double fa-lg text-blue' style='color:green;'></span></center>";
+			else
+				contenido += "";    
+		}
+		else if(renglon.terminada==1)
+			contenido += "<center><span data-toggle='tooltip' data-placemen='bottom' title='Terminada'  class='fa fa-check fa-lg ' style='color:gray;'></span></center>";
+		else
+			contenido += "";  */
+		if(renglon.estatusValidacionId!=0)
+		{
+			contenido += "<center><span data-toggle='tooltip' data-placemen='bottom' title='"+renglon.estatusValidacionDescripcion+"'  class='"+renglon.estatusValidacionIcono+" fa-lg "+renglon.estatusValidacionColor+"' ></span></center>";
+		
+		}
+	
+		
+		
+		return contenido;
+	}
+	
+	renderReporte(renglon, type, set)
+	{    
+		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Reporte'  type='button' class='reporte btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fas fa-file-pdf fa-lg'></span></button>";
+	    return contenido;
+	}
+	
+	renderExportarActionTracker(renglon, type, set)
+	{
+		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Action Tracker'  type='button' class='exportarActionTracker btn-circle mr-0 botones-icon btn btn-sm float-right btn-info active'><span  data-toggle='tooltip' class='fa fa-file-excel fa-lg'></span></button>";
+		return contenido;
+	}
+	
+	
+	renderRecomendaciones(renglon, type, set)
+	{
+		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Ver acciones recomendadas'  type='button' class='recomendaciones btn-circle mr-0 botones-icon btn btn-sm float-right btn-primary active'><span  data-toggle='tooltip' class='fa fa-list fa-lg'></span></button>";
+		return contenido;
 	}
 	
 	renderAvance(renglon, type, set)
@@ -105,6 +188,8 @@ class SeguimientoVista extends CatalogoVista
 		}		
 	    return contenido;
 	}
+	
+	
 	
 	renderNombreUsuario(renglon, type, set)
 	{    
@@ -146,6 +231,7 @@ class SeguimientoVista extends CatalogoVista
 		$('#auditoriasSection').hide();	
 		$('#recomendacionesSection').fadeIn();	
 		$('#consultarButton').hide();
+		$('#consultarRecomendacionesButton').show();
 		this.recomendaciones = [];
 		this.presentador.consultarPorLlaves();
 
@@ -158,16 +244,22 @@ class SeguimientoVista extends CatalogoVista
 		$('#auditoriasSection').fadeIn();	
 		$("#encabezadoDiv").hide();
 		$('#consultarButton').show();
+		$('#consultarRecomendacionesButton').hide();
 		$("#tituloAuditoriaDiv").hide();
+		$("#titulo").show();
 		this.consultar();
 
 	}
 	
 	set recomendaciones(recomendaciones)
 	{
+		var _this = this;
 		this.recomendacionesTabla.textoTablaVacia = "No hay recomendaciones";
 		this.recomendacionesTabla.registros = recomendaciones;	
 		this.inicializarEventosBotonesTablaRecomendaciones("#" + this.recomendacionesTabla._id+"Table tbody",this.recomendacionesTabla.datatable.DataTable());
+		
+		$("#recomendacionesTabla").find(".dt-buttons").html("<div id='regresarAuditorias'  class='ml-2'><label style='cursor:pointer;'><i id='tituloI' class='salir fa fa-arrow-left' ></i> Regresar a mis auditorías</label></div>");
+		$("#regresarAuditorias").click(function(){_this.mostrarAuditorias();});
 	}
 	
 	inicializarEventosBotonesTablaRecomendaciones(tbody, table)
@@ -186,15 +278,148 @@ class SeguimientoVista extends CatalogoVista
 			{
 				_this._llavesRecomendacion = _this.copiarPropiedadesObjeto(_this._recomendacionSeleccionada, ["id"]);
 				//_this._llavesRecomendacion.recomendacionId = _this._llaves.id;
-				_this.mostraAvances();
+				_this.mostrarAvances();
 			}
 		});
 		
+		$(tbody).on("click", "span.comentarios", function()
+			{			
+				 var tr = $(this).closest('tr');
+				    
+			    if ( $(tr).hasClass('child') ) {
+			      tr = $(tr).prev();  
+			    }
+
+				_this._recomendacionSeleccionada  = table.row( tr ).data();
+				if (_this._recomendacionSeleccionada != undefined)
+				{
+					_this._llavesRecomendacion = _this.copiarPropiedadesObjeto(_this._recomendacionSeleccionada, ["id"]);
+					_this.mostrarComentariosRecomendacion();
+
+				}
+			});
 		
 		
 		
 	}
 	
+	
+	
+	mostrarComentariosRecomendacion()
+	{
+		if($("#modalAlta").length ==0)
+		{
+			var url = HANDEL_API + "/html/modales/comentarios_sivah.php";
+			this.mostrarIndicador();
+			var _this = this;
+			$.post(url,{}, function(html) 
+			{
+				_this.ocultarIndicador();
+				$("body").append(html);
+				$("#modalAlta").on("hidden.bs.modal", function () 
+				{
+					clearInterval(_this.cometariosRecomendacionIntervalId);
+					//TODO: actualizar icono de comentarios y demas
+					_this.consultarRecomendacionPorLlaves();
+					$("#modalAlta").remove();
+				});
+				
+				$("#modalAlta").on("show.bs.modal", function () 
+				{
+					//_this.inicializarValidacionesComentarioEvidencia();
+					$("#accionAvanceLabel").html(_this._recomendacionSeleccionada.titulo);
+					$("#enviarComentarioButton").click(function () 
+					{
+						var comentario = $("#comentarioEvidenciaInput").val().trim();
+						if(comentario!="" && comentario!=undefined)
+							_this.enviarComentarioRecomendacion();
+					});
+					$("#comentarioEvidenciaInput").keypress(function(event){
+					    var keycode = (event.keyCode ? event.keyCode : event.which);
+					    if(keycode == '13')
+					    {
+					    	var comentario = $("#comentarioEvidenciaInput").val().trim();
+							if(comentario!="" && comentario!=undefined)
+								_this.enviarComentarioRecomendacion();
+					    }
+					});
+					_this._comentariosRecomendacion = [];
+					_this.consultarComentariosRecomendacion();
+					_this.cometariosRecomendacionIntervalId = setInterval(_this.consultarComentariosAutomaticamente, 60000);
+						
+				});
+			
+				$("#modalAlta").modal({backdrop: 'static', keyboard: false});
+			});
+			
+			
+		}
+		else
+		{
+			$("#modalAlta").modal({backdrop: 'static', keyboard: false});
+		}
+	}
+	
+	set comentariosRecomendacion(comentariosRecomendacion)
+	{
+		if(comentariosRecomendacion.length> this._comentariosRecomendacion.length)
+		{
+			this._comentariosRecomendacion = comentariosRecomendacion;
+			var fecha = new Date();
+			var html="";
+			for(var i=0; i< comentariosRecomendacion.length; i++)
+			{
+				var comentario = comentariosRecomendacion[i];
+				
+				var foto ="";
+				if(comentario.fotoPerfil.includes("default.jpg"))
+					foto = comentario.fotoPerfil;
+				else
+					foto = comentario.fotoPerfil+"?"+vista.time;
+				
+				
+				//var foto = HANDEL_API + "/" + comentario.fotoPerfil+"?"+fecha.getTime();
+				var url = HANDEL_API + "/" + foto;
+				html+="<div class='item'>" +
+						"<img src='"+url+"' alt='user image' class='online' > " +
+						"<p class='message'>" +
+						"  <a href='#' class='name'>" +
+						"	<small class='text-muted pull-right'><i class='fa fa-clock-o'></i> "+comentario.fecha +"</small>" + comentario.usuarioNombreCompleto +
+						"  </a>" + comentario.comentario + 
+						"</p>" +
+					  "</div>";
+			}
+			$("#chatbox").html(html);
+		}	
+	}
+	
+	consultarComentariosAutomaticamente()
+	{
+		var _this  = $("body").data("_this");
+		_this.consultarComentariosRecomendacion();
+	}
+	
+	enviarComentarioRecomendacion()
+	{
+		this.presentador.enviarComentarioRecomendacion();
+		$("#comentarioEvidenciaInput").val("");
+	}
+	
+	consultarComentariosRecomendacion()
+	{
+		this.presentador.consultarComentariosRecomendacion();
+	}
+	
+	get modeloCometarioRecomendacion()
+	{
+		var modelo =
+		{
+			recomendacionId: this._recomendacionSeleccionada.id,
+			usuarioId: this.usuario.id,
+			comentario: $("#comentarioEvidenciaInput").val()
+		};
+		return modelo;
+	}
 	
 	eliminarAvance()
 	{ 
@@ -240,6 +465,7 @@ class SeguimientoVista extends CatalogoVista
 			if (_this._avanceSeleccionado != undefined)
 			{
 				_this._llavesAvance= _this.copiarPropiedadesObjeto(_this._avanceSeleccionado, ["id"]);
+				_this._llavesAvance.recomendacionId = _this._llavesRecomendacion.id;
 				_this.mostrarFormularioAvance(Modo.CAMBIO);
 			}
 		});
@@ -256,8 +482,27 @@ class SeguimientoVista extends CatalogoVista
 			if (_this._avanceSeleccionado != undefined)
 			{
 				_this._llavesAvance = _this.copiarPropiedadesObjeto(_this._avanceSeleccionado, ["id"]);
+				_this._llavesAvance.recomendacionId = _this._llavesRecomendacion.id;
 				//_this._llavesRecomendacion.recomendacionId = _this._llaves.id;
 				_this.eliminarAvance();
+			}
+		});
+		
+		$(tbody).on("click", "i.archivos", function()
+		{
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+		    _this._avanceSeleccionado  = table.row( tr ).data();
+			if (_this._avanceSeleccionado != undefined)
+			{
+				_this._llavesAvance = _this.copiarPropiedadesObjeto(_this._avanceSeleccionado, ["id"]);
+				_this._llavesAvance.recomendacionId = _this._llavesRecomendacion.id;
+				//_this._llavesRecomendacion.recomendacionId = _this._llaves.id;
+				_this.mostrarFormularioAvance(Modo.CONSULTA);
 			}
 		});
 		
@@ -298,7 +543,6 @@ class SeguimientoVista extends CatalogoVista
 			}
 			return "<span  style='font-weight:bold;color:"+color+";' >"+porcentajeCumplimiento+"%</span>";
 		//}
-		return "";
 	}
 	
 	rendererCumplimiento(renglon, type, set)
@@ -324,7 +568,121 @@ class SeguimientoVista extends CatalogoVista
 			}
 			return "<span  style='font-weight:bold;color:"+color+";' >"+porcentajeCumplimiento+"%</span>";
 		//}
-		return "";
+	}
+	
+	renderCumplimientoAvance(renglon, type, set)
+	{  
+		return "<div id='cumplimientoAvanceTabla"+renglon.id+"'>" +vista.getCumplimiento(renglon) + "</div>";
+	}
+	
+	renderCumplimientoRecomendacion(renglon, type, set)
+	{  
+		return "<div id='cumplimientoRecomendacionTabla"+renglon.id+"'>" +vista.getCumplimiento(renglon) + "</div>";
+	}
+	
+	renderFechaModificacionAvance(renglon, type, set)
+	{  
+		return "<div id='fechaModificacionAvanceTabla"+renglon.id+"'>"+vista.getTexto(renglon.fechaModificacion)+"</div>";
+	}
+	
+	renderComentarioAvance(renglon, type, set)
+	{  
+		return "<div id='comentarioAvanceTabla"+renglon.id+"'>" + vista.getTexto(renglon.comentario)
+	}
+	
+	renderArchivosAvance(renglon, type, set)
+	{  
+		return "<div id='archivosAvanceTabla"+renglon.id+"'>" + vista.getArchivosAvance(renglon) + "</div>";
+	}
+	
+	renderEstatusValidacionRecomendacion(renglon, type, set)
+	{  
+		return "<div id='estatusValidacionRecomendacionTabla"+renglon.id+"'>" + vista.getEstatusValidacionRecomendacion(renglon) + "</div>";
+	}
+	
+	renderComentariosRecomendacion(renglon, type, set)
+	{  
+		return "<div id='comentariosRecomendacionTabla"+renglon.id+"'>" + vista.getComentariosRecomendacion(renglon) + "</div>";
+	}
+	
+	renderFotoUsuarioAvance(renglon, type, set)
+	{    
+		return "<div id=fotoUsuarioAvanceTabla"+renglon.id+">" + vista.getFotoUsuario(renglon) + "</div>";
+	}
+	
+	renderFotoUsuarioRecomendacion(renglon, type, set)
+	{    
+		return "<div id=fotoUsuarioRecomendacionTabla"+renglon.id+">" + vista.getFotoUsuario(renglon) + "</div>";
+	}
+	
+	renderNombreUsuarioAvance(renglon, type, set)
+	{  
+		return "<div id='nombreUsuarioAvanceTabla"+renglon.id+"'>"+vista.getTexto(renglon.usuarioNombreCompleto)+"</div>";
+	}
+	
+	renderNombreUsuarioRecomendacion(renglon, type, set)
+	{  
+		return "<div id='nombreUsuarioRecomendacionTabla"+renglon.id+"'>"+vista.getTexto(renglon.usuarioNombreCompleto)+"</div>";
+	}
+	
+	getTexto(texto)
+	{
+		return "<span>"+texto+"</span>";
+	}
+	
+	
+	
+	getArchivosAvance(renglon)
+	{
+		var contenido = "";
+		var tieneArchivos = renglon.archivos>0?true:false;
+		if(tieneArchivos)
+		{
+			contenido+= "<i  class='archivos fa fa-lg fa-paperclip' style='cursor:pointer'></i>";
+			contenido+="<span  class='labelArchivo'>"+renglon.archivos+"</span>";
+		}
+	    return contenido;
+	}
+	
+	getFotoUsuario(renglon)
+	{
+		var contenido = "";
+		var foto ="";
+		if(renglon.fotoPerfil.includes("default.jpg"))
+			foto = renglon.fotoPerfil;
+		else
+			foto = renglon.fotoPerfil+"?"+vista.time;
+		if(renglon.usuarioId!=null)
+		{
+			var url = HANDEL_API+ "/"+foto;
+			contenido += "<center><img  src='" + url + "' style='width:30px;height:30px;border-radius: 50%'></img></center>";
+		}		
+	    return contenido;
+	}
+	
+
+	
+	
+	getCumplimiento(renglon)
+	{
+		if(renglon.cumplimiento==undefined)
+			renglon.cumplimiento = 0;
+	
+		var porcentajeCumplimiento = parseFloat(renglon.cumplimiento);
+		var color ="";
+		if(porcentajeCumplimiento <= 70)
+		{
+			color = "red";
+		}
+		else if(porcentajeCumplimiento > 70 && porcentajeCumplimiento <=80)
+		{
+			color = "#e9a13d";
+		}
+		else if(porcentajeCumplimiento > 80)
+		{
+			color = "green";
+		}
+		return "<span style='font-weight:bold;color:"+color+";' >"+porcentajeCumplimiento+"%</span>";
 	}
 	
 	crearColumnasGrid()
@@ -408,19 +766,45 @@ class SeguimientoVista extends CatalogoVista
 	set modelo(valor)
 	{		
 		this.modeloEdicion = valor;
-		$('#fechaAuditoriaSpan').html(this.modeloEdicion.fechaEjecucion.substring(0,10));
-		$("#porcentajeSpan").html(this.modeloEdicion.puntuacion + "%");
-		$('#plantillaNombreSpan').html(this.modeloEdicion.plantillaNombre);
+		this.fechaAuditoria = this.modeloEdicion.fecha.substring(0,10);
+		this.porcentajeCumplimiento = this.modeloEdicion.puntuacion;
+		$('#plantillaNombreSpan').html("Evaluación a " +this.modeloEdicion.empresaNombre+ " Sede "+ this.modeloEdicion.sedeNombre);
 		$("#encabezadoDiv").fadeIn();
 		$("#tituloAuditoriaDiv").show();
+		$("#titulo").hide();
 		
-		this.consultarRecomendacionesPendientesUsuario();
+		this.consultarRecomendaciones();
 	}
 	
-	consultarRecomendacionesPendientesUsuario()
+	set fechaAuditoria(fechaAuditoria)
+	{
+		var html = "<span  style='font-weight:bold;black' >"+fechaAuditoria+"</span>";
+		$("#fechaAuditoriaSpan").html(html);
+	}
+	
+	set porcentajeCumplimiento(porcentajeCumplimiento)
+	{
+		var color ="";
+		if(porcentajeCumplimiento <= 70)
+		{
+			color = "red";
+		}
+		else if(porcentajeCumplimiento > 70 && porcentajeCumplimiento <=80)
+		{
+			color = "#e9a13d";
+		}
+		else if(porcentajeCumplimiento > 80)
+		{
+			color = "green";
+		}
+		var html = "<span  style='font-weight:bold;color:"+color+";' >"+porcentajeCumplimiento+"%</span>";
+		$("#porcentajeSpan").html(html);
+	}
+	
+	consultarRecomendaciones()
 	{
 		this.recomendacionesTabla.textoTablaVacia = "Cargando información";
-		this.presentador.consultarRecomendacionesPendientesUsuario();
+		this.presentador.consultarRecomendaciones();
 	}
 	
 	get modelo()
@@ -541,26 +925,158 @@ class SeguimientoVista extends CatalogoVista
 	
 	set auditorias(auditorias)
 	{
+		this.auditoriasTabla.alto =  $("body").height() - 230;
 		this.auditoriasTabla.registros = auditorias;	
 		this.inicializarEventosTabla("#" + this.auditoriasTabla._id+"Table tbody",this.auditoriasTabla.datatable.DataTable());
+		
+		$("#auditoriasTabla").find(".dt-buttons").html("<label class='ml-2'>Mis auditorías</label>");
+		
 	}
 	
-	mostraAvances()
+	inicializarEventosTabla(tbody, table)
+	{
+		this.inicializarEventosBotonesTabla(tbody, table, ["id"]);
+		var _this = this;
+		$(tbody).on("click", "button.reporte", function()
+		{			
+			var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.imprimirReporte();
+			}
+		});
+		
+		$(tbody).on("click", "button.exportarActionTracker", function()
+		{			
+			var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.exportarActionTracker();
+			}
+		});
+	}
+	
+	imprimirReporte()
+	{
+		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_auditoria.php");
+		this.createNewFormElement(submitForm, "auditoriaId", JSON.stringify(this._llaves.id));	 
+	    submitForm.target= "_blank";
+	    submitForm.submit();
+	}
+	
+	exportarActionTracker()
+	{
+		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/excel/action_tracker.php");
+		this.createNewFormElement(submitForm, "auditoriaId", JSON.stringify(this._llaves.id));	 
+	    submitForm.target= "_blank";
+	    submitForm.submit();
+	}
+	
+	mostrarAvances()
 	{
 		var _this = this;
 		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/recomendaciones_avances.php",this, null, function()
 		{
-			$("#registrarAvanceButton").click(function(){_this.mostrarFormularioAvance(Modo.ALTA);});
 			$("#accionAvanceLabel").html(_this._recomendacionSeleccionada.titulo);
+			$("#estatusValidacionIcono").addClass(_this._recomendacionSeleccionada.estatusValidacionIcono);
+			$("#estatusValidacionIcono").addClass(_this._recomendacionSeleccionada.estatusValidacionColor);
+			$("#estatusValidacionLabel").html(_this._recomendacionSeleccionada.estatusValidacionDescripcion);
+			if(_this._recomendacionSeleccionada.estatusValidacionId!=EstatusValidacion.VALIDADA)
+			{
+				$("#registrarAvanceButton").show();
+				$("#registrarAvanceButton").click(function(){_this.mostrarFormularioAvance(Modo.ALTA);});
+				if(_this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR && _this._recomendacionSeleccionada.cumplimiento==100)
+				{
+						$("#validarRecomendacionButton").show();
+						$("#validarRecomendacionButton").click(function(){_this.mostrarFormularioValidacion();});
+				}
+			}
 			this.crearTablaAvances();
 			this.consultarAvances();
 			
 		},null,"avancesModal","","guardarAvanceButton", function()
 		{
 			
+		},function()
+		{
+			_this.consultarRecomendacionPorLlaves();
 		});
 
 	}
+	
+	mostrarFormularioValidacion()
+	{
+		var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/validacion_recomendacion.php",this, null, function()
+		{
+			this.inicializarValidacionesFormularioValidacion();
+			$("#accionAvanceValidacionLabel").html(_this._recomendacionSeleccionada.titulo);
+			this.consultarRecomendacionValidacionPorLlaves();
+			
+		},null,"validacionModal","","guardarValidacionButton", function()
+		{
+			$("#formulario").submit();
+		});
+	}
+	
+	consultarEstatusValidacion()
+	{
+		this.cargandoOpciones("#estatusValidacionSelect");
+		this.presentador.consultarEstatusValidacion();
+	}
+	
+	set estatusValidacion(estatusValidacion)
+	{
+		this.cargarOpciones('#estatusValidacionSelect', estatusValidacion, Modo.CAMBIO, this._modeloRecomendacionValidacion, 'estatusValidacionId',"");
+	}
+	
+	validarRecomendacion()
+	{
+		this.presentador.validarRecomendacion();
+	}
+	
+	consultarRecomendacionValidacionPorLlaves()
+	{
+		this.presentador.consultarRecomendacionValidacionPorLlaves();
+	}
+	
+	consultarRecomendacionPorLlaves()
+	{
+		this.presentador.consultarRecomendacionPorLlaves();
+	}
+	
+	set modeloRecomendacionValidacion(modeloRecomendacionValidacion)
+	{
+		this._modeloRecomendacionValidacion = modeloRecomendacionValidacion;
+		$("#comentariosValidacionInput").val(this._modeloRecomendacionValidacion.comentariosValidacion);
+		this.consultarEstatusValidacion();
+	}
+	
+	get modeloRecomendacionValidacion()
+	{
+		 var modelo = 
+		 {		
+			 id:  this._modeloRecomendacionValidacion.id,
+			 comentariosValidacion:$('#comentariosValidacionInput').val(),
+			 estatusValidacionId:$('#estatusValidacionSelect').val(),
+			
+		 };
+		 return modelo;
+	 }
 	
 	mostrarFormularioAvance(modo)
 	{
@@ -568,29 +1084,93 @@ class SeguimientoVista extends CatalogoVista
 		this.modoAvance = modo;
 		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/recomendaciones_avances_archivos.php",this, null, function()
 		{
+			this.inicializarValidacionesFormularioAvance();
 			this.crearTablaArchivos();
-			
-			//$("#accionInput").val(_this._recomendacionSeleccionada.titulo);
-			$("#accionLabel").html(_this._recomendacionSeleccionada.titulo);
-			if(modo==Modo.CAMBIO)
+			switch(modo)
 			{
-				this.consultarAvancePorLlaves();
-				this.consultarArchivos();
+				case Modo.ALTA:
+					$("#guardarAvanceButton").show();
+					$("#comentariosGroup").show();
+					$("#cumplimientoGroup").show();
+					$("#adjuntarArchivoButton").show();
+				break;
+				case Modo.CAMBIO:
+					$("#guardarAvanceButton").show();
+					$("#comentariosGroup").show();
+					$("#cumplimientoGroup").show();
+					$("#adjuntarArchivoButton").show();
+					this.consultarAvancePorLlaves();
+				break;
+				case Modo.CONSULTA:
+					this.consultarAvancePorLlaves();
+				break;
 			}
+			
+			$("#accionLabel").html(_this._recomendacionSeleccionada.titulo);
+			//_this._archivosAvance = [];
+			_this.archivos = [];
+			_this._archivosEliminados = [];
+			
+			$("#adjuntarArchivoButton").click(function(){_this.adjuntarArchivo();});
 			
 		},null,"archivosModal","","guardarAvanceButton",function()
 		{
-			if(modo==Modo.CAMBIO)	
-				this.actualizarAvance();
-			else
-				this.insertarAvance();
+			$("#formulario").submit();
 		});
 
 	}
 	
+	
+	
+	
+	adjuntarArchivo()
+	{
+		var _this = this;
+		this._archivoActual = {id: ArrayUtils.getMax(this._archivos,"id")+1};
+		if($("#file"+this._archivoActual.id).length==0)
+			$("#archivosModal").append("<input type='file' id='file"+this._archivoActual.id+"' name='file"+this._archivoActual.id+"' style='display:none' />");
+		
+		$("#file"+this._archivoActual.id).on("change",{archivo:this._archivoActual},function(event)
+		{
+			var archivo = event.data.archivo;
+			var target = event.target || event.srcElement;
+			if (target.value.length == 0) 
+			{
+				$("#file"+archivo.id).remove();
+			}
+			else
+			{
+				archivo.file = event.currentTarget.files[0];
+				archivo.subido = false;
+				archivo.nombre = archivo.file.name;
+				archivo.tamano = archivo.file.size;
+				_this.agregarArchivo(archivo);
+			}
+		});
+   		$("#file"+_this._archivoActual.id).trigger("click");
+		
+	}
+	
+	
+	
+	agregarArchivo(archivo)
+	{
+		var archivos = this.archivosTabla.registros;
+		archivos.push(archivo);
+		this.archivosTabla.registros = archivos;
+		this.inicializarEventosBotonesTablaArchivos("#" + this.archivosTabla._id+"Table tbody",this.archivosTabla.datatable.DataTable());
+	}
+	
+	guardarAvance()
+	{
+		this.presentador.guardarAvance();
+	}
+	
+	
 	consutarArchivos()
 	{
-		//this.presentador.consultarArchivos();
+		
+		this.presentador.consultarArchivos();
 	}
 	
 	actualizarAvance()
@@ -608,6 +1188,41 @@ class SeguimientoVista extends CatalogoVista
 		this._modeloAvance = modeloAvance;
 		$('#cumplimientoSelect').val(this._modeloAvance.cumplimiento);
 		$('#comentarioInput').val(this._modeloAvance.comentario);
+		
+		$('#cumplimientoAvanceTabla'+this._modeloAvance.id).html(this.getCumplimiento(this._modeloAvance));
+		$('#comentarioAvanceTabla'+this._modeloAvance.id).html(this.getTexto(this._modeloAvance.comentario));
+		$('#fechaModificacionAvanceTabla'+this._modeloAvance.id).html(this.getTexto(this._modeloAvance.fechaModificacion));
+		$('#archivosAvanceTabla'+this._modeloAvance.id).html(this.getArchivosAvance(this._modeloAvance));
+		$('#fotoUsuarioAvanceTabla'+this._modeloAvance.id).html(this.getFotoUsuario(this._modeloAvance));
+		$('#nombreUsuarioAvanceTabla'+this._modeloAvance.id).html(this.getTexto(this._modeloAvance.usuarioNombreCompleto));
+		
+		
+		this.consutarArchivos();
+		
+	}
+	
+	set modeloRecomendacion(modeloRecomendacion)
+	{
+		this._modeloRecomendacion = modeloRecomendacion;
+		$('#cumplimientoRecomendacionTabla'+this._modeloRecomendacion.id).html(this.getCumplimiento(this._modeloRecomendacion));
+		$('#fotoUsuarioRecomendacionTabla'+this._modeloRecomendacion.id).html(this.getFotoUsuario(this._modeloRecomendacion));
+		$('#nombreUsuarioRecomendacionTabla'+this._modeloRecomendacion.id).html(this.getTexto(this._modeloRecomendacion.usuarioNombreCompleto));
+		$('#estatusValidacionRecomendacionTabla'+this._modeloRecomendacion.id).html(this.getEstatusValidacionRecomendacion(this._modeloRecomendacion));
+		$('#comentariosRecomendacionTabla'+this._modeloRecomendacion.id).html(this.getComentariosRecomendacion(this._modeloRecomendacion));
+		$("#estatusValidacionIcono").attr("class","");
+		$("#estatusValidacionIcono").addClass(this._modeloRecomendacion.estatusValidacionIcono);
+		$("#estatusValidacionIcono").addClass(this._modeloRecomendacion.estatusValidacionColor);
+		$("#estatusValidacionLabel").html(this._modeloRecomendacion.estatusValidacionDescripcion);
+		
+		this._recomendacionSeleccionada.cumplimiento = modeloRecomendacion.cumplimiento;
+		this._recomendacionSeleccionada.estatusValidacionIcono = modeloRecomendacion.estatusValidacionIcono;
+		this._recomendacionSeleccionada.estatusValidacionColor = modeloRecomendacion.estatusValidacionColor;
+		this._recomendacionSeleccionada.estatusValidacionDescripcion = modeloRecomendacion.estatusValidacionDescripcion;
+		
+		if(this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR && this._recomendacionSeleccionada.cumplimiento==100)
+			$("#validarRecomendacionButton").show();
+		else
+			$("#validarRecomendacionButton").hide();
 	}
 	
 	get modeloAvance()
@@ -615,16 +1230,31 @@ class SeguimientoVista extends CatalogoVista
 		var modelo = 
 		 {		
 			 cumplimiento:$('#cumplimientoSelect').val(),
-			 comentario:$('#comentarioInput').val()
+			 comentario:$('#comentarioInput').val(),
+			 archivosEliminados : this._archivosEliminados.join(","),
+			
 		 };
-		 if(this.modoAvance ==Modo.CAMBIO && this._modeloAvance!=null)
+		 if((this.modoAvance ==Modo.CAMBIO || this.modoAvance ==Modo.CONSULTA) && this._modeloAvance!=null)
 			 modelo.id = this._modeloAvance.id;
 		 return modelo;
 	}
 	
+	get archivos()
+	{
+		var files = [];
+		for(var i=0; i < this._archivos.length; i++)
+		{
+			var archivo = this._archivos[i];
+			if(archivo.file!=null)
+				files.push(archivo.file);
+		}
+		
+		return files;
+	}
+	
 	consultarAvancePorLlaves()
 	{
-		this.presentador.consultarAvancePorLlaves();
+		this.presentador.consultarAvancePorLlaves(this.llavesAvance.id);
 	}
 	
 	crearTablaAvances()
@@ -632,24 +1262,27 @@ class SeguimientoVista extends CatalogoVista
 		this.avancesTabla = new Tabla("avancesTabla");
 		this.avancesTabla.buscar = false;
 		this.avancesTabla.paginacion = true;
-		this.avancesTabla.alto = 300;
+		this.avancesTabla.alto = 250;
 		this.avancesTabla.columnas = [];
 		
 		this.avancesTabla.columnas.push({longitud:50, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"C"});
-		this.avancesTabla.columnas.push({longitud:110, 	titulo:"% Cumplimiento",   alias:"cumplimiento", alineacion:"C", itemRenderer: this.rendererCumplimiento});
-		this.avancesTabla.columnas.push({longitud:50, 	titulo:"Evidencias",   alias:"nombreArchivo", alineacion:"C", itemRenderer:this.renderClip});
-		this.avancesTabla.columnas.push({longitud:300, 	titulo:"Comentario",   alias:"comentario", alineacion:"I" });
-		this.avancesTabla.columnas.push({longitud:100, 	titulo:"Fecha de ultima modificación",   alias:"fechaModificacion", alineacion:"I" } );
+		this.avancesTabla.columnas.push({longitud:110, 	titulo:"% Cumplimiento",   alias:"cumplimiento", alineacion:"C", itemRenderer: this.renderCumplimientoAvance});
+		this.avancesTabla.columnas.push({longitud:50, 	titulo:"Evidencias",   alias:"nombreArchivo", alineacion:"C", itemRenderer:this.renderArchivosAvance});
+		this.avancesTabla.columnas.push({longitud:300, 	titulo:"Comentario",   alias:"comentario", alineacion:"I",itemRenderer:this.renderComentarioAvance});
+		this.avancesTabla.columnas.push({longitud:100, 	titulo:"Fecha de ultima modificación",   alias:"fechaModificacion", alineacion:"I",itemRenderer:this.renderFechaModificacionAvance } );
 		
 		//if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR || this.usuario.tipoUsuarioId == TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId == TipoUsuario.SUPERVISOR)
 		//{
-			this.avancesTabla.columnas.push({longitud:40, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoUsuario});
-			this.avancesTabla.columnas.push({longitud:100, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I"});
+			this.avancesTabla.columnas.push({longitud:40, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoUsuarioAvance});
+			this.avancesTabla.columnas.push({longitud:100, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I",itemRenderer:this.renderNombreUsuarioAvance});
 
 		//}
-		this.avancesTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
+		/*this.avancesTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
 												"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
+*/
+		this.avancesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderEditarAvance});
+		this.avancesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderEliminarAvance});
 
 	
 		this.avancesTabla.textoTablaVacia = "";
@@ -659,18 +1292,101 @@ class SeguimientoVista extends CatalogoVista
 		
 	}
 	
+	renderEditarAvance(row)
+	{
+		if(vista._recomendacionSeleccionada!=null && vista._recomendacionSeleccionada.estatusValidacionId!=EstatusValidacion.VALIDADA)
+			return "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>";
+		else
+			return "";
+	}	
+	
+	renderEliminarAvance(row)
+	{
+		if(vista._recomendacionSeleccionada!=null && vista._recomendacionSeleccionada.estatusValidacionId!=EstatusValidacion.VALIDADA)
+			return "<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+		else
+			return "";
+	}
+	
+	inicializarValidacionesFormularioAvance()
+	{
+		var _this = this;
+		jQuery("#formulario").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+            	 "comentarioInput": {required: true, minlength: 25},
+               
+            },
+            messages: {
+            	 "comentarioInput": "Por favor ingrese un comentario (25 caracteres mínimo)",
+                
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.guardarAvance();
+            }
+        });
+	}
+	
+	inicializarValidacionesFormularioValidacion()
+	{
+		var _this = this;
+		jQuery("#formulario").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+            	 "comentariosValidacionInput": {required: !0},
+               
+            },
+            messages: {
+            	 "comentariosValidacionInput": "Por favor ingrese un comentario",
+                
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.validarRecomendacion();
+            }
+        });
+	}
+	
 	crearTablaArchivos()
 	{
 		this.archivosTabla = new Tabla("archivosTabla");
-		this.archivosTabla.alto = 180;
+		this.archivosTabla.alto = 300;
 		this.archivosTabla.buscar = false;
 		this.archivosTabla.paginacion = false;
 		this.archivosTabla.columnas = [
 			{longitud:50, 	titulo:"",   alias:"nombre", alineacion:"C", itemRenderer:this.renderArchivo},
 			{longitud:100, 	titulo:"",   alias:"nombre", alineacion:"I"},
+			{longitud:100, 	titulo:"",   alias:"tamano", alineacion:"C",itemRenderer:this.renderTamanoArchivo},
+			{longitud:100, 	titulo:"",   alias:"subido", alineacion:"C",itemRenderer:this.renderSubido}
 		
 		]
-		this.archivosTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+		if(this.modoAvance != Modo.CONSULTA)
+			this.archivosTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
 	
 		
@@ -682,17 +1398,58 @@ class SeguimientoVista extends CatalogoVista
 		
 	}
 	
-	renderClip(renglon, type, set)
+	renderClipAvance(renglon, type, set)
 	{   
-		var contenido = "";
-		var tieneArchivos = renglon.archivos>0?true:false;
-		if(tieneArchivos)
+		
+	}
+	
+	renderTamanoArchivo(renglon, type, set)
+	{
+		return vista.getTamano(renglon.tamano);
+	}
+	
+	renderSubido(renglon, type, set)
+	{
+		if(renglon.subido)
+			return "<i class='fas fa-cloud-upload-alt text-secondary' data-toggle='tooltip' data-placemen='bottom' title='Almacenado'></i>";
+		else
+			return "<i class='fas fa-upload text-secondary' data-toggle='tooltip' data-placemen='bottom' title='Pendiente de almacenar' ></i>";
+	}
+	
+	addCommas(nStr) { 
+	    nStr += ''; 
+	    var x = nStr.split('.'); 
+	    var x1 = x[0]; 
+	    var x2 = x.length > 1 ? '.' + x[1] : ''; 
+	    var rgx = /(\d+)(\d{3})/; 
+	    while (rgx.test(x1)) { 
+	     x1 = x1.replace(rgx, '$1' + ',' + '$2'); 
+	    } 
+	    return x1 + x2; 
+	} 
+	
+	getTamano(longitud)
+	{
+		if(longitud!="" && longitud!=undefined)
 		{
-			var html = "<i id='"+renglon.id+"clip' class='fa fa-lg fa-paperclip' style='cursor:pointer'></i>";
-			html+="<span  class='labelArchivo'>"+renglon.archivos+"</span>";
-			return html;
+			var tamano="";
+			if(longitud<1048576)
+			{
+				var kb= longitud / 1024;
+				kb = kb.toFixed(2);
+				//tamano =  this.addCommas(kb) + " KB (" + longitud  +" bytes)";
+				tamano =  this.addCommas(kb) + " KB";
+			}
+			else
+			{
+				var mb = longitud / 1048576;
+				mb = mb.toFixed(2);
+				//tamano =  this.addCommas(mb) + " MB (" + longitud  +" bytes)";
+				tamano =  this.addCommas(mb) + " MB";
+			}
+			return tamano;
 		}
-	    return contenido;
+		return "Tama\u00f1o desconocido";
 	}
 	
 	renderArchivo(renglon, type, set)
@@ -702,8 +1459,9 @@ class SeguimientoVista extends CatalogoVista
 		var iconoColor = vista.getIconoArchivo(renglon.nombre);
 		if(renglon.validada==1)
 			comentarios = "<span class='label-success' style='position: relative;top: 6px;right: 4px;font-size: 10px;padding: 2px 3px;line-height: .9;'><i class='fas fa-check-double'></i></span>";
-		contenido = "<span style='cursor:pointer;margin-left:15px;width:50px;height:30px' data-toggle='tooltip' data-placemen='bottom' title='Evidencia'  type='button' class='archivo'><span  data-toggle='tooltip' class='"+iconoColor.icono+" fa-lg "+iconoColor.color+"'>"+comentarios+"</span>";
-	    return contenido;
+		contenido = "<span data-toggle='tooltip' data-placemen='bottom' title='Ver archivo' style='cursor:pointer;margin-left:15px;width:50px;height:30px'  type='button' class='archivo'><span  data-toggle='tooltip' class='"+iconoColor.icono+" fa-lg "+iconoColor.color+"'>"+comentarios+"</span>";
+							
+		return contenido;
 	}
 	
 	getIconoArchivo(nombre)
@@ -807,7 +1565,10 @@ class SeguimientoVista extends CatalogoVista
 	
 	set archivos(archivos)
 	{
+		this._archivos = archivos;
 		//this.archivosTabla.textoTablaVacia = "No hay archivos asociados a este registro de avance";
+		for(var i=0; i < archivos.length; i++)
+			archivos[i].subido = true;
 		this.archivosTabla.registros = archivos;
 		this.inicializarEventosBotonesTablaArchivos("#" + this.archivosTabla._id+"Table tbody",this.archivosTabla.datatable.DataTable());
 	}
@@ -817,10 +1578,12 @@ class SeguimientoVista extends CatalogoVista
 		return this._llavesAvance;
 	}
 	
+	
+	
 	inicializarEventosBotonesTablaArchivos(tbody, table)
 	{
 		var _this = this;
-		$(tbody).on("click", "button.editar", function()
+		$(tbody).on("click", "button.eliminar", function()
 		{			
 			 var tr = $(this).closest('tr');
 			    
@@ -831,21 +1594,258 @@ class SeguimientoVista extends CatalogoVista
 			_this._archivoSeleccionado  = table.row( tr ).data();
 			if (_this._archivoSeleccionado != undefined)
 			{
-				_this._llavesArchivo= _this.copiarPropiedadesObjeto(_this._archivoSeleccionado, ["id"]);
+				//_this._llavesArchivo= _this.copiarPropiedadesObjeto(_this._archivoSeleccionado, ["id"]);
+				if(_this._archivoSeleccionado.subido)
+					_this._archivosEliminados.push(_this._archivoSeleccionado.id);
+				
+				var row = $("#archivosTabla").find("tr[data-id="+_this._archivoSeleccionado.id+"]");
+				row.fadeOut();
+				setTimeout(function()
+				{
+					$("#file" + _this._archivoSeleccionado.id).remove();
+            		 row.remove();
+					ArrayUtils.removeWithValues("id",[_this._archivoSeleccionado.id],_this._archivos);
+	 	         }, 1000);
+				
 			}
 		});
+		
+		
+		$(tbody).on("click", "span.archivo", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+			
+			_this._indiceArchivoSeleccionado = table.row( tr ).index(); 
+
+			_this._archivoSeleccionado  = table.row( tr ).data();
+			if (_this._archivoSeleccionado != undefined)
+			{
+				
+				_this.mostrarFormularioHTML(HANDEL_API+"/html/modales/ver_archivo.php",_this, null, function()
+				{
+					_this.__PAGE_RENDERING_IN_PROGRESS = 0;
+					_this.__CANVAS = $('#pdf-canvas').get(0);
+					_this.__CANVAS_CTX = _this.__CANVAS.getContext('2d');
+					
+					// Previous page of the PDF
+					$("#pdf-prev").on('click', function() {
+						if(_this.__CURRENT_PAGE != 1)
+							_this.showPage(--_this.__CURRENT_PAGE);
+					});
+
+					// Next page of the PDF
+					$("#pdf-next").on('click', function() {
+						if(_this.__CURRENT_PAGE != _this.__TOTAL_PAGES)
+							_this.showPage(++_this.__CURRENT_PAGE);
+					});
+					
+					_this.vistaPreviaArchivo(_this._archivoSeleccionado.nombre);
+					
+				},null,"archivoModal","","", function()
+				{
+					
+				},function()
+				{
+					
+				});
+				
+			}
+		});
+		
 		
 	}
 	
 	set guardando(guardando)
 	{
 		super.guardando = guardando;
-		$("#guardarAvanceButton").attr("disabled",guardando);
+		//$("#guardarAvanceButton").attr("disabled",guardando);
+		//$("#guardarAvanceButton").attr("disabled",guardando);
+		$(".button").attr("disabled",guardando);
 	}
 	
 	salirModalArchivos()
 	{
 		$('#archivosModal').modal('hide')
+	}
+	
+	salirFormularioValidacion()
+	{
+		$('#validacionModal').modal('hide')
+	}
+	
+	salirFormularioAvances()
+	{
+		$('#avancesModal').modal('hide')
+	}
+	
+	get time()
+	{
+		return this._time;
+	}
+	
+	set progresoArchivos(progresoArchivos)
+	{
+		if(this._archivos.length>0)
+		{
+			if(progresoArchivos == 100)
+				$("#archivosProgress").fadeOut();
+			else
+				$("#archivosProgress").show();
+				
+			$('#archivosProgressBar').css('width', progresoArchivos+'%').attr('aria-valuenow', progresoArchivos).html(progresoArchivos+"%");
+		}
+	}
+	
+	vistaPreviaArchivo(nombre)
+	{
+		 $("#pdf").hide();
+		if(nombre=="")
+			$('#evidenciaImage').attr("src",HANDEL_API + "/images/tipos_archivo/vacio.png");
+		else
+		{
+			try
+			{
+				var elementos = nombre.split(".");
+				if(elementos.length>1)
+				{
+					var tipo= elementos[elementos.length-1];
+					switch(tipo)
+					{
+						case "doc":
+						case "docx":
+							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/word.png");
+							
+						break;
+						case "xls":
+						case "xlsx":
+							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/excel.png");
+						break;
+						case "ppt":
+						case "pptx":
+							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/power_point.png");
+						break;
+						case "pdf":
+							 $("#pdf").show();
+							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/pdf.png");
+							 
+							 $('#evidenciaImage').hide(); 
+							 
+							var archivo = encodeURIComponent(nombre);
+							var url = HANDEL_API + "/php/archivos_avances/avance" + this._avanceSeleccionado.id+"/"+ archivo;
+							this.showPDF(url);
+							 
+						break;
+	//					case "txt":
+	//						 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/txt.png");
+	//					break;
+						default:
+							$('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/archivo.png");
+						break;
+						case "jpg":
+						case "png":
+						case "bmp":
+							var archivo = encodeURIComponent(nombre);
+							var url = HANDEL_API + "/php/archivos_avances/avance" + this._avanceSeleccionado.id+"/"+ archivo;
+							$('#evidenciaImage').attr('src',url);
+						break;
+						
+						
+					}
+				}
+				else
+				{
+					$('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/archivo.png");
+				}
+			}
+			catch(e)
+			{
+				 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/archivo.png");
+			}
+			
+		}
+	}
+	
+	showPDF(pdf_url) 
+	{
+		var _this = this;
+		$("#pdf-loader").show();
+
+		PDFJS.getDocument({ url: pdf_url }).then(function(pdf_doc) 
+		{
+			_this.__PDF_DOC = pdf_doc;
+			_this.__TOTAL_PAGES = _this.__PDF_DOC.numPages;
+			
+			$("#pdf").show();
+			
+			// Hide the pdf loader and show pdf container in HTML
+			$("#pdf-loader").hide();
+			$("#pdf-contents").show();
+			$("#pdf-total-pages").text(_this.__TOTAL_PAGES);
+
+			// Show the first page
+			_this.showPage(1);
+		}).catch(function(error) {
+			// If error re-show the upload button
+			$("#pdf-loader").hide();
+			$("#upload-button").show();
+			
+			$("#pdf").hide();
+			
+			 $('#evidenciaImage').show();
+			 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/pdf.png");
+			
+			_this.mostrarMensajeError("Error",error.message);
+		});;
+	}
+	
+	showPage(page_no) {
+		this.__PAGE_RENDERING_IN_PROGRESS = 1;
+		this.__CURRENT_PAGE = page_no;
+		
+		var _this = this;
+
+		// Disable Prev & Next buttons while page is being loaded
+		$("#pdf-next, #pdf-prev").attr('disabled', 'disabled');
+
+		// While page is being rendered hide the canvas and show a loading message
+		$("#pdf-canvas").hide();
+		$("#page-loader").show();
+
+		// Update current page in HTML
+		$("#pdf-current-page").text(page_no);
+		
+		// Fetch the page
+		this.__PDF_DOC.getPage(page_no).then(function(page) {
+			// As the canvas is of a fixed width we need to set the scale of the viewport accordingly
+			var scale_required = _this.__CANVAS.width / page.getViewport(1).width;
+
+			// Get viewport of the page at required scale
+			var viewport = page.getViewport(scale_required);
+
+			// Set canvas height
+			_this.__CANVAS.height = viewport.height;
+
+			var renderContext = {
+				canvasContext: _this.__CANVAS_CTX,
+				viewport: viewport
+			};
+			
+			// Render the page contents in the canvas
+			page.render(renderContext).then(function() {
+				_this.__PAGE_RENDERING_IN_PROGRESS = 0;
+
+				// Re-enable Prev & Next buttons
+				$("#pdf-next, #pdf-prev").removeAttr('disabled');
+
+				// Show the canvas and hide the page loader
+				$("#pdf-canvas").show();
+				$("#page-loader").hide();
+			});
+		});
 	}
 }
 var vista = new SeguimientoVista(this);

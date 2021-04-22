@@ -172,7 +172,11 @@ class AuditoriasVista extends CatalogoVista
 			{longitud:200, 	titulo:"Plantilla",   alias:"plantillaNombre", alineacion:"I" }, 
 			{longitud:200, 	titulo:"Seguimiento iniciado",   alias:"seguimiento", alineacion:"D", itemRenderer:this.renderSeguimiento},		
 			{longitud:300, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" }, 	
-			{longitud:250, 	titulo:"Fecha ejecución",   alias:"fechaEjecucion", alineacion:"I" },
+			{longitud:300, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" }, 	
+			{longitud:200, 	titulo:"Tipo de auditoría",   alias:"tipoAuditoriaNombre", alineacion:"I" }, 
+			{longitud:250, 	titulo:"Fecha de auditoría",   alias:"fecha", alineacion:"C",itemRenderer:this.renderFechaAuditoria },
+			//{longitud:250, 	titulo:"Hora",   alias:"hora", alineacion:"C" },
+			{longitud:250, 	titulo:"Fecha de última ejecución",   alias:"fechaEjecucion", alineacion:"I" },
 			{longitud:50, 	titulo:"Puntuacion",   alias:"puntuacion", alineacion:"C", itemRenderer: this.rendererPuntuacion },
 			{longitud:50, 	titulo:"Número",   alias:"contadorEmpresa", alineacion:"C" },
 			{longitud:200, 	titulo:"Referencia",   alias:"referencia", alineacion:"I" },
@@ -195,8 +199,18 @@ class AuditoriasVista extends CatalogoVista
 		if(renglon.seguimiento==1)
 			contenido += "<center id='"+id+"'><span class='fa fa-check fa-lg text-success'></span> "+renglon.fechaSeguimiento+"</center>";
 		else
-			contenido += "<center id='a"+id+"'>-</center>";
+			contenido += "<center id='a"+id+"'></center>";
 	    return contenido;
+	}
+	
+	renderFechaAuditoria(renglon)
+	{
+		var fecha = "";
+		if(renglon.fecha!=null)
+			fecha+= renglon.fecha;
+		if(renglon.hora!=null)
+			fecha+= " " +renglon.hora;
+		return fecha; 
 	}
 	
 	
@@ -618,7 +632,7 @@ class AuditoriasVista extends CatalogoVista
 			if(this._registroSeleccionado.seguimiento==1)
 				contenido = "<span class='fa fa-check fa-lg text-success'></span> "+this._registroSeleccionado.fechaSeguimiento;
 			else
-				contenido = "-";
+				contenido = "";
 		    $("#"+ id).html(contenido);
 		}	
 	}

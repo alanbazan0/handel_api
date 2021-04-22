@@ -4,6 +4,7 @@ use php\clases\CodigoError;
 use php\clases\JsonMapper;
 use php\modelos\Auditoria;
 use php\modelos\Avance;
+use php\modelos\Recomendacion;
 use php\repositorios\AuditoriasRepositorio;
 use php\modelos\Resultado;
 
@@ -15,6 +16,7 @@ include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
 include '../modelos/Avance.php';
+include '../modelos/Recomendacion.php';
 include '../repositorios/AuditoriasRepositorio.php';
 
 
@@ -125,10 +127,30 @@ try
                 case 'consultarAvancePorLlaves':
                     $llaves = json_decode(REQUEST('llaves'));
                     $resultado = $repositorio->consultarAvancePorLlaves($llaves);
-                break;  
+                break; 
+                case 'consultarRecomendacionPorLlaves':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarRecomendacionPorLlaves($llaves);
+                break; 
                 case 'eliminarAvance':
                     $llaves = json_decode(REQUEST('llaves'));
                     $resultado = $repositorio->eliminarAvance($llaves);
+                break;
+                case 'validarRecomendacion':
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Recomendacion());
+                    $resultado = $repositorio->validarRecomendacion($usuario,$modelo);
+                    if($resultado->correcto())
+                    {
+                        
+                    }
+                break;
+                case 'subirArchivosAvance':
+                    $recomendacionId =  REQUEST('recomendacionId');
+                    $avanceId =  REQUEST('avanceId');
+                    $archivos = FILES('file');
+                    $resultado = $repositorio->insertarArchivosAvance($recomendacionId,$avanceId,$archivos);
                 break;
                 default:
                     $resultado->mensajeError = "Acción no válida";

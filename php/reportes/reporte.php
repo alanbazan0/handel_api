@@ -1501,7 +1501,7 @@ abstract class PDF extends FPDF
                         $img = imagerotate($img, $deg, 0);
                     }
                     // then rewrite the rotated image back to the disk as $filename
-                    imagejpeg($img, $filename, 95);
+                    imagejpeg($img, $filename, 100);
                 } // if there is some rotation necessary
             } // if have the exif orientation info
         } // if function exists

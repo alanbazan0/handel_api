@@ -7,21 +7,26 @@ use php\modelos\Resultado;
 use php\clases\AdministradorConexion;
 use php\clases\AdministradorArchivos;
 use php\clases\Porcentaje;
+use php\modelos\RecomendacionComentario;
 
 include "../interfaces/IAuditoriasRepositorio.php";
 include "../modelos/Auditoria.php";
-include "RepositorioBase.php";
+require_once("RepositorioBase.php");
 require_once("../clases/Resultado.php");
 require_once("../clases/Porcentaje.php");
 require_once("../clases/TipoUsuario.php");
 require_once('../clases/AdministradorArchivos.php');
 require_once('../clases/AdministradorConexion.php');
+require_once('../repositorios/RecomendacionesComentariosRepositorio.php');
+require_once('../repositorios/EstatusValidacionRepositorio.php');
 require_once('../repositorios/UsuariosRepositorio.php');
 
 class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasRepositorio
 {
     protected $conexion;
     protected $consultaBase;
+    protected $consultaBaseRecomendaciones;
+    protected $consultaBaseAvances;
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
@@ -33,13 +38,35 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                         WHERE S.orden>1 AND A1.id = A.id ) puntuacion, 
                 A.nivel_compromiso, A.implementacion, A.verificacion,
                 TE.nivel_compromiso, TE.implementacion, TE.verificacion, 
-                PS.nivel_compromiso, PS.implementacion, PS.verificacion, observaciones, buenas_practicas, seguimiento, IFNULL(DATE_FORMAT(A.fecha_seguimiento,'%d/%m/%Y %H:%i:%s'),'')fecha_seguimiento
+                PS.nivel_compromiso, PS.implementacion, PS.verificacion, observaciones, buenas_practicas, seguimiento, IFNULL(DATE_FORMAT(A.fecha_seguimiento,'%d/%m/%Y %H:%i:%s'),'')fecha_seguimiento,
+                 IFNULL(DATE_FORMAT(A.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') AS fechaAlta,A.sede_id, S.nombre sedeNombre, IFNULL(DATE_FORMAT(A.fecha,'%d/%m/%Y'),''), A.hora, TA.nombre
              FROM auditorias A 
              INNER JOIN plantillas P on A.plantilla_id = P.id 
             LEFT JOIN empresas E on A.empresa_id = E.id 
             LEFT JOIN tipos_empresa TE ON TE.id = E.tipo_empresa_id
-            LEFT JOIN paises PS ON PS.id = E.pais_id";
-           
+            LEFT JOIN paises PS ON PS.id = E.pais_id
+            LEFT JOIN sedes S ON A.sede_id = S.id
+            LEFT JOIN tipos_auditoria TA ON TA.id = A.tipo_auditoria_id";
+        
+        $this->consultaBaseRecomendaciones = "SELECT RC.id, edt, titulo, responsable_id, U.nombre, U.apellido,  IFNULL(DATE_FORMAT(RC.fecha_alta,'%d/%m/%Y'),'')fechaAlta, prioridad, cumplimiento,  IFNULL(DATE_FORMAT(RC.fecha_vencimiento,'%d/%m/%Y'),'')fechaVencimiento, fecha_finalizacion, terminada, estatus_validacion_id, EST.descripcion AS estatusValidacionId, fecha_validacion, 
+                            validacion_usuario_id AS validadorId, VL.nombre AS validadorNombre, VL.apellido AS validadorApellido,
+                            E1.administrador_id AS administradorId, V.nombre AS administradorNombre, V.apellido AS administradorApellido,
+                            E1.id AS empresaId, E1.nombre AS empresaNombre,(SELECT count(C.id) FROM recomendaciones_comentarios C WHERE C.recomendacion_id = RC.id) numeroComentarios, EST.icono, EST.color,comentarios_validacion 
+                       FROM recomendaciones RC
+                       LEFT JOIN usuarios U ON U.id =  RC.responsable_id
+                       LEFT JOIN tipos_usuario TU ON TU.id = U.tipo_usuario_id
+                       LEFT JOIN empresas E1 ON E1.id = U.empresa_id
+                       LEFT JOIN usuarios V ON V.id = E1.administrador_id
+                       LEFT JOIN usuarios VL ON VL.id = RC.validacion_usuario_id
+                       INNER JOIN estatus_validacion EST ON RC.estatus_validacion_id = EST.id";
+        
+        $this->consultaBaseAvances = "SELECT RA.id, comentario, cumplimiento, IFNULL(DATE_FORMAT(RA.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta,IFNULL(DATE_FORMAT(RA.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, 
+                    (SELECT COUNT(*) FROM recomendaciones_avances_archivos ARC WHERE ARC.avance_id = RA.id) archivos, 
+                    RA.usuario_id, U.nombre, U.apellido
+                     FROM recomendaciones_avances RA
+                        LEFT JOIN usuarios U ON RA.usuario_id = U.id";
+                      
+        
     }
      
     
@@ -185,32 +212,34 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             return $resultado;
     }
     
-    function consultarAuditoriaAnterior($empresaId, $plantillaId, $auditoriaId)
+    function consultarAuditoriaAnterior($empresaId, $sedeId, $plantillaId, $auditoriaId)
     {
         $resultado = new Resultado();
         
-        $consulta = "SELECT id, DATE_FORMAT(fecha_ejecucion,'%d/%m/%Y %H:%i:%s')
+        $consulta = "SELECT id, DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s')
                     FROM auditorias
-                    WHERE empresa_id = ? and plantilla_id = ? and id < ?
+                    WHERE empresa_id = ? 
+                           AND sede_id = ?,
+                            AND plantilla_id = ? AND id < ?
                     ORDER BY id DESC
                     LIMIT 1";
         
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param('iii',$empresaId, $plantillaId,$auditoriaId))
+            if($sentencia->bind_param('iiii',$empresaId, $sedeId, $plantillaId,$auditoriaId))
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id,$fechaEjecucion))
+                    if($sentencia->bind_result($id,$fecha))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = (object)["id"=>$id, "fechaEjecucion"=> $fechaEjecucion];
+                            $registro = (object)["id"=>$id, "fecha"=> $fecha];
                             $resultado->valor = $registro;
                         }
                         else
-                            $resultado->valor = -1;
+                            $resultado->valor = (object)["id"=> -1, "fecha"=> ""];
                     }
                     else
                         $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
@@ -384,7 +413,20 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         if($modelo->id=="")
         {
             if($modelo->empresaId=="")
-                $modelo->empresaId = NULL;
+                $modelo->empresaId = null;
+            
+            if($modelo->sedeId=="")
+                $modelo->sedeId = null;
+            
+            $fecha = "";
+            if($modelo->fecha!="")
+            {
+                $elementos = explode("/",$modelo->fecha);
+                $elementos = array_reverse($elementos);
+                $fecha = join("-",$elementos);
+            }
+            else
+                $fecha = null;
             
             $resultado =  $this->calcularId("id","auditorias");
             if($resultado->mensajeError=="")
@@ -394,11 +436,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 $modelo->contadorEmpresa = $this->calcularContadorEmpresa($modelo->empresaId);
                 
                 
-                $consulta = "INSERT INTO auditorias(id, plantilla_id, fecha_ejecucion, empresa_id, contador_empresa, tipo_auditoria_id) " .
-                    "VALUE(?, ?, NOW(),  ?, ?, ?)";
+                $consulta = "INSERT INTO auditorias(id, plantilla_id, fecha_ejecucion, empresa_id, contador_empresa, tipo_auditoria_id, fecha_alta, sede_id, fecha, hora) " .
+                    "VALUE(?, ?, NOW(),  ?, ?, ?, NOW(), ?, ?, ?)";
                 if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    if( $sentencia->bind_param("iiiis", $modelo->id, $modelo->plantillaId, $modelo->empresaId, $modelo->contadorEmpresa, $modelo->tipoAuditoriaId ))
+                    if( $sentencia->bind_param("iiiisiss", $modelo->id, $modelo->plantillaId, $modelo->empresaId, $modelo->contadorEmpresa, $modelo->tipoAuditoriaId ,$modelo->sedeId, $fecha, $modelo->hora))
                     {
                         if($sentencia->execute())
                         {
@@ -451,39 +493,6 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         return $resultado;
     }
     
-//     private function consultarReferencia($auditoriaId)
-//     {
-//         $consulta = "SELECT E.id,   IFNULL(E.nombre_corto,'')nombre_corto, A.contador_empresa,IFNULL(DATE_FORMAT(A.fecha_ejecucion,'%d/%m/%Y %H:%i:%s'),'')fecha_ejecucion " .
-//             " FROM auditorias A " .
-//             " INNER JOIN plantillas P on A.plantilla_id = P.id  " .
-//             " INNER JOIN empresas E on A.empresa_id = E.id " .
-//             "WHERE A.id = ?";
-//         if($sentencia = $this->conexion->prepare($consulta))
-//         {
-//             if($sentencia->bind_param("i",$auditoriaId))
-//             {
-//                 if($sentencia->execute())
-//                 {
-//                     if ($sentencia->bind_result($empresaId,$empresaNombreCorto, $contadorEmpresa, $fechaEjecucion))
-//                     {
-//                         if($sentencia->fetch())
-//                         {
-//                             $fecha = substr($fechaEjecucion,0,10);
-//                             $fecha = str_replace( '/', '.', $fecha );
-                            
-//                             if($empresaNombreCorto=="" || $empresaNombreCorto==null)
-//                                 $empresaNombreCorto = "EMP".$empresaId;
-                            
-//                             $referencia = $empresaNombreCorto . "-".$fecha."-".$contadorEmpresa;
-//                             return $referencia;
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-//         return "";
-                            
-//     }
     
     private function existeAuditoria($id)
     {
@@ -1264,17 +1273,33 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         if($modelo->empresaId=="")
             $modelo->empresaId = null;
         
+        if($modelo->sedeId=="")
+            $modelo->sedeId = null;
+        
+        $fecha = "";
+        if($modelo->fecha!="")
+        {
+            $elementos = explode("/",$modelo->fecha);
+            $elementos = array_reverse($elementos);
+            $fecha = join("-",$elementos);
+        }
+        else
+            $fecha = null;
+        
         $consulta = " UPDATE auditorias     
             SET empresa_id = ?, 
                    tipo_auditoria_id = ?,   
                     fecha_ejecucion = NOW(),
                     observaciones = ?,
-                    buenas_practicas = ? 
+                    buenas_practicas = ?,
+                    sede_id = ?,
+                    fecha = ?,
+                    hora = ? 
             WHERE id = ? ";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if( $sentencia->bind_param("isssi", $modelo->empresaId,$modelo->tipoAuditoriaId,$modelo->observaciones,$modelo->buenasPracticas,$modelo->id))
+            if( $sentencia->bind_param("isssissi", $modelo->empresaId,$modelo->tipoAuditoriaId,$modelo->observaciones,$modelo->buenasPracticas,$modelo->sedeId, $fecha, $modelo->hora,$modelo->id))
             {
                 if($sentencia->execute())
                 {
@@ -1450,11 +1475,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento);
+                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento, "","",$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre);
                            
                             
                             array_push($registros,$registro);
@@ -1488,11 +1513,12 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento))
+                    //if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre))
                     {
                         if($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento);
+                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,"","", $fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre);
                             $resultado->valor = $registro;
                         }
                     }
@@ -1619,11 +1645,12 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento))
+                    //if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre))
                     {
                         if($sentencia->fetch())
                         {
-                            $plantilla = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion,$observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento);
+                            $plantilla = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion,$observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,"","", $fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre);
                            
                             
                             $resultado->valor = $plantilla;
@@ -1660,28 +1687,65 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     {
         $resultado = new Resultado();
         ini_set('max_execution_time', 300);
-        $consulta = "SELECT RA.id, comentario, cumplimiento, IFNULL(DATE_FORMAT(RA.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, archivos
-                       FROM recomendaciones_avances RA
-                      WHERE id = ?
-                       ORDER BY RA.id";
+        $consulta = $this->consultaBaseAvances .
+                     " WHERE RA.id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param("i",$llaves->id))
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $comentario, $cumplimiento, $fecha, $archivos ))   
+                    if ($sentencia->bind_result($id, $comentario, $cumplimiento, $fechaAlta, $fechaModificacion, $archivos, $usuarioId, $usuarioNombre, $usuarioApellido ))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro =  (object)[
-                                "id" => $id,
-                                "comentario" => $comentario,
-                                "cumplimiento" => $cumplimiento,
-                                "fecha" => $fecha,
-                                "archivos" => $archivos
+                            $registro = $this->crearRegistroAvance($id, $comentario, $cumplimiento, $fechaAlta, $fechaModificacion, $archivos, $usuarioId, $usuarioNombre, $usuarioApellido);
+//                             $registro =  (object)[
+//                                 "id" => $id,
+//                                 "comentario" => $comentario,
+//                                 "cumplimiento" => $cumplimiento,
+//                                 "fecha" => $fecha,
+//                                 "archivos" => $archivos
                                 
-                            ];
+//                             ];
+                            $resultado->valor = $registro;
+                            
+                            $sentencia->close();
+                        }
+                        else
+                            $resultado->mensajeError = "No se encontró ningún resultado.";
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
+    public function consultarRecomendacionPorLlaves($llaves)
+    {
+        $resultado = new Resultado();
+        $consulta = $this->consultaBaseRecomendaciones .
+                     " WHERE RC.id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$llaves->id))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor, $comentariosValidacion))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $registro = $this->crearRegistroRecomendacion($id, $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion, $terminada, $estatusValidacionId, $estatusValidacionDescripcion,$fechaValidacion, $validadorId,$validadorNombre, $validadorApellido,$administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion);
                             $resultado->valor = $registro;
                             
                             $sentencia->close();
@@ -2334,7 +2398,111 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             return $resultado;
     }
     
-    private function crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa, $tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento, $recomendacionesTotal="",$recomendacionesPendientes="")
+    private function crearRegistroAvance($id, $comentario, $cumplimiento, $fechaAlta, $fechaModificacion, $archivos, $usuarioId, $usuarioNombre, $usuarioApellido)
+    {
+        $registro =  (object)[
+            "id" => $id,
+            "comentario" => $comentario,
+            "cumplimiento" => $cumplimiento,
+            "fechaAlta" => $fechaAlta,
+            "fechaModificacion" => $fechaModificacion,
+            "archivos" => $archivos,
+            "usuarioId" => $usuarioId,
+            "usuarioNombre" => $usuarioNombre,
+            "usuarioApellido" => $usuarioApellido
+            
+        ];
+        
+        $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
+        //$registro->nombreId =  $registro->usuarioNombreCompleto ." (".$registro->id.")";
+        $registro->fotoPerfil =  "../fotos/usuario". $registro->usuarioId .".jpg";
+        if(file_exists($registro->fotoPerfil))
+            $registro->fotoPerfil =  "php/fotos/usuario". $registro->usuarioId .".jpg";
+        else
+            $registro->fotoPerfil =  "php/fotos/default.jpg";
+        
+        return $registro;
+    }
+    
+    private function crearRegistroRecomendacion($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId, $estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido, $administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre, $numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion)
+    {
+        $registro =  (object)[
+            "id" => $id,
+            "edt" => $edt,
+            "titulo" => $titulo,
+            "usuarioId" => $responsableId,
+            "usuarioNombre" => $responsableNombre,
+            "usuarioApellido" => $reponsableApellido,
+            "fechaAlta" => $fechaAlta,
+            "prioridad" => $prioridad,
+            "cumplimiento" => $cumplimiento,
+            "fechaVencimiento" => $fechaVencimiento,
+            "fechaFinalizacion" => $fechaFinalizacion,
+            "terminada" => $terminada,
+            "estatusValidacionId" => $estatusValidacionId,
+            "estatusValidacionDescripcion" => $estatusValidacionDescripcion,
+            "estatusValidacionIcono" => $estatusValidacionIcono,
+            "estatusValidacionColor" => $estatusValidacionColor,
+            "fechaValidacion" => $fechaValidacion,
+            'administradorId' => $administradorId,
+            'administradorNombre' => $administradorNombre,
+            'administradorApellido' => $administradorApellido,
+            'validadorId' => $validadorId,
+            'validadorNombre' => $validadorNombre,
+            'validadorApellido' => $validadorApellido,
+            'empresaId' => $empresaId,
+            "empresaNombre" => $empresaNombre,
+            "numeroComentarios" => $numeroComentarios,
+            "comentariosValidacion" => $comentariosValidacion
+            
+        ];
+        $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
+        $registro->fotoPerfil =  "../fotos/usuario". $registro->usuarioId .".jpg";
+        if(file_exists($registro->fotoPerfil))
+            $registro->fotoPerfil =  "php/fotos/usuario". $registro->usuarioId .".jpg";
+        else
+            $registro->fotoPerfil =  "php/fotos/default.jpg";
+        
+        $registro->administradorNombreCompleto = $registro->administradorNombre . " " . $registro->administradorApellido;
+        $registro->administradorFotoPerfil =  "../fotos/usuario". $registro->administradorId .".jpg";
+        if(file_exists($registro->administradorFotoPerfil))
+            $registro->administradorFotoPerfil =  "php/fotos/usuario". $registro->administradorId .".jpg";
+        else
+            $registro->administradorFotoPerfil =  "php/fotos/default.jpg";
+        
+        if($registro->validadorId==null || $registro->validadorId=="")
+        {
+            $registro->validadorId = $registro->administradorId;
+            $registro->validadorNombre = $registro->administradorNombre;
+            $registro->validadorApellido = $registro->administradorApellido;
+            $registro->validadorNombreCompleto = $registro->validadorNombre . " " . $registro->validadorApellido;
+            $registro->validadorFotoPerfil =  "../fotos/usuario". $registro->administradorId .".jpg";
+            if(file_exists($registro->validadorFotoPerfil))
+                $registro->validadorFotoPerfil =  "php/fotos/usuario". $registro->administradorId .".jpg";
+            else
+                $registro->validadorFotoPerfil =  "php/fotos/default.jpg";
+                    
+        }
+        else
+        {
+            $registro->validadorNombreCompleto = $registro->validadorNombre . " " . $registro->validadorApellido;
+            $registro->validadorFotoPerfil =  "../fotos/usuario". $registro->validadorId .".jpg";
+            if(file_exists($registro->validadorFotoPerfil))
+                $registro->validadorFotoPerfil =  "php/fotos/usuario". $registro->validadorId .".jpg";
+            else
+                $registro->validadorFotoPerfil =  "php/fotos/default.jpg";
+        }
+        
+        $registro->empresaLogo =  "../logos_empresas/logo". $registro->empresaId .".png";
+        if(file_exists($registro->empresaLogo))
+            $registro->empresaLogo =  "php/logos_empresas/logo". $registro->empresaId .".png";
+        else
+            $registro->empresaLogo =  "php/logos_empresas/default.png";
+            
+        return $registro;
+    }
+    
+    private function crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa, $tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento, $recomendacionesTotal,$recomendacionesPendientes, $fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre)
     {
 //         $archivoIcono = '../../php/iconos/icono'.$plantillaId.'.png';
 //         $icono = 'default.png';
@@ -2345,8 +2513,8 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         if(file_exists($archivoIcono))
             $icono = 'plantilla'.$id.'.png';
         
-        $fecha = substr($fechaEjecucion,0,10);
-        $fecha = str_replace( '/', '.', $fecha );
+        $fechaReferencia = substr($fecha,0,10);
+        $fechaReferencia = str_replace( '/', '.', $fechaReferencia );
         
         if($empresaId==null)
             $empresaId = ".NA";
@@ -2354,7 +2522,21 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         if($empresaNombreCorto=="" || $empresaNombreCorto==null)
             $empresaNombreCorto = "EMP".$empresaId;
         
-        $referencia = $empresaNombreCorto . "-".$fecha."-".$contadorEmpresa;
+        //$sedeNombreCorto = "SED".$sedeId;
+        $sedeNombreCorto="";
+        if($sedeNombre!="" && $sedeNombre!=null)
+        {
+            $sedeNombreCorto  = substr($sedeNombre,0,3);
+            $sedeNombreCorto = str_replace(' ', '', $sedeNombreCorto);
+            $sedeNombreCorto = $this->eliminarAcentos($sedeNombreCorto);
+            $sedeNombreCorto = strtoupper($sedeNombreCorto);
+        }
+        
+        $empresaNombreCorto = str_replace(' ', '', $empresaNombreCorto);
+        $empresaNombreCorto = $this->eliminarAcentos($empresaNombreCorto);
+        $empresaNombreCorto = strtoupper($empresaNombreCorto);
+        
+        $referencia = $empresaNombreCorto . "-".$sedeNombreCorto."-".$fechaReferencia."-".$contadorEmpresa;
         
         $registro= (object) [
             'icono' => $icono,
@@ -2368,6 +2550,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             'contadorEmpresa' => $contadorEmpresa ,
             'referencia' => $referencia,
             'tipoAuditoriaId' => $tipoAuditoriaId,
+            'tipoAuditoriaNombre' => $tipoAuditoriaNombre,
             'puntuacion' => $puntuacion,
             'nivelCompromiso' => $nivelCompromiso,
             'implementacion' => $implementacion,
@@ -2383,7 +2566,12 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             'seguimiento' => $seguimiento,
             'fechaSeguimiento' => $fechaSeguimiento,
             'recomendacionesTotal' => $recomendacionesTotal,
-            'recomendacionesPendientes' => $recomendacionesPendientes
+            'recomendacionesPendientes' => $recomendacionesPendientes,
+            'fechaAlta' => $fechaAlta,
+            'sedeId' => $sedeId,
+            'sedeNombre' => $sedeNombre,
+            'fecha' => $fecha,
+            'hora' => $hora
         ];
         
         Porcentaje::formatearPorcentaje($registro, "puntuacion");
@@ -2712,14 +2900,10 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         
         $filtros = $this->getFiltros($usuario,(object)[]);
         array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'RC','campo'=>'auditoria_id','valor'=>$llaves->id]);
-        $and = $this->and($filtros);
-        $consulta = "SELECT RC.id, edt, titulo, responsable_id, U.nombre, U.apellido,  IFNULL(DATE_FORMAT(RC.fecha_alta,'%d/%m/%Y'),'')fechaAlta, prioridad, cumplimiento,  IFNULL(DATE_FORMAT(RC.fecha_vencimiento,'%d/%m/%Y'),'')fechaVencimiento, fecha_finalizacion
-                       FROM recomendaciones RC 
-                       LEFT JOIN usuarios U ON U.id =  RC.responsable_id
-                       LEFT JOIN tipos_usuario TU ON TU.id = U.tipo_usuario_id
-                       LEFT JOIN empresas E1 ON E1.id = U.empresa_id
-                       WHERE RC.cumplimiento<100 $and 
-                       ORDER BY TU.orden, U.nombre, RC.titulo";
+        $where = $this->where($filtros);
+        $consulta = $this->consultaBaseRecomendaciones .
+                   $where .
+                   "ORDER BY TU.orden, U.nombre, RC.titulo";
 
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -2727,31 +2911,12 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion ))
+                    if ($sentencia->bind_result($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido, $administradorId,$administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro =  (object)[
-                                "id" => $id,
-                                "edt" => $edt,
-                                "titulo" => $titulo,
-                                "usuarioId" => $responsableId,
-                                "usuarioNombre" => $responsableNombre,
-                                "usuarioApellido" => $reponsableApellido,
-                                "fechaAlta" => $fechaAlta,
-                                "prioridad" => $prioridad,
-                                "cumplimiento" => $cumplimiento,
-                                "fechaVencimiento" => $fechaVencimiento,
-                                "fechaFinalizacion" => $fechaFinalizacion
-                            ];
-                            //$registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento,$fechaSeguimiento, $recomendacionesTotal,$recomendacionesPendientes);
-                            $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
-                            //$registro->nombreId =  $registro->usuarioNombreCompleto ." (".$registro->id.")";
-                            $registro->fotoPerfil =  "../fotos/usuario". $registro->usuarioId .".jpg";
-                            if(file_exists($registro->fotoPerfil))
-                                $registro->fotoPerfil =  "php/fotos/usuario". $registro->usuarioId .".jpg";
-                            else
-                                $registro->fotoPerfil =  "php/fotos/default.jpg";
+                            $registro = $this->crearRegistroRecomendacion($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido,$administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre, $numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion);
+                         
                             
                             array_push($registros,$registro);
                         }
@@ -2816,13 +2981,16 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 FROM recomendaciones R
                 	LEFT JOIN usuarios U ON U.id = R.responsable_id
                 	LEFT JOIN empresas E1 ON E1.id = U.empresa_id
-                WHERE auditoria_id = A.id AND R.cumplimiento < 100 $and) recomendacionesPendientes
+                WHERE auditoria_id = A.id AND R.estatus_validacion_id!=2 $and) recomendacionesPendientes, 
+                IFNULL(DATE_FORMAT(A.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') AS fechaAlta,A.sede_id, S.nombre AS sedeNombre, IFNULL(DATE_FORMAT(A.fecha,'%d/%m/%Y'),''), A.hora, TA.nombre AS tipoAuditoriaNombre
              FROM auditorias A 
                  INNER JOIN plantillas P on A.plantilla_id = P.id 
                 LEFT JOIN empresas E on A.empresa_id = E.id 
                 LEFT JOIN tipos_empresa TE ON TE.id = E.tipo_empresa_id
                 LEFT JOIN paises PS ON PS.id = E.pais_id
-            ORDER BY UNIX_TIMESTAMP(fecha_ejecucion) desc
+                LEFT JOIN sedes S ON A.sede_id = S.id
+                LEFT JOIN tipos_auditoria TA ON TA.id = A.tipo_auditoria_id
+            ORDER BY UNIX_TIMESTAMP(fecha) desc, hora desc
             )SB 
             WHERE recomendacionesTotal > 0";
         
@@ -2834,11 +3002,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento, $recomendacionesTotal, $recomendacionesPendientes))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento, $recomendacionesTotal, $recomendacionesPendientes, $fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento,$fechaSeguimiento, $recomendacionesTotal,$recomendacionesPendientes);
+                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento,$fechaSeguimiento, $recomendacionesTotal,$recomendacionesPendientes,$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre);
                             
                             
                             array_push($registros,$registro);
@@ -2920,10 +3088,8 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         //array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'RC','campo'=>'auditoria_id','valor'=>$llaves->id]);
         //array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'RC','campo'=>'auditoria_id','valor'=>$llaves->id]);
         //$and = $this->and($filtros);
-        $consulta = "SELECT RA.id, comentario, cumplimiento, IFNULL(DATE_FORMAT(RA.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta,IFNULL(DATE_FORMAT(RA.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, archivos, RA.usuario_id, U.nombre, U.apellido
-                     FROM recomendaciones_avances RA
-                        LEFT JOIN usuarios U ON RA.usuario_id = U.id
-                      WHERE recomendacion_id = ?
+        $consulta = $this->consultaBaseAvances .
+                     " WHERE recomendacion_id = ?
                        ORDER BY RA.id";
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -2936,26 +3102,10 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro =  (object)[
-                                "id" => $id,
-                                "comentario" => $comentario,
-                                "cumplimiento" => $cumplimiento,
-                                "fechaAlta" => $fechaAlta,
-                                "fechaModificacion" => $fechaModificacion,
-                                "archivos" => $archivos,
-                                "usuarioId" => $usuarioId,
-                                "usuarioNombre" => $usuarioNombre,
-                                "usuarioApellido" => $usuarioApellido
-                               
-                            ];
+                            $registro = $this->crearRegistroAvance($id, $comentario, $cumplimiento, $fechaAlta, $fechaModificacion, $archivos, $usuarioId, $usuarioNombre, $usuarioApellido);
                             
-                            $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
-                            //$registro->nombreId =  $registro->usuarioNombreCompleto ." (".$registro->id.")";
-                            $registro->fotoPerfil =  "../fotos/usuario". $registro->usuarioId .".jpg";
-                            if(file_exists($registro->fotoPerfil))
-                                $registro->fotoPerfil =  "php/fotos/usuario". $registro->usuarioId .".jpg";
-                            else
-                                $registro->fotoPerfil =  "php/fotos/default.jpg";
+                            
+                          
                             
                             array_push($registros,$registro);
                         }
@@ -2985,7 +3135,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         //array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'RC','campo'=>'auditoria_id','valor'=>$llaves->id]);
         //array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'RC','campo'=>'auditoria_id','valor'=>$llaves->id]);
         //$and = $this->and($filtros);
-        $consulta = "SELECT ARC.id, nombre
+        $consulta = "SELECT ARC.id, nombre, tamano, fecha
                        FROM recomendaciones_avances_archivos ARC
                       WHERE avance_id = ?
                        ORDER BY ARC.id";
@@ -2996,13 +3146,15 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombre ))
+                    if ($sentencia->bind_result($id, $nombre, $tamano, $fecha ))
                     {
                         while($row = $sentencia->fetch())
                         {
                             $registro =  (object)[
                                 "id" => $id,
                                 "nombre" => $nombre,
+                                "tamano" => $tamano,
+                                "fecha" => $fecha
                                 
                             ];
                             array_push($registros,$registro);
@@ -3026,6 +3178,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     
     public function insertarAvance($recomendacionId,$modelo,$usuario)
     {
+        $this->conexion->autocommit(FALSE);
         $resultado =  $this->calcularId("id","recomendaciones_avances");
         if($resultado->mensajeError=="")
         {
@@ -3036,7 +3189,48 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if( $sentencia->bind_param("iiisi", $id, $recomendacionId,$modelo->cumplimiento, $modelo->comentario, $usuario->id))
                 {
-                    if(!$sentencia->execute())
+                    if($sentencia->execute())
+                    {
+                        $sentencia->close();
+                        $resultado = $this->actualizarRecomendacion($recomendacionId);
+                    }
+                    else
+                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = "Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        }
+        if($resultado->correcto())
+        {
+            $this->conexion->commit();
+            $resultado->valor = $id;
+        }
+        else
+            $this->conexion->rollback();
+        return $resultado;
+    }
+    
+    public function insertarArchivo($avanceId,$nombre, $tamano)
+    {
+        $resultado =  $this->calcularId("id","recomendaciones_avances_archivos");
+        if($resultado->mensajeError=="")
+        {
+            $id = $resultado->valor;
+            $consulta = "INSERT INTO recomendaciones_avances_archivos(id, avance_id, nombre, tamano, fecha) " .
+                "VALUE(?, ?, ?, ?, NOW())";
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if( $sentencia->bind_param("iisi", $id, $avanceId,$nombre, $tamano))
+                {
+                    if($sentencia->execute())
+                    {
+                        $sentencia->close();
+                       
+                    }
+                    else
                         $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
                 }
                 else
@@ -3048,8 +3242,95 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         return $resultado;
     }
     
+    public function consultarUltimoAvance($recomendacionId)
+    {
+        $resultado = new Resultado();
+        $consulta =  "SELECT cumplimiento AS cumplimiento FROM recomendaciones_avances RA WHERE recomendacion_id = ? ORDER BY id DESC LIMIT 1";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("i", $recomendacionId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $resultado->valor = $id;
+                        }
+                        else
+                            $resultado->valor =  0;
+                    }
+                    else
+                        $resultado->mensajeError =  __FUNCTION__. " Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError =  __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+            {
+                $resultado->mensajeError =  __FUNCTION__. " Falló el enlace de parámetros";
+            }
+        }
+        else
+            $resultado->mensajeError =  __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            return $resultado;
+    }   
+    
+    private function actualizarRecomendacion($recomendacionId)
+    {
+        $resultado = new Resultado();
+        $resultado = $this->consultarUltimoAvance($recomendacionId);
+        if($resultado->correcto())
+        {
+            $avance = $resultado->valor;
+            if($avance==100)
+                $resultado = $this->actualizarCumplimientoRecomendacion($recomendacionId,$avance,1, 1, "NOW()");
+            else
+                $resultado = $this->actualizarCumplimientoRecomendacion($recomendacionId,$avance,0, 0, "NULL");
+        }
+        return $resultado;
+        
+    }
+    
+    public function actualizarCumplimientoRecomendacion($recomendacionId, $cumplimiento, $terminada, $estatusValidacionId, $fechaFinalizacion)
+    {
+        $resultado = new Resultado();
+        
+        $consulta = " UPDATE recomendaciones
+           SET cumplimiento = ? ,
+                terminada = ?,
+                estatus_validacion_id = ?,
+                fecha_finalizacion = $fechaFinalizacion,
+                fecha_modificacion = NOW()
+            WHERE id = ?";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("iiii", $cumplimiento,$terminada,$estatusValidacionId,$recomendacionId))
+            {
+                if($sentencia->execute())
+                {
+                    $resultado->valor=true;
+                    $sentencia->close();
+                }
+                else
+                    $resultado->mensajeError =__FUNCTION__." Falló la ejecución actualizar(" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
+    
     public function actualizarAvance($recomendacionId,$modelo,$usuario)
     {
+        $this->conexion->autocommit(FALSE);
         $resultado = new Resultado();
         $consulta = " UPDATE recomendaciones_avances " .
             "SET cumplimiento = ?, " .
@@ -3064,7 +3345,14 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    $resultado->valor=true;
+                    $sentencia->close();
+                    $resultado = $this->actualizarRecomendacion($recomendacionId);
+                    if($resultado->correcto())
+                    {
+                        if($modelo->archivosEliminados!="")
+                             $resultado = $this->eliminarArchivosAvanceIN($modelo->archivosEliminados);
+                    }
+                    
                 }
                 else
                     $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
@@ -3073,7 +3361,14 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         }
         else
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-            return $resultado;
+        if($resultado->correcto())
+        {
+            $this->conexion->commit();
+            $resultado->valor=true;
+        }
+        else
+            $this->conexion->rollback();
+        return $resultado;
     }
     
     public function eliminarAvance($llaves)
@@ -3090,7 +3385,10 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 {
                     if($sentencia->execute())
                     {
-                        $resultado->valor = $llaves->id;
+                        $sentencia->close();
+                        $resultado = $this->actualizarRecomendacion($llaves->recomendacionId);
+                        if($resultado->correcto())
+                            $resultado->valor = $llaves->id;
                     }
                     else
                     {
@@ -3131,6 +3429,16 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 if($sentencia->execute())
                 {
                     $sentencia->close();
+                    $dirpath = dirname(getcwd());
+                    $carpeta = "archivos_avances/avance" . $avanceId ;
+                    $path = $dirpath.'/'.$carpeta.'/';
+                    if(file_exists($path))
+                    {
+                        $administradorArchivos = new AdministradorArchivos();
+                        $administradorArchivos->eliminarDirectorio($path);
+                        
+                    }
+                       
                 }
                 else
                 {
@@ -3148,6 +3456,183 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
         }
+        return $resultado;
+    }
+    
+    public function eliminarArchivosAvanceIN($ids)
+    {
+        $resultado = new Resultado();
+        
+        $consulta ="DELETE FROM recomendaciones_avances_archivos WHERE id IN($ids)";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            //if($sentencia->bind_param("i",$avanceId))
+            //{
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                    //TODO Eliminar archivos fisicamente
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            //}
+           // else
+           //     $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
+    public function validarRecomendacion($usuario,$modelo)
+    {
+        ini_set('max_execution_time', 300);
+        $this->conexion->autocommit(FALSE);
+        
+            $resultado = new Resultado();
+            $consulta = "UPDATE recomendaciones
+                     SET
+                         estatus_validacion_id = ?,
+                         comentarios_validacion = ?,
+                         fecha_modificacion = NOW(),
+                         fecha_validacion = NOW(),
+                         validacion_usuario_id = ?
+                     WHERE id = ?";
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($sentencia->bind_param('isii',$modelo->estatusValidacionId, $modelo->comentariosValidacion,$usuario->id,$modelo->id))
+                {
+                    //var_dump($modelo);
+                    if($sentencia->execute())
+                    {
+                        $sentencia->close();
+                        $estatusValidacionRepositorio = new EstatusValidacionRepositorio($this->conexion);
+                        $resultado = $estatusValidacionRepositorio->consultarPorLlaves((object)["id" => $modelo->estatusValidacionId]);
+                         if($resultado->correcto())
+                         {
+                            $estatusValidacion = $resultado->valor;
+                            
+                            $comentariosRepositorio = new RecomendacionesComentariosRepositorio($this->conexion);
+                            $comentario= new RecomendacionComentario();
+                            $comentario->usuarioId = $usuario->id;
+                            $comentario->recomendacionId = $modelo->id;
+                            $comentario->comentario = $estatusValidacion->nombre . ". " . $modelo->comentariosValidacion;
+                            //$comentario->comentario = $modelo->comentariosValidacion;
+                            
+                            $resultado = $comentariosRepositorio->insertar($usuario,$comentario);
+                            if($resultado->correcto())
+                            {
+                                $resultado->valor=$modelo->id;
+                            }
+                        }
+                       
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__ .' Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__ .' Falló el enlace de parámetros';
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__ .' Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                
+            if($resultado->correcto())
+                $this->conexion->commit();
+            else
+                $this->conexion->rollback();
+            return $resultado;
+    }
+    
+    function eliminarAcentos($cadena){
+        
+        //Reemplazamos la A y a
+        $cadena = str_replace(
+            array('Á', 'À', 'Â', 'Ä', 'á', 'à', 'ä', 'â', 'ª'),
+            array('A', 'A', 'A', 'A', 'a', 'a', 'a', 'a', 'a'),
+            $cadena
+            );
+        
+        //Reemplazamos la E y e
+        $cadena = str_replace(
+            array('É', 'È', 'Ê', 'Ë', 'é', 'è', 'ë', 'ê'),
+            array('E', 'E', 'E', 'E', 'e', 'e', 'e', 'e'),
+            $cadena );
+        
+        //Reemplazamos la I y i
+        $cadena = str_replace(
+            array('Í', 'Ì', 'Ï', 'Î', 'í', 'ì', 'ï', 'î'),
+            array('I', 'I', 'I', 'I', 'i', 'i', 'i', 'i'),
+            $cadena );
+        
+        //Reemplazamos la O y o
+        $cadena = str_replace(
+            array('Ó', 'Ò', 'Ö', 'Ô', 'ó', 'ò', 'ö', 'ô'),
+            array('O', 'O', 'O', 'O', 'o', 'o', 'o', 'o'),
+            $cadena );
+        
+        //Reemplazamos la U y u
+        $cadena = str_replace(
+            array('Ú', 'Ù', 'Û', 'Ü', 'ú', 'ù', 'ü', 'û'),
+            array('U', 'U', 'U', 'U', 'u', 'u', 'u', 'u'),
+            $cadena );
+        
+        //Reemplazamos la N, n, C y c
+        $cadena = str_replace(
+            array('Ñ', 'ñ', 'Ç', 'ç'),
+            array('N', 'n', 'C', 'c'),
+            $cadena
+            );
+        
+        return $cadena;
+    }
+    
+    public function insertarArchivosAvance($recomendacionId, $avanceId, $archivos)
+    {
+        $this->conexion->autocommit(FALSE);
+        $resultado = new Resultado();
+        if(!empty($archivos))
+        {
+            //foreach  ($archivos as $archivo) 
+            foreach  ($archivos['name'] as $key => $name) 
+            {
+                $carpeta = "archivos_avances/avance" . $avanceId ;
+                if(file_exists("../".$carpeta."/") || @mkdir("../".$carpeta."/"))
+                {
+                    $dirpath = dirname(getcwd());
+                    $path = $dirpath.'/'.$carpeta.'/'.$name;
+                    move_uploaded_file($archivos['tmp_name'][$key],$path);
+                    
+                    if(file_exists($path))
+                    {
+                        $resultado = $this->insertarArchivo($avanceId, $name,$archivos['size'][$key]);
+                        if($resultado->error())
+                            break;
+                    }
+                    else
+                    {
+                        $resultado->mensajeError = "Error al subir archivo: " . $name;
+                        break;
+                    }
+                }
+            }
+        }
+//         if($resultado->correcto())
+//             $resultado = $this->actualizarRecomendacion($recomendacionId);
+        
+        if($resultado->correcto())
+        {
+            $this->conexion->commit();
+        }
+        else
+            $this->conexion->rollback();
         return $resultado;
     }
     

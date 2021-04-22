@@ -257,6 +257,22 @@ class AdministradorCorreo
         return  $this->enviarCorreoUsuarios($tipo,$usuarios,$asuntoCorreo, $mensaje, $info);
     }
     
+    public function enviarNotificacionComentarioRecomendacion($tipo,$usuario, $usuarios, $asuntoCorreo, $accion, $usuarioComentario, $comentario, $url, $info)
+    {
+        // $usuarios = array();
+        //array_push($usuarios,(object) ['nombreUsuario' => 'alanbazan@apps-handel.com','nombreCompleto' => 'Alan Bazán']);
+        
+        
+        $mensaje= file_get_contents('../plantillas_correo/tema_nuevo_sivah.html');
+        
+        $mensaje=  str_replace("@usuarioComentario",$usuarioComentario,$mensaje);
+        $mensaje=  str_replace("@url",$url,$mensaje);
+        $mensaje=  str_replace("@comentario",$comentario,$mensaje);
+        $mensaje=  str_replace("@accion",$accion,$mensaje);
+        
+        return  $this->enviarCorreoUsuarios($tipo,$usuarios,$asuntoCorreo, $mensaje, $info, "SIVAH");
+    }
+    
     public function enviarNotificacionTarea($usuario, $usuarios, $minuta, $tarea)
     {
         // $usuarios = array();
