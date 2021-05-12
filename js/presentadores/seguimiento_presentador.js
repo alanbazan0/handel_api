@@ -125,7 +125,7 @@ class SeguimientoPresentador extends CatalogoPresentador
 			}
 			else
 				vista.mostrarMensajeError("Error",resultado.mensajeError)
-		},this.vista.llaves);
+		},this.vista.llaves,this.vista.criteriosSeleccionRecomendaciones);
 	}
 	
 	consultarAvancesRecomendacion()	
@@ -185,6 +185,34 @@ class SeguimientoPresentador extends CatalogoPresentador
 		 });
 	 }
 
+	consultarEstatusValidacionCriterio()	
+	 {
+		var repositorio = new EstatusValidacionRepositorio();
+		 repositorio.consultar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.estatusValidacionCriterio = resultado.valor;				
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },null,true);
+	 }
+
+	consultarEstatusValidacionAlta()	
+	 {
+		var repositorio = new EstatusValidacionRepositorio();
+		 repositorio.consultar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.estatusValidacionAlta = resultado.valor;				
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 });
+	 }
+
 
 	 
 	actualizarAvance()
@@ -194,10 +222,10 @@ class SeguimientoPresentador extends CatalogoPresentador
 		 this._repositorio.actualizarAvance(this,function(resultado)
 		 {
 			 this.vista.ocultarIndicador();	
+			 this.vista.guardando = false;
 			 if(resultado.mensajeError=="")
 			 {	
-					this.subirArchivos(this.vista.modeloAvance.id);
-				
+				this.subirArchivos(this.vista.modeloAvance.id);
 			 }
 			 else
 				this.vista.mostrarMensajeError("Error","Ocurrió un error al actualizar el registro. " + resultado.mensajeError, resultado.codigoError);		
@@ -345,6 +373,7 @@ class SeguimientoPresentador extends CatalogoPresentador
 			{	
 				this.vista.mostrarMensaje("Notificación","Guardado. Id: " + resultado.valor);
 				this.vista.salirFormularioValidacion();
+				this.vista.salirFormularioArchivos();
 				this.vista.salirFormularioAvances();
 				this.vista.consultarRecomendaciones();
 			}
@@ -409,7 +438,41 @@ class SeguimientoPresentador extends CatalogoPresentador
 		}
 	}
 
+	consultarResponsablesRecomendacion()
+	{
+		var repositorio = new UsuariosRepositorio();
+		 repositorio.consultarUsuariosCorportarivoPorEmpresaSIVAH(this,function(resultado)
+		 {		
+			 //vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.responsablesRecomendacion = resultado.valor;
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error", resultado.mensajeError, resultado.codigoError);
+			 }
+		 },vista._registroSeleccionado.empresaId);
+	}
 	 
-	
+	actualizarRecomendacion()
+	{
+		this.vista.guardando = true;
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.actualizarRecomendacion(this,function(resultado)
+		 {
+			 this.vista.ocultarIndicador();	
+			this.vista.guardando = false;
+			 if(resultado.mensajeError=="")
+			 {	
+				this.vista.mostrarMensaje("Notificación","La información se actualizó correctamente.");
+				this.vista.salirModalRecomendacion();
+				this.consultarRecomendacionPorLlaves();
+			 }
+			 else
+				this.vista.mostrarMensajeError("Error","Ocurrió un error al actualizar el registro. " + resultado.mensajeError, resultado.codigoError);		
+			
+		 },this.vista.modeloRecomendacion);
+	}
 	 
 }

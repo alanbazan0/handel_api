@@ -171,6 +171,7 @@ class AuditoriasVista extends CatalogoVista
 			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
 			{longitud:200, 	titulo:"Plantilla",   alias:"plantillaNombre", alineacion:"I" }, 
 			{longitud:200, 	titulo:"Seguimiento iniciado",   alias:"seguimiento", alineacion:"D", itemRenderer:this.renderSeguimiento},		
+			{longitud:200, 	titulo:"Seguimiento finalizado",   alias:"seguimientoFinalizado", alineacion:"D", itemRenderer:this.renderSeguimientoFinalizado},		
 			{longitud:300, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" }, 	
 			{longitud:300, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" }, 	
 			{longitud:200, 	titulo:"Tipo de auditoría",   alias:"tipoAuditoriaNombre", alineacion:"I" }, 
@@ -198,6 +199,17 @@ class AuditoriasVista extends CatalogoVista
 		var contenido = "";
 		if(renglon.seguimiento==1)
 			contenido += "<center id='"+id+"'><span class='fa fa-check fa-lg text-success'></span> "+renglon.fechaSeguimiento+"</center>";
+		else
+			contenido += "<center id='a"+id+"'></center>";
+	    return contenido;
+	}
+	
+	renderSeguimientoFinalizado(renglon, type, set)
+	{    
+		var id = "seguimientoFinalizadoCenter" + renglon.id;
+		var contenido = "";
+		if(renglon.seguimientoFinalizado==1)
+			contenido += "<center id='"+id+"'><span class='fa fa-check fa-lg text-success'></span> "+renglon.fechaSeguimientoFinalizado+"</center>";
 		else
 			contenido += "<center id='a"+id+"'></center>";
 	    return contenido;
@@ -627,10 +639,21 @@ class AuditoriasVista extends CatalogoVista
 			this._registroSeleccionado.seguimiento = modelo.seguimiento;
 			this._registroSeleccionado.fechaSeguimiento = modelo.fechaSeguimiento;
 			
+			this._registroSeleccionado.seguimientoFinalizado = modelo.seguimientoFinalizado;
+			this._registroSeleccionado.fechaSeguimientoFinalizado = modelo.fechaSeguimientoFinalizado;
+			
 			var id = "seguimientoCenter" + this._registroSeleccionado.id;
 			var contenido = "";
 			if(this._registroSeleccionado.seguimiento==1)
 				contenido = "<span class='fa fa-check fa-lg text-success'></span> "+this._registroSeleccionado.fechaSeguimiento;
+			else
+				contenido = "";
+		    $("#"+ id).html(contenido);
+
+			var id = "seguimientoCenterFinalizado" + this._registroSeleccionado.id;
+			var contenido = "";
+			if(this._registroSeleccionado.seguimientoFinalizado==1)
+				contenido = "<span class='fa fa-check fa-lg text-success'></span> "+this._registroSeleccionado.fechaSeguimientoFinalizado;
 			else
 				contenido = "";
 		    $("#"+ id).html(contenido);

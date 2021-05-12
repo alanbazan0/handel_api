@@ -203,7 +203,8 @@ class CapacitacionesVista extends CatalogoVista
 		}
 		else
 		{
-			var valor = $(event.currentTarget).val();
+			//var valor = $(event.currentTarget).val();
+			 var valor = $(event.currentTarget).is(':checked')?1:0;
 			if(campo=="publicado")
 			{
 				if(valor=="on")

@@ -18,7 +18,7 @@
 			<div class="modal-body">
 				
 				<div class="box-body" >
-					<form id='formulario'>
+					<form id='formularioValidacion'>
     					<div class="form-group">
         						<div>
         							<label for="accionAvanceValidacionLabel" class="control-label mb-1">Acción</label>

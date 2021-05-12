@@ -71,7 +71,7 @@ class EstatusValidacionRepositorio extends RepositorioBase implements IEstatusVa
             return $resultado;
     }
     
-    public function consultar($criteriosSeleccion)
+    public function consultar($criteriosSeleccion,$opcional)
     {
        
         $resultado = new Resultado();
@@ -110,6 +110,14 @@ class EstatusValidacionRepositorio extends RepositorioBase implements IEstatusVa
                         {
                             $registro = $this->crearRegistro($id, $descripcion);
                             array_push($registros,$registro);
+                        }
+                        if($opcional=="true")
+                        {
+                            //if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
+                            //{
+                            $registro = $this->crearRegistro("", "Todos");
+                            array_unshift($registros, $registro);
+                            //}
                         }
                         $resultado->valor = $registros;
                     }

@@ -53,6 +53,31 @@ class AuditoriasRepositorio extends Repositorio
       });
 	}
 	
+	finalizarSeguimiento(contexto,funcion,llaves)
+	{				
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+          url: url,
+          type: 'POST',
+          data: {accion : "finalizarSeguimiento",llaves: JSON.stringify(llaves)},
+          success: function( data, textStatus, jQxhr )
+          {
+              funcion.call(contexto,data);
+          },
+          error: function( jqXhr, textStatus, errorThrown )
+          {
+        	  if(textStatus=="parsererror")
+      	   			funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+         		else
+         			funcion.call(contexto,{ mensajeError : textStatus});
+          },
+          fail: function( jqXhr, textStatus, errorThrown )
+          {
+         	 funcion.call(contexto,{ mensajeError : textStatus});
+          }
+      });
+	}
+	
 	consultarSeguimiento(contexto,funcion,auditoriaId)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;
@@ -103,13 +128,13 @@ class AuditoriasRepositorio extends Repositorio
       });
 	}
 	
-	consultarRecomendacionesPendientesUsuario(contexto,funcion,llaves)
+	consultarRecomendacionesPendientesUsuario(contexto,funcion,llaves,criteriosSeleccion)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
           url: url,
           type: 'POST',
-          data: {accion : "consultarRecomendacionesPendientesUsuario", llaves : JSON.stringify(llaves)},
+          data: {accion : "consultarRecomendacionesPendientesUsuario", llaves : JSON.stringify(llaves),criteriosSeleccion : JSON.stringify(criteriosSeleccion)},
           success: function( data, textStatus, jQxhr )
           {
               funcion.call(contexto,data);
@@ -380,4 +405,29 @@ class AuditoriasRepositorio extends Repositorio
 		xhr.send( data );  
 	}
 	
+	actualizarRecomendacion(contexto,funcion,modelo)
+	{		
+		var modeloString = JSON.stringify(modelo);
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+         url: url,
+         type: 'POST',
+         data: {accion : "actualizarRecomendacion",modelo: modeloString},
+         success: function( data, textStatus, jQxhr )
+         {
+             funcion.call(contexto,data);
+         },
+         error: function( jqXhr, textStatus, errorThrown )
+         {
+        	 if(textStatus=="parsererror")
+     	   		funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+        		else
+        			funcion.call(contexto,{ mensajeError : textStatus});
+         },
+         fail: function( jqXhr, textStatus, errorThrown )
+         {
+        	 funcion.call(contexto,{ mensajeError : textStatus});
+         }
+     });
+	}
 }

@@ -7,19 +7,29 @@ use php\modelos\Resultado;
 use php\clases\AdministradorConexion;
 use php\clases\AdministradorArchivos;
 use php\clases\Porcentaje;
+use php\clases\Logger;
 use php\modelos\RecomendacionComentario;
+use php\clases\AdministradorCorreo;
+use php\clases\CodigoError;
+
 
 include "../interfaces/IAuditoriasRepositorio.php";
 include "../modelos/Auditoria.php";
 require_once("RepositorioBase.php");
 require_once("../clases/Resultado.php");
 require_once("../clases/Porcentaje.php");
+require_once("../clases/Logger.php");
+
+require_once("../clases/CodigoError.php");
 require_once("../clases/TipoUsuario.php");
+require_once("../clases/EstatusValidacion.php");
 require_once('../clases/AdministradorArchivos.php');
 require_once('../clases/AdministradorConexion.php');
 require_once('../repositorios/RecomendacionesComentariosRepositorio.php');
 require_once('../repositorios/EstatusValidacionRepositorio.php');
 require_once('../repositorios/UsuariosRepositorio.php');
+require_once('../clases/AdministradorCorreo.php');
+
 
 class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasRepositorio
 {
@@ -39,7 +49,18 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 A.nivel_compromiso, A.implementacion, A.verificacion,
                 TE.nivel_compromiso, TE.implementacion, TE.verificacion, 
                 PS.nivel_compromiso, PS.implementacion, PS.verificacion, observaciones, buenas_practicas, seguimiento, IFNULL(DATE_FORMAT(A.fecha_seguimiento,'%d/%m/%Y %H:%i:%s'),'')fecha_seguimiento,
-                 IFNULL(DATE_FORMAT(A.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') AS fechaAlta,A.sede_id, S.nombre sedeNombre, IFNULL(DATE_FORMAT(A.fecha,'%d/%m/%Y'),''), A.hora, TA.nombre
+                (SELECT count(*)
+                FROM recomendaciones R
+                	LEFT JOIN usuarios U ON U.id = R.responsable_id
+                	LEFT JOIN empresas E1 ON E1.id = U.empresa_id
+                WHERE auditoria_id = A.id) recomendacionesTotal,
+            (SELECT count(*)
+                FROM recomendaciones R
+                	LEFT JOIN usuarios U ON U.id = R.responsable_id
+                	LEFT JOIN empresas E1 ON E1.id = U.empresa_id
+                WHERE auditoria_id = A.id AND R.estatus_validacion_id!=2) recomendacionesPendientes,
+                 IFNULL(DATE_FORMAT(A.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') AS fechaAlta,A.sede_id, S.nombre sedeNombre, IFNULL(DATE_FORMAT(A.fecha,'%d/%m/%Y'),''), A.hora, TA.nombre,
+seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m/%Y %H:%i:%s'),'')fecha_seguimiento_finalizado
              FROM auditorias A 
              INNER JOIN plantillas P on A.plantilla_id = P.id 
             LEFT JOIN empresas E on A.empresa_id = E.id 
@@ -1223,7 +1244,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
        return $resultado;
     }
     
-    public function actualizarSeguimiento($auditoriaId)
+    public function actualizarSeguimientoIniciado($auditoriaId)
     {
         $resultado = new Resultado();
         
@@ -1249,6 +1270,34 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         else
             $resultado->mensajeError = __FUNCTION__.". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
         return $resultado;
+    }
+    
+    public function actualizarSeguimientoFinalizado($auditoriaId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta = " UPDATE auditorias
+            SET seguimiento_finalizado = 1,
+                fecha_seguimiento_finalizado = NOW()
+            WHERE id = ? ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("i", $auditoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__.". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__.". Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__.". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            return $resultado;
     }
         
     
@@ -1475,11 +1524,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,$recomendacionesTotal,$recomendacionesPendientes,$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre, $seguimientoFinalizado, $fechaSeguimientoFinalizado))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento, "","",$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre);
+                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento, $recomendacionesTotal,$recomendacionesPendientes,$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre,$seguimientoFinalizado, $fechaSeguimientoFinalizado);
                            
                             
                             array_push($registros,$registro);
@@ -1514,11 +1563,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 if($sentencia->execute())
                 {
                     //if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora))
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre,$seguimientoFinalizado, $fechaSeguimientoFinalizado))
                     {
                         if($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,"","", $fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre);
+                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,"","", $fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre,$seguimientoFinalizado, $fechaSeguimientoFinalizado);
                             $resultado->valor = $registro;
                         }
                     }
@@ -1646,11 +1695,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 if($sentencia->execute())
                 {
                     //if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento))
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,$recomendacionesTotal,$recomendacionesPendientes,$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre,$seguimientoFinalizado, $fechaSeguimientoFinalizado))
                     {
                         if($sentencia->fetch())
                         {
-                            $plantilla = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion,$observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,"","", $fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre);
+                            $plantilla = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId,$puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion,$observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento,$recomendacionesTotal,$recomendacionesPendientes, $fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre,$seguimientoFinalizado, $fechaSeguimientoFinalizado);
                            
                             
                             $resultado->valor = $plantilla;
@@ -2502,7 +2551,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         return $registro;
     }
     
-    private function crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa, $tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento, $recomendacionesTotal,$recomendacionesPendientes, $fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre)
+    private function crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa, $tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento, $recomendacionesTotal,$recomendacionesPendientes, $fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre,$seguimientoFinalizado, $fechaSeguimientoFinalizado)
     {
 //         $archivoIcono = '../../php/iconos/icono'.$plantillaId.'.png';
 //         $icono = 'default.png';
@@ -2565,6 +2614,8 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             'buenasPracticas' => $buenasPracticas,
             'seguimiento' => $seguimiento,
             'fechaSeguimiento' => $fechaSeguimiento,
+            'seguimientoFinalizado' => $seguimientoFinalizado,
+            'fechaSeguimientoFinalizado' => $fechaSeguimientoFinalizado,
             'recomendacionesTotal' => $recomendacionesTotal,
             'recomendacionesPendientes' => $recomendacionesPendientes,
             'fechaAlta' => $fechaAlta,
@@ -2574,8 +2625,10 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             'hora' => $hora
         ];
         
-        Porcentaje::formatearPorcentaje($registro, "puntuacion");
+        $registro->recomendacionesTerminadas = $recomendacionesTotal - $recomendacionesPendientes;
         
+        Porcentaje::formatearPorcentaje($registro, "puntuacion");
+        Porcentaje::calcularPorcentaje($registro,'recomendacionesTerminadas','recomendacionesTotal',"porcentajeAvance");
         
         return $registro;
     }
@@ -2758,34 +2811,524 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
     {
         $resultado = new Resultado();
         $this->conexion->autocommit(FALSE);
-        $resultado = $this->actualizarSeguimiento($llaves->id);
+        
+        $resultado = $this->consultarPorLlaves($llaves);
         if($resultado->correcto())
         {
-            $llaves= (object) [
-                'auditoriaId' =>  $llaves->id,
-                'plantillaId' =>  $llaves->plantillaId
-            ];
-            $secciones = array();
-            $resultado = $this->consultarValoresSecciones($llaves);
-            if($resultado->correcto())
+            $auditoria = $resultado->valor;
+            if($auditoria->seguimiento!=1)
             {
-                $secciones = $resultado->valor;
-                $resultado = $this->getHallazgos($secciones,"notificacion");
+                $resultado = $this->actualizarSeguimientoIniciado($llaves->id);
                 if($resultado->correcto())
                 {
-                    $hallazgos = $resultado->valor;
-                    $resultado = $this->insertarRecomendaciones($llaves->auditoriaId,$hallazgos);
+                    $llaves= (object) [
+                        'auditoriaId' =>  $llaves->id,
+                        'plantillaId' =>  $llaves->plantillaId
+                    ];
+                    $secciones = array();
+                    $resultado = $this->consultarValoresSecciones($llaves);
+                    if($resultado->correcto())
+                    {
+                        $secciones = $resultado->valor;
+                        $resultado = $this->getHallazgos($secciones,"notificacion");
+                        if($resultado->correcto())
+                        {
+                            $hallazgos = $resultado->valor;
+                            $resultado = $this->insertarRecomendaciones($llaves->auditoriaId,$hallazgos);
+                            if($resultado->correcto())
+                            {
+                                $this->enviarNotificacionInicioSeguimiento($llaves->auditoriaId,"","","");
+                            }
+                        }
+                    }
+                    
                 }
+                if($resultado->correcto())
+                {
+                    $this->conexion->commit();
+                    $resultado->valor = $llaves->auditoriaId;;
+                }
+                else
+                    $this->conexion->rollback();
+            }
+            else 
+            {
+                $resultado->mensajeError = "Acción invalida, el seguimiento se inició previamente el " . $auditoria->fechaSeguimiento;
+                $resultado->codigoError = CodigoError::ADVERTENCIA;
+            }
+        }
+       
+        return $resultado;
+    }
+    
+    public function finalizarSeguimiento($llaves)
+    {
+        $resultado = new Resultado();
+        $this->conexion->autocommit(FALSE);
+        
+        $resultado = $this->consultarPorLlaves($llaves);
+        if($resultado->correcto())
+        {
+            $auditoria = $resultado->valor;
+            if($auditoria->seguimientoFinalizado!=1)
+            {
+                $resultado = $this->actualizarSeguimientoFinalizado($llaves->id);
+                if($resultado->correcto())
+                {
+                    $llaves= (object) [
+                        'auditoriaId' =>  $llaves->id,
+                        'plantillaId' =>  $llaves->plantillaId
+                    ];
+                    
+                }
+                if($resultado->correcto())
+                {
+                    $this->conexion->commit();
+                    $resultado->valor = $llaves->auditoriaId;;
+                }
+                else
+                    $this->conexion->rollback();
+            }
+            else
+            {
+                $resultado->mensajeError = "Acción invalida, el seguimiento se finalizó previamente el " . $auditoria->fechaSeguimiento;
+                $resultado->codigoError = CodigoError::ADVERTENCIA;
+            }
+        }
+        
+        return $resultado;
+    }
+    
+    public function enviarNotificacionEvidenciaValidada($recomendacionId,$usuario, $modelo)
+    {
+        $resultado = new Resultado();
+        
+        $resultado = $this->consultarRecomendacionPorLlaves((object)["id"=> $recomendacionId]);
+        if($resultado->correcto())
+        {
+            $recomendacion = $resultado->valor;
+            $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+            $resultado = $usuariosRepositorio->consultarPorLlaves((object)["id" => $recomendacion->usuarioId]);
+            if($resultado->correcto())
+            {
+                $responsable = $resultado->valor;
+                $usuarios = array();
+                if($responsable!=null)
+                    array_push($usuarios,$responsable);
+                
+                $administrador_correo = new AdministradorCorreo();
+                
+                
+                $contenido = "<tr>
+                            <td align='center' class='padding-copy' style='font-size: 25px; font-family: Helvetica, Arial, sans-serif; color: #548dd4; padding-top: 0px;'><strong>¡Hola!</strong><br></td>
+                        </tr>
+                        <tr>
+                            <td align='center' class='padding-copy textlightStyle' style='padding: 20px 0 0 0; font-size: 16px; line-height: 25px; font-family: Helvetica, Arial, sans-serif; color: #3F3D33;'>
+                            <p>El equipo de especialistas de Handel ha verificado las evidencias que enviaste para el cierre de la acción</p>
+							<p><strong>$recomendacion->titulo</strong></p>";
+               
+                if($modelo->comentariosValidacion!="")
+                {
+                    $contenido.="<p>El usuario $usuario->nombreCompleto añadió el siguiente comentario:</p>
+                                    <p><strong>$modelo->comentariosValidacion</strong></p>";
+                    
+                }
+                $contenido.="<p>Puedes responder a este mensaje directamente ingresando a SIVAH (<em><a title='Accede a SIVAH' href='https://mosaico.io/sivah.apps-handel.com' style='color: #3F3D33; text-decoration: none; font-weight: bold;'>sivah.apps-handel.com</a></em>) o dando clic en el botón inferior</p>
+                             <p>Para la acción validada no es necesario realizar nada más dentro del sistema SIVAH</p>   
+							</td>
+                        </tr>";
+                
+                
+                $resultado = $administrador_correo->enviarNotificacionSIVAH("validacion",$usuarios,"¡Evidencia validada!","Actualización de tu auditoría","#3f9e2d","¡Tu evidencia fue validada!", $contenido,"Responder","https://sivah.apps-handel.com",false);
+                if($resultado->correcto())
+                {
+                    //$resultado->valor = $modelo->id;
+                }
+            }
+        }
+        return $resultado;
+    }
+    
+    public function enviarNotificacionEvidenciasPendientes($usuario)
+    {
+        $resultado = new Resultado();
+        
+        $usuarios = array();
+        array_push($usuarios,$usuario);
+        array_push($usuarios,(object)["nombreUsuario"=> "noemi@handel-sce.com"]);
+        array_push($usuarios,(object)["nombreUsuario"=> "eduardo@handel-sce.com"]);
+        array_push($usuarios,$usuario);
+                
+        $administrador_correo = new AdministradorCorreo();
+        
+        
+        
+        $contenido = "<tr>
+                <td align='center' class='padding-copy' style='font-size: 25px; font-family: Helvetica, Arial, sans-serif; color: #548dd4; padding-top: 0px;'><strong>¡Hola!</strong><br></td>
+            </tr>
+            <tr>
+                <td align='center' class='padding-copy textlightStyle' style='padding: 20px 0 0 0; font-size: 16px; line-height: 25px; font-family: Helvetica, Arial, sans-serif; color: #3F3D33;'>
+                <p>Se han recibido nuevas evidencias para validación en SIVAH</p>
+				";
+        
+        $resultado = $this->consultarEvidenciasPendientesSede($usuario);
+        if($resultado->correcto())
+        {
+           $sedes = $resultado->valor;
+           for ($i = 0; $i < count($sedes); $i++) 
+           {
+               $sede = $sedes[$i];
+               if($sede->pendientes==1)
+                   $pendiente = "Evidencia pendiente";
+               else
+                   $pendiente = "Evidencias pendientes";
+               $contenido.=  "<p><strong>$sede->empresaNombre - $sede->sedeNombre - $sede->pendientes $pendiente de validar</strong></p>";
+           }
+           
+        }
+        
+        
+        $contenido.="<p>Favor de verificar las evidencias en breve de sus empresas asignadas</p>
+				</td>
+            </tr>";
+        
+        
+        $resultado = $administrador_correo->enviarNotificacionSIVAH("evidencias_pendientes_sivah",$usuarios,"¡Evidencias por validar!","Actualización de tus auditorías","#0a77b6","¡Evidencias por validar!", $contenido,"Llévame a SIVAH","https://sivah.apps-handel.com",true);
+        if($resultado->correcto())
+        {
+            
+        }
+        return $resultado;
+    }
+    
+    public function enviarNotificacionEvidenciasMensualUsuarios($nombreUsuario,$enviarA,$numeroUsuarios)
+    {
+        ini_set('max_execution_time', 0);
+        $resultado = new Resultado();
+        
+        $usuarios = array();
+        if($nombreUsuario!="")
+        {
+            $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+            $resultado = $usuariosRepositorio->consultar(null,(object) ['nombreUsuario' =>  $nombreUsuario],false);
+            
+        }
+        else
+             $resultado = $this->consultarUsuariosSIVAH();
+        
+        if($resultado->correcto())
+        {
+            $usuarios = $resultado->valor;
+            
+            $administrador_correo = new AdministradorCorreo();
+            
+            $usuariosAuditoria = array();
+            for ($i = 0; $i < count($usuarios); $i++) 
+            {
+                $usuario = $usuarios[$i];
+                if($enviarA!=null && $enviarA!="")
+                    $usuario->nombreUsuario = $enviarA;
+               
+                $resultado = $this->consultarAuditoriasUsuario($usuario);
+                
+                
+                if($resultado->correcto())
+                {
+                    $usuario->auditorias = $resultado->valor;
+                    if(count($usuario->auditorias)>0)
+                    {
+                        array_push($usuariosAuditoria,$usuario);
+                    }
+                    
+                }
+                else 
+                    echo $resultado->mensajeError;
+            }
+            if($numeroUsuarios>0)
+                $usuariosAuditoria = array_slice($usuariosAuditoria,0,$numeroUsuarios);
+            for ($i = 0; $i < count($usuariosAuditoria); $i++) 
+            {
+                $usuario = $usuariosAuditoria[$i];
+                $contenido = "<tr>
+                                <td align='center' class='padding-copy' style='font-size: 25px; font-family: Helvetica, Arial, sans-serif; color: #548dd4; padding-top: 0px;'><strong>¡Hola $usuario->nombre!</strong><br></td>
+                            </tr>
+                            <tr>
+                                <td align='center' class='padding-copy textlightStyle' style='padding: 20px 0 0 0; font-size: 16px; line-height: 25px; font-family: Helvetica, Arial, sans-serif; color: #3F3D33;'>
+                                <p>Reporte mensual de avance de tus acciones derivados de la evaluación:</p>";
+                
+                
+                for ($j = 0; $j < count($usuario->auditorias ); $j++)
+                {
+                    $auditoria = $usuario->auditorias [$j];
+                    
+                    $contenido.=  "<p><strong>$auditoria->empresaNombre - $auditoria->sedeNombre - $auditoria->fecha -  $auditoria->dias días transcurridos </strong></p>";
+                
+                }
+                
+                $resultado = $this->consultarNumeroEvidencias($usuario);
+                if($resultado->correcto())
+                {
+                    $contenido.=  "<p>Tus acciones</p>";
+                    $numeroEvidencias = $resultado->valor;
+                    
+                    $accionesTotal = $numeroEvidencias->total==1?"Acción asignada":"Acciones asignadas";
+                    $accionesEnviadas =  $numeroEvidencias->enviadas==1?"Acción enviada":"Acciones enviadas";
+                    $accionesValidadas =  $numeroEvidencias->validadas==1?"Acción validada":"Acciones validadas";
+                    $accionesRechazadas =  $numeroEvidencias->rechazadas==1?"Acción rechazada":"Acciones rechazadas";
+                    
+                    $contenido.= "<p><strong>";
+                    $contenido.=  "<span style='color:#000000;'>$numeroEvidencias->total $accionesTotal</span><br>";
+                    $contenido.=  "<span style='color:#0775b5;'>$numeroEvidencias->enviadas $accionesEnviadas</span><br>";
+                    $contenido.=  "<span style='color:#2f7020;'>$numeroEvidencias->validadas $accionesValidadas</span><br>";
+                    $contenido.=  "<span style='color:#ad2f17;'>$numeroEvidencias->rechazadas $accionesRechazadas</span>";
+                    $contenido.= "</strong></p>";
+                }
+                
+                switch ($usuario->tipoUsuarioId)
+                {
+                    case \TipoUsuario::COORDINADOR:
+                    case \TipoUsuario::SUPERVISOR:
+                        $contenido.=  "<p>Tu equipo de trabajo</p>";
+                        
+                        $resultado = $this->consultarMiembrosEquipo($usuario);
+                        if($resultado->correcto())
+                        {
+                            $equipo = $resultado->valor;
+                            for ($j = 0; $j < count($equipo); $j++) 
+                            {
+                                $usuarioEquipo = $equipo[$j];
+                                if($usuarioEquipo->id != $usuario->id)
+                                {
+                                    $resultado = $this->consultarNumeroEvidencias($usuarioEquipo);
+                                    if($resultado->correcto())
+                                    {
+                                        $numeroEvidencias = $resultado->valor;
+                                        if($numeroEvidencias->total!=0)
+                                        {
+                                            $accionesTotal = $numeroEvidencias->total==1?"Acción asignada":"Acciones asignadas";
+                                            $accionesEnviadas =  $numeroEvidencias->enviadas==1?"Acción enviada":"Acciones enviadas";
+                                            $accionesValidadas =  $numeroEvidencias->validadas==1?"Acción validada":"Acciones validadas";
+                                            $accionesRechazadas =  $numeroEvidencias->rechazadas==1?"Acción rechazada":"Acciones rechazadas";
+                                            
+                                            $contenido.= "<p><strong>";
+                                            $contenido.=  "<span style='color:#000000;'>$usuarioEquipo->nombreCompleto: </span>";
+                                            $contenido.=  "<span style='color:#000000;'>$numeroEvidencias->total $accionesTotal, </span>";
+                                            $contenido.=  "<span style='color:#0775b5;'>$numeroEvidencias->enviadas $accionesEnviadas, </span>";
+                                            $contenido.=  "<span style='color:#2f7020;'>$numeroEvidencias->validadas $accionesValidadas, </span>";
+                                            $contenido.=  "<span style='color:#ad2f17;'>$numeroEvidencias->rechazadas $accionesRechazadas</span>";
+                                            $contenido.= "</strong></p>";
+                                        }
+                                    }
+                                    else
+                                        echo $resultado->mensajeError;
+                                }
+                            }
+                        }
+                        else 
+                            echo $resultado->mensajeError;
+                    break;
+                }
+                
+                $contenido.=  "<p style='text-decoration: underline;'><strong>Recuerda que es importante que cierres tus hallazgos no más de 90 días después de la fecha de auditoría</strong></p>";
+                
+                $contenido.="<p>Ingresar a SIVAH (sivah.apps-handel.com) para verificar a detalle todas tus acciones</p>
+                        				</td>
+                                    </tr>";
+                
+                $usuariosCorreo = array();
+                
+                array_push($usuariosCorreo,$usuario);
+                
+                $asunto  = "¿Como van tus auditorías?";
+                $titulo = "Actualización de tus auditorías";
+                if(count($usuario->auditorias)==1)
+                {
+                    $asunto  = "¿Como va tu auditoría?";
+                    $titulo = "Actualización de tu auditoría";
+                }
+               
+                
+                $resultado = $administrador_correo->enviarNotificacionSIVAH("evidencias_mensual_usuario",$usuariosCorreo, $asunto,$titulo,"#0775b5","Tu mes en SIVAH", $contenido,"Llévame a SIVAH","https://sivah.apps-handel.com",true, $usuario->nombre);
+                if($resultado->correcto())
+                {
+                    Logger::log("log_envio","$i Correo enviado a ".$usuario->nombreUsuario,"envios_mensual_sivah/");
+                    //$this->mensajeLog("envios_evidencias_mensual/","log_envio_evidencias_mensual","$i Correo enviado a ".$usuario->nombreUsuario);
+                }
+                sleep(10);
             }
            
         }
-        if($resultado->correcto())
+        return $resultado;
+    }
+    
+    public function enviarNotificacionInicioSeguimiento($auditoriaId,$nombreUsuario,$enviarA,$numeroUsuarios)
+    {
+        ini_set('max_execution_time', 0);
+        $resultado = new Resultado();
+        
+        if($nombreUsuario!="")
         {
-            $this->conexion->commit();
-            $resultado->valor = $llaves->auditoriaId;;
+            $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+            $resultado = $usuariosRepositorio->consultar(null,(object) ['nombreUsuario' =>  $nombreUsuario],false);
+            
         }
         else
-            $this->conexion->rollback();
+            $resultado = $this->consultarUsuariosAuditoria($auditoriaId);
+            
+            if($resultado->correcto())
+            {
+                $usuariosAuditoria = $resultado->valor;
+                
+                $administrador_correo = new AdministradorCorreo();
+                
+//                 $usuariosAuditoria = array();
+                for ($i = 0; $i < count($usuariosAuditoria); $i++)
+                {
+                    $usuario = $usuariosAuditoria[$i];
+                    if($enviarA!=null && $enviarA!="")
+                        $usuario->nombreUsuario = $enviarA;
+                    
+                    $usuario->tipoUsuarioId = \TipoUsuario::USUARIO;
+                    $resultado = $this->consultarAuditoriasUsuario($usuario);
+                    
+                    
+                    if($resultado->correcto())
+                    {
+                        $usuario->auditorias = $resultado->valor;
+//                         if(count($usuario->auditorias)>0)
+//                         {
+//                             array_push($usuariosAuditoria,$usuario);
+//                         }
+                        
+                    }
+                    else
+                        echo $resultado->mensajeError;
+                }
+                if($numeroUsuarios>0)
+                    $usuariosAuditoria = array_slice($usuariosAuditoria,0,$numeroUsuarios);
+                
+                for ($i = 0; $i < count($usuariosAuditoria); $i++)
+                {
+                    $usuario = $usuariosAuditoria[$i];
+                    $contenido = "<tr>
+                            <td align='center' class='padding-copy' style='font-size: 25px; font-family: Helvetica, Arial, sans-serif; color: #548dd4; padding-top: 0px;'><strong>¡Hola $usuario->nombre!</strong><br></td>
+                        </tr>
+                        <tr>
+                            <td align='center' class='padding-copy textlightStyle' style='padding: 20px 0 0 0; font-size: 16px; line-height: 25px; font-family: Helvetica, Arial, sans-serif; color: #3F3D33;'>
+                            <p>Derivado de la evaluación realizada en</p>";
+                    
+                    
+                    if(count($usuario->auditorias)>0)
+                    {
+                        $auditoria = $usuario->auditorias [0];
+                        
+                        $contenido.=  "<p><strong>$auditoria->empresaNombre - $auditoria->sedeNombre - $auditoria->fecha </strong></p>";
+                        
+                        $resultado = $this->consultarNumeroEvidencias($usuario,$auditoriaId);
+                        if($resultado->correcto())
+                        {
+                            $numeroEvidencias = $resultado->valor;
+                            
+                            $accionesTotal = $numeroEvidencias->total==1?"Te ha sido asignada $numeroEvidencias->total acción":"Te han sido asignadas $numeroEvidencias->total acciones";
+                            
+                            $contenido.=  "<p>$accionesTotal por realizar, a fin de solventarlas deberás proporcionar evidencias del cumplimiento (como documentos o fotografías) de cada una de las acciones, en cada caso debes demostrar que se han realizado acciones para que el hallazgo sea solucionado.</p>";
+                            $contenido.=  "<p>El seguimiento se dará utilizando el sistema SIVAH (sivah.apps-handel.com) que facilitará la comunicación y recopilará las evidencias de cumplimiento. Hemos precargado tus acciones en el sistema para que puedas, desde este momento reportar avances y subir evidencias de cumplimiento. El sistema es muy intuitivo, pero recuerda que si tienes dudas puedes contactar a tu especialista asignado en Handel o ver directamente los tutoriales disponibles en el propio sistema.</p>";
+                            $contenido.=  "<p>Algunas acciones pueden ser criticas para conservar tu certificación y debes prestar especial atención, para el resto de las acciones esperamos tener evidencias de cumplimiento desde este momento y hasta 90 días.</p>";
+                            $contenido.=  "<p>¡Gracias por tu apoyo!</p>";
+                            
+                            $contenido.="</td>
+                                </tr>";
+                            
+                            $usuariosCorreo = array();
+                            
+                            array_push($usuariosCorreo,$usuario);
+                            
+                            $asunto  = "Tus acciones asignadas en la evaluación";
+                            $titulo = "Actualización de tu auditoría";
+                            
+                            $subtitulo = $numeroEvidencias->total==1?"$numeroEvidencias->total Acción asignada":"$numeroEvidencias->total Acciones asignadas";
+                            
+                            
+                            $resultado = $administrador_correo->enviarNotificacionSIVAH("envios_inicio_seguimiento",$usuariosCorreo, $asunto,$titulo,"#0775b5",$subtitulo, $contenido,"Llévame a SIVAH","https://sivah.apps-handel.com",false, $usuario->nombre);
+                            if($resultado->correcto())
+                            {
+                                Logger::log("log_envio","$i Correo enviado a ".$usuario->nombreUsuario,"envios_inicio_seguimiento/");
+                                //$this->mensajeLog("envios_evidencias_mensual/","log_envio_evidencias_mensual","$i Correo enviado a ".$usuario->nombreUsuario);
+                            }
+                            sleep(10);
+                        }
+                    }
+                    
+                    
+                    
+                    
+                    
+                   
+                }
+                    
+            }
+            return $resultado;
+    }
+    
+    function mensajeLog($carpeta,$archivo,$mensaje)
+    {
+        $mensaje = date("j/n/Y h:i:s") .":".$mensaje;
+     
+        if(!file_exists($carpeta))
+            @mkdir($carpeta);
+        file_put_contents($carpeta.$archivo.'_'.date("j.n.Y").'.log',  utf8_decode("\n".$mensaje) , FILE_APPEND);
+        echo "<br>".utf8_decode($mensaje);
+    }
+    
+    public function enviarNotificacionEvidenciaRechazada($recomendacionId,$usuario, $modelo)
+    {
+        $resultado = new Resultado();
+        
+        $resultado = $this->consultarRecomendacionPorLlaves((object)["id"=> $recomendacionId]);
+        if($resultado->correcto())
+        {
+            $recomendacion = $resultado->valor;
+            $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+            $resultado = $usuariosRepositorio->consultarPorLlaves((object)["id" => $recomendacion->usuarioId]);
+            if($resultado->correcto())
+            {
+                $responsable = $resultado->valor;
+                $usuarios = array();
+                if($responsable!=null)
+                    array_push($usuarios,$responsable);
+                    
+                    $administrador_correo = new AdministradorCorreo();
+                    
+                    
+                    $contenido = "<tr>
+                            <td align='center' class='padding-copy' style='font-size: 25px; font-family: Helvetica, Arial, sans-serif; color: #548dd4; padding-top: 0px;'><strong>¡Hola!</strong><br></td>
+                        </tr>
+                        <tr>
+                            <td align='center' class='padding-copy textlightStyle' style='padding: 20px 0 0 0; font-size: 16px; line-height: 25px; font-family: Helvetica, Arial, sans-serif; color: #3F3D33;'>
+                            <p>El equipo de especialistas de Handel ha verificado las evidencias que enviaste para el cierre de la acción</p>
+							<p><strong>$recomendacion->titulo</strong></p>";
+                    
+                    if($modelo->comentariosValidacion!="")
+                    {
+                        $contenido.="<p>El usuario $usuario->nombreCompleto añadió el siguiente comentario:</p>
+                                    <p><strong>$modelo->comentariosValidacion</strong></p>";
+                        
+                    }
+                    $contenido.="<p>Puedes responder a este mensaje directamente ingresando a SIVAH (<em><a title='Accede a SIVAH' href='https://mosaico.io/sivah.apps-handel.com' style='color: #3F3D33; text-decoration: none; font-weight: bold;'>sivah.apps-handel.com</a></em>) o dando clic en el botón inferior</p>
+                             <p>Para complementar o volver a enviar evidencias ingresa a SIVAH, recuerda que no se considerará terminada hasta que vuelvas a enviar información complementaria y sea validada por el equipo de especialistas de Handel</p>
+							</td>
+                        </tr>";
+                    
+                    
+                    $resultado = $administrador_correo->enviarNotificacionSIVAH("validacion",$usuarios,"¡Evidencia rechazada!","Actualización de tu auditoría","#ad2f17","¡Tu evidencia fue rechazada!", $contenido,"Responder","https://sivah.apps-handel.com",false);
+                    if($resultado->correcto())
+                    {
+                        
+                    }
+            }
+        }
+        
+        
         return $resultado;
     }
     
@@ -2893,13 +3436,25 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         }
         return $resultado;
     }
-    public function consultarRecomendacionesPendientesUsuario($llaves, $usuario)
+    public function consultarRecomendacionesPendientesUsuario($llaves, $criteriosSeleccion,$usuario)
     {
         $resultado = new Resultado();
         $registros = array();
         
         $filtros = $this->getFiltros($usuario,(object)[]);
         array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'RC','campo'=>'auditoria_id','valor'=>$llaves->id]);
+        
+        if($criteriosSeleccion!=null)
+        {
+            if(isset($criteriosSeleccion->estatusValidacionId))
+            {
+                if($criteriosSeleccion->estatusValidacionId!="" && $criteriosSeleccion->estatusValidacionId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'RC','campo'=>'estatus_validacion_id','valor'=>$criteriosSeleccion->estatusValidacionId]);
+            }
+        }
+        
+        
+        
         $where = $this->where($filtros);
         $consulta = $this->consultaBaseRecomendaciones .
                    $where .
@@ -2982,7 +3537,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 	LEFT JOIN usuarios U ON U.id = R.responsable_id
                 	LEFT JOIN empresas E1 ON E1.id = U.empresa_id
                 WHERE auditoria_id = A.id AND R.estatus_validacion_id!=2 $and) recomendacionesPendientes, 
-                IFNULL(DATE_FORMAT(A.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') AS fechaAlta,A.sede_id, S.nombre AS sedeNombre, IFNULL(DATE_FORMAT(A.fecha,'%d/%m/%Y'),''), A.hora, TA.nombre AS tipoAuditoriaNombre
+                IFNULL(DATE_FORMAT(A.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') AS fechaAlta,A.sede_id, S.nombre AS sedeNombre, IFNULL(DATE_FORMAT(A.fecha,'%d/%m/%Y'),''), A.hora, TA.nombre AS tipoAuditoriaNombre, A.seguimiento_finalizado, A.fecha_seguimiento_finalizado
              FROM auditorias A 
                  INNER JOIN plantillas P on A.plantilla_id = P.id 
                 LEFT JOIN empresas E on A.empresa_id = E.id 
@@ -3002,11 +3557,11 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento, $recomendacionesTotal, $recomendacionesPendientes, $fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre))
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento, $recomendacionesTotal, $recomendacionesPendientes, $fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre,$seguimientoFinalizado, $fechaSeguimientoFinalizado))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento,$fechaSeguimiento, $recomendacionesTotal,$recomendacionesPendientes,$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre);
+                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento,$fechaSeguimiento, $recomendacionesTotal,$recomendacionesPendientes,$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre,$seguimientoFinalizado, $fechaSeguimientoFinalizado);
                             
                             
                             array_push($registros,$registro);
@@ -3371,6 +3926,32 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
         return $resultado;
     }
     
+    public function actualizarDatosRecomendacion($modelo,$usuario)
+    {
+        $resultado = new Resultado();
+        $consulta = " UPDATE recomendaciones " .
+            "SET fecha_modificacion= NOW(), " .
+            " responsable_id = ? " .
+            "WHERE id = ? ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("ii", $modelo->responsableId, $modelo->id))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else  $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        return $resultado;
+    }
+    
     public function eliminarAvance($llaves)
     {
         $this->conexion->autocommit(FALSE);
@@ -3514,25 +4095,37 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                     if($sentencia->execute())
                     {
                         $sentencia->close();
-                        $estatusValidacionRepositorio = new EstatusValidacionRepositorio($this->conexion);
-                        $resultado = $estatusValidacionRepositorio->consultarPorLlaves((object)["id" => $modelo->estatusValidacionId]);
-                         if($resultado->correcto())
-                         {
-                            $estatusValidacion = $resultado->valor;
-                            
-                            $comentariosRepositorio = new RecomendacionesComentariosRepositorio($this->conexion);
-                            $comentario= new RecomendacionComentario();
-                            $comentario->usuarioId = $usuario->id;
-                            $comentario->recomendacionId = $modelo->id;
-                            $comentario->comentario = $estatusValidacion->nombre . ". " . $modelo->comentariosValidacion;
-                            //$comentario->comentario = $modelo->comentariosValidacion;
-                            
-                            $resultado = $comentariosRepositorio->insertar($usuario,$comentario);
-                            if($resultado->correcto())
-                            {
-                                $resultado->valor=$modelo->id;
-                            }
+                        
+                        if($modelo->estatusValidacionId==\EstatusValidacion::VALIDADA)
+                        {
+                            $resultado = $this->enviarNotificacionEvidenciaValidada($modelo->id, $usuario, $modelo);
                         }
+                        else if($modelo->estatusValidacionId==\EstatusValidacion::RECHAZADA)
+                        {
+                            $resultado = $this->enviarNotificacionEvidenciaRechazada($modelo->id, $usuario, $modelo);
+                        }
+//                         $estatusValidacionRepositorio = new EstatusValidacionRepositorio($this->conexion);
+//                         $resultado = $estatusValidacionRepositorio->consultarPorLlaves((object)["id" => $modelo->estatusValidacionId]);
+//                          if($resultado->correcto())
+//                          {
+//                             $estatusValidacion = $resultado->valor;
+                            
+//                             $comentariosRepositorio = new RecomendacionesComentariosRepositorio($this->conexion);
+//                             $comentario= new RecomendacionComentario();
+//                             $comentario->usuarioId = $usuario->id;
+//                             $comentario->recomendacionId = $modelo->id;
+//                             $comentario->comentario = $estatusValidacion->nombre . ". " . $modelo->comentariosValidacion;
+                            
+//                             $resultado = $comentariosRepositorio->insertar($usuario,$comentario);
+//                             if($resultado->correcto())
+//                             {
+//                                 $resultado->valor=$modelo->id;
+//                             }
+                            
+                            
+                           
+                            
+//                         }
                        
                     }
                     else
@@ -3545,10 +4138,432 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 $resultado->mensajeError = __FUNCTION__ .' Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 
             if($resultado->correcto())
+            {
+                $resultado->valor = $modelo->id;
                 $this->conexion->commit();
+            }
             else
                 $this->conexion->rollback();
             return $resultado;
+    }
+    
+    public function consultarAdministradoresConEvidencias()
+    {
+        $resultado = new Resultado();
+        $usuarios = array();
+        
+        $consulta = "SELECT E.administrador_id id, ADM.nombre, ADM.apellido, ADM.nombre_usuario
+                    FROM recomendaciones R 
+                    	INNER JOIN usuarios RP ON RP.id = R.responsable_id 
+                        INNER JOIN empresas E ON E.id = RP.empresa_id
+                        INNER JOIN sedes S ON S.id = RP.sede_id
+                        INNER JOIN usuarios ADM ON E.administrador_id  = ADM.id
+                    WHERE estatus_validacion_id = 1
+                    GROUP BY E.administrador_id";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            //if($sentencia->bind_param("ii",$minutaId,$tarea->id))
+            //{
+            if($sentencia->execute())
+            {
+                if ($sentencia->bind_result($id, $nombre, $apellido, $nombreUsuario))
+                {
+                    
+                    while($sentencia->fetch())
+                    {
+                        $usuario= (object) [
+                            'id' =>  $id,
+                            'nombre' => $nombre,
+                            'apellido' => $apellido,
+                            'nombreUsuario' => $nombreUsuario
+                        ];
+                        $usuario->nombreCompleto = $usuario->nombre . " " . $usuario->apellido;
+                        array_push($usuarios,$usuario);
+                    }
+                    
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+                
+        $resultado->valor = $usuarios;
+        return $resultado;
+    }
+    
+    public function consultarEvidenciasPendientesSede($administrador)
+    {
+        $resultado = new Resultado();
+        $sedes = array();
+        
+        $consulta = "SELECT RP.empresa_id empresaId, E.nombre empresaNombre, RP.sede_id sedeId, S.nombre sedeNombre, count(*) pendientesValidacion
+                FROM recomendaciones R 
+                	INNER JOIN usuarios RP ON RP.id = R.responsable_id 
+                    INNER JOIN empresas E ON E.id = RP.empresa_id
+                    INNER JOIN sedes S ON S.id = RP.sede_id
+                    INNER JOIN auditorias A ON A.id = R.auditoria_id
+                WHERE estatus_validacion_id = 1
+                	AND E.administrador_id = ? AND A.seguimiento_finalizado!=1
+                GROUP BY RP.empresa_id, E.nombre, RP.sede_id, S.nombre ";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$administrador->id))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($empresaId, $empresaNombre, $sedeId, $sedeNombre, $pendientes))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $sede= (object) [
+                                'empresaId' =>  $empresaId,
+                                'empresaNombre' => $empresaNombre,
+                                'sedeId' => $sedeId,
+                                'sedeNombre' => $sedeNombre,
+                                'pendientes' => $pendientes
+                            ];
+                            array_push($sedes,$sede);
+                        }
+                        
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+            
+        $resultado->valor = $sedes;
+        return $resultado;
+    }
+    
+    public function consultarUsuariosSIVAH()
+    {
+        $resultado = new Resultado();
+        $usuarios = array();
+        
+        $consulta = "SELECT id, U.nombre, U.apellido, U.nombre_usuario, tipo_usuario_id
+                FROM usuarios U
+                WHERE U.permiso_sivah = 1 AND estatus = 1 
+                ORDER BY nombre, apellido ";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            //if($sentencia->bind_param("i",$administrador->id))
+            //{
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $nombre, $apellido, $nombreUsuario, $tipoUsuarioId))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $usuario= (object) [
+                                 'id' => $id,
+                                'nombre' =>  $nombre,
+                                'apellido' => $apellido,
+                                'nombreUsuario' => $nombreUsuario,
+                                'tipoUsuarioId' => $tipoUsuarioId
+                            ];
+                            array_push($usuarios,$usuario);
+                        }
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló la preparacion";
+            
+        $resultado->valor = $usuarios;
+        return $resultado;
+    }
+    
+    public function consultarUsuariosAuditoria($auditoriaId)
+    {
+        $resultado = new Resultado();
+        $usuarios = array();
+        
+        $consulta = "SELECT U.id, U.nombre, U.apellido, U.nombre_usuario, U.tipo_usuario_id
+                    FROM recomendaciones R
+                        INNER JOIN usuarios U ON R.responsable_id = U.id
+                WHERE U.permiso_sivah = 1 AND U.estatus = 1 AND R.auditoria_id = ?
+                GROUP BY U.id, nombre, apellido,U.nombre_usuario, U.tipo_usuario_id 
+                ORDER BY nombre, apellido";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$auditoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $nombre, $apellido, $nombreUsuario, $tipoUsuarioId))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $usuario= (object) [
+                                'id' => $id,
+                                'nombre' =>  $nombre,
+                                'apellido' => $apellido,
+                                'nombreUsuario' => $nombreUsuario,
+                                'tipoUsuarioId' => $tipoUsuarioId
+                            ];
+                            array_push($usuarios,$usuario);
+                        }
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló la preparacion de parametros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló la preparacion";
+            
+            $resultado->valor = $usuarios;
+            return $resultado;
+    }
+    
+    public function consultarNumeroEvidencias($usuario, $auditoriaId="")
+    {
+        $resultado = new Resultado();
+        
+        $filtroAuditoria = "";
+        if($auditoriaId!="")
+            $filtroAuditoria = "AND R.auditoria_id = $auditoriaId";
+        
+        $consulta = "SELECT (SELECT count(*)
+                            FROM recomendaciones R
+                            	INNER JOIN usuarios RP ON RP.id = R.responsable_id
+                                INNER JOIN empresas E ON E.id = RP.empresa_id
+                                INNER JOIN sedes S ON S.id = RP.sede_id
+                                INNER JOIN auditorias A ON A.id = R.auditoria_id
+                            WHERE responsable_id = ? $filtroAuditoria),
+                         (SELECT count(*)
+                            FROM recomendaciones R
+                            	INNER JOIN usuarios RP ON RP.id = R.responsable_id
+                                INNER JOIN empresas E ON E.id = RP.empresa_id
+                                INNER JOIN sedes S ON S.id = RP.sede_id
+                                INNER JOIN auditorias A ON A.id = R.auditoria_id
+                            WHERE responsable_id = ? AND R.estatus_validacion_id = 1 $filtroAuditoria), 
+                        (SELECT count(*)
+                            FROM recomendaciones R
+                            	INNER JOIN usuarios RP ON RP.id = R.responsable_id
+                                INNER JOIN empresas E ON E.id = RP.empresa_id
+                                INNER JOIN sedes S ON S.id = RP.sede_id
+                                INNER JOIN auditorias A ON A.id = R.auditoria_id
+                            WHERE responsable_id = ? AND R.estatus_validacion_id = 2 $filtroAuditoria), 
+                        (SELECT count(*)
+                            FROM recomendaciones R
+                            	INNER JOIN usuarios RP ON RP.id = R.responsable_id
+                                INNER JOIN empresas E ON E.id = RP.empresa_id
+                                INNER JOIN sedes S ON S.id = RP.sede_id
+                                INNER JOIN auditorias A ON A.id = R.auditoria_id
+                            WHERE responsable_id = ? AND R.estatus_validacion_id = 3 $filtroAuditoria)";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("iiii",$usuario->id,$usuario->id,$usuario->id,$usuario->id))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($total, $enviadas, $validadas, $rechazadas))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $totales= (object) [
+                                'total' => $total,
+                                'enviadas' => $enviadas,
+                                'validadas' =>  $validadas,
+                                'rechazadas' => $rechazadas
+                              
+                            ];
+                            $resultado->valor = $totales;
+                        }
+                        
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+            
+       
+        return $resultado;
+    }
+    
+    
+    
+    public function consultarFechaLimite($usuario, $auditoriaId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta = "SELECT  IFNULL(DATE_FORMAT(fecha_vencimiento,'%d/%m/%Y'),'')fecha_vencimiento 
+                FROM recomendaciones
+                WHERE auditoria_id = ?
+                ORDER BY UNIX_TIMESTAMP(fecha_vencimiento) DESC
+                LIMIT 1";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$auditoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($fecha))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $resultado->valor = $fecha;
+                        }
+                        
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+            
+            
+            return $resultado;
+    }
+    
+    public function consultarAuditoriasUsuario($usuario)
+    {
+        $resultado = new Resultado();
+        $sedes = array();
+        
+        $filtros = $this->getFiltros($usuario,(object)[]);
+        $where = $this->and($filtros);
+        
+        $consulta = "SELECT R.auditoria_id, A.empresa_id empresaId, E1.nombre empresaNombre, A.sede_id sedeId, S.nombre sedeNombre, IFNULL(DATE_FORMAT(A.fecha,'%d/%m/%Y'),'') fecha, DATEDIFF(NOW(),A.fecha) dias
+            FROM recomendaciones R
+            	INNER JOIN usuarios U ON U.id = R.responsable_id
+            	INNER JOIN auditorias A ON A.id = R.auditoria_id
+            	INNER JOIN empresas E1 ON E1.id = A.empresa_id
+            	INNER JOIN sedes S ON S.id = A.sede_id
+                INNER JOIN auditorias A ON A.id = R.auditoria_id
+            WHERE A.seguimiento_finalizado != 1
+            $and
+            GROUP BY R.auditoria_id, A.empresa_id, E1.nombre, A.sede_id, S.nombre
+            ORDER BY R.auditoria_id";
+        
+          
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id,$empresaId, $empresaNombre, $sedeId, $sedeNombre, $fecha, $dias))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $sede= (object) [
+                                'id' => $id,
+                                'fecha' => $fecha,
+                                'empresaId' =>  $empresaId,
+                                'empresaNombre' => $empresaNombre,
+                                'sedeId' => $sedeId,
+                                'sedeNombre' => $sedeNombre,
+                                'dias' => $dias
+                            ];
+                            array_push($sedes,$sede);
+                        }
+                        
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+            
+            $resultado->valor = $sedes;
+        return $resultado;
+    }
+    
+    public function consultarMiembrosEquipo($usuario)
+    {
+        $resultado = new Resultado();
+        $miembros = array();
+        
+        $filtros = $this->getFiltros($usuario,(object)[]);
+        $where = $this->where($filtros);
+        
+        $consulta = "SELECT U.id, U.nombre_usuario, U.nombre, U.apellido
+            FROM usuarios U
+            	INNER JOIN empresas E1 ON E1.id = U.empresa_id
+            	INNER JOIN sedes S ON S.id = U.sede_id
+            $where
+           ORDER BY nombre, apellido";
+            
+            
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($this->bind_param($sentencia, $filtros))
+                {
+                    if($sentencia->execute())
+                    {
+                        if ($sentencia->bind_result($id,$nombreUsuario, $nombre, $apellido))
+                        {
+                            while($sentencia->fetch())
+                            {
+                                $miembro= (object) [
+                                    'id' => $id,
+                                    'nombreUsuario' => $nombreUsuario,
+                                    'nombre' =>  $nombre,
+                                    'apellido' => $apellido
+                                ];
+                                $miembro->nombreCompleto = $miembro->nombre . " " . $miembro->apellido;
+                                array_push($miembros,$miembro);
+                            }
+                            
+                        }
+                        else
+                            $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+                
+        $resultado->valor = $miembros;
+        return $resultado;
     }
     
     function eliminarAcentos($cadena){

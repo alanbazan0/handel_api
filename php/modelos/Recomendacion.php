@@ -6,4 +6,5 @@ class Recomendacion
   public $id;
   public $estatusValidacionId;
   public $comentariosValidacion;
+  public $responsableId;
 }

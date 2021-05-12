@@ -399,6 +399,7 @@ class AuditoriaVista extends Vista
 		$("#referenciaDiv").show();
 		if(modeloDatos!=null)
 		{
+			this.listaPreguntas.auditoria = modeloDatos;
 			//this.listaPreguntas.empresaId = modeloDatos.empresaId;
 			this.listaPreguntas.setValorCampo("empresaId",modeloDatos.empresaId);
 			this.listaPreguntas.setValorCampo("tipoAuditoriaId",modeloDatos.tipoAuditoriaId);
@@ -972,6 +973,33 @@ class AuditoriaVista extends Vista
 	            {
 	            	 setTimeout(function(){
 	            		 _this.presentador.iniciarSeguimiento();
+	 	            }, 1000);
+	            }
+	        });
+	}
+	
+	finalizarSeguimiento()
+	{
+		var texto ="Se finalizar\u00e1 el seguimiento de esta auditoría";
+		var _this = this;
+		swal({
+	            title: "\u00bfEst\u00E1 seguro?",
+	            text: texto,
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Si, finalizar seguimiento!!",
+	            cancelButtonText: "No",
+	            closeOnConfirm: false,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	 setTimeout(function(){
+	            		 _this.presentador.finalizarSeguimiento();
 	 	            }, 1000);
 	            }
 	        });

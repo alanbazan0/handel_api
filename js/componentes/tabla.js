@@ -96,9 +96,12 @@ class Tabla
 	
 	set registros(registros)
 	{
+		
 		this._registros = registros;
 		var table = this.datatable.DataTable();
 		var datatable = $("#" + this._id);
+		this._filtro =  $("#" + this._id + "Table_filter").find("input").val(); 
+		//recomendacionesTablaTable_filter
 		var scrollBody = datatable.find('.dataTables_scrollBody');
 		//var scrollBody = $('.dataTables_scrollBody');
 		var scrollTop = scrollBody.scrollTop();
@@ -108,7 +111,10 @@ class Tabla
 		setTimeout(function(){$($.fn.dataTable.tables(true)).DataTable().columns.adjust();}, 1000);
 		if(scrollPos !=null)
 			table.draw().scroller.toPosition(this.scrollPos,false);
-			
+		$("#" + this._id + "Table_filter").find("input").val(this._filtro); 	
+		var e = $.Event('keyup');
+		e.keyCode= 13; // enter
+		$("#" + this._id + "Table_filter").find("input").trigger(e);
 	}
 	
 	get registros()

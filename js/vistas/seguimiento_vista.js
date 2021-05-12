@@ -18,6 +18,8 @@ class SeguimientoVista extends CatalogoVista
 		
 		$('#consultarRecomendacionesButton').click(function(){_this.consultarRecomendaciones();});
 		//this.consultarEmpresasCriterio();
+		
+		this.consultarEstatusValidacionCriterio();
 	}
 	
 	crearTablas()
@@ -31,13 +33,14 @@ class SeguimientoVista extends CatalogoVista
 					//{longitud:200, 	titulo:"Plantilla",   alias:"plantillaNombre", alineacion:"I" }, 
 					//{longitud:200, 	titulo:"Seguimiento iniciado",   alias:"seguimiento", alineacion:"D", itemRenderer:this.renderSeguimiento},		
 					{longitud:300, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" }, 
-					{longitud:300, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" }, 	
+					{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" }, 	
 					{longitud:250, 	titulo:"Fecha de auditoría",   alias:"fecha", alineacion:"C",itemRenderer:this.renderFechaAuditoria },
 					//{longitud:250, 	titulo:"Hora",   alias:"hora", alineacion:"C" },
 					//{longitud:250, 	titulo:"Fecha de auditoria",   alias:"fechaEjecucion", alineacion:"I" },
 					{longitud:50, 	titulo:"Puntuación",   alias:"puntuacion", alineacion:"C", itemRenderer: this.rendererPuntuacion },
 					{longitud:50, 	titulo:"Total de acciones recomendadas",   	alias:"recomendacionesTotal", alineacion:"C" },
 					{longitud:50, 	titulo:"Acciones pendientes",   alias:"recomendacionesPendientes", alineacion:"C" },
+					{longitud:50, 	titulo:"Avance",   alias:"porcentajeAvance", alineacion:"C",itemRenderer: this.rendererAvance },
 					//{longitud:50, 	titulo:"Número",   alias:"contadorEmpresa", alineacion:"C" },
 					//{longitud:200, 	titulo:"Referencia",   alias:"referencia", alineacion:"I" },
 					
@@ -47,6 +50,10 @@ class SeguimientoVista extends CatalogoVista
 			{
 				this.auditoriasTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporte});
 				this.auditoriasTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderExportarActionTracker});
+			}
+			if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
+			{
+				this.auditoriasTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporteSeguimiento});
 			}
 			this.auditoriasTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderRecomendaciones});
 		
@@ -83,11 +90,21 @@ class SeguimientoVista extends CatalogoVista
 			this.recomendacionesTabla.columnas.push({longitud:30, 	titulo:"",   alias:"terminada", alineacion:"I", itemRenderer: this.renderEstatusValidacionRecomendacion}),
 			this.recomendacionesTabla.columnas.push({longitud:30, 	titulo:"",   alias:"comentarios", alineacion:"I", itemRenderer:this.renderComentariosRecomendacion}),		
 			this.recomendacionesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderAvance});
+			
+			if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR || this.usuario.tipoUsuarioId == TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId == TipoUsuario.SUPERVISOR)
+			{
+				this.recomendacionesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderEditarRecomendacion});
+			}
 
 			this.recomendacionesTabla.textoTablaVacia = "Cargando información";
 			this.recomendacionesTabla.registros = [];
 			this.recomendacionesTabla.textoTablaVacia = "No hay recomendaciones";
 		}
+	}
+	
+	renderEditarRecomendacion(renglon)
+	{
+		return "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>";
 	}
 	
 	renderFechaAuditoria(renglon)
@@ -138,20 +155,26 @@ class SeguimientoVista extends CatalogoVista
 	
 	renderReporte(renglon, type, set)
 	{    
-		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Reporte'  type='button' class='reporte btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fas fa-file-pdf fa-lg'></span></button>";
+		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Reporte de auditoría'  type='button' class='reporte btn-circle mr-0 botones-icon btn btn-sm  btn-danger '><span  data-toggle='tooltip' class='fas fa-file-pdf fa-lg'></span></button>";
+	    return contenido;
+	}
+	
+	renderReporteSeguimiento(renglon, type, set)
+	{    
+		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Reporte de seguimiento'  type='button' class='reporteReguimiento btn-circle mr-0 botones-icon btn btn-sm  btn-warning text-white ' style='background-color:#f39c12'><span  data-toggle='tooltip' class='fas fa-file-pdf fa-lg'></span></button>";
 	    return contenido;
 	}
 	
 	renderExportarActionTracker(renglon, type, set)
 	{
-		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Action Tracker'  type='button' class='exportarActionTracker btn-circle mr-0 botones-icon btn btn-sm float-right btn-info active'><span  data-toggle='tooltip' class='fa fa-file-excel fa-lg'></span></button>";
+		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Action Tracker'  type='button' class='exportarActionTracker btn-circle mr-0 botones-icon btn btn-sm  btn-info '><span  data-toggle='tooltip' class='fa fa-file-excel fa-lg'></span></button>";
 		return contenido;
 	}
 	
 	
 	renderRecomendaciones(renglon, type, set)
 	{
-		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Ver acciones recomendadas'  type='button' class='recomendaciones btn-circle mr-0 botones-icon btn btn-sm float-right btn-primary active'><span  data-toggle='tooltip' class='fa fa-list fa-lg'></span></button>";
+		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Ver acciones recomendadas'  type='button' class='recomendaciones btn-circle mr-0 botones-icon btn btn-sm btn-primary '><span  data-toggle='tooltip' class='fa fa-list fa-lg'></span></button>";
 		return contenido;
 	}
 	
@@ -234,7 +257,9 @@ class SeguimientoVista extends CatalogoVista
 		$('#consultarRecomendacionesButton').show();
 		this.recomendaciones = [];
 		this.presentador.consultarPorLlaves();
-
+		if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
+			$("#estatusValidacionCriterioSelect").val(EstatusValidacion.ENVIADA_A_VALIDACION);
+	
 	}
 	
 	mostrarAuditorias()
@@ -300,9 +325,46 @@ class SeguimientoVista extends CatalogoVista
 			});
 		
 		
-		
+		$(tbody).on("click", "button.editar", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._recomendacionSeleccionada  = table.row( tr ).data();
+			if (_this._recomendacionSeleccionada != undefined)
+			{
+				_this._llavesRecomendacion = _this.copiarPropiedadesObjeto(_this._recomendacionSeleccionada, ["id"]);
+				_this.editarRecomendacion();
+
+			}
+		});
 	}
 	
+	editarRecomendacion()
+	{
+		this.modoRecomendacion = Modo.CAMBIO;
+		this.mostrarFormularioRecomendacion();
+	}
+	
+	mostrarFormularioRecomendacion()
+	{
+		this.mostrarFormularioHTML(HANDEL_API+"/html/formularios/recomendacion.php",this, null, function()
+		{
+			if(this.modoRecomendacion==Modo.CAMBIO)
+				this.consultarRecomendacionPorLlaves(true);
+				
+			this.inicializarValidacionesFormularioRecomendacion();
+		},null,"recomendacionModal","","guardarButton", function()
+		{
+			$("#formulario").submit();
+		},function()
+		{
+			//this.consultarRecomendacionPorLlaves();
+		});
+	}
 	
 	
 	mostrarComentariosRecomendacion()
@@ -320,7 +382,7 @@ class SeguimientoVista extends CatalogoVista
 				{
 					clearInterval(_this.cometariosRecomendacionIntervalId);
 					//TODO: actualizar icono de comentarios y demas
-					_this.consultarRecomendacionPorLlaves();
+					_this.consultarRecomendacionPorLlaves(false);
 					$("#modalAlta").remove();
 				});
 				
@@ -545,6 +607,31 @@ class SeguimientoVista extends CatalogoVista
 		//}
 	}
 	
+	rendererAvance(renglon, type, set)
+	{    
+		//if(renglon.fechaUltimaCapacitacion!=null)
+		//{
+			if(renglon.porcentajeAvance==undefined)
+				renglon.porcentajeAvance = 0;
+		
+			var porcentajeCumplimiento = parseFloat(renglon.porcentajeAvance);
+			var color ="";
+			if(porcentajeCumplimiento <= 70)
+			{
+				color = "red";
+			}
+			else if(porcentajeCumplimiento > 70 && porcentajeCumplimiento <=80)
+			{
+				color = "#e9a13d";
+			}
+			else if(porcentajeCumplimiento > 80)
+			{
+				color = "green";
+			}
+			return "<span  style='font-weight:bold;color:"+color+";' >"+porcentajeCumplimiento+"%</span>";
+		//}
+	}
+	
 	rendererCumplimiento(renglon, type, set)
 	{    
 		//if(renglon.fechaUltimaCapacitacion!=null)
@@ -727,6 +814,42 @@ class SeguimientoVista extends CatalogoVista
         });
 	}
 	
+	inicializarValidacionesFormularioRecomendacion()
+	{
+		var _this = this;
+		jQuery("#formulario").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+            	 "responsableSelect": {required: !0},
+               
+            },
+            messages: {
+            	 "responsableSelect": "Por favor ingrese un responsable",
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.guardarRecomendacion();
+            }
+        });
+	}
+	
+	guardarRecomendacion()
+	{
+		this.presentador.actualizarRecomendacion();
+	}
+	
 //	agregar()
 //	{
 //		super.agregar();
@@ -752,13 +875,11 @@ class SeguimientoVista extends CatalogoVista
 		$('#nombreInput').focus();
 	}
 	
-	get criteriosSeleccion()
+	get criteriosSeleccionRecomendaciones()
 	{
 		 var criteriosSeleccion = 
 		 {				    
-			empresaId: $('#empresaSelectCriterio').val(),
-			sedeId: $('#sedeSelectCriterio').val(),
-			nombre:$('#nombreInputCriterio').val()
+			estatusValidacionId: $('#estatusValidacionCriterioSelect').val()
 		 }
 		 return criteriosSeleccion;
 	}		
@@ -1001,8 +1122,9 @@ class SeguimientoVista extends CatalogoVista
 				$("#registrarAvanceButton").click(function(){_this.mostrarFormularioAvance(Modo.ALTA);});
 				if(_this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR && _this._recomendacionSeleccionada.cumplimiento==100)
 				{
-						$("#validarRecomendacionButton").show();
-						$("#validarRecomendacionButton").click(function(){_this.mostrarFormularioValidacion();});
+					$("#validarRecomendacionButton").show();
+					$("#validarRecomendacionButton").click(function(){_this.mostrarFormularioValidacion();});
+					
 				}
 			}
 			this.crearTablaAvances();
@@ -1013,12 +1135,12 @@ class SeguimientoVista extends CatalogoVista
 			
 		},function()
 		{
-			_this.consultarRecomendacionPorLlaves();
+			_this.consultarRecomendacionPorLlaves(false);
 		});
 
 	}
 	
-	mostrarFormularioValidacion()
+	mostrarFormularioValidacion(estatus)
 	{
 		var _this = this;
 		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/validacion_recomendacion.php",this, null, function()
@@ -1029,7 +1151,28 @@ class SeguimientoVista extends CatalogoVista
 			
 		},null,"validacionModal","","guardarValidacionButton", function()
 		{
-			$("#formulario").submit();
+			$("#formularioValidacion").submit();
+		});
+	}
+	
+	mostrarFormularioValidacionAlta(estatus)
+	{
+		var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/validacion_recomendacion.php",this, null, function()
+		{
+			this.inicializarValidacionesFormularioValidacion();
+			$("#accionAvanceValidacionLabel").html(_this._recomendacionSeleccionada.titulo);
+			
+			//$("#estatusValidacionSelect").val(estatus);
+			//this.consultarRecomendacionValidacionPorLlaves();
+			this.estatusValidacionIdAlta = estatus;
+			this._modeloRecomendacionValidacion={id :this._recomendacionSeleccionada.id};
+			this.presentador.consultarEstatusValidacionAlta();
+			$("#comentariosValidacionInput").focus();
+			
+		},null,"validacionModal","","guardarValidacionButton", function()
+		{
+			$("#formularioValidacion").submit();
 		});
 	}
 	
@@ -1039,9 +1182,34 @@ class SeguimientoVista extends CatalogoVista
 		this.presentador.consultarEstatusValidacion();
 	}
 	
+	consultarEstatusValidacionCriterio()
+	{
+		this.cargandoOpciones("#estatusValidacionCriterioSelect");
+		this.presentador.consultarEstatusValidacionCriterio();
+	}
+	
+	
+	
+	consultarEstatusValidacionAlta()
+	{
+		this.cargandoOpciones("#estatusValidacionSelect");
+		this.presentador.consultarEstatusValidacionAlta();
+	}
+	
 	set estatusValidacion(estatusValidacion)
 	{
 		this.cargarOpciones('#estatusValidacionSelect', estatusValidacion, Modo.CAMBIO, this._modeloRecomendacionValidacion, 'estatusValidacionId',"");
+	}
+	
+	set estatusValidacionAlta(estatusValidacion)
+	{
+		this.cargarOpciones('#estatusValidacionSelect', estatusValidacion, Modo.CAMBIO, {estatusValidacionId: this.estatusValidacionIdAlta}, 'estatusValidacionId',"");
+	}
+	
+	set estatusValidacionCriterio(estatusValidacion)
+	{
+		this.cargarOpciones('#estatusValidacionCriterioSelect', estatusValidacion);
+		//this.cargarOpciones('#estatusValidacionCriterioSelect', estatusValidacion, "", null, 'estatusValidacionId',"");
 	}
 	
 	validarRecomendacion()
@@ -1054,8 +1222,9 @@ class SeguimientoVista extends CatalogoVista
 		this.presentador.consultarRecomendacionValidacionPorLlaves();
 	}
 	
-	consultarRecomendacionPorLlaves()
+	consultarRecomendacionPorLlaves(formulario)
 	{
+		this._formularioRecomendacion = formulario;
 		this.presentador.consultarRecomendacionPorLlaves();
 	}
 	
@@ -1113,6 +1282,14 @@ class SeguimientoVista extends CatalogoVista
 			
 			$("#adjuntarArchivoButton").click(function(){_this.adjuntarArchivo();});
 			
+			if(this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR && this._recomendacionSeleccionada.cumplimiento==100 && _this._recomendacionSeleccionada.estatusValidacionId!=EstatusValidacion.VALIDADA)
+			{
+				$("#validarRecomendacionArchivosButton").show();
+				$("#validarRecomendacionArchivosButton").click(function(){_this.mostrarFormularioValidacionAlta(EstatusValidacion.VALIDADA);});
+				$("#rechazarRecomendacionArchivosButton").show();
+				$("#rechazarRecomendacionArchivosButton").click(function(){_this.mostrarFormularioValidacionAlta(EstatusValidacion.RECHAZADA);});
+			}
+			
 		},null,"archivosModal","","guardarAvanceButton",function()
 		{
 			$("#formulario").submit();
@@ -1132,20 +1309,32 @@ class SeguimientoVista extends CatalogoVista
 		
 		$("#file"+this._archivoActual.id).on("change",{archivo:this._archivoActual},function(event)
 		{
-			var archivo = event.data.archivo;
-			var target = event.target || event.srcElement;
-			if (target.value.length == 0) 
-			{
-				$("#file"+archivo.id).remove();
-			}
-			else
-			{
-				archivo.file = event.currentTarget.files[0];
-				archivo.subido = false;
-				archivo.nombre = archivo.file.name;
-				archivo.tamano = archivo.file.size;
-				_this.agregarArchivo(archivo);
-			}
+			 var reader = new FileReader();
+
+            
+				var archivo = event.data.archivo;
+				var target = event.target || event.srcElement;
+				if (target.value.length == 0) 
+				{
+					$("#file"+archivo.id).remove();
+				}
+				else
+				{
+					
+					archivo.file = event.currentTarget.files[0];
+					archivo.result = target.result;
+					archivo.subido = false;
+					archivo.nombre = archivo.file.name;
+					archivo.tamano = archivo.file.size;
+					_this.agregarArchivo(archivo);
+					
+					reader.onload = function (e)
+            		{
+						archivo.result = e.target.result;
+					}
+					reader.readAsDataURL(archivo.file);
+				}
+			
 		});
    		$("#file"+_this._archivoActual.id).trigger("click");
 		
@@ -1218,11 +1407,28 @@ class SeguimientoVista extends CatalogoVista
 		this._recomendacionSeleccionada.estatusValidacionIcono = modeloRecomendacion.estatusValidacionIcono;
 		this._recomendacionSeleccionada.estatusValidacionColor = modeloRecomendacion.estatusValidacionColor;
 		this._recomendacionSeleccionada.estatusValidacionDescripcion = modeloRecomendacion.estatusValidacionDescripcion;
+		this._recomendacionSeleccionada.usuarioId = modeloRecomendacion.usuarioId;
+		this._recomendacionSeleccionada.usuarioNombre = modeloRecomendacion.usuarioNombre;
+		this._recomendacionSeleccionada.usuarioApellido = modeloRecomendacion.usuarioApellido;
+		this._recomendacionSeleccionada.usuarioNombreCompleto = modeloRecomendacion.usuarioNombreCompleto;
 		
 		if(this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR && this._recomendacionSeleccionada.cumplimiento==100)
 			$("#validarRecomendacionButton").show();
 		else
 			$("#validarRecomendacionButton").hide();
+		if(this._formularioRecomendacion)	
+			this.consultarResponsablesRecomendacion();
+	}
+	
+	consultarResponsablesRecomendacion()
+	{
+		this.presentador.consultarResponsablesRecomendacion();
+	}
+	
+	set responsablesRecomendacion(registros)
+	{
+		this.cargarOpciones('#responsableSelect', registros, this.modoRecomendacion, this._modeloRecomendacion, 'usuarioId',"","nombreCompleto");
+		
 	}
 	
 	get modeloAvance()
@@ -1343,7 +1549,7 @@ class SeguimientoVista extends CatalogoVista
 	inicializarValidacionesFormularioValidacion()
 	{
 		var _this = this;
-		jQuery("#formulario").validate({
+		jQuery("#formularioValidacion").validate({
             ignore: [],
             errorClass: "invalid-feedback animated fadeInDown",
             errorElement: "div",
@@ -1643,7 +1849,7 @@ class SeguimientoVista extends CatalogoVista
 							_this.showPage(++_this.__CURRENT_PAGE);
 					});
 					
-					_this.vistaPreviaArchivo(_this._archivoSeleccionado.nombre);
+					_this.vistaPreviaArchivo(_this._archivoSeleccionado);
 					
 				},null,"archivoModal","","", function()
 				{
@@ -1672,6 +1878,11 @@ class SeguimientoVista extends CatalogoVista
 		$('#archivosModal').modal('hide')
 	}
 	
+	salirModalRecomendacion()
+	{
+		$('#recomendacionModal').modal('hide')
+	}
+	
 	salirFormularioValidacion()
 	{
 		$('#validacionModal').modal('hide')
@@ -1680,6 +1891,11 @@ class SeguimientoVista extends CatalogoVista
 	salirFormularioAvances()
 	{
 		$('#avancesModal').modal('hide')
+	}
+	
+	salirFormularioArchivos()
+	{
+		$('#archivosModal').modal('hide')
 	}
 	
 	get time()
@@ -1700,16 +1916,16 @@ class SeguimientoVista extends CatalogoVista
 		}
 	}
 	
-	vistaPreviaArchivo(nombre)
+	vistaPreviaArchivo(archivoSeleccionado)
 	{
 		 $("#pdf").hide();
-		if(nombre=="")
+		if(archivoSeleccionado.nombre=="")
 			$('#evidenciaImage').attr("src",HANDEL_API + "/images/tipos_archivo/vacio.png");
 		else
 		{
 			try
 			{
-				var elementos = nombre.split(".");
+				var elementos = archivoSeleccionado.nombre.split(".");
 				if(elementos.length>1)
 				{
 					var tipo= elementos[elementos.length-1];
@@ -1733,10 +1949,18 @@ class SeguimientoVista extends CatalogoVista
 							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/pdf.png");
 							 
 							 $('#evidenciaImage').hide(); 
-							 
-							var archivo = encodeURIComponent(nombre);
-							var url = HANDEL_API + "/php/archivos_avances/avance" + this._avanceSeleccionado.id+"/"+ archivo;
-							this.showPDF(url);
+							 if(archivoSeleccionado.subido)
+							 {
+								var archivo = encodeURIComponent(archivoSeleccionado.nombre);
+								var url = HANDEL_API + "/php/archivos_avances/avance" + this._avanceSeleccionado.id+"/"+ archivo;
+								this.showPDF(url);
+							 }
+							 else
+							 {
+								if(archivoSeleccionado.file.type=="application/pdf")
+                			  		this.showPDF(URL.createObjectURL(archivoSeleccionado.file));
+							 }
+							
 							 
 						break;
 	//					case "txt":
@@ -1748,9 +1972,16 @@ class SeguimientoVista extends CatalogoVista
 						case "jpg":
 						case "png":
 						case "bmp":
-							var archivo = encodeURIComponent(nombre);
-							var url = HANDEL_API + "/php/archivos_avances/avance" + this._avanceSeleccionado.id+"/"+ archivo;
-							$('#evidenciaImage').attr('src',url);
+							if(archivoSeleccionado.subido)
+							{
+								var archivo = encodeURIComponent(archivoSeleccionado.nombre);
+								var url = HANDEL_API + "/php/archivos_avances/avance" + this._avanceSeleccionado.id+"/"+ archivo;
+								$('#evidenciaImage').attr('src',url);
+							}
+							else
+							{
+								$('#evidenciaImage').attr('src',archivoSeleccionado.result);
+							}
 						break;
 						
 						
@@ -1846,6 +2077,18 @@ class SeguimientoVista extends CatalogoVista
 				$("#page-loader").hide();
 			});
 		});
+	}
+	
+	get modeloRecomendacion()
+	{
+		var modelo = 
+		 {		
+			 responsableId:$('#responsableSelect').val(),
+			
+		 };
+		 if((this.modoRecomendacion ==Modo.CAMBIO || this.modoRecomendacion ==Modo.CONSULTA) && this.modoRecomendacion!=null)
+			 modelo.id = this._modeloRecomendacion.id;
+		 return modelo;
 	}
 }
 var vista = new SeguimientoVista(this);

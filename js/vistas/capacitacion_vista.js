@@ -868,6 +868,13 @@ class CapacitacionVista extends CatalogoVista
 		
 	}
 	
+	cambiarLogo()
+	{
+		if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
+			$('#file').trigger('click');
+	}
+
+	
 	
 }
 var vista = new CapacitacionVista(this);

@@ -14,6 +14,7 @@ ini_set('display_errors', 1);
 
 include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
+include '../clases/CodigoError.php';
 include '../clases/AdministradorConexion.php';
 include '../modelos/Avance.php';
 include '../modelos/Recomendacion.php';
@@ -68,7 +69,8 @@ try
                 break;
                 case 'consultarRecomendacionesPendientesUsuario':
                     $llaves = json_decode(REQUEST('llaves'));
-                    $resultado = $repositorio->consultarRecomendacionesPendientesUsuario($llaves,$usuario);
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarRecomendacionesPendientesUsuario($llaves,$criteriosSeleccion,$usuario);
                 break;
                 case 'consultarAvancesRecomendacion':
                     $llaves = json_decode(REQUEST('llaves'));
@@ -106,6 +108,10 @@ try
                     $llaves = json_decode(REQUEST('llaves'));
                     $resultado = $repositorio->iniciarSeguimiento($llaves);
                 break;
+                case 'finalizarSeguimiento':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->finalizarSeguimiento($llaves);
+                break;
                 case 'consultarSeguimiento':
                     $auditoriaId = REQUEST('auditoriaId');
                     $resultado = $repositorio->consultarSeguimiento($auditoriaId);
@@ -123,6 +129,12 @@ try
                     $mapper = new JsonMapper();
                     $modelo = $mapper->map($json, new Avance());
                     $resultado = $repositorio->actualizarAvance($recomendacionId,$modelo,$usuario) ;
+                break;
+                case 'actualizarRecomendacion':
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new Recomendacion());
+                    $resultado = $repositorio->actualizarDatosRecomendacion($modelo,$usuario) ;
                 break;
                 case 'consultarAvancePorLlaves':
                     $llaves = json_decode(REQUEST('llaves'));
@@ -151,6 +163,13 @@ try
                     $avanceId =  REQUEST('avanceId');
                     $archivos = FILES('file');
                     $resultado = $repositorio->insertarArchivosAvance($recomendacionId,$avanceId,$archivos);
+                break;
+                case 'enviarNotificacionInicioSeguimiento':
+                    $auditoriaId = REQUEST("auditoriaId");
+                    $nombreUsuario= REQUEST("nombreUsuario");
+                    $enviarA= REQUEST("enviarA");
+                    $numeroUsuarios = REQUEST("numeroUsuarios");
+                    $resultado = $repositorio->enviarNotificacionInicioSeguimiento($auditoriaId,$nombreUsuario,$enviarA,$numeroUsuarios);
                 break;
                 default:
                     $resultado->mensajeError = "Acción no válida";

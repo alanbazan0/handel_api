@@ -7,7 +7,7 @@ interface IEstatusValidacionRepositorio
 {
     public function insertar(EstatusValidacion $modelo);
     public function actualizar(EstatusValidacion $modelo);  
-    public function consultar($criteriosSeleccion);  
+    public function consultar($criteriosSeleccion,$opcional);  
     public function consultarPorLlaves($llaves); 
 }
 

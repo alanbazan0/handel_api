@@ -109,16 +109,18 @@ try
                     $usuario = $_SESSION['usuario'];
                 $resultado = $repositorio->consultarUsuariosCorportarivoYAdministradores($usuario);
             break;
-            
             case 'consultarUsuariosCorportarivoYAdministradoresPorEmpresa':
                 $empresaId = REQUEST('empresaId');
                 $resultado = $repositorio->consultarUsuariosCorportarivoYAdministradoresPorEmpresa($empresaId);
             break;
-            
             case 'consultarUsuariosCorportarivoYAdministradoresPorEmpresaSIVAH':
                 $empresaId = REQUEST('empresaId');
                 $resultado = $repositorio->consultarUsuariosCorportarivoYAdministradoresPorEmpresaSIVAH($empresaId);
-                break;
+            break;
+            case 'consultarUsuariosCorportarivoPorEmpresaSIVAH':
+                $empresaId = REQUEST('empresaId');
+                $resultado = $repositorio->consultarUsuariosCorportarivoPorEmpresaSIVAH($empresaId);
+            break;
             case 'consultarPorEmpresaSede':
                 session_start();
                 $usuario = null;

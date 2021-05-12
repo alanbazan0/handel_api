@@ -98,51 +98,10 @@ class RecomendacionesComentariosRepositorio extends RepositorioBase implements I
                             $resultado = $repositorio->consultarRecomendacionPorLlaves($llaves);
                             if($resultado->correcto())
                             {
+                               
                                 $recomendacion =  $resultado->valor;
-                                $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
-                                $resultado = $this->consultaUsuariosComentario($recomendacion->id);
-                                if($resultado->correcto())
-                                {
-                                    $usuarios = $resultado->valor;
-                                    
-                                    if(!$usuariosRepositorio->existeUsuarioArreglo($recomendacion->usuarioId,$usuarios))
-                                    {
-                                        $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$recomendacion->usuarioId]);
-                                        if($resultado->correcto())
-                                            array_push($usuarios, $resultado->valor);
-                                    }
-                                    if(!$usuariosRepositorio->existeUsuarioArreglo($recomendacion->administradorId,$usuarios))
-                                    {
-                                        $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$recomendacion->administradorId]);
-                                        if($resultado->correcto())
-                                            array_push($usuarios, $resultado->valor);
-                                    }
-                                    
-                                    $usuariosRepositorio->eliminarUsuarioArreglo($usuario->id,$usuarios);
-                                    
-                                    $info =  "";
-                                    //TEST 
-                                    
-                                    //$usuarios = array();
-                                    //array_push($usuarios, (object)["nombreUsuario"=>"alanbazan@apps-handel.com","nombre"=>"Alan"]);
-                                        
-                                    $administrador_correo = new AdministradorCorreo();
-                                    $accion = $recomendacion->titulo;
-                                    $comentario = $modelo->comentario;
-                                    $usuarioComentario = $usuario->nombreCompleto;
-                                    
-                                    $url = "https://sivah.apps-handel.com/menu.php?p=seguimiento&comentarioId= $modelo->id";
-                                    //$asunto  = "SIVAH: " . $usuario->nombreCompleto . ": hizo un comentario en acción " . $recomendacion->titulo;
-                                    $asunto = "Nuevo mensaje en SIVAH";
-                                    //$asuntoCorreo = html_entity_decode($asunto);
-                                    $asuntoCorreo="=?UTF-8?B?".base64_encode($asunto)."?=";
-                                    $tipo = "comentario_recomendacion" . $modelo->id;
-                                    $resultado = $administrador_correo->enviarNotificacionComentarioRecomendacion($tipo,$usuario,$usuarios,$asuntoCorreo,$accion,$usuarioComentario,$comentario,$url, $info);
-                                    if($resultado->correcto())
-                                    {
-                                        $resultado->valor = $modelo->id;
-                                    }
-                                }
+                                
+                                $resultado = $this->enviarNotificacionComentario($recomendacion,$usuario, $modelo);
                             }
                             
                         }
@@ -158,6 +117,78 @@ class RecomendacionesComentariosRepositorio extends RepositorioBase implements I
         }
 //         else 
 //             $resultado->mensajeError = __FUNCTION__ . "El comnentario esta vacío";
+        return $resultado;
+    }
+    
+   
+    
+    public function enviarNotificacionComentario($recomendacion,$usuario, $modelo)
+    {
+        $resultado = new Resultado();
+        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+        $resultado = $this->consultaUsuariosComentario($recomendacion->id);
+        if($resultado->correcto())
+        {
+            $usuarios = $resultado->valor;
+            
+            if($recomendacion->usuarioId!=null)
+            {
+                if(!$usuariosRepositorio->existeUsuarioArreglo($recomendacion->usuarioId,$usuarios))
+                {
+                    $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$recomendacion->usuarioId]);
+                    if($resultado->correcto())
+                        array_push($usuarios, $resultado->valor);
+                }
+            }
+            if($recomendacion->administradorId!=null)
+            {
+                if(!$usuariosRepositorio->existeUsuarioArreglo($recomendacion->administradorId,$usuarios))
+                {
+                    $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$recomendacion->administradorId]);
+                    if($resultado->correcto())
+                        array_push($usuarios, $resultado->valor);
+                }
+            }
+            
+            $usuariosRepositorio->eliminarUsuarioArreglo($usuario->id,$usuarios);
+            
+            $info =  "";
+            //TEST
+            
+            //$usuarios = array();
+            //array_push($usuarios, (object)["nombreUsuario"=>"alanbazan@apps-handel.com","nombre"=>"Alan"]);
+            
+            $administrador_correo = new AdministradorCorreo();
+            
+            
+            //$asunto  = "SIVAH: " . $usuario->nombreCompleto . ": hizo un comentario en acción " . $recomendacion->titulo;
+            
+            //$asuntoCorreo = html_entity_decode($asunto);
+            
+            $tipo = "comentario_recomendacion" . $modelo->id;
+            
+            $url = "https://sivah.apps-handel.com/menu.php?p=seguimiento&comentarioId= $modelo->id";
+            
+            $contenido = "<tr>
+                            <td align='center' class='padding-copy' style='font-size: 25px; font-family: Helvetica, Arial, sans-serif; color: #548dd4; padding-top: 0px;'><strong>¡Hola!</strong><br></td>
+                        </tr>
+                        <tr>
+                            <td align='center' class='padding-copy textlightStyle' style='padding: 20px 0 0 0; font-size: 16px; line-height: 25px; font-family: Helvetica, Arial, sans-serif; color: #3F3D33;'>
+                            <p>El usuario $usuario->nombreCompleto; ha comentado en la conversación sobre la acción:</p>
+							<p><strong>$recomendacion->titulo</strong></p>
+							<p><br>El comentario es:</p>
+							<p><strong>$modelo->comentario</strong></p>
+							<p>Puedes responder a este mensaje directamente ingresando a SIVAH (<em><a title='Accede a SIVAH' href='https://mosaico.io/sivah.apps-handel.com' style='color: #3F3D33; text-decoration: none; font-weight: bold;'>sivah.apps-handel.com</a></em>) o dando clic en el botón inferior</p>
+							</td>
+                        </tr>";
+            
+            
+            $resultado = $administrador_correo->enviarNotificacionSIVAH($tipo,$usuarios,"Nuevo mensaje en SIVAH","#3F3D33","¡Recibiste un mensaje!", $contenido);
+            if($resultado->correcto())
+            {
+                $resultado->valor = $modelo->id;
+            }
+        }
         return $resultado;
     }
     

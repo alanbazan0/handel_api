@@ -257,20 +257,42 @@ class AdministradorCorreo
         return  $this->enviarCorreoUsuarios($tipo,$usuarios,$asuntoCorreo, $mensaje, $info);
     }
     
-    public function enviarNotificacionComentarioRecomendacion($tipo,$usuario, $usuarios, $asuntoCorreo, $accion, $usuarioComentario, $comentario, $url, $info)
+//     public function enviarNotificacionComentarioRecomendacion($tipo,$usuario, $usuarios, $asunto, $accion, $usuarioComentario, $comentario, $url, $info)
+//     {
+       
+//         // $usuarios = array();
+//         //array_push($usuarios,(object) ['nombreUsuario' => 'alanbazan@apps-handel.com','nombreCompleto' => 'Alan Bazán']);
+        
+        
+//         $mensaje= file_get_contents('../plantillas_correo/tema_nuevo_sivah.html');
+        
+//         $mensaje=  str_replace("@usuarioComentario",$usuarioComentario,$mensaje);
+//         $mensaje=  str_replace("@url",$url,$mensaje);
+//         $mensaje=  str_replace("@comentario",$comentario,$mensaje);
+//         $mensaje=  str_replace("@accion",$accion,$mensaje);
+        
+//         return  $this->enviarCorreoUsuarios($tipo,$usuarios,$asuntoCorreo, $mensaje, $info, "SIVAH");
+//     }
+    
+    public function enviarNotificacionSIVAH($tipo, $usuarios, $asunto,$tituloDerecho, $colorTitulo, $titulo, $contenido, $textoBoton, $urlBoton, $imprimir)
     {
         // $usuarios = array();
         //array_push($usuarios,(object) ['nombreUsuario' => 'alanbazan@apps-handel.com','nombreCompleto' => 'Alan Bazán']);
         
+        $asuntoCorreo="=?UTF-8?B?".base64_encode($asunto)."?=";
         
         $mensaje= file_get_contents('../plantillas_correo/tema_nuevo_sivah.html');
         
-        $mensaje=  str_replace("@usuarioComentario",$usuarioComentario,$mensaje);
-        $mensaje=  str_replace("@url",$url,$mensaje);
-        $mensaje=  str_replace("@comentario",$comentario,$mensaje);
-        $mensaje=  str_replace("@accion",$accion,$mensaje);
+        $mensaje=  str_replace("@tituloDerecho",$tituloDerecho,$mensaje);
+        $mensaje=  str_replace("@titulo",$titulo,$mensaje);
+        $mensaje=  str_replace("@contenido",$contenido,$mensaje);
+        $mensaje=  str_replace("@colorTitulo",$colorTitulo,$mensaje);
+        $mensaje=  str_replace("@textoBoton",$textoBoton,$mensaje);
+        $mensaje=  str_replace("@urlBoton",$urlBoton,$mensaje);
+        //$mensaje=  str_replace("@nombre",$nombre,$mensaje);
         
-        return  $this->enviarCorreoUsuarios($tipo,$usuarios,$asuntoCorreo, $mensaje, $info, "SIVAH");
+        
+        return  $this->enviarCorreoUsuarios($tipo,$usuarios,$asuntoCorreo, $mensaje, "", "SIVAH",$imprimir);
     }
     
     public function enviarNotificacionTarea($usuario, $usuarios, $minuta, $tarea)
@@ -373,7 +395,7 @@ class AdministradorCorreo
     }
     
     
-    public function enviarCorreoUsuarios($tipo,$usuarios, $asunto, $mensaje, $info, $de=null)
+    public function enviarCorreoUsuarios($tipo,$usuarios, $asunto, $mensaje, $info, $de=null,$imprimir=false)
     {
         $resultado = new Resultado();
        
@@ -427,7 +449,8 @@ class AdministradorCorreo
         }
         //var_dump($error);
        // var_dump($resultado);
-        
+        if($imprimir)
+            echo $mensaje;
         
         return $resultado;
     }
