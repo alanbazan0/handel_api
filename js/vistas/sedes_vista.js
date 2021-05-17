@@ -123,7 +123,11 @@ class SedesVista extends CatalogoVista
 		$('#nombreInput').val(this.modeloEdicion.nombre);
 		$('#nombreCortoInput').val(this.modeloEdicion.nombreCorto);
 		$('#direccionInput').val(this.modeloEdicion.direccion);
-		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
+		//$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
+		if(this.modeloEdicion.estatus==1)
+			$("#estatusRadio").prop('checked', true);
+		else
+			$("#estatusRadio").prop('checked', false);
 		this.consultarCombos();
 	}
 	

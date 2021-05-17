@@ -181,7 +181,10 @@ class CertificacionesVista extends CatalogoVista
 	{		
 		this.modeloEdicion = valor;
 		$('#nombreInput').val(this.modeloEdicion.nombre);
-		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
+		if(this.modeloEdicion.estatus==1)
+			$("#estatusRadio").prop('checked', true);
+		else
+			$("#estatusRadio").prop('checked', false);
 		
 	}
 	

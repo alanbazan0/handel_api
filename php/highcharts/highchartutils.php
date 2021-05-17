@@ -227,6 +227,134 @@ function toColumnChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$co
     
 }
 
+function toColumnChartColors($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colors, $showInLegend,$max)
+{
+    $categories = array();
+    $data = array();
+    
+    //     for ($i = 0; $i < count($rows); $i++)
+        //     {
+        //         $row = $rows[$i];
+        //         $category = $row->$xField;
+        //         $value = $row->$yField;
+        //         array_push($categories, $category);
+        //         array_push($data, $value);
+        //     }
+    $c = 0;
+    $series = array();
+    for ($i = 0; $i < count($rows); $i++)
+    {
+        $row = $rows[$i];
+        $category = $row->$xField;
+        $value = (float)$row->$yField;
+        
+//         if($value>=0 && $value<51)
+//             $color="#dd4b39";
+//         else if($value>=51 &&   $value <100)
+//             $color="#f39c12";
+//         else iF($value>=100)
+//             $color="#00a65a";
+            
+        $color = $colors[$c];
+            
+        $newRow= (object) [
+            'name' =>  $category,
+            'y' => $value,
+            'color' => $color
+        ];
+        
+        $c++;
+        if($c>count($colors)-1)
+            $c = 0;
+            
+        array_push($categories, $category);
+        $data = array();
+        array_push($data, $newRow);
+        
+        $serie = (object) ['name' => $category, 'data' => $data,  'showInLegend' => true, 'color' => $color];
+        array_push($series, $serie);
+    }
+    
+    $yAxis = (object) [ 'title' => (object) [ 'text'=> $yTitle]];
+    if($max>0)
+    {
+        $yAxis->min= 0;
+        $yAxis->max= $max;
+        $yAxis->tickInterval= 10;
+    }
+    
+    
+    
+    
+    $highchart = (object)
+    [
+        'chart' => (object) [ 'type' => "column"],
+        'title' => (object) [ 'text'=> $title],
+        'credits' => (object) ['enabled' => false],
+        'xAxis' => (object) [ 'categories' => array([$yTitle])],
+        'plotOptions' => (object)
+        [
+            'column'=> (object)[
+                'dataLabels'=>(object)
+                [
+                    'enabled'=>true,
+                    'crop'=>false,
+                    'overflow' =>'none',
+                    "inside"=> false,
+                    'color'=> 'black',
+                    'style'=> (object)
+                    [
+                        'fontSize' => 10,
+                        'textOutline' => '0px'
+                    ]
+                ]
+            ]
+        ],
+        'yAxis' => $yAxis,
+        'series' =>         $series
+            //array(            (object) ['name' => $serieTitle, 'data' => $data,  'showInLegend' => $showInLegend]        )
+    ];
+    
+    $data= (object) [
+        'async' =>  true,
+        'type' => 'image/jpeg',
+        'width' => 1080,
+        'options' => $highchart
+    ];
+    
+    $options = array(
+        'http' => array(
+            'method'  => 'POST',
+            'content' => json_encode( $data ),
+            'header'=>  "Content-Type: application/json\r\n" .
+            "Accept: application/json\r\n"
+        )
+    );
+    
+    $url = 'https://export.highcharts.com/';
+    
+    $context  = stream_context_create( $options );
+    
+    
+    
+    $result = file_get_contents( $url, false, $context );
+    
+    $charturl='';
+    if ($result === FALSE)
+    {
+        
+    }
+    else
+    {
+        $charturl = $url . $result;
+        
+    }
+    return $charturl;
+    
+    //  return 'ok';
+    
+}
+
 function toLineChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colors, $showInLegend,$max,$mes)
 {
     $categories = array();
@@ -369,7 +497,7 @@ function toLineChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colo
     
 }
 
-function toPieChart( $title, $yTitle, $serieTitle, $rows, $xField, $yField, $colors)
+function toPieChart( $title, $yTitle, $serieTitle, $rows, $xField, $yField, $colors,$distance=-50)
 {
     $categories = array();
     $data = array();
@@ -400,7 +528,7 @@ function toPieChart( $title, $yTitle, $serieTitle, $rows, $xField, $yField, $col
             [
                 'dataLabels'=>(object)
                 [
-                    'distance'=> -50,
+                    'distance'=> $distance,
                     'color'=> 'black',
                     'style'=> (object)
                      [
@@ -410,6 +538,100 @@ function toPieChart( $title, $yTitle, $serieTitle, $rows, $xField, $yField, $col
                      ], 
                     'enabled'=>true, 
                     'format'=>"{point.percentage:.1f} %" 
+                ] ,
+                "colors"  => $colors,
+                'showInLegend' => true
+            ],
+            
+            
+        ],
+        'series' => array(
+            (object) ['name' => $serieTitle, 'colorByPoint'=> true, 'data' => $data]
+        )
+    ];
+    
+    $data= (object) [
+        'async' =>  true,
+        'type' => 'image/jpeg',
+        'width' => 1080,
+        'options' => $highchart
+    ];
+    
+    $options = array(
+        'http' => array(
+            'method'  => 'POST',
+            'content' => json_encode( $data ),
+            'header'=>  "Content-Type: application/json\r\n" .
+            "Accept: application/json\r\n"
+        )
+    );
+    
+    $url = 'https://export.highcharts.com/';
+    
+    $context  = stream_context_create( $options );
+    
+    
+    
+    $result = file_get_contents( $url, false, $context );
+    
+    $charturl='';
+    if ($result === FALSE)
+    {
+        
+    }
+    else
+    {
+        $charturl = $url . $result;
+        
+    }
+    return $charturl;
+    
+    //  return 'ok';
+    
+}
+
+
+function toPieChartWithLabels( $title, $yTitle, $serieTitle, $rows, $xField, $yField, $colors,$distance=-50)
+{
+    $categories = array();
+    $data = array();
+    
+    for ($i = 0; $i < count($rows); $i++)
+    {
+        $row = $rows[$i];
+        $category = $row->$xField;
+        $value = $row->$yField;
+        
+        $newRow= (object) [
+            'name' =>  $category,
+            'y' => $value
+        ];
+        
+        //array_push($categories, $category);
+        array_push($data, $newRow);
+    }
+    
+    $highchart = (object)
+    [
+        'chart' => (object) [ 'type' => "pie"],
+        'title' => (object) [ 'text'=> $title],
+        'credits' => (object) ['enabled' => false],
+        'plotOptions' => (object)
+        [
+            'pie'=> (object)
+            [
+                'dataLabels'=>(object)
+                [
+                    'distance'=> $distance,
+                    'color'=> 'black',
+                    'style'=> (object)
+                    [
+                        'fontSize' => 10,
+                        'textOutline' => '0px'
+                        
+                    ],
+                    'enabled'=>true,
+                    'format'=>"<b>{point.name}</b>: {point.percentage:.1f} %"
                 ] ,
                 "colors"  => $colors,
                 'showInLegend' => true

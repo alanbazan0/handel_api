@@ -420,28 +420,36 @@ class UsuariosVista extends CatalogoVista
 		$('#contrasenaInput').val(this.modeloEdicion.contrasena);
 		$('#nombreInput').val(this.modeloEdicion.nombre);
 		$('#apellidoInput').val(this.modeloEdicion.apellido);
-		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
+		
+		if(this.modeloEdicion.estatus==1)
+			$("#estatusRadio").prop('checked', true);
+		else
+			$("#estatusRadio").prop('checked', false);
+			
 		$('#numeroEmpleadoInput').val(this.modeloEdicion.numeroEmpleado);
-		if(this.modeloEdicion.permisoSAHA)
+		
+		if(this.modeloEdicion.permisoSAHA==1)
 			$("#permisoSAHARadio").prop('checked', true);
 		else
 			$("#permisoSAHARadio").prop('checked', false);
-		if(this.modeloEdicion.permisoSIVAH)
+		
+		if(this.modeloEdicion.permisoSIVAH==1)
 			$("#permisoSIVAHRadio").prop('checked', true);
 		else
 			$("#permisoSIVAHRadio").prop('checked', false);
-		if(this.modeloEdicion.permiso10y7)
+		
+		if(this.modeloEdicion.permiso10y7==1)
 			$("#permiso10y7Radio").prop('checked', true);
 		else
 			$("#permiso10y7Radio").prop('checked', false);
 		this.consultarCombos();
 		
-		if(this.modeloEdicion.permisoCAVIH)
+		if(this.modeloEdicion.permisoCAVIH==1)
 			$("#permisoCAVIHRadio").prop('checked', true);
 		else
 			$("#permisoCAVIHRadio").prop('checked', false);
 		
-		if(this.modeloEdicion.recursosHumanos)
+		if(this.modeloEdicion.recursosHumanos==1)
 			$("#recursosHumanosRadio").prop('checked', true);
 		else
 			$("#recursosHumanosRadio").prop('checked', false);

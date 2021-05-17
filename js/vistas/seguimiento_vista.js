@@ -161,7 +161,7 @@ class SeguimientoVista extends CatalogoVista
 	
 	renderReporteSeguimiento(renglon, type, set)
 	{    
-		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Reporte de seguimiento'  type='button' class='reporteReguimiento btn-circle mr-0 botones-icon btn btn-sm  btn-warning text-white ' style='background-color:#f39c12'><span  data-toggle='tooltip' class='fas fa-file-pdf fa-lg'></span></button>";
+		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Reporte de seguimiento'  type='button' class='reporteSeguimiento btn-circle mr-0 botones-icon btn btn-sm  text-white ' style='background-color:#3b6b2a'><span  data-toggle='tooltip' class='fas fa-file-pdf fa-lg'></span></button>";
 	    return contenido;
 	}
 	
@@ -1089,11 +1089,35 @@ class SeguimientoVista extends CatalogoVista
 				_this.exportarActionTracker();
 			}
 		});
+		
+		$(tbody).on("click", "button.reporteSeguimiento", function()
+		{			
+			var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.imprimirReporteSeguimiento();
+			}
+		});
 	}
 	
 	imprimirReporte()
 	{
 		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_auditoria.php");
+		this.createNewFormElement(submitForm, "auditoriaId", JSON.stringify(this._llaves.id));	 
+	    submitForm.target= "_blank";
+	    submitForm.submit();
+	}
+	
+	imprimirReporteSeguimiento()
+	{
+		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_seguimiento.php");
 		this.createNewFormElement(submitForm, "auditoriaId", JSON.stringify(this._llaves.id));	 
 	    submitForm.target= "_blank";
 	    submitForm.submit();

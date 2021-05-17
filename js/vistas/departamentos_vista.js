@@ -181,7 +181,7 @@ class DepartamentosVista extends CatalogoVista
 	{		
 		this.modeloEdicion = valor;
 		$('#nombreInput').val(this.modeloEdicion.nombre);
-		if(this.modeloEdicion.estatus)
+		if(this.modeloEdicion.estatus==1)
 			$("#estatusRadio").prop('checked', true);
 		else
 			$("#estatusRadio").prop('checked', false);

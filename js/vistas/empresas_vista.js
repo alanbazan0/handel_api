@@ -1,3 +1,4 @@
+
 class EmpresasVista extends CatalogoVista
 {		
 	constructor()
@@ -372,7 +373,13 @@ class EmpresasVista extends CatalogoVista
 		$('#nombreCortoInput').val(this.modeloEdicion.nombreCorto);
 		$('#direccionInput').val(this.modeloEdicion.direccion);
 		$('#telefonoInput').val(this.modeloEdicion.telefono);		
-		$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
+		//$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
+		
+		if(this.modeloEdicion.estatus==1)
+			$("#estatusRadio").prop('checked', true);
+		else
+			$("#estatusRadio").prop('checked', false);
+		
 		$('#logoImage').attr('src', HANDEL_API + "/php/logos_empresas/" + this.modeloEdicion.icono);
 		$('#logoImage').show();
 		this.consultarCombos();

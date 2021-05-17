@@ -534,7 +534,7 @@ class PlantillasVista extends CatalogoVista
 		$('#nombreInput').val(this.modeloEdicion.nombre);
 		$('#descripcionInput').val(this.modeloEdicion.descripcion);
 		$('#fechaProgramadaInput').val(this.modeloEdicion.fechaProgramada);
-		if(this.modeloEdicion.estatus)
+		if(this.modeloEdicion.estatus==1)
 			$("#estatusRadio").prop('checked', true);
 		else
 			$("#estatusRadio").prop('checked', false);

@@ -1870,9 +1870,11 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
     {
         $resultado = new Resultado();
         $hallazgos = array();
-        $consulta = "SELECT H.id, titulo, responsable_id, U.nombre, U.apellido,  IFNULL(DATE_FORMAT(H.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta, IFNULL(cumplimiento,0) cumplimiento, IFNULL(DATE_FORMAT(H.fecha_vencimiento,'%d/%m/%Y %H:%i:%s'),'') fecha_vencimiento
+        
+        $consulta = "SELECT H.id, titulo, responsable_id, U.nombre, U.apellido,  IFNULL(DATE_FORMAT(H.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta, IFNULL(cumplimiento,0) cumplimiento, IFNULL(DATE_FORMAT(H.fecha_vencimiento,'%d/%m/%Y %H:%i:%s'),'') fecha_vencimiento, D.id, D.nombre
                     FROM recomendaciones H
                         LEFT JOIN usuarios U ON U.id = H.responsable_id
+                        LEFT JOIN departamentos D ON D.id = U.departamento_id
                 WHERE H.auditoria_id = ?";
         
         
@@ -1883,7 +1885,7 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $titulo, $responsableId,$responsableNombre,$responsableApellido,$fechaAlta, $cumplimiento, $fechaVencimiento))
+                    if ($sentencia->bind_result($id, $titulo, $responsableId,$responsableNombre,$responsableApellido,$fechaAlta, $cumplimiento, $fechaVencimiento,$departamentoId, $departamentoNombre))
                     {
                         while($sentencia->fetch())
                         {
@@ -1895,7 +1897,9 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                                 'responsableApellido' => $responsableApellido,
                                 'fechaAlta' => $fechaAlta,
                                 'cumplimiento' => $cumplimiento,
-                                'fechaVencimiento' =>$fechaVencimiento
+                                'fechaVencimiento' =>$fechaVencimiento,
+                                'departamentoId' => $departamentoId,
+                                'departamentoNombre' => $departamentoNombre
                             ];
                             
                             $hallazgo->responsableNombreCompleto = $hallazgo->responsableNombre . " " . $hallazgo->responsableApellido;
@@ -1906,6 +1910,75 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                                 $hallazgo->fotoPerfil =  "php/fotos/default.jpg";
                             
                             array_push($hallazgos,$hallazgo);
+                        }
+                        $resultado->valor = $hallazgos;
+                        
+                        $sentencia->close();
+                        
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
+    public function consultarRecomendacionesPendientes($auditoriaId)
+    {
+        $resultado = new Resultado();
+        $hallazgos = array();
+        
+        $consulta = "SELECT H.id, titulo, responsable_id, U.nombre, U.apellido,  IFNULL(DATE_FORMAT(H.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta, IFNULL(cumplimiento,0) cumplimiento, IFNULL(DATE_FORMAT(H.fecha_vencimiento,'%d/%m/%Y %H:%i:%s'),'') fecha_vencimiento, D.id, D.nombre,
+                    H.estatus_validacion_id, IFNULL(EST.descripcion,'')
+                    FROM recomendaciones H
+                        LEFT JOIN usuarios U ON U.id = H.responsable_id
+                        LEFT JOIN departamentos D ON D.id = U.departamento_id
+                        INNER JOIN estatus_validacion EST ON EST.id = H.estatus_validacion_id
+                WHERE H.auditoria_id = ? AND H.estatus_validacion_id != 2";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            
+            if($sentencia->bind_param("i",$auditoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $titulo, $responsableId,$responsableNombre,$responsableApellido,$fechaAlta, $cumplimiento, $fechaVencimiento,$departamentoId, $departamentoNombre, $estatusValidacionId, $estatusValidacionNombre))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $hallazgo= (object) [
+                                'id' =>  $id,
+                                'titulo' => $titulo,
+                                'responsableId' => $responsaleId,
+                                'responsableNombre' => $responsableNombre,
+                                'responsableApellido' => $responsableApellido,
+                                'fechaAlta' => $fechaAlta,
+                                'cumplimiento' => $cumplimiento,
+                                'fechaVencimiento' =>$fechaVencimiento,
+                                'departamentoId' => $departamentoId,
+                                'departamentoNombre' => $departamentoNombre,
+                                'estatusValidacionId' => $estatusValidacionId,
+                                'estatusValidacionNombre' => $estatusValidacionNombre
+                            ];
+                            
+                            $hallazgo->responsableNombreCompleto = $hallazgo->responsableNombre . " " . $hallazgo->responsableApellido;
+                            $hallazgo->fotoPerfil =  "../fotos/usuario". $hallazgo->id .".jpg";
+                            if(file_exists($hallazgo->fotoPerfil))
+                                $hallazgo->fotoPerfil =  "php/fotos/usuario". $hallazgo->responsableId .".jpg";
+                                else
+                                    $hallazgo->fotoPerfil =  "php/fotos/default.jpg";
+                                    
+                                    array_push($hallazgos,$hallazgo);
                         }
                         $resultado->valor = $hallazgos;
                         
@@ -4650,6 +4723,120 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
             $this->conexion->rollback();
         return $resultado;
     }
+    
+    function consultarNumeroRecomendacionesPorMes($mes, $ano, $auditoriaId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta = "SELECT (SELECT count(*)
+                    FROM recomendaciones
+                    WHERE auditoria_id = ?) total,
+                     (SELECT count(*)
+                    FROM recomendaciones
+                    WHERE auditoria_id = ? AND estatus_validacion_id = 2 AND MONTH(fecha_finalizacion) = ? AND YEAR(fecha_finalizacion) = ?) validadas,
+                    (SELECT count(*)
+                    FROM recomendaciones
+                    WHERE auditoria_id = ? AND estatus_validacion_id = 1 AND MONTH(fecha_finalizacion) = ? AND YEAR(fecha_finalizacion) = ?) enviadas";
+                            
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param('iiiiiii',$auditoriaId, $auditoriaId, $mes, $ano, $auditoriaId, $mes, $ano))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($total, $validadas, $enviadas))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $registro= (object) [
+                                'total' =>  $total,
+                                'validadas' =>  $validadas,
+                                'enviadas' =>  $enviadas
+                            ];
+                            
+                            
+                            $registro->validadasEnviadas = $registro->validadas + $registro->enviadas;
+                            
+                            $resultado->valor = $registro;
+                        }
+                       
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
+    }
+    
+    function consultarHallazgosDepartamento($auditoriaId)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        
+        $consulta = "SELECT D.id, CASE WHEN D.nombre IS NULL THEN 'Sin asignar' ELSE D.nombre END nombre, count(*) hallazgos,
+                    (SELECT count(*) 
+                    FROM recomendaciones R1
+                    	INNER JOIN usuarios U1 ON U1.id = R1.responsable_id
+                        INNER JOIN departamentos D1 ON U1.departamento_id = D1.id
+                        WHERE R1.auditoria_id = R.auditoria_id AND D1.id = D.id AND R1.estatus_validacion_id=2) validados,
+                        (SELECT count(*) 
+                    FROM recomendaciones R1
+                    	INNER JOIN usuarios U1 ON U1.id = R1.responsable_id
+                        INNER JOIN departamentos D1 ON U1.departamento_id = D1.id
+                        WHERE R1.auditoria_id = R.auditoria_id AND D1.id = D.id AND R1.estatus_validacion_id=1) procesoValidacion
+                    FROM recomendaciones R
+                    	INNER JOIN usuarios U ON U.id = R.responsable_id
+                        INNER JOIN departamentos D ON U.departamento_id = D.id
+                    WHERE auditoria_id = ?
+                    GROUP BY D.id, D.nombre
+                    ORDER BY nombre";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param('i',$auditoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id, $nombre,$total, $validadas, $proceso))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro= (object) [
+                                'id' =>  $id,
+                                'nombre' =>  $nombre,
+                                'total' =>  $total,
+                                'validadas' =>  $validadas,
+                                'proceso' =>  $proceso
+                                
+                            ];
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        return $resultado;
+    }
+    
     
 }
 
