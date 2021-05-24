@@ -18,6 +18,7 @@ require_once("../clases/Logger.php");
 require_once("UsuariosRepositorio.php");
 require_once('../clases/AdministradorConexion.php');
 require_once('../clases/AdministradorCorreo.php');
+require_once("../clases/TipoReporte.php");
 
 class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
 {
@@ -4140,7 +4141,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         //$filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
         $consulta = "SELECT * 
             from(
-            SELECT U.id as id, U.nombre_usuario as nombreUsuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id departamentoId, D.nombre as departamentoNombre, U.permiso_cavih, U.perfil_id, PR.nombre perfilNombre, U.recursos_humanos recursosHumanos, 
+            SELECT U.id as id, U.nombre_usuario as nombreUsuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id departamentoId, D.nombre as departamentoNombre, U.permiso_cavih, U.perfil_id, PR.nombre perfilNombre, U.recursos_humanos recursosHumanos, T.orden as tipoUsuarioOrden, 
             (SELECT count(*)
                         	FROM cursos_preguntas CPR 
                         		INNER JOIN cursos C ON CPR.curso_id = C.id 
@@ -4228,20 +4229,19 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         $consulta.=")consulta ";
         
         $filtrosSub = array();
-        if(isset($criteriosSeleccion->tipoReporte) && $criteriosSeleccion->tipoReporte!="")
+        switch($criteriosSeleccion->tipoReporte)
         {
-            switch($criteriosSeleccion->tipoReporte)
-            {
-                case 1:
-                    array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>'fechaUltimaCapacitacion is not null']);
-                    //$consulta.=" where fechaUltimaCapacitacion is not null ";
-                    break;
-                    
-                case 0:
-                    array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>'fechaUltimaCapacitacion is  null']);
-                    break;
-            }
+            case \TipoReporte::CAPACITACION_NO_INICIADA:
+                array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>'fechaUltimaCapacitacion is  null']);
+            break;
+            case \TipoReporte::CAPACITACION_INICIADA:
+                array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>'fechaUltimaCapacitacion is not null']);
+            break;
+            default:
+                
+            break;
         }
+   
         
         $consulta.= $this->where($filtrosSub);
         
@@ -4259,9 +4259,9 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
             $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
         
-        $consulta = $this->getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario) . " order by nombre, apellido";
+        $consulta = $this->getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario) . " order by tipoUsuarioOrden, nombre, apellido";
         
-        
+      
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -4269,7 +4269,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVIH, $perfilId, $perfilNombre, $recursosHumanos, $total,$correctas,$fechaUltimaCapacitacion,$totalCapacitaciones,$capacitacionesTerminadas,$videosVistos, $tiempoVisto, $totalPreguntas,$preguntasContestadas, $preguntasContestadasMes)  )
+                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVIH, $perfilId, $perfilNombre, $recursosHumanos,$tipoUsuarioOrden, $total,$correctas,$fechaUltimaCapacitacion,$totalCapacitaciones,$capacitacionesTerminadas,$videosVistos, $tiempoVisto, $totalPreguntas,$preguntasContestadas, $preguntasContestadasMes)  )
                     {
                         while($row = $sentencia->fetch())
                         {
@@ -4439,7 +4439,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
             $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
             
-            $consulta = $this->getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario) . " order by nombre, apellido";
+            $consulta = $this->getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario) . " order by tipoUsuarioOrden, nombre, apellido";
             
            
             if($sentencia = $this->conexion->prepare($consulta))
@@ -4448,7 +4448,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 {
                     if($sentencia->execute())
                     {
-                        if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVIH, $perfilId, $perfilNombre, $recursosHumanos, $total,$correctas,$fechaUltimaCapacitacion,$totalCapacitaciones,$capacitacionesTerminadas,$videosVistos, $tiempoVisto,$totalPreguntas,$preguntasContestadas, $preguntasContestadasMes)  )
+                        if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVIH, $perfilId, $perfilNombre, $recursosHumanos, $tipoUsuarioOrden, $total,$correctas,$fechaUltimaCapacitacion,$totalCapacitaciones,$capacitacionesTerminadas,$videosVistos, $tiempoVisto,$totalPreguntas,$preguntasContestadas, $preguntasContestadasMes)  )
                         {
                             while($row = $sentencia->fetch())
                             {
@@ -5103,7 +5103,6 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 
                 $contenido.= "<tr>
                                 <td class='padding-copy textlightStyle' style='text-align: justify;padding: 20px 0 0 0; font-size: 14px; line-height: 25px; font-family: Helvetica, Arial, sans-serif; color: #0c5581;'>";
-                $registros = null;
                 $contenidoUsuario = "";
                 switch ($usuario->tipoUsuarioId)
                 {
@@ -5160,7 +5159,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     
     private function getContenidoSupervisor($usuario)
     {
-        $resultado = $this->consultarResultadosUsuarios($usuario,(object)["tipoReporte" => 1]);
+        $resultado = $this->consultarResultadosUsuarios($usuario,(object)["tipoReporte" => \TipoReporte::CAPACITACION_INICIADA]);
         $contenido = "";
         if($resultado->correcto())
         {
@@ -5170,8 +5169,9 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             for ($j = 0; $j < count($registros); $j++)
             {
                 $registro = $registros[$j];
+                $nombre = trim($registro->nombreCompleto);
                 $contenido.= "<p><strong>";
-                $contenido.=  "<span style='text-decoration:underline;color:#0c5581;'>$registro->nombreCompleto: </span></strong>";
+                $contenido.=  "<span style='text-decoration: underline; color: #0c5581;'>$nombre: </span></strong>";
                 
                 $contenido.="<br>" . $this->porcentajeSemaforizado("Avance $registro->porcentajeAvance%",$registro->porcentajeAvance,false);
                 $contenido.=" - " . $this->porcentajeSemaforizado("Aprovechamiento $registro->porcentaje%",$registro->porcentaje,false);
@@ -5186,6 +5186,43 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 }
                 $contenido.= "</p>";
             }
+           
+            $resultado = $this->consultarResultadosUsuarios($usuario,(object)["tipoReporte" => \TipoReporte::CAPACITACION_NO_INICIADA]);
+            //$contenido = "";
+            if($resultado->correcto())
+            {
+                $registros = $resultado->valor;
+                if(count($registros)>0)
+                {
+                   // $contenido.= "<br>";
+                    $contenido.= "<p><strong>";
+                    $contenido.=  "<span style='text-decoration: underline; color: #0c5581;'>Usuarios que no han iniciado capacitación:</span></strong></p>";
+                    for ($j = 0; $j < count($registros); $j++)
+                    {
+                        $registro = $registros[$j];
+                        $nombre = trim($registro->nombreCompleto);
+//                         if($registro->id == $usuario->id)
+//                             $nombre.= " (Yo)";
+                        $contenido.= "<p><strong>";
+                        $contenido.=  "<span style='color: #ad2f17;'>$nombre</span></strong>";
+                        
+//                         $contenido.="<br>" . $this->porcentajeSemaforizado("Avance $registro->porcentajeAvance%",$registro->porcentajeAvance,false);
+//                         $contenido.=" - " . $this->porcentajeSemaforizado("Aprovechamiento $registro->porcentaje%",$registro->porcentaje,false);
+//                         if($registro->porcentajeAvance==100)
+//                         {
+//                             if($registro->porcentajeAvanceMensual!=0)
+//                                 $contenido.=" - " . $this->porcentajeSemaforizado("$registro->porcentajeAvanceMensual% de avance en el ultimo mes",$registro->porcentajeAvanceMensual,true);
+//                         }
+//                         else
+//                         {
+//                             $contenido.=" - " . $this->porcentajeSemaforizado("$registro->porcentajeAvanceMensual% de avance en el ultimo mes",$registro->porcentajeAvanceMensual,true);
+//                         }
+                        $contenido.= "</p>";
+                    }
+                }
+            }
+            else
+                echo $resultado->mensajeError;
         }
         else
             echo $resultado->mensajeError;
@@ -5194,7 +5231,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     
     private function getContenidoCoordinador($usuario)
     {
-        $resultado = $this->consultarResultadosDepartamentos($usuario,(object)["tipoReporte" => 1]);
+        $resultado = $this->consultarResultadosDepartamentos($usuario,(object)["tipoReporte" => \TipoReporte::CAPACITACION_INICIADA]);
         $contenido = "";
         if($resultado->correcto())
         {
@@ -5202,8 +5239,9 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             for ($j = 0; $j < count($registros); $j++)
             {
                 $registro = $registros[$j];
+                $nombre = trim($registro->nombre);
                 $contenido.= "<p><strong>";
-                $contenido.=  "<span style='text-decoration:underline;color:#0c5581;'>$registro->nombre: </span></strong>";
+                $contenido.=  "<span style='text-decoration: underline; color: #0c5581;'>$registro->nombre: </span></strong>";
                 
                 $contenido.="<br>" . $this->porcentajeSemaforizado("Avance $registro->porcentajeAvance%",$registro->porcentajeAvance,false);
                 $contenido.=" - " . $this->porcentajeSemaforizado("Aprovechamiento $registro->porcentaje%",$registro->porcentaje,false);
@@ -5252,7 +5290,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 $color = "#306f20";
             }
         }
-        $contenido = "<span style='color:$color'>$texto</span>";
+        $contenido = "<span style='color: $color;'>$texto</span>";
         return $contenido;
     }
     
