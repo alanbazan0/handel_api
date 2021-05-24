@@ -2,6 +2,7 @@
 use php\clases\AdministradorConexion;
 use php\modelos\Resultado;
 use php\repositorios\AuditoriasRepositorio;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 
 require('../vendor/fpdf181/fpdf.php');
@@ -208,7 +209,7 @@ abstract class PDF extends FPDF
         $this->Cell($anchoColumna-8, 4, "Reporte generado el: $fecha", $borde, 0, 'R');
         
         $this->Ln();
-        $porcentaje = $this->auditoria->porcentajeAvance;
+        $porcentaje = $this->auditoria->porcentajeValidadas;
         $width = ($this->w - ($this->margen * 2)) ;
         $this->Cell($width, 4, "Avance a la fecha: $porcentaje%", $borde, 0, 'R');
         
@@ -563,10 +564,13 @@ abstract class PDF extends FPDF
         $y = 50;
         $this->Image($imagen,$x,$y,$anchoFoto);
         
-        $calificacion = $this->auditoria->puntuacion;
+        $calificacionValidadas = $this->auditoria->porcentajeValidadas;
+        $calificacionValidadasEnviadas = $this->auditoria->porcentajeValidadasEnviadas;
         $this->SetFont($this->font,'',11);
         $this->SetY(155);
-        $this->Cell(0,8,$this->texto("Calificación de auditoría actualizada: $calificacion%"),0,2,'R');
+        $this->Cell(0,6,$this->texto("Calificación de auditoría actualizada:"),0,2,'R');
+        $this->Cell(0,6,$this->texto("Incluyendo validadas: $calificacionValidadas%"),0,2,'R');
+        $this->Cell(0,6,$this->texto("Incluyendo validadas y enviadas: $calificacionValidadasEnviadas%"),0,2,'R');
         //$this->Cell(0, 4, $this->texto("Calificación de auditoría actualizada: $calificacion",0, 0, 'R');
 //         $this->SetY(135);
 //         $this->SetX(65);
@@ -670,10 +674,11 @@ abstract class PDF extends FPDF
       
         $this->portada();
         $this->licencia();
-       $this->distribucion();
-         $this->avanceFecha();
-          $this->cierre();
-         $this->tareas();
+        $this->distribucion();
+        $this->avanceFecha();
+        $this->cierreHallazgosMes();
+        $this->cierre();
+        $this->tareas();
     }
     
     private function cierre()
@@ -711,35 +716,40 @@ abstract class PDF extends FPDF
         $registros = array();
         $validadas = 0;
         $validadasEnviadas = 0;
+        
+        //var_dump($fechas);
+        
         for ($i = 0; $i < count($fechas); $i++) 
         {
             $fecha = $fechas[$i];
             $mes =  intval($fecha->format("m"));
             $ano = intval($fecha->format("Y"));
-            $resultado = $repositorio->consultarNumeroRecomendacionesPorMes($mes,$ano,$this->auditoria->id);
             
+            
+            $resultado = $repositorio->consultarNumeroRecomendacionesPorMes($mes,$ano,$this->auditoria->id,$this->auditoria->puntuacion);
             if($resultado->correcto())
             {
                 $registro = $resultado->valor;
-                $registro->mes = $mes;
-                $registro->ano = $ano;
-                $registro->nombreMes = $this->getNombreMes($mes). " $ano";
+//                 $registro->mes = $mes;
+//                 $registro->ano = $ano;
                 
-                $validadas += $registro->validadas;
-                $validadasEnviadas += $registro->validadasEnviadas;
+//                 $registro->nombreMes = $this->getNombreMes($mes). " $ano";
                 
-                $registro->porcetajeFaltante = 100 - floatval($this->auditoria->puntuacion);
+//                 $validadas = $registro->validadas;
+//                 $validadasEnviadas = $registro->validadasEnviadas;
                 
-                if($registro->total!=0)
-                    $registro->valorHallagzo =  floatval($registro->porcetajeFaltante)/  floatval($registro->total);
-                else 
-                    $registro->valorHallagzo = 0;
+//                 $registro->porcetajeFaltante = 100 - floatval($this->auditoria->puntuacion);
                 
-                $registro->avanceValidadas =  $registro->valorHallagzo * $validadas;
-                $registro->avanceValidadasEnviadas =  $registro->valorHallagzo * $validadasEnviadas;
+//                 if($registro->total!=0)
+//                     $registro->valorHallagzo =  floatval($registro->porcetajeFaltante)/  floatval($registro->total);
+//                 else 
+//                     $registro->valorHallagzo = 0;
                 
-                $registro->porcentajeValidadas = $this->auditoria->puntuacion +  $registro->avanceValidadas;
-                $registro->porcentajeValidadasEnviadas = $this->auditoria->puntuacion +  $registro->avanceValidadasEnviadas;
+//                 $registro->avanceValidadas =  $registro->valorHallagzo * $validadas;
+//                 $registro->avanceValidadasEnviadas =  $registro->valorHallagzo * $validadasEnviadas;
+                
+//                 $registro->porcentajeValidadas = $this->auditoria->puntuacion +  $registro->avanceValidadas;
+//                 $registro->porcentajeValidadasEnviadas = $this->auditoria->puntuacion +  $registro->avanceValidadasEnviadas;
                 
                 array_push($registros,$registro);
             }
@@ -753,6 +763,8 @@ abstract class PDF extends FPDF
             $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
         
     }
+    
+   
     
     function graficaCierre($title, $yTitle, $rows, $xField,$colors, $showInLegend,$max,$mes)
     {
@@ -787,23 +799,20 @@ abstract class PDF extends FPDF
 //                 'name' =>  $row->$xField,
 //                 'y' => 70,
 //                 'color' => "#f39c12"
-                
 //             ];
             
 //             $newRow3= (object) [
 //                 'name' =>  $row->$xField,
 //                 'y' => 50,
 //                 'color' => "#dd4b39"
-                
-                
 //             ];
             
             array_push($categories, $row->$xField);
             if($row->mes<=$mesActual)
-           {
+            {
                 array_push($data, $newRow);
                 array_push($data1, $newRow1);
-           }
+            }
 //                 array_push($data2, $newRow2);
 //                 array_push($data3, $newRow3);
         }
@@ -816,9 +825,6 @@ abstract class PDF extends FPDF
             $yAxis->tickInterval= 10;
         }
         
-        
-        
-        
         $highchart = (object)
         [
             'chart' => (object) [ 'type' => "line"],
@@ -829,15 +835,13 @@ abstract class PDF extends FPDF
             [
                 'series'=> (object)[
                     'lineWidth'=>5,
-                    'pointPlacement' =>  "on"
+                   // 'pointPlacement' =>  "on"
                 ]
             ],
             'yAxis' => $yAxis,
             'series' => array(
                 (object) ['name' => "Calificación incluyendo validadas", 'data' => $data,  'showInLegend' => $showInLegend],
                 (object) ['name' => "Calificación validadas + enviadas", 'data' => $data1,  'showInLegend' => $showInLegend, "color"=>"#60d836"],
-//                 (object) ['name' => "Riesgo medio", 'data' => $data2,  'showInLegend' => $showInLegend, "color"=>"#f9c320"],
-//                 (object) ['name' => "Riesgo alto", 'data' => $data3,  'showInLegend' => $showInLegend, "color"=>"#fe2500"]
             )
         ];
         
@@ -861,8 +865,6 @@ abstract class PDF extends FPDF
         
         $context  = stream_context_create( $options );
         
-        
-        
         $result = file_get_contents( $url, false, $context );
         
         $charturl='';
@@ -881,50 +883,6 @@ abstract class PDF extends FPDF
         
     }
    
-    function getNombreMes($mes)
-    {
-        $nombre="";
-        switch($mes)
-        {
-            case 1:
-                $nombre = "Enero";
-                break;
-            case 2:
-                $nombre = "Febrero";
-                break;
-            case 3:
-                $nombre = "Marzo";
-                break;
-            case 4:
-                $nombre = "Abril";
-                break;
-            case 5:
-                $nombre = "Mayo";
-                break;
-            case 6:
-                $nombre = "Junio";
-                break;
-            case 7:
-                $nombre = "Julio";
-                break;
-            case 8:
-                $nombre = "Agosto";
-                break;
-            case 9:
-                $nombre = "Septiembre";
-                break;
-            case 10:
-                $nombre = "Octubre";
-                break;
-            case 11:
-                $nombre = "Noviembre";
-                break;
-            case 12:
-                $nombre = "Diciembre";
-                break;
-        }
-        return $nombre;
-    }
     
     private function avanceFecha()
     {
@@ -941,6 +899,27 @@ abstract class PDF extends FPDF
         {
             $hallazgos = $resultado->valor;
             $image = $this->graficaBarrasAvance("",'','',$hallazgos,"nombre",true);
+            if($image!='')
+                $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
+                
+        }
+    }
+    
+    private function cierreHallazgosMes()
+    {
+        $this->AddPage();
+        $this->SetY(25);
+        $this->subtitulo("Cierre de hallazgos por mes");
+        
+        
+        $pdfWidth = $this->GetPageWidth();
+        $chartWidth = 220;
+        $repositorio = new AuditoriasRepositorio($this->conexion);
+        $resultado = $repositorio->consultarHallazgosUsuarios($this->auditoria->id);
+        if($resultado->correcto())
+        {
+            $hallazgos = $resultado->valor;
+            $image = $this->graficaBarrasAvance("",'','',$hallazgos,"nombreCompleto",true);
             if($image!='')
                 $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
                 
@@ -1777,10 +1756,10 @@ try
     if($conexion)
     {
         $repositorio = new AuditoriasRepositorio($conexion);
-        $uditoriaId = REQUEST('auditoriaId');
+        $auditoriaId = REQUEST('auditoriaId');
         
         $llaves= (object) [
-            'id' =>  $uditoriaId
+            'id' =>  $auditoriaId
         ];
         
         $resultado = $repositorio->consultarPorLlaves($llaves,true);
@@ -1792,11 +1771,21 @@ try
             $reporte = $reporteFabrica->crear();
             if($reporte!=null)
             {
-                $reporte->setConexion($conexion);
-                $reporte->setAuditoria($auditoria);
-                $reporte->AliasNbPages();
-                $reporte->generar();
-                $reporte->imprimir();
+                $mes =  intval(date("m"));
+                $ano = intval(date("Y"));
+                
+                
+                $resultado = $repositorio->consultarNumeroRecomendacionesPorMes($mes,$ano,$auditoriaId,$auditoria->puntuacion);
+                if($resultado->correcto())
+                {
+                    $auditoria->porcentajeValidadas = $resultado->valor->porcentajeValidadas;
+                    $auditoria->porcentajeValidadasEnviadas = $resultado->valor->porcentajeValidadasEnviadas;
+                    $reporte->setConexion($conexion);
+                    $reporte->setAuditoria($auditoria);
+                    $reporte->AliasNbPages();
+                    $reporte->generar();
+                    $reporte->imprimir();
+                }
                 
             }
         }

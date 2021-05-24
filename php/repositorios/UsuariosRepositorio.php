@@ -676,6 +676,11 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 if($criteriosSeleccion->permiso10y7!="" && $criteriosSeleccion->permiso10y7!=null)
                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'permiso_10y7','valor'=>$criteriosSeleccion->permiso10y7]);
             }
+            if(isset($criteriosSeleccion->permisoCAVI))
+            {
+                if($criteriosSeleccion->permisoCAVI!="" && $criteriosSeleccion->permisoCAVI!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'permiso_cavih','valor'=>$criteriosSeleccion->permisoCAVI]);
+            }
             if(isset($criteriosSeleccion->estatus))
             {
                 if($criteriosSeleccion->estatus!="" && $criteriosSeleccion->estatus!=null)
@@ -1478,6 +1483,11 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 {
                     array_push($ids, $raiz->nodeId);
                     $this->agregarUsuariosId($ids,$raiz);
+                    $resultado->valor = $ids;
+                }
+                else
+                {
+                    array_push($ids, -1);
                     $resultado->valor = $ids;
                 }
                 //echo $nodo->id;

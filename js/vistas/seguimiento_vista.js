@@ -50,9 +50,6 @@ class SeguimientoVista extends CatalogoVista
 			{
 				this.auditoriasTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporte});
 				this.auditoriasTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderExportarActionTracker});
-			}
-			if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
-			{
 				this.auditoriasTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporteSeguimiento});
 			}
 			this.auditoriasTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderRecomendaciones});
