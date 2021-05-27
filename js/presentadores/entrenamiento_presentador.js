@@ -560,5 +560,38 @@ class EntrenamientoPresentador extends CatalogoPresentador
 		 });
 	 }
 	 
+	 consultarEmpresasReporte()	
+	 {
+		 var repositorio = new EmpresasRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.empresasReporte = resultado.valor;
+				this.vista.cambiarEmpresaReporte();
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },null,false);
+	 }
+
+	 consultarSedesReporte()	
+	 {
+		 var repositorio = new SedesRepositorio(this);		
+		 repositorio.consultarPorEmpresa(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.sedesReporte = resultado.valor;			
+				//this.vista.cambiarSedeCriterio();
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		,this.vista.criteriosSeleccionReporte.empresaId,true);
+	 }
 	 
+	 
+	
 }

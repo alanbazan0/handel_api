@@ -3,4 +3,5 @@ abstract class TipoReporte
 {
     const CAPACITACION_INICIADA = 1;
     const CAPACITACION_NO_INICIADA = 0;
+    const TODOS = 2;
 }

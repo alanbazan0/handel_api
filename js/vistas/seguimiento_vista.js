@@ -1854,21 +1854,6 @@ class SeguimientoVista extends CatalogoVista
 				
 				_this.mostrarFormularioHTML(HANDEL_API+"/html/modales/ver_archivo.php",_this, null, function()
 				{
-					_this.__PAGE_RENDERING_IN_PROGRESS = 0;
-					_this.__CANVAS = $('#pdf-canvas').get(0);
-					_this.__CANVAS_CTX = _this.__CANVAS.getContext('2d');
-					
-					// Previous page of the PDF
-					$("#pdf-prev").on('click', function() {
-						if(_this.__CURRENT_PAGE != 1)
-							_this.showPage(--_this.__CURRENT_PAGE);
-					});
-
-					// Next page of the PDF
-					$("#pdf-next").on('click', function() {
-						if(_this.__CURRENT_PAGE != _this.__TOTAL_PAGES)
-							_this.showPage(++_this.__CURRENT_PAGE);
-					});
 					
 					_this.vistaPreviaArchivo(_this._archivoSeleccionado);
 					
@@ -1940,6 +1925,16 @@ class SeguimientoVista extends CatalogoVista
 	vistaPreviaArchivo(archivoSeleccionado)
 	{
 		 $("#pdf").hide();
+		var _this = this;
+		$("#descargarButton").click(function()
+			{
+			//var archivo = "evidencia"+_this.modeloEdicion.id+"_" +encodeURIComponent(_this.modeloEdicion.nombreArchivo);
+			var archivo = encodeURIComponent(archivoSeleccionado.nombre);
+			var url = HANDEL_API + "/php/archivos_avances/avance" + _this._avanceSeleccionado.id+"/"+archivo;
+			var submitForm = _this.getNewSubmitForm(url);
+		    submitForm.target= "_blank";
+		    submitForm.submit();
+		});
 		if(archivoSeleccionado.nombre=="")
 			$('#evidenciaImage').attr("src",HANDEL_API + "/images/tipos_archivo/vacio.png");
 		else
@@ -1954,18 +1949,37 @@ class SeguimientoVista extends CatalogoVista
 					{
 						case "doc":
 						case "docx":
+							$("#evidenciaImage").css({'width': '50%'});
 							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/word.png");
-							
 						break;
 						case "xls":
 						case "xlsx":
+							$("#evidenciaImage").css({'width': '50%'});
 							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/excel.png");
 						break;
 						case "ppt":
 						case "pptx":
+							$("#evidenciaImage").css({'width': '50%'});
 							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/power_point.png");
 						break;
 						case "pdf":
+							_this.__PAGE_RENDERING_IN_PROGRESS = 0;
+							_this.__CANVAS = $('#pdf-canvas').get(0);
+							_this.__CANVAS_CTX = _this.__CANVAS.getContext('2d');
+							
+							// Previous page of the PDF
+							$("#pdf-prev").on('click', function() {
+								if(_this.__CURRENT_PAGE != 1)
+									_this.showPage(--_this.__CURRENT_PAGE);
+							});
+		
+							// Next page of the PDF
+							$("#pdf-next").on('click', function() {
+								if(_this.__CURRENT_PAGE != _this.__TOTAL_PAGES)
+									_this.showPage(++_this.__CURRENT_PAGE);
+							});
+						
+						
 							 $("#pdf").show();
 							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/pdf.png");
 							 
@@ -1988,11 +2002,13 @@ class SeguimientoVista extends CatalogoVista
 	//						 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/txt.png");
 	//					break;
 						default:
+							$("#evidenciaImage").css({'width': '50%'});
 							$('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/archivo.png");
 						break;
 						case "jpg":
 						case "png":
 						case "bmp":
+							$("#evidenciaImage").css({'width': '100%'});
 							if(archivoSeleccionado.subido)
 							{
 								var archivo = encodeURIComponent(archivoSeleccionado.nombre);
@@ -2018,7 +2034,9 @@ class SeguimientoVista extends CatalogoVista
 				 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/archivo.png");
 			}
 			
+			
 		}
+		
 	}
 	
 	showPDF(pdf_url) 

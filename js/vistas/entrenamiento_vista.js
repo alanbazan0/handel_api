@@ -189,9 +189,75 @@ class EntrenamientoVista extends CatalogoVista
 			_this.salirFormulario();
 		});
 		
+		if(this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR)
+		{
+			$("#reporteCapacitacionVirtualButton").fadeIn();
+			$("#reporteCapacitacionVirtualButton").click(function(){
+				_this.mostrarFormularioReporteCapacitacionVirtual();
+			});
+		}
 	
 	}
 	
+	
+	mostrarFormularioReporteCapacitacionVirtual()
+	{
+		var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/reporte_capacitacion_virtual.php",this, null, function()
+		{
+			
+			_this.consultarEmpresasReporte();
+			
+			moment.locale('es') ;
+			var start = moment().startOf('month');
+    		var end = moment();
+
+		 function cb(start, end) {
+				_this._fechaInicial = start.format('DD/MM/YYYY');
+				_this._fechaFinal = end.format('DD/MM/YYYY');
+		       	$('#daterange-btn span').html(start.format('D MMMM YYYY') + ' - ' + end.format('D MMMM YYYY'))
+		    }
+
+			$('#daterange-btn').daterangepicker(
+		      {
+			// drops: 'up',
+				drops: 'auto',
+				//opens: 'center',
+		        ranges   : {
+		          'Hoy'       : [moment(), moment()],
+		          'Ayer'   : [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+		          'Hace 7 días' : [moment().subtract(6, 'days'), moment()],
+		          'Hace 30 días': [moment().subtract(29, 'days'), moment()],
+		          'Este mes'  : [moment().startOf('month'), moment().endOf('month')],
+		          'Mes pasado'  : [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+		        },
+		        startDate: start,
+		        endDate  : end,
+				locale: {
+				    "customRangeLabel": "Rango",
+					"cancelLabel" : "Cancelar"
+				  },
+		      },
+		      cb
+		    );
+			 
+			cb(start,end);
+			
+		},null,"reporteModal","","imprimirButton",function()
+		{
+			//$("#reporteFormulario").submit();
+			_this.imprimirReporteCapacitacionVirtual();
+			
+		});
+	}
+	
+	imprimirReporteCapacitacionVirtual()
+	{
+		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_capacitacion_virtual.php");
+		this.createNewFormElement(submitForm, "criteriosSeleccion", JSON.stringify(this.criteriosSeleccionReporte));	 
+	    submitForm.target= "_blank";
+	    submitForm.submit();
+	}
 	
 	crearEventosActualizacion()
 	{
@@ -1287,6 +1353,51 @@ class EntrenamientoVista extends CatalogoVista
 		}
 		else
 			$("#diasCapacitacionIndicadorDescripcion").html("No has iniciado tu capacitación");
+	}
+	
+	consultarEmpresasReporte()
+	{
+		this.cargandoOpciones("#empresaSelectCriterio");
+		this.presentador.consultarEmpresasReporte();
+	}
+	
+	set empresasReporte(registros)
+	{		
+		this.cargarOpciones('#empresaSelectReporte', registros);
+		//this.consultar();
+	}
+	
+	cambiarEmpresaReporte()
+	{
+		//this.cargandoOpciones("#departamentoSelectCriterio");
+		this.consultarSedesReporte();
+	}
+	
+	
+	
+	consultarSedesReporte()
+	{
+		this.cargandoOpciones("#sedeSelectReporte");
+		this.presentador.consultarSedesReporte();
+	}
+	
+	get criteriosSeleccionReporte()
+	{
+		 var criteriosSeleccion = 
+		 {				    
+			empresaId: $('#empresaSelectReporte').val(),
+			sedeId: $('#sedeSelectReporte').val(),
+			fechaInicial: this._fechaInicial,
+			fechaFinal: this._fechaFinal,
+			tipoReporte: 1
+		 }
+		 return criteriosSeleccion;
+	}	
+	
+	
+	set sedesReporte(registros)
+	{		
+		this.cargarOpciones('#sedeSelectReporte', registros);
 	}
 	
 	

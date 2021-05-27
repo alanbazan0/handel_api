@@ -19,7 +19,12 @@
 				<div class="form-group" id='contenedorEvidenciaImage'>
                 	<div class='row'>
     					<div class="col-sm-12 text-center">
-                        	<img id="evidenciaImage"  alt="Evidencia" class="img-responsive img-thumbnail w-100" style='width:100%' onclick="vista.vistaPrevia(this)"  />
+                        	<img id="evidenciaImage"  alt="Evidencia" class="img-responsive img-thumbnail " style='' onclick="vista.vistaPrevia(this)"  />
+                  	 	</div>
+    				</div>
+    				<div class='row'>
+    					<div class="col-sm-12 text-center mt-2">
+                        	<button id="descargarButton"  type="button" class="btn btn-primary"><i class="fas fa-download"></i> Descargar</button>
                   	 	</div>
     				</div>
 				</div>
