@@ -33,5 +33,17 @@ class Porcentaje
             $registro->$campoPorcentaje = str_replace(".$decimales","",$registro->$campoPorcentaje);
                 
     }
+    
+    public static function formatear($valor, $numeroDecimales=1)
+    {
+        $valor = bcdiv($valor, '1', $numeroDecimales);
+        
+        list($enteros, $decimales) = explode(".", $valor);
+        if($decimales=="0")
+            $valor = str_replace(".$decimales","",$valor);
+        
+         return $valor;
+            
+    }
 }
 

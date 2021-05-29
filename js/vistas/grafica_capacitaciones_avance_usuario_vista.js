@@ -787,7 +787,7 @@ class GraficaCapacitacionesAvanceUsuarioVista extends CatalogoVista
 			series.sequencedInterpolation = true;
 			series.dataFields.valueY = "porcentaje";
 			series.dataFields.categoryX = "nombreId";
-			series.tooltipText = "{nombreCompleto} ({nombreUsuario}) : {valueY}% ({preguntasContestadas}/{totalPreguntas})";
+			series.tooltipText = "{nombreCompleto} ({nombreUsuario}) : {valueY}% ({correctas}/{preguntasContestadas})";
 			series.columns.template.strokeWidth = 0;
 
 			series.tooltip.pointerOrientation = "vertical";

@@ -5,7 +5,14 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 		super(ventana);
 		this.presentador = new ReportePersonalCapacitacionesPresentador(this);
 		this._urlFormulario = "html/formularios/capacitados.php";
+		var fecha = new Date();
+		this._time = fecha.getTime();
 		
+	}
+	
+	get time()
+	{
+		return this._time;
 	}
 
 	inicializar()
@@ -73,6 +80,7 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 			{longitud:100, 	titulo:"Aprovechamiento",   alias:"porcentaje", alineacion:"C",itemRenderer: this.rendererPorcentaje },
 			{longitud:100, 	titulo:"Preguntas correctas",   alias:"correctas", alineacion:"C"},
 			{longitud:100, 	titulo:"Total de preguntas",   alias:"total", alineacion:"C" },
+			{longitud:100, 	titulo:"Total de preguntas contestadas",   alias:"preguntasContestadas", alineacion:"C" },
 //			{longitud:100, 	titulo:"Supervisor 1",   alias:"supervisor1Nombre", alineacion:"I" },	
 //			{longitud:100, 	titulo:"Supervisor 2",   alias:"supervisor2Nombre", alineacion:"I" },	
 //			{longitud:100, 	titulo:"Supervisor 3",   alias:"supervisor3Nombre", alineacion:"I" },	
@@ -187,7 +195,7 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 	{    
 		var fecha = new Date();
 		var contenido = "";
-		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+fecha.getTime();
+		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+vista.time;
 		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;border-radius:50%'></img></center>";
 	    return contenido;
 	}

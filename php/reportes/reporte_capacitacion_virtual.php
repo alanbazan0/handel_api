@@ -6,12 +6,16 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 use php\repositorios\EmpresasRepositorio;
 use php\repositorios\SedesRepositorio;
 use php\repositorios\CursosRepositorio;
+use php\clases\Porcentaje;
+use php\clases\GeneradorColores;
 
 
 require('../vendor/fpdf181/fpdf.php');
 include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
 require_once('../repositorios/EmpresasRepositorio.php');
+require_once('../clases/Porcentaje.php');
+require_once('../clases/GeneradorColores.php');
 require_once('../repositorios/SedesRepositorio.php');
 require_once('../repositorios/CursosRepositorio.php');
 require_once('../highcharts/highchartutils.php');
@@ -314,6 +318,9 @@ abstract class PDF extends FPDF
                     $this->Rect($x,$y,$w,$h,"D");
                 }
                 
+                $textColorHex = $this->textColors[$i];
+                $rgb = $this->toRGB($textColorHex);
+                $this->SetTextColor($rgb->r, $rgb->g, $rgb->b);
                 //$this->SetFillColor($rgb->red, $rgb->green, $rgb->blue);
                 
                 $this->SetFont($this->fontNames[$i],$this->fontWeights[$i],$this->fontSizes[$i]);
@@ -529,20 +536,22 @@ abstract class PDF extends FPDF
         $y = 30;
         $this->Image($imagen,$x,$y,$anchoFoto);
         
+        
         $this->SetY(80);
         $this->SetFillColor(113,129,71);
+        $this->SetDrawColor(113,129,71);
         $this->SetTextColor(255, 255, 255);
         $this->SetFont($this->font,'',20);
-        $this->Cell(0,5,"",0,2,'C',1);
-        $this->Cell(0,10,$this->texto("Reporte de capacitación virtual"),0,2,'C',1);
+        $this->Cell(0,5,"",1,2,'C',1);
+        $this->Cell(0,10,$this->texto("Reporte de capacitación virtual"),1,2,'C',1);
         $this->SetFont($this->font,'',12);
-        $this->Cell(0,6,$this->texto(""),0,2,'C',1);
+        $this->Cell(0,6,$this->texto(""),1,2,'C',1);
         $this->SetFont($this->font,'I',12);
         $fechas="";
         if($this->criteriosSeleccion->fechaInicial!=null && $this->criteriosSeleccion->fechaFinal!=null)
            $fechas = $this->criteriosSeleccion->fechaInicial ." - ". $this->criteriosSeleccion->fechaFinal;
-        $this->Cell(0,6,$fechas,0,2,'C',1);
-        $this->Cell(0,5,"",0,2,'C',1);
+        $this->Cell(0,6,$fechas,1,2,'C',1);
+        $this->Cell(0,5,"",1,2,'C',1);
         
         $this->Ln();
          $this->SetTextColor(0, 0, 0);
@@ -584,6 +593,19 @@ abstract class PDF extends FPDF
         $arboles = 0;
         $litros = 0;
         
+        $resultado = $repositorio->consultarVideosVistosEmpresa($this->criteriosSeleccion->empresaId);
+        if($resultado->correcto())
+        {
+            $registro = $resultado->valor;
+            $videosVistos = $registro->vistos;
+            $hojas = $videosVistos;
+            $litros = $videosVistos * 0.2612;
+            $arboles = $videosVistos * 0.000063;
+            
+            $arboles = Porcentaje::formatear($arboles,4);
+            $litros = Porcentaje::formatear($litros,2);
+        }
+        
         $this->Ln();
         $this->Ln();
         $this->SetFont($this->font,'',9);
@@ -591,7 +613,7 @@ abstract class PDF extends FPDF
         $this->SetX(50);
         $this->Cell(0,4,$this->texto("Beneficio ecológico de usar CAVI:"),0,2,'L');
         $this->Cell(0,4,$this->texto("Su compañía ha ahorrado a la fecha $hojas hojas para evaluar la eficiencia de los aprendizajes."),0,2,'L');
-        $this->Cell(0,4,$this->texto("Como consecuencia se ha avanzado en salvar $arboles cantidad de árboles y $litros litros de agua en el proceso"),0,2,'L');
+        $this->Cell(0,4,$this->texto("Como consecuencia se ha avanzado en salvar $arboles árboles y $litros litros de agua en el proceso."),0,2,'L');
         
     }
     
@@ -626,30 +648,13 @@ abstract class PDF extends FPDF
     private function subtitulo($texto)
     {
         $this->SetFont($this->font,'B',15);
+        $this->SetTextColor(0,0,0);
         $this->Cell(0,8,$this->texto($texto),0,2,'C');
     }
     
     
-    function generarColor()
-    {
-        $color = '#';
-        $colorHexLighter = array("9","A","B","C","D","E","F" );
-        for($x=0; $x < 6; $x++):
-        $color .= $colorHexLighter[array_rand($colorHexLighter, 1)]  ;
-        endfor;
-        return substr($color, 0, 7);
-    }
     
-    function generarColores($colores,$n)
-    {
-        $limite = $n -  count($colores);
-        for ($i = 0; $i < $limite; $i++) 
-        {
-            $color = $this->generarColor();
-            array_push($colores,$color);
-        }
-        return $colores;
-    }
+   
     
     public function generar($usuario,$criteriosSeleccion)
     {
@@ -666,13 +671,94 @@ abstract class PDF extends FPDF
             $resultado = $sedesRepositorio->consultarPorLlaves((object)["id" => $criteriosSeleccion->sedeId]);
             if($resultado->correcto())
                 $this->sede = $resultado->valor;
-            $this->portada();
             
-            //$this->aviso();
-            //$this->introduccion();
-            //$this->comparativaAvanceAprovechamiento();
+//             $coloresBase = [ "#0c9cfb","#78d34b","#6a666a", "#f6ba36","#e13d47","#ca3675","#958b34","#81bede"];
+//             $colores  =  $this->generarColores($coloresBase,100);
+            
+            $colores = GeneradorColores::generar(100);
+            
+             $this->portada();
+            
+             $this->aviso();
+             $this->introduccion();
+            $this->comparativaAvanceAprovechamiento();
+            
+            $this->avanceDepartamentos($colores);
+            $this->aprovechamientoDepartamentos($colores);
+            $this->usuariosDepartamento($colores);
+           // $this->resumenCapacitaciones();
+          // $this->mejoresAprovechamiento();
         }
     }
+    
+    private function usuariosDepartamento($colores)
+    {
+        $this->AddPage();
+        $this->SetY(25);
+        $this->subtitulo("Usuarios por departamento");
+        $this->Ln();
+        
+        $chartWidth = 120;
+        $repositorio = new CursosRepositorio($this->conexion);
+        $resultado = $repositorio->consultarResultadosDepartamentos($this->usuario, $this->criteriosSeleccion);
+        if($resultado->correcto())
+        {
+            $registros = $resultado->valor;
+                
+            $image = toColumnChartSerieColors("",'','',$registros,"nombre","numeroUsuarios",$colores,false,0);
+            if($image!='')
+                $this->Image($image,30, 60, $chartWidth);
+            
+            $image = toPieChartWithLabels("",'','',$registros,"nombre","numeroUsuarios",$colores,20);
+            if($image!='')
+                $this->Image($image,150 ,60, $chartWidth);
+        }
+    }
+    
+    
+    private function avanceDepartamentos($colores)
+    {
+        $this->AddPage();
+        $this->SetY(25);
+        $this->subtitulo("Avance por departamento");
+        $this->Ln();
+        
+        $chartWidth = 220;
+        $repositorio = new CursosRepositorio($this->conexion);
+        $resultado = $repositorio->consultarResultadosDepartamentos($this->usuario, $this->criteriosSeleccion);
+        if($resultado->correcto())
+        {
+            $registros = $resultado->valor;
+           
+            $image = toColumnChartSerieColors("",'','',$registros,"nombre","porcentajeAvance",$colores,false,100,false,"{point.y:.1f} %");
+            if($image!='')
+                $this->Image($image,$this->w/2 -$chartWidth/2 ,40, $chartWidth);
+                
+                
+        }
+    }
+    
+    private function aprovechamientoDepartamentos($colores)
+    {
+        $this->AddPage();
+        $this->SetY(25);
+        $this->subtitulo("Aprovechamiento por departamento");
+        $this->Ln();
+        
+        $chartWidth = 220;
+        $repositorio = new CursosRepositorio($this->conexion);
+        $resultado = $repositorio->consultarResultadosDepartamentos($this->usuario, $this->criteriosSeleccion);
+        if($resultado->correcto())
+        {
+            $registros = $resultado->valor;
+            $image = toColumnChartSerieColors("",'','',$registros,"nombre","porcentaje",$colores,false,100,false,"{point.y:.1f} %");
+            if($image!='')
+                $this->Image($image,$this->w/2 -$chartWidth/2 ,40, $chartWidth);
+                
+                
+        }
+    }
+    
     
     private function comparativaAvanceAprovechamiento()
     {
@@ -680,6 +766,194 @@ abstract class PDF extends FPDF
         $this->SetY(25);
         $this->subtitulo("Comparativa de Avance y Aprovechamiento");
         $this->Ln();
+        
+        $this->SetX(0);
+        $y = 80;
+        $pdfWidth = $this->w;
+        $chartWidth = 220;
+        $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
+        //$resultado = $repositorio->consultarPorcentajesSecciones($this->modelo->id);
+        //$resultado = $repositorio->consultarAuditoriaAnterior($this->modelo->empresaId,$this->modelo->sedeId, $this->modelo->plantillaId, $this->modelo->id);
+        $repositorio = new CursosRepositorio($this->conexion);
+        $resultado = $repositorio->consultarResultados($this->usuario, $this->criteriosSeleccion);
+        $avancePeriodo = 0;
+        $aprovechamientoPeriodo=0;
+        $avanceActual=0;
+        $aprovechamientoActual=0;
+        if($resultado->correcto())
+        {
+            if(count($resultado->valor)>0)
+            {
+                $registro = $resultado->valor[0];
+                $avancePeriodo=  $registro->porcentajeAvance;
+                $aprovechamientoPeriodo= $registro->porcentaje;
+                
+                $criteriosSeleccionActual= clone $this->criteriosSeleccion;
+               
+                $fechaUltimoDia = Mes::getUltimoDiaMesActual();
+                $criteriosSeleccionActual->fechaFinal =$fechaUltimoDia;
+                list($dia, $mes, $ano) = explode("/",  $criteriosSeleccionActual->fechaFinal);
+                $criteriosSeleccionActual->fechaInicial = "1/$mes/$ano";
+//                 $criteriosSeleccionActual->fechaFinal="";
+//                 $criteriosSeleccionActual->fechaInicial ="";
+                
+                //var_dump($criteriosSeleccionActual);
+                //$fechaAnterior = substr($resultado->valor->fecha,0,10);
+                $resultado = $repositorio->consultarResultados($this->usuario, $criteriosSeleccionActual);
+                if($resultado->correcto())
+                {
+                    if(count($resultado->valor)>0)
+                    {
+                        $registro = $resultado->valor[0];
+                        $avanceActual=  $registro->porcentajeAvance;
+                        $aprovechamientoActual= $registro->porcentaje;
+                        
+                        $porcentajes = array();
+                        array_push($porcentajes,(object)["nombre"=>"Avance", "periodo"=> $avancePeriodo, "actual" =>$avanceActual]);
+                        array_push($porcentajes,(object)["nombre"=>"Aprovechamiento", "periodo"=> $aprovechamientoPeriodo, "actual" =>$aprovechamientoActual]);
+                        
+                        //var_dump($porcentajes);
+                    
+                        $image = $this->graficaComparativoAvanceAprovechamiento("",'',"Este mes","Periodo seleccionado",$porcentajes,"nombre","actual","periodo",$colores,false,100);
+                        if($image!='')
+                            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
+                    }
+                }
+            }
+            
+        }
+    }
+    
+    
+    function graficaComparativoAvanceAprovechamiento($title, $yTitle, $serieTitle,$serieTitleAnterior, $rows, $xField, $yFieldActual, $yFieldAnterior, $colors, $showInLegend,$max)
+    {
+        $categories = array();
+        $data1 = array();
+        $data2 = array();
+        
+        for ($i = 0; $i < count($rows); $i++)
+        {
+            $row = $rows[$i];
+            $category = $row->$xField;
+            //$value = (float)$row->$yField;
+            
+            /* if($value>=0 && $value<51)
+             $color="#dd4b39";
+             else if($value>=51 &&   $value <100)
+             $color="#f39c12";
+             else iF($value>=100)
+             $color="#00a65a";*/
+             
+             
+             
+             $newRow1= (object) [
+                 'name' =>  $category,
+                 'y' => floatval($row->$yFieldActual)
+                 
+             ];
+             
+             $newRow2= (object) [
+                 'name' =>  $category,
+                 'y' => floatval($row->$yFieldAnterior)
+             ];
+             
+             array_push($categories, $category);
+             array_push($data1, $newRow1);
+             array_push($data2, $newRow2);
+        }
+        
+        $yAxis = (object) [ 'title' => (object) [ 'text'=> $yTitle, 'align' => 'high'], 'labels' => (object) [ 'overflow'=> 'justify']];
+        if($max>0)
+        {
+            $yAxis->min= 0;
+            $yAxis->max= $max;
+            $yAxis->tickInterval= 10;
+            
+        }
+        
+        $highchart = (object)
+        [
+            'chart' => (object) [ 'type' => "bar"],
+            'title' => (object) [ 'text'=> $title],
+            'credits' => (object) ['enabled' => false],
+            'xAxis' => (object) [ 'categories' => $categories, "tickLength"=> 10],
+            'plotOptions' => (object)
+            [
+//                 'bar'=> (object)[
+//                     'dataLabels'=>(object)
+//                     [
+//                         'enabled'=>true,
+//                         'crop'=>false,
+//                         'overflow' =>'none',
+//                         "inside"=> false,
+//                         'color'=> 'black',
+//                         'borderColor' => 'black',
+//                         'style'=> (object)
+//                         [
+//                             'fontSize' => 10,
+//                             //'textOutline' => '1px'
+//                         ],
+//                         'format'=>"{point.y:.1f} %" 
+//                     ]
+//                 ],
+                'series' => (object)
+                [
+                    'dataLabels'=>(object)
+                    [
+                        'enabled'=>true,
+                        'format' => "{point.y:.1f} %",
+                        'color'=> 'black',
+                        'style'=> (object)
+                        [
+                            'fontSize' => 10,
+                            'textOutline' => '0px'
+                        ],
+                    ]
+                ]
+            ],
+            'yAxis' => $yAxis,
+            'series' => array(
+                (object) ['name' => $serieTitle, 'data' => $data1, 'color' => "#159df6",  'showInLegend' => true],
+                (object) ['name' => $serieTitleAnterior, 'data' => $data2, 'color' => "#87ce58", 'showInLegend' => true]
+            )
+        ];
+        
+        $data= (object) [
+            'async' =>  true,
+            'type' => 'image/jpeg',
+            'width' => 1080,
+            'options' => $highchart
+        ];
+        
+        $options = array(
+            'http' => array(
+                'method'  => 'POST',
+                'content' => json_encode( $data ),
+                'header'=>  "Content-Type: application/json\r\n" .
+                "Accept: application/json\r\n"
+            )
+        );
+        
+        $url = 'https://export.highcharts.com/';
+        
+        $context  = stream_context_create( $options );
+        
+        
+        
+        $result = file_get_contents( $url, false, $context );
+        
+        $charturl='';
+        if ($result === FALSE)
+        {
+            
+        }
+        else
+        {
+            $charturl = $url . $result;
+            
+        }
+        return $charturl;
+        
     }
     
     
@@ -738,67 +1012,99 @@ abstract class PDF extends FPDF
         }
     }
     
-    private function cierreHallazgosMes()
+    
+    private function resumenCapacitaciones()
     {
         $this->AddPage();
         $this->SetY(25);
-        $this->subtitulo("Cierre de hallazgos por mes");
-        
-        
-        $pdfWidth = $this->GetPageWidth();
-        $chartWidth = 220;
-        $repositorio = new AuditoriasRepositorio($this->conexion);
-        $resultado = $repositorio->consultarHallazgosUsuarios($this->auditoria->id);
-        if($resultado->correcto())
-        {
-            $hallazgos = $resultado->valor;
-            $image = $this->graficaBarrasAvance("",'','',$hallazgos,"nombreCompleto",true);
-            if($image!='')
-                $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
-                
-        }
-    }
-    
-    
-    private function tareas()
-    {
-        $this->AddPage();
-        $this->SetY(25);
-        $this->subtitulo("Tareas pendientes");
+        $this->subtitulo("Resumen de capacitaciones");
         $this->SetY(35);
         
-        $this->fontSizes = array(10, 10, 10, 10, 10,10);
-        $this->fontWeights = array("B","B","B","B","B","B");
-        $this->aligns = array("C","C","C","C","C","C");
-        $this->widths = array(15, 110, 28, 30, 34, 30);
-        $this->textColors = array("#000000","#000000","#000000","#000000","#000000","#000000");
+        $this->fontSizes = array(10, 10, 10, 10, 10);
+        $this->fontWeights = array("B","B","B","B","B");
+        $this->aligns = array("C","C","C","C","C");
+        $this->widths = array(15, 90, 47, 47, 48);
+        $this->textColors = array("#ffffff","#ffffff","#ffffff","#ffffff","#ffffff");
         $this->borders = array(1,1,1,1,1,1);
-        $this->borderColors = array("#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0");
-        $this->backgroundColors = array("#bdc1bf","#bdc1bf","#bdc1bf","#bdc1bf","#bdc1bf","#bdc1bf");
-        $this->Row2(array("ID","Tarea asignada","Avance a la fecha","Estatus","Responsable","Departamento"),5);
+        $this->borderColors = array("#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0");
+        $this->backgroundColors = array("#718147","#718147","#718147","#718147","#718147");
+        $this->Row2(array("Item",$this->texto("Capacitación"),"No. De usuarios inscritos","No. De usuarios al 100%","Aprovechamiento promedio"),4);
         
-        $this->fontWeights = array("B","","","","","");
-        $this->aligns = array("C","L","C","L","L","L");
-       
-        $repositorio = new AuditoriasRepositorio($this->conexion);
-        $resultado = $repositorio->consultarRecomendacionesPendientes($this->auditoria->id);
+        $this->fontWeights = array("B","","","","");
+        $this->aligns = array("C","L","C","C","C");
+        $this->textColors = array("#000000","#000000","#000000","#000000","#000000");
+        
+        $repositorio = new CursosRepositorio($this->conexion);
+        $resultado = $repositorio->consultarResumenCapacitaciones($this->usuario, $this->criteriosSeleccion);
         if($resultado->correcto())
         {
-            $recomendaciones = $resultado->valor;
-            for($i = 0; $i < count($recomendaciones); $i++)
+            $registros = $resultado->valor;
+            
+            for($i = 0; $i < count($registros); $i++)
             {
                 $color = "";
                 if($i%2==0)
                     $color = "#ffffff";
                 else
                     $color = "#f5f5f5";
-                    $this->backgroundColors = array("#e6e6e6",$color,$color,$color,$color,$color);
-                $tarea = $recomendaciones[$i];
-                
-                $this->Row2(array($tarea->id,$this->texto($tarea->titulo),$tarea->cumplimiento."%",$this->texto($tarea->estatusValidacionNombre),$this->texto($tarea->responsableNombreCompleto), $this->texto($tarea->departamentoNombre)),8);
+                $this->backgroundColors = array("#e6e6e6",$color,$color,$color,$color);
+                $registro = $registros[$i];
+                $id = $i+1;
+                $this->Row2(array($id,$this->texto($registro->titulo),$this->texto($registro->numeroUsuariosInscritos),$this->texto($registro->numeroUsuarios100),$registro->aprovechamientoPromedio."%"),8);
+            }
+        }
+        
+    }
+    
+    private function mejoresAprovechamiento()
+    {
+        $this->AddPage();
+        $this->SetY(25);
+        $this->subtitulo("Top 10: Los mejores en Aprovechamiento");
+        $this->SetY(35);
+        
+        $this->fontSizes = array(10, 10, 10, 10, 10,10);
+        $this->fontWeights = array("B","B","B","B","B","B");
+        $this->aligns = array("C","C","C","C","C","C");
+        $this->widths = array(15, 56, 56, 52, 34, 34);
+        $this->textColors = array("#ffffff","#ffffff","#ffffff","#ffffff","#ffffff","#ffffff");
+        $this->borders = array(1,1,1,1,1,1);
+        $this->borderColors = array("#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0");
+        $this->backgroundColors = array("#718147","#718147","#718147","#718147","#718147","#718147");
+        $this->Row2(array("Item","Nombre","Apellido","Departamento","Avance","Aprovechamiento"),4);
+        
+        $this->fontWeights = array("B","","","","","");
+        $this->aligns = array("C","L","L","L","C","C");
+        $this->textColors = array("#000000","#000000","#000000","#000000","#000000","#000000");
+       
+        $repositorio = new CursosRepositorio($this->conexion);
+        $resultado = $repositorio->consultarResultadosUsuarios($this->usuario, $this->criteriosSeleccion);
+        if($resultado->correcto())
+        {
+            $registros = $resultado->valor;
+            
+            usort($registros, array("PDF", "compartarPorcentaje"));
+            $limite = 10;
+            
+            for($i = 0; $i < count($registros) && $i < $limite; $i++)
+            {
+                $color = "";
+                if($i%2==0)
+                    $color = "#ffffff";
+                else
+                    $color = "#f5f5f5";
+                $this->backgroundColors = array("#e6e6e6",$color,$color,$color,$color,$color);
+                $registro = $registros[$i];
+                $id = $i+1;
+                $this->Row2(array($id,$this->texto($registro->nombre),$this->texto($registro->apellido),$this->texto($registro->departamentoNombre),$registro->porcentajeAvance, $registro->porcentaje),8);
             }
         }
      
+    }
+    
+    static function compartarPorcentaje($a, $b)
+    {
+        return strcmp($b->porcentaje, $a->porcentaje);
     }
     
     

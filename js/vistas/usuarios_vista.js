@@ -5,7 +5,8 @@ class UsuariosVista extends CatalogoVista
 		super(ventana);
 		this.presentador = new UsuariosPresentador(this);
 		this._urlFormulario = "html/formularios/usuarios.php";
-		
+		var fecha = new Date();
+		this._time = fecha.getTime();
 	}
 
 	inicializar()
@@ -326,7 +327,7 @@ class UsuariosVista extends CatalogoVista
 	{    
 		var fecha = new Date();
 		var contenido = "";
-		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+fecha.getTime();
+		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+vista.time;
 		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
 	    return contenido;
 	}

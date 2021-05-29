@@ -227,6 +227,147 @@ function toColumnChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$co
     
 }
 
+
+function toColumnChartSerieColors($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colors, $showInLegend,$max,$inside=true,$format="{point.y}")
+{
+    $categories = array();
+    $data = array();
+    
+    //     for ($i = 0; $i < count($rows); $i++)
+        //     {
+        //         $row = $rows[$i];
+        //         $category = $row->$xField;
+        //         $value = $row->$yField;
+        //         array_push($categories, $category);
+        //         array_push($data, $value);
+        //     }
+    $c = 0;
+    for ($i = 0; $i < count($rows); $i++)
+    {
+        $row = $rows[$i];
+        $category = $row->$xField;
+        $value = (float)$row->$yField;
+        $color = $colors[$c];
+        
+//         if($value>=0 && $value<51)
+//             $color="#dd4b39";
+//             else if($value>=51 &&   $value <100)
+//                 $color="#f39c12";
+//                 else iF($value>=100)
+//                     $color="#00a65a";
+                    
+                    
+                    
+        $newRow= (object) [
+            'name' =>  $category,
+            'y' => $value,
+            'color' => $color
+        ];
+        
+        $c++;
+        if($c>count($colors)-1)
+            $c = 0;
+                        
+        array_push($categories, $category);
+        array_push($data, $newRow);
+    }
+    
+    $yAxis = (object) [ 'title' => (object) [ 'text'=> $yTitle]];
+    if($max>0)
+    {
+        $yAxis->min= 0;
+        $yAxis->max= $max;
+        $yAxis->tickInterval= 10;
+    }
+    
+    
+    
+    
+    $highchart = (object)
+    [
+        'chart' => (object) [ 'type' => "column"],
+        'title' => (object) [ 'text'=> $title],
+        'credits' => (object) ['enabled' => false],
+        'xAxis' => (object) [ 'categories' => $categories],
+        'plotOptions' => (object)
+        [
+//             'column'=> (object)[
+//                 'dataLabels'=>(object)
+//                 [
+//                     'enabled'=>true,
+//                     'crop'=>false,
+//                     'overflow' =>'none',
+//                     //"inside"=> $inside,
+//                     'color'=> 'black',
+//                     'style'=> (object)
+//                     [
+//                         'fontSize' => 10,
+//                         'textOutline' => '0px'
+//                     ],
+//                     'format' => $format
+//                 ]
+//             ],
+            'series' => (object)
+            [
+                'dataLabels'=>(object)
+                [
+                    'enabled'=>true,
+                    'format' => $format,
+                    'color'=> 'black',
+                    'style'=> (object)
+                    [
+                        'fontSize' => 10,
+                        'textOutline' => '0px'
+                    ],
+                ]
+            ]
+        ],
+        'yAxis' => $yAxis,
+        'series' => array(
+            (object) ['name' => $serieTitle, 'data' => $data,  'showInLegend' => $showInLegend]
+        )
+    ];
+    
+    $data= (object) [
+        'async' =>  true,
+        'type' => 'image/jpeg',
+        'width' => 1080,
+        'options' => $highchart
+    ];
+    
+    $options = array(
+        'http' => array(
+            'method'  => 'POST',
+            'content' => json_encode( $data ),
+            'header'=>  "Content-Type: application/json\r\n" .
+            "Accept: application/json\r\n"
+        )
+    );
+    
+    $url = 'https://export.highcharts.com/';
+    
+    $context  = stream_context_create( $options );
+    
+    
+    
+    $result = file_get_contents( $url, false, $context );
+    
+    $charturl='';
+    if ($result === FALSE)
+    {
+        
+    }
+    else
+    {
+        $charturl = $url . $result;
+        
+    }
+    return $charturl;
+    
+    //  return 'ok';
+    
+}
+
 function toColumnChartColors($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colors, $showInLegend,$max)
 {
     $categories = array();

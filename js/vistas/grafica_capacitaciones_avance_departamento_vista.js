@@ -584,7 +584,8 @@ class GraficaCapacitacionesAvanceDepartamentoVista extends CatalogoVista
 			empresaId: $('#empresaSelectCriterio').val(),
 			sedeId: $('#sedeSelectCriterio').val(),
 			departamentoId: $('#departamentoSelectCriterio').val(),
-			cursoId : $('#cursoSelectCriterio').val()
+			cursoId : $('#cursoSelectCriterio').val(),
+			tipoReporte: 1
 		 }
 		 return criteriosSeleccion;
 	}	
@@ -784,7 +785,7 @@ class GraficaCapacitacionesAvanceDepartamentoVista extends CatalogoVista
 			// Create series
 			var series = chart.series.push(new am4charts.ColumnSeries());
 			series.sequencedInterpolation = true;
-			series.dataFields.valueY = "porcentaje";
+			series.dataFields.valueY = "porcentajeAvance";
 			series.dataFields.categoryX = "nombreId";
 			series.tooltipText = "{nombre} : {valueY}% ({preguntasContestadas}/{totalPreguntas})";
 			series.columns.template.strokeWidth = 0;
