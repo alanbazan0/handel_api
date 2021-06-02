@@ -3104,29 +3104,32 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
             for ($i = 0; $i < count($usuarios); $i++) 
             {
                 $usuario = $usuarios[$i];
-                if($enviarA!=null && $enviarA!="")
-                    $usuario->nombreUsuario = $enviarA;
-               
-                $resultado = $this->consultarAuditoriasUsuario($usuario);
-                if($resultado->correcto())
+                if($usuario->tipoUsuarioId != \TipoUsuario::ADMINISTRADOR)
                 {
-                    $usuario->auditorias = $resultado->valor;
-                    if(count($usuario->auditorias)>0)
+                    if($enviarA!=null && $enviarA!="")
+                        $usuario->nombreUsuario = $enviarA;
+                   
+                    $resultado = $this->consultarAuditoriasUsuario($usuario);
+                    if($resultado->correcto())
                     {
-                        if($numeroUsuarios<=0)
-                            array_push($usuariosAuditoria,$usuario);
-                        else
+                        $usuario->auditorias = $resultado->valor;
+                        if(count($usuario->auditorias)>0)
                         {
-                            if($contador < $numeroUsuarios)
+                            if($numeroUsuarios<=0)
                                 array_push($usuariosAuditoria,$usuario);
-                            else 
-                                break;
+                            else
+                            {
+                                if($contador < $numeroUsuarios)
+                                    array_push($usuariosAuditoria,$usuario);
+                                else 
+                                    break;
+                            }
+                            $contador++;
                         }
-                        $contador++;
                     }
+                    else 
+                        echo $resultado->mensajeError;
                 }
-                else 
-                    echo $resultado->mensajeError;
             }
 //             if($numeroUsuarios>0)
 //                 $usuariosAuditoria = array_slice($usuariosAuditoria,0,$numeroUsuarios);

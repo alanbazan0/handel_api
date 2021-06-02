@@ -585,7 +585,7 @@ class GraficaCapacitacionesAvanceUsuarioVista extends CatalogoVista
 			sedeId: $('#sedeSelectCriterio').val(),
 			departamentoId: $('#departamentoSelectCriterio').val(),
 			cursoId : $('#cursoSelectCriterio').val(),
-			tipoReporte: 1
+			tipoReporte: TipoReporte.CAPACITACION_INICIADA
 		 }
 		 return criteriosSeleccion;
 	}	

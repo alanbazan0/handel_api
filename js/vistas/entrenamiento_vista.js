@@ -1389,7 +1389,7 @@ class EntrenamientoVista extends CatalogoVista
 			sedeId: $('#sedeSelectReporte').val(),
 			fechaInicial: this._fechaInicial,
 			fechaFinal: this._fechaFinal,
-			tipoReporte: 1
+			tipoReporte: TipoReporte.CAPACITACION_INICIADA
 		 }
 		 return criteriosSeleccion;
 	}	

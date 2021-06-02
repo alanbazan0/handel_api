@@ -4194,7 +4194,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     
     private function getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario)
     {
-        if($criteriosSeleccion->tipoReporte=="" || $criteriosSeleccion->tipoReporte==null)
+        if($criteriosSeleccion->tipoReporte==="" || $criteriosSeleccion->tipoReporte==null)
             $criteriosSeleccion->tipoReporte = \TipoReporte::TODOS;
         //$filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
         $filtroFechas = "";
@@ -4337,7 +4337,6 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         
         $consulta = $this->getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario) . " order by tipoUsuarioOrden, nombre, apellido";
         
-      
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -4445,14 +4444,20 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         $filtroCapacitacion ="";
         if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
             $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
+        
+        $filtroEmpresaSede="";
+        if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+            $filtroEmpresaSede =" AND U.empresa_id = $criteriosSeleccion->empresaId";
+        if(isset($criteriosSeleccion->sedeId) && $criteriosSeleccion->sedeId!="")
+            $filtroEmpresaSede =" AND U.sede_id = $criteriosSeleccion->sedeId";
             
         $consulta = "SELECT C.id, C.titulo,
                     (
                     SELECT count(*)
                     FROM usuarios U
-                    WHERE U.empresa_id = 22 AND U.perfil_id IN(SELECT perfil_id
-                    											FROM cursos_perfiles CP
-                    											WHERE curso_id = C.id)
+                    WHERE AU.perfil_id IN(SELECT perfil_id
+        				FROM cursos_perfiles CP
+        				WHERE curso_id = C.id) $filtroEmpresaSede
                     )usuariosInscritos, 0, 0
                     FROM cursos C
                     WHERE id IN(
@@ -4693,6 +4698,70 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 "\n) AS A " .
                 "\nGROUP BY departamentoId,departamentoNombre" .
                 "\nORDER BY departamentoNombre";
+            
+            //var_dump($consulta);
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($this->bind_param($sentencia, $filtros))
+                {
+                    if($sentencia->execute())
+                    {
+                        if ($sentencia->bind_result($id, $nombre, $correctas, $total, $totalPreguntas, $preguntasContestadas, $preguntasContestadasMes, $numeroUsuarios)  )
+                        {
+                            while($row = $sentencia->fetch())
+                            {
+                                $registro= (object) [
+                                    'id' =>  $id,
+                                    'nombre' => $nombre,
+                                    'correctas' => $correctas,
+                                    'total' => $total,
+                                    'totalPreguntas' =>$totalPreguntas,
+                                    'preguntasContestadas' => $preguntasContestadas,
+                                    'preguntasContestadasMes' => $preguntasContestadasMes,
+                                    'numeroUsuarios' => $numeroUsuarios
+                                ];
+                                
+                                $registro->nombreId =  $registro->nombre." (".$registro->id.")";
+                                $this->calcularPorcentaje($registro,'correctas','preguntasContestadas',"porcentaje");
+                                $this->calcularPorcentaje($registro,'preguntasContestadas','totalPreguntas',"porcentajeAvance");
+                                $this->calcularPorcentaje($registro,'preguntasContestadasMes','totalPreguntas',"porcentajeAvanceMensual");
+                                
+                                array_push($registros,$registro);
+                            }
+                            $resultado->valor = $registros;
+                        }
+                        else
+                            $resultado->mensajeError = "Falló el enlace del resultado.";
+                    }
+                    else
+                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = "Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                
+                return $resultado;
+    }
+    
+    public function consultarUsuariosDepartamento($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
+        
+        $filtroCapacitacion ="";
+        if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
+            $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
+            
+            $consulta = "SELECT departamentoId, departamentoNombre,SUM(correctas)correctas, SUM(total)total,SUM(totalPreguntas),SUM(preguntasContestadas),SUM(preguntasContestadasMes), count(*) numeroUsuarios ".
+                "\nFROM(" . $this->getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario).
+                "\n) AS A
+                 WHERE preguntasContestadas>0
+                \nGROUP BY departamentoId,departamentoNombre
+                \nORDER BY departamentoNombre";
             
             //var_dump($consulta);
             
@@ -5373,11 +5442,11 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         if($resultado->correcto())
         {
             $registros = $resultado->valor;
-            
             //var_dump($registros);
             for ($j = 0; $j < count($registros); $j++)
             {
                 $registro = $registros[$j];
+                
                 $nombre = trim($registro->nombreCompleto);
                 $contenido.= "<p><strong>";
                 $contenido.=  "<span style='text-decoration: underline; color: #0c5581;'>$nombre: </span></strong>";

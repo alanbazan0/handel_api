@@ -679,15 +679,15 @@ abstract class PDF extends FPDF
             
              $this->portada();
             
-             $this->aviso();
-             $this->introduccion();
-            $this->comparativaAvanceAprovechamiento();
+              $this->aviso();
+              $this->introduccion();
+             $this->comparativaAvanceAprovechamiento();
             
-            $this->avanceDepartamentos($colores);
-            $this->aprovechamientoDepartamentos($colores);
-            $this->usuariosDepartamento($colores);
-           // $this->resumenCapacitaciones();
-          // $this->mejoresAprovechamiento();
+             $this->avanceDepartamentos($colores);
+             $this->aprovechamientoDepartamentos($colores);
+             $this->usuariosDepartamento($colores);
+          // $this->resumenCapacitaciones();
+         //    $this->mejoresAprovechamiento();
         }
     }
     
@@ -700,7 +700,7 @@ abstract class PDF extends FPDF
         
         $chartWidth = 120;
         $repositorio = new CursosRepositorio($this->conexion);
-        $resultado = $repositorio->consultarResultadosDepartamentos($this->usuario, $this->criteriosSeleccion);
+        $resultado = $repositorio->consultarUsuariosDepartamento($this->usuario, $this->criteriosSeleccion);
         if($resultado->correcto())
         {
             $registros = $resultado->valor;
@@ -1088,15 +1088,20 @@ abstract class PDF extends FPDF
             
             for($i = 0; $i < count($registros) && $i < $limite; $i++)
             {
-                $color = "";
-                if($i%2==0)
-                    $color = "#ffffff";
-                else
-                    $color = "#f5f5f5";
-                $this->backgroundColors = array("#e6e6e6",$color,$color,$color,$color,$color);
                 $registro = $registros[$i];
-                $id = $i+1;
-                $this->Row2(array($id,$this->texto($registro->nombre),$this->texto($registro->apellido),$this->texto($registro->departamentoNombre),$registro->porcentajeAvance, $registro->porcentaje),8);
+                if($registro->porcentaje>=80)
+                {
+                    $color = "";
+                    if($i%2==0)
+                        $color = "#ffffff";
+                    else
+                        $color = "#f5f5f5";
+                    $this->backgroundColors = array("#e6e6e6",$color,$color,$color,$color,$color);
+                    
+                    $id = $i+1;
+                    $this->Row2(array($id,$this->texto($registro->nombre),$this->texto($registro->apellido),$this->texto($registro->departamentoNombre),$registro->porcentajeAvance, $registro->porcentaje),8);
+                    
+                }
             }
         }
      
@@ -1104,6 +1109,8 @@ abstract class PDF extends FPDF
     
     static function compartarPorcentaje($a, $b)
     {
+        if ($b->porcentaje == $a->porcentaje) 
+            return strcmp($b->porcentajeAvance, $a->porcentajeAvance);
         return strcmp($b->porcentaje, $a->porcentaje);
     }
     

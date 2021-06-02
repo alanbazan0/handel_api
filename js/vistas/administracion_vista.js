@@ -5,7 +5,13 @@ class AdministracionVista extends CatalogoVista
 		super(ventana);
 		this.presentador = new AdministracionPresentador(this);
 		this._urlFormulario = "html/formularios/capacitados.php";
-		
+		var fecha = new Date();
+		this._time = fecha.getTime();
+	}
+	
+	get time()
+	{
+		return this._time;
 	}
 
 	inicializar()
@@ -266,7 +272,7 @@ class AdministracionVista extends CatalogoVista
 	{    
 		var fecha = new Date();
 		var contenido = "";
-		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+fecha.getTime();
+		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+vista.time;
 		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
 	    return contenido;
 	}

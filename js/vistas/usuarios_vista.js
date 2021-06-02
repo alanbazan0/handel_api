@@ -8,6 +8,11 @@ class UsuariosVista extends CatalogoVista
 		var fecha = new Date();
 		this._time = fecha.getTime();
 	}
+	
+	get time()
+	{
+		return this._time;
+	}
 
 	inicializar()
 	{
