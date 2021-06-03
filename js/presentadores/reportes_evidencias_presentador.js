@@ -63,7 +63,7 @@ class ReportesEvidenciasPresentador extends CatalogoPresentador
 			else
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 			
-		 },null,false);
+		 },{estatus:1},false);
 	 }
 	
 	 

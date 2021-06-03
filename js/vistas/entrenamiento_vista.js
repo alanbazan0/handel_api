@@ -283,8 +283,8 @@ class EntrenamientoVista extends CatalogoVista
 	        {
 	            if (isConfirm) 
 	            {
-	            	var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_capacitacion_virtual.php");
-						this.createNewFormElement(submitForm, "criteriosSeleccion", JSON.stringify(_this.criteriosSeleccionReporte));	 
+	            	var submitForm = _this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_capacitacion_virtual.php");
+						_this.createNewFormElement(submitForm, "criteriosSeleccion", JSON.stringify(_this.criteriosSeleccionReporte));	 
 					    submitForm.target= "_blank";
 					    submitForm.submit();
 	            }

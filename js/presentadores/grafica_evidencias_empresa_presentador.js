@@ -31,7 +31,7 @@ class GraficaEvidenciasEmpresaPresentador extends CatalogoPresentador
 			else
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 			
-		 },null,true);
+		 },{estatus:1},true);
 	 }
 	 
 	

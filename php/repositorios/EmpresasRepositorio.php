@@ -113,6 +113,8 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
         $where="";
         if($criteriosSeleccion!=null)
         {
+            if(isset($criteriosSeleccion->estatus) && $criteriosSeleccion->estatus!="")
+                array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'E','campo'=>'estatus','valor'=>$criteriosSeleccion->estatus]);
             if(isset($criteriosSeleccion->nombre))
                 array_push($filtros,(object)['tipoDato'=>'varchar','tabla' => 'E', 'campo'=>'nombre','valor'=>$criteriosSeleccion->nombre]);
         }
