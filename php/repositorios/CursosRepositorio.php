@@ -4209,7 +4209,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         }
         $consulta = "SELECT * 
             from(
-            SELECT U.id as id, U.nombre_usuario as nombreUsuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id departamentoId, TRIM(D.nombre) as departamentoNombre, U.permiso_cavih, U.perfil_id, PR.nombre perfilNombre, U.recursos_humanos recursosHumanos, T.orden as tipoUsuarioOrden, 
+            SELECT U.id as id, U.nombre_usuario as nombreUsuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id departamentoId, TRIM(D.nombre) as departamentoNombre, U.permiso_cavi, U.perfil_id, PR.nombre perfilNombre, U.recursos_humanos recursosHumanos, T.orden as tipoUsuarioOrden, 
             (SELECT count(*)
                         	FROM cursos_preguntas CPR 
                         		INNER JOIN cursos C ON CPR.curso_id = C.id 
@@ -4290,7 +4290,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
               LEFT JOIN usuarios SU2 ON U.supervisor2_id = SU2.id
               LEFT JOIN usuarios SU3 ON U.supervisor3_id = SU3.id
               LEFT JOIN perfiles PR ON PR.id = U.perfil_id 
-        WHERE U.permiso_cavih = 1 ";
+        WHERE U.permiso_cavi = 1 AND U.estatus = 1 ";
         
         $consulta.= $this->and($filtros);
         
@@ -4344,7 +4344,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVIH, $perfilId, $perfilNombre, $recursosHumanos,$tipoUsuarioOrden, $total,$correctas,$fechaUltimaCapacitacion,$totalCapacitaciones,$capacitacionesTerminadas,$videosVistos, $tiempoVisto, $totalPreguntas,$preguntasContestadas, $preguntasContestadasMes)  )
+                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVI, $perfilId, $perfilNombre, $recursosHumanos,$tipoUsuarioOrden, $total,$correctas,$fechaUltimaCapacitacion,$totalCapacitaciones,$capacitacionesTerminadas,$videosVistos, $tiempoVisto, $totalPreguntas,$preguntasContestadas, $preguntasContestadasMes)  )
                     {
                         while($row = $sentencia->fetch())
                         {
@@ -4381,7 +4381,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                                 'permiso10y7' => $permiso10y7,
                                 'departamentoId' => $departamentoId,
                                 'departamentoNombre' => $departamentoNombre,
-                                'permisoCAVIH' => $permisoCAVIH,
+                                'permisoCAVI' => $permisoCAVI,
                                 'perfilId' => $perfilId,
                                 'perfilNombre' => $perfilNombre,
                                 'recursosHumanos' => $recursosHumanos,
@@ -4439,11 +4439,11 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         $registros = array();
         $filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
         
-        $filtros=array();
+       // $filtros=array();
         
-        $filtroCapacitacion ="";
-        if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
-            $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
+//         $filtroCapacitacion ="";
+//         if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
+//             $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
         
         $filtroEmpresaSede="";
         if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
@@ -4451,23 +4451,97 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         if(isset($criteriosSeleccion->sedeId) && $criteriosSeleccion->sedeId!="")
             $filtroEmpresaSede =" AND U.sede_id = $criteriosSeleccion->sedeId";
             
-        $consulta = "SELECT C.id, C.titulo,
-                    (
-                    SELECT count(*)
-                    FROM usuarios U
-                    WHERE AU.perfil_id IN(SELECT perfil_id
-        				FROM cursos_perfiles CP
-        				WHERE curso_id = C.id) $filtroEmpresaSede
-                    )usuariosInscritos, 0, 0
-                    FROM cursos C
-                    WHERE id IN(
-                    	SELECT curso_id
-                    	FROM cursos_perfiles CP
-                    	WHERE CP.perfil_id IN (SELECT perfil_id FROM usuarios U WHERE U.empresa_id=22)
-                    	)
-                    ORDER BY C.titulo";
+//         $consulta = "SELECT C.id, C.titulo,
+//                     (
+//                     SELECT count(*)
+//                     FROM usuarios U
+//                     WHERE AU.perfil_id IN(SELECT perfil_id
+//         				FROM cursos_perfiles CP
+//         				WHERE curso_id = C.id) $filtroEmpresaSede
+//                     )usuariosInscritos, 0, 0
+//                     FROM cursos C
+//                     WHERE id IN(
+//                     	SELECT curso_id
+//                     	FROM cursos_perfiles CP
+//                     	WHERE CP.perfil_id IN (SELECT perfil_id FROM usuarios U WHERE U.empresa_id=22)
+//                     	)
+//                     ORDER BY C.titulo";
+
+        $filtroFechas = "";
+       // $filtroFechas1 = "";
+        if(isset($criteriosSeleccion->fechaInicial) && isset($criteriosSeleccion->fechaFinal))
+        {
+            if($criteriosSeleccion->fechaInicial!=null && $criteriosSeleccion->fechaInicial!="" && $criteriosSeleccion->fechaFinal!=null && $criteriosSeleccion->fechaFinal!=null)
+            {
+                list($diaInicial, $mesInicial, $anoInicial) = explode("/", $criteriosSeleccion->fechaInicial);
+                list($diaFinal, $mesFinal, $anoFinal) = explode("/", $criteriosSeleccion->fechaFinal);
+                $filtroFechas = " AND DATE(P.fecha_alta) >= '$anoInicial-$mesInicial-$diaInicial' AND DATE(P.fecha_alta) <= '$anoFinal-$mesFinal-$diaFinal' ";
+                
+                //$filtroFechas1 = " AND DATE(P1.fecha_alta) >= '$anoInicial-$mesInicial-$diaInicial' AND DATE(P1.fecha_alta) <= '$anoFinal-$mesFinal-$diaFinal' ";
+            }
+        }
+        $and =  $this->and($filtros);
+
+//         $consulta = "SELECT C.id, C.titulo,
+//                     (SELECT count(*)
+//                          FROM usuarios U1
+//                          WHERE U1.perfil_id IN(SELECT perfil_id
+//              				FROM cursos_perfiles CP
+//              				WHERE curso_id = C.id) AND U1.empresa_id = U.empresa_id AND U1.sede_id = U.sede_id) usuariosInscritos,
+//                     (SELECT count(*)
+//                         FROM cursos_perfiles CP
+//                         	INNER JOIN usuarios U1 ON CP.perfil_id = U1.perfil_id
+//                             INNER JOIN cursos_preguntas CPR ON CPR.curso_id = CP.curso_id
+//                         WHERE CP.curso_id = C.id
+//                         	AND U1.empresa_id = U.empresa_id
+//                             AND U1.sede_id = U.sede_id) totalPreguntas,
+//                      (SELECT count(*)
+//                         	FROM usuarios_cursos_lecciones_preguntas P1
+//                         	INNER JOIN cursos C1 on C1.id = P1.curso_id
+//                         	INNER JOIN usuarios_cursos UC ON UC.curso_id = C1.id AND UC.usuario_id= P1.usuario_id                    
+//                         	INNER JOIN cursos_respuestas R ON R.curso_id = P1.curso_id AND R.leccion_id = P1.leccion_id AND R.pregunta_id = P1.pregunta_id AND R.id = P1.respuesta_id
+//                             INNER JOIN usuarios U1 ON U1.id = UC.usuario_id
+//                     	WHERE R.correcta=1  AND UC.terminado=1 
+//                     		AND C1.id = C.id
+//                             AND U1.empresa_id = U.empresa_id
+//                             AND U1.sede_id = U.sede_id $filtroFechas1) correctas,
+//                     (SELECT count(*)
+//                         FROM usuarios_cursos_lecciones_preguntas P1
+//                             INNER JOIN cursos C1 on C1.id = P1.curso_id
+//                             INNER JOIN usuarios_cursos UC ON UC.curso_id = C1.id AND UC.usuario_id= P1.usuario_id                    
+//                             INNER JOIN cursos_respuestas R ON R.curso_id = P1.curso_id AND R.leccion_id = P1.leccion_id AND R.pregunta_id = P1.pregunta_id AND R.id = P1.respuesta_id
+//                             INNER JOIN usuarios U1 ON U1.id = UC.usuario_id
+//                         WHERE C1.id = C.id
+//                         AND U1.empresa_id = U.empresa_id
+//                         AND U1.sede_id = U.sede_id $filtroFechas1) contestadas  
+//                     FROM usuarios_cursos_lecciones_preguntas P
+//                     	INNER JOIN cursos C on C.id = P.curso_id
+//                     	INNER JOIN usuarios_cursos UC ON UC.curso_id = C.id AND UC.usuario_id= P.usuario_id                    
+//                     	INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
+//                         INNER JOIN usuarios U ON U.id = UC.usuario_id
+//                     WHERE C.publicado = 1 
+//                         $and
+//                         $filtroFechas
+//                     GROUP BY C.id, C.titulo
+//                     ORDER BY C.titulo";
                         
-            
+        
+        $consulta = "SELECT C.id, C.titulo,
+                    (SELECT count(*)
+                         FROM usuarios U1
+                         WHERE U1.permiso_cavi = 1 AND U1.estatus =1 AND U1.perfil_id IN(SELECT perfil_id
+             				FROM cursos_perfiles CP
+             				WHERE curso_id = C.id) AND U1.empresa_id = U.empresa_id AND U1.sede_id = U.sede_id) usuariosInscritos
+                    FROM usuarios_cursos_lecciones_preguntas P
+                    	INNER JOIN cursos C on C.id = P.curso_id
+                    	INNER JOIN usuarios_cursos UC ON UC.curso_id = C.id AND UC.usuario_id= P.usuario_id
+                    	INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
+                        INNER JOIN usuarios U ON U.id = UC.usuario_id
+                    WHERE C.publicado = 1
+                        $and
+                        $filtroFechas
+                    GROUP BY C.id, C.titulo
+                    ORDER BY C.titulo";
             
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -4475,7 +4549,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $titulo, $numeroUsuariosInscritos, $numeroUsuarios100, $aprovechamientoPromedio)  )
+                    if ($sentencia->bind_result($id, $titulo, $numeroUsuariosInscritos)  )
                     {
                         while($row = $sentencia->fetch())
                         {
@@ -4483,10 +4557,10 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                                 'id' =>  $id,
                                 'titulo' => $titulo,
                                 'numeroUsuariosInscritos' => $numeroUsuariosInscritos,
-                                'numeroUsuarios100' => $numeroUsuarios100,
-                                'aprovechamientoPromedio' => $aprovechamientoPromedio
                                
                             ];
+                            
+                            
                                     
                             array_push($registros,$registro);
                         }
@@ -4596,7 +4670,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 {
                     if($sentencia->execute())
                     {
-                        if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVIH, $perfilId, $perfilNombre, $recursosHumanos, $tipoUsuarioOrden, $total,$correctas,$fechaUltimaCapacitacion,$totalCapacitaciones,$capacitacionesTerminadas,$videosVistos, $tiempoVisto,$totalPreguntas,$preguntasContestadas, $preguntasContestadasMes)  )
+                        if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVI, $perfilId, $perfilNombre, $recursosHumanos, $tipoUsuarioOrden, $total,$correctas,$fechaUltimaCapacitacion,$totalCapacitaciones,$capacitacionesTerminadas,$videosVistos, $tiempoVisto,$totalPreguntas,$preguntasContestadas, $preguntasContestadasMes)  )
                         {
                             while($row = $sentencia->fetch())
                             {
@@ -4633,7 +4707,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                                     'permiso10y7' => $permiso10y7,
                                     'departamentoId' => $departamentoId,
                                     'departamentoNombre' => $departamentoNombre,
-                                    'permisoCAVIH' => $permisoCAVIH,
+                                    'permisoCAVI' => $permisoCAVI,
                                     'perfilId' => $perfilId,
                                     'perfilNombre' => $perfilNombre,
                                     'recursosHumanos' => $recursosHumanos,
@@ -4945,7 +5019,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             
             
             //$consulta = "SELECT * from(
-            $consulta = "SELECT U.id as id, U.nombre_usuario as nombreUsuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id, D.nombre as departamentoNombre, U.permiso_cavih, U.perfil_id, PR.nombre perfilNombre, U.recursos_humanos recursosHumanos, " .
+            $consulta = "SELECT U.id as id, U.nombre_usuario as nombreUsuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id, D.nombre as departamentoNombre, U.permiso_cavi, U.perfil_id, PR.nombre perfilNombre, U.recursos_humanos recursosHumanos, " .
                 "(SELECT count(*)
                 FROM cursos C
                     INNER JOIN cursos_preguntas CPR ON CPR.curso_id = C.id
@@ -4980,7 +5054,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
               LEFT JOIN usuarios SU3 ON U.supervisor3_id = SU3.id
               LEFT JOIN departamentos D ON D.id = U.departamento_id
               LEFT JOIN perfiles PR ON PR.id = U.perfil_id  
-            WHERE U.permiso_cavih = 1  ";
+            WHERE U.permiso_cavi = 1 AND U.estatus=1 ";
             
             $consulta.= $this->and($filtros) . " order by UNIX_TIMESTAMP(UC1.fecha_inicial) desc";
             
@@ -5019,7 +5093,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                     {
                         if($sentencia->execute())
                         {
-                            if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVIH, $perfilId, $perfilNombre, $recursosHumanos, $total,$correctas,$fechaInicial, $titulo, $terminado, $fechaFinal, $cursoId, $preguntasContestadas)  )
+                            if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVI, $perfilId, $perfilNombre, $recursosHumanos, $total,$correctas,$fechaInicial, $titulo, $terminado, $fechaFinal, $cursoId, $preguntasContestadas)  )
                             {
                                 while($row = $sentencia->fetch())
                                 {
@@ -5057,7 +5131,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                                         'permiso10y7' => $permiso10y7,
                                         'departamentoId' => $departamentoId,
                                         'departamentoNombre' => $departamentoNombre,
-                                        'permisoCAVIH' => $permisoCAVIH,
+                                        'permisoCAVI' => $permisoCAVI,
                                         'perfilId' => $perfilId,
                                         'perfilNombre' => $perfilNombre,
                                         'recursosHumanos' => $recursosHumanos,
@@ -5151,7 +5225,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                   LEFT JOIN tipos_usuario T ON U.tipo_usuario_id = T.id
                   LEFT JOIN departamentos D ON D.id = U.departamento_id
                   LEFT JOIN perfiles PR ON PR.id = U.perfil_id
-            WHERE U.permiso_cavih = 1 ";
+            WHERE U.permiso_cavi = 1 AND U.estatus = 1 ";
             
             $consulta.= $this->and($filtros) .
             ") consulta " .

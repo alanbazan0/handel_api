@@ -394,10 +394,10 @@ class AdministracionVista extends CatalogoVista
 		else
 			$("#permiso10y7Radio").prop('checked', false);
 		
-		if(this.modeloEdicion.permisoCAVIH==1)
-			$("#permisoCAVIHRadio").prop('checked', true);
+		if(this.modeloEdicion.permisoCAVI==1)
+			$("#permisoCAVIRadio").prop('checked', true);
 		else
-			$("#permisoCAVIHRadio").prop('checked', false);
+			$("#permisoCAVIRadio").prop('checked', false);
 		
 		if(this.modeloEdicion.recursosHumanos==1)
 			$("#recursosHumanosRadio").prop('checked', true);
@@ -428,7 +428,7 @@ class AdministracionVista extends CatalogoVista
 			 permisoSAHA:$('#permisoSAHARadio').is(':checked')?1:0,
 			 permisoSIVAH:$('#permisoSIVAHRadio').is(':checked')?1:0,
 		 	 permiso10y7:$('#permiso10y7Radio').is(':checked')?1:0,
-		 	 permisoCAVIH:$('#permisoCAVIHRadio').is(':checked')?1:0,
+		 	 permisoCAVI:$('#permisoCAVIRadio').is(':checked')?1:0,
 		 	 perfilId:$('#perfilSelect').val(),
 			 recursosHumanos:$('#recursosHumanosRadio').is(':checked')?1:0,
 		 	 numeroEmpleado:$('#numeroEmpleadoInput').val(),
@@ -440,7 +440,7 @@ class AdministracionVista extends CatalogoVista
 			 modelo.tipoUsuarioId= TipoUsuario.CAPACITADO;
 			 modelo.permisoSAHA=0;
 			 modelo.permisoSIVAH=0;
-			 modelo.permisoCAVIH=1;
+			 modelo.permisoCAVI=1;
 		 }
 		 return modelo;
 	 }
@@ -674,6 +674,7 @@ class AdministracionVista extends CatalogoVista
 			departamentoId: $('#departamentoSelectCriterio').val(),
 			perfilId: $('#perfilSelectCriterio').val(),
 			nombre:$('#nombreInputCriterio').val(),
+			permisoCAVI: 1
 			
 		 }
 		 

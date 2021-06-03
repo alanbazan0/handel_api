@@ -173,13 +173,16 @@ abstract class PDF extends FPDF
         $fecha = new DateTime();
         $fecha = $fecha->format("d/m/Y");
        
+        $empresaNombre = $this->empresa->nombre;
         $anchoColumna = ($this->w - ($this->margen * 2)) / 2;
-        $this->Cell($anchoColumna, 8, $this->texto("Reporte de capacitación CAVI"), $borde, 0, 'L');
+        $this->Cell($anchoColumna, 8, $this->texto("Reporte de capacitación CAVI para $empresaNombre"), $borde, 0, 'L');
         $this->Cell($anchoColumna, 4, "Reporte de Coordinador", $borde, 0, 'R');
         
         $this->Ln();
-        $width = ($this->w - ($this->margen * 2)) ;
-        $this->Cell($width, 4, "emitido el $fecha", $borde, 0, 'R');
+        $fechaInicial = $this->criteriosSeleccion->fechaInicial;
+        $fechaFinal = $this->criteriosSeleccion->fechaFinal;
+        $this->Cell($anchoColumna, 8, "Periodo $fechaInicial a $fechaFinal", $borde, 0, 'L');
+        $this->Cell($anchoColumna, 4, "emitido el $fecha", $borde, 0, 'R');
         
         $logoAlto = 6;
         $logoX = $this->w / 2 - $logoAlto / 2;
@@ -563,19 +566,32 @@ abstract class PDF extends FPDF
         $this->Cell(0,6,$this->texto($sedeNombre),0,2,'C');
         
         $repositorio = new CursosRepositorio($this->conexion);
-        $resultado = $repositorio->consultarResultados($this->usuario, $this->criteriosSeleccion);
-        $avance = 0;
+        $criteriosSeleccionAprovechamiento = clone $this->criteriosSeleccion;
+        $criteriosSeleccionAprovechamiento->tipoReporte = TipoReporte::CAPACITACION_INICIADA;
+        $resultado = $repositorio->consultarResultados($this->usuario, $criteriosSeleccionAprovechamiento);
         $aprovechamiento=0;
         if($resultado->correcto())
         {
             if(count($resultado->valor)>0)
             {
                 $registro = $resultado->valor[0];
-                $avance=  $registro->porcentajeAvance;
-                $aprovechamiento= $registro->porcentaje;
+                $aprovechamiento=  $registro->porcentaje;
             }
-            
         }
+        
+        $criteriosSeleccionAvance = clone $this->criteriosSeleccion;
+        $criteriosSeleccionAvance->tipoReporte = TipoReporte::TODOS;
+        $resultado = $repositorio->consultarResultados($this->usuario, $criteriosSeleccionAvance);
+        $avance=0;
+        if($resultado->correcto())
+        {
+            if(count($resultado->valor)>0)
+            {
+                $registro = $resultado->valor[0];
+                $avance=  $registro->porcentajeAvance;
+            }
+        }
+        
         //var_dump($this->criteriosSeleccion);
         
         $this->Ln();
@@ -686,8 +702,8 @@ abstract class PDF extends FPDF
              $this->avanceDepartamentos($colores);
              $this->aprovechamientoDepartamentos($colores);
              $this->usuariosDepartamento($colores);
-          // $this->resumenCapacitaciones();
-         //    $this->mejoresAprovechamiento();
+             $this->resumenCapacitaciones();
+             $this->mejoresAprovechamiento();
         }
     }
     
@@ -695,7 +711,7 @@ abstract class PDF extends FPDF
     {
         $this->AddPage();
         $this->SetY(25);
-        $this->subtitulo("Usuarios por departamento");
+        $this->subtitulo("Usuarios por departamento del período");
         $this->Ln();
         
         $chartWidth = 120;
@@ -720,7 +736,7 @@ abstract class PDF extends FPDF
     {
         $this->AddPage();
         $this->SetY(25);
-        $this->subtitulo("Avance por departamento");
+        $this->subtitulo("Avance por departamento del período");
         $this->Ln();
         
         $chartWidth = 220;
@@ -742,7 +758,7 @@ abstract class PDF extends FPDF
     {
         $this->AddPage();
         $this->SetY(25);
-        $this->subtitulo("Aprovechamiento por departamento");
+        $this->subtitulo("Aprovechamiento por departamento del período");
         $this->Ln();
         
         $chartWidth = 220;
@@ -1017,28 +1033,30 @@ abstract class PDF extends FPDF
     {
         $this->AddPage();
         $this->SetY(25);
-        $this->subtitulo("Resumen de capacitaciones");
+        $this->subtitulo("Resumen de capacitaciones del periodo");
         $this->SetY(35);
         
-        $this->fontSizes = array(10, 10, 10, 10, 10);
-        $this->fontWeights = array("B","B","B","B","B");
-        $this->aligns = array("C","C","C","C","C");
-        $this->widths = array(15, 90, 47, 47, 48);
-        $this->textColors = array("#ffffff","#ffffff","#ffffff","#ffffff","#ffffff");
-        $this->borders = array(1,1,1,1,1,1);
-        $this->borderColors = array("#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0");
-        $this->backgroundColors = array("#718147","#718147","#718147","#718147","#718147");
-        $this->Row2(array("Item",$this->texto("Capacitación"),"No. De usuarios inscritos","No. De usuarios al 100%","Aprovechamiento promedio"),4);
+        $this->fontSizes = array(10, 10, 10, 10, 10, 10);
+        $this->fontWeights = array("B","B","B","B","B","B");
+        $this->aligns = array("C","C","C","C","C","C");
+        $this->widths = array(15, 90, 34.25, 34.25, 34.25, 34.25);
+        $this->textColors = array("#ffffff","#ffffff","#ffffff","#ffffff","#ffffff","#ffffff");
+        $this->borders = array(1,1,1,1,1,1,1);
+        $this->borderColors = array("#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0");
+        $this->backgroundColors = array("#718147","#718147","#718147","#718147","#718147","#718147");
+        $this->Row2(array("Item",$this->texto("Capacitación"),"Usuarios inscritos","Usuarios con aprovechamiento 100%","Usuarios con avance 100%","Aprovechamiento promedio"),4);
         
-        $this->fontWeights = array("B","","","","");
-        $this->aligns = array("C","L","C","C","C");
-        $this->textColors = array("#000000","#000000","#000000","#000000","#000000");
+        $this->fontWeights = array("B","","","","","");
+        $this->aligns = array("C","L","C","C","C","C");
+        $this->textColors = array("#000000","#000000","#000000","#000000","#000000","#000000");
         
         $repositorio = new CursosRepositorio($this->conexion);
         $resultado = $repositorio->consultarResumenCapacitaciones($this->usuario, $this->criteriosSeleccion);
         if($resultado->correcto())
         {
             $registros = $resultado->valor;
+            
+            //var_dump($registros);
             
             for($i = 0; $i < count($registros); $i++)
             {
@@ -1047,10 +1065,42 @@ abstract class PDF extends FPDF
                     $color = "#ffffff";
                 else
                     $color = "#f5f5f5";
-                $this->backgroundColors = array("#e6e6e6",$color,$color,$color,$color);
+                $this->backgroundColors = array("#e6e6e6",$color,$color,$color,$color,$color);
                 $registro = $registros[$i];
+                $criteriosSeleccionCapacitacion =  clone $this->criteriosSeleccion;
+                $criteriosSeleccionCapacitacion->cursoId = $registro->id;
+                $criteriosSeleccionCapacitacion->tipoReporte = TipoReporte::CAPACITACION_INICIADA;
+                $resultado = $repositorio->consultarResultadosUsuarios($this->usuario, $criteriosSeleccionCapacitacion);
+                
+                if($resultado->correcto())
+                {
+                    $usuarios = $resultado->valor;
+                    $usuariosAvance100 = 0;
+                    $usuariosAprovechamiento100 = 0;
+                    $registro->porcentaje = 0;
+                    $suma = 0;
+                    for ($j = 0; $j < count($usuarios); $j++) 
+                    {
+                        if($usuarios[$j]->porcentajeAvance==100)
+                            $usuariosAvance100++;
+                        if($usuarios[$j]->porcentaje==100)
+                            $usuariosAprovechamiento100++;
+                        $suma+=$usuarios[$j]->porcentaje;
+                    }
+                    $registro->usuariosAvance100 = $usuariosAvance100;
+                    $registro->usuariosAprovechamiento100 = $usuariosAprovechamiento100;
+                    if(count($usuarios)!=0)
+                        $registro->porcentaje = $suma / count($usuarios);
+                    
+                    Porcentaje::formatearPorcentaje($registro, "porcentaje");
+                }
+                else 
+                    var_dump($resultado->mensajeError);
+              
+                
+                
                 $id = $i+1;
-                $this->Row2(array($id,$this->texto($registro->titulo),$this->texto($registro->numeroUsuariosInscritos),$this->texto($registro->numeroUsuarios100),$registro->aprovechamientoPromedio."%"),8);
+                $this->Row2(array($id,$this->texto($registro->titulo),$this->texto($registro->numeroUsuariosInscritos),$this->texto($registro->usuariosAprovechamiento100),$this->texto($registro->usuariosAvance100),$registro->porcentaje."%"),8);
             }
         }
         
@@ -1060,7 +1110,7 @@ abstract class PDF extends FPDF
     {
         $this->AddPage();
         $this->SetY(25);
-        $this->subtitulo("Top 10: Los mejores en Aprovechamiento");
+        $this->subtitulo("Top 10: Los mejores en Aprovechamiento del periodo");
         $this->SetY(35);
         
         $this->fontSizes = array(10, 10, 10, 10, 10,10);

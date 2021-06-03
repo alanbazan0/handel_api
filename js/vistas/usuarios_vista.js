@@ -80,7 +80,7 @@ class UsuariosVista extends CatalogoVista
 			{longitud:100, 	titulo:"SAHA",   alias:"permisoSAHA", alineacion:"D", itemRenderer:this.renderPermisoSAHA},
 			{longitud:100, 	titulo:"SIVAH",   alias:"permisoSIVAH", alineacion:"D", itemRenderer:this.renderPermisoSIVAH},
 			{longitud:100, 	titulo:"10 Y 7",   alias:"permiso10y7", alineacion:"D", itemRenderer:this.renderPermiso10y7},
-			{longitud:100, 	titulo:"CAVIH",   alias:"permisoCAVIH", alineacion:"D", itemRenderer:this.renderPermisoCAVIH},
+			{longitud:100, 	titulo:"CAVI",   alias:"permisoCAVI", alineacion:"D", itemRenderer:this.renderpermisoCAVI},
 			{longitud:100, 	titulo:"Perfil",   alias:"perfilNombre", alineacion:"I" }	
 	
 		]
@@ -375,10 +375,10 @@ class UsuariosVista extends CatalogoVista
 	    return contenido;
 	}
 	
-	renderPermisoCAVIH(renglon, type, set)
+	renderpermisoCAVI(renglon, type, set)
 	{    
 		var contenido = "";
-		if(renglon.permisoCAVIH==1)
+		if(renglon.permisoCAVI==1)
 			contenido += "<center><span class='fa fa-check fa-lg text-success'></span></center>";
 		else
 			contenido += "<center><span class='fa fa-close fa-lg text-danger'></span></center>";
@@ -398,18 +398,6 @@ class UsuariosVista extends CatalogoVista
 		this.consultarEmpresas();
 		this.consultarDepartamentos();
 		this.consultarPerfiles();
-		
-//		if(this.modo==Modo.ALTA)
-//		{
-//			if(this.aplicacionId=="SAHA")
-//				$("#permisoSAHARadio").prop('checked', true);
-//			if(this.aplicacionId=="SIVAH")
-//				$("#permisoSIVAHRadio").prop('checked', true);
-//			if(this.aplicacionId=="10y7")
-//				$("#permiso10y7Radio").prop('checked', true);
-//			if(this.aplicacionId=="CAVIH")
-//				$("#permisoCAVIHRadio").prop('checked', true);
-//		}
 		
 	}
 	
@@ -450,17 +438,17 @@ class UsuariosVista extends CatalogoVista
 			$("#permiso10y7Radio").prop('checked', false);
 		this.consultarCombos();
 		
-		if(this.modeloEdicion.permisoCAVIH==1)
-			$("#permisoCAVIHRadio").prop('checked', true);
+		if(this.modeloEdicion.permisoCAVI==1)
+			$("#permisoCAVIRadio").prop('checked', true);
 		else
-			$("#permisoCAVIHRadio").prop('checked', false);
+			$("#permisoCAVIRadio").prop('checked', false);
 		
 		if(this.modeloEdicion.recursosHumanos==1)
 			$("#recursosHumanosRadio").prop('checked', true);
 		else
 			$("#recursosHumanosRadio").prop('checked', false);
 		
-		this.cambiarPermisoCAVIH();
+		this.cambiarpermisoCAVI();
 	}
 	
 	get modelo()
@@ -484,7 +472,7 @@ class UsuariosVista extends CatalogoVista
 			 permisoSAHA:$('#permisoSAHARadio').is(':checked')?1:0,
 			 permisoSIVAH:$('#permisoSIVAHRadio').is(':checked')?1:0,
 		 	 permiso10y7:$('#permiso10y7Radio').is(':checked')?1:0,
-		 	 permisoCAVIH:$('#permisoCAVIHRadio').is(':checked')?1:0,
+		 	 permisoCAVI:$('#permisoCAVIRadio').is(':checked')?1:0,
 		     perfilId:$('#perfilSelect').val(),
 		     recursosHumanos:$('#recursosHumanosRadio').is(':checked')?1:0,
 		     numeroEmpleado:$('#numeroEmpleadoInput').val(),
@@ -590,10 +578,10 @@ class UsuariosVista extends CatalogoVista
 		
 	}
 	
-	cambiarPermisoCAVIH()
+	cambiarpermisoCAVI()
 	{
-		 var permisoCAVIH=$('#permisoCAVIHRadio').is(':checked')?1:0;
-		if(permisoCAVIH)
+		 var permisoCAVI=$('#permisoCAVIRadio').is(':checked')?1:0;
+		if(permisoCAVI)
 			$('#perfilGroup').fadeIn();
 		else
 			$('#perfilGroup').fadeOut();
@@ -624,7 +612,7 @@ class UsuariosVista extends CatalogoVista
 		{
 //			if(this.modo==Modo.ALTA)
 //			{
-//				$("#permisoCAVIHRadio").prop('checked', true);
+//				$("#permisoCAVIRadio").prop('checked', true);
 //			}
 			//$('#nombreUsuarioDiv').hide();
 			if($('#contrasenaInput').val()=="")
@@ -680,7 +668,7 @@ class UsuariosVista extends CatalogoVista
 		}
 		else if(tipo==TipoUsuario.CAPACITADO)
 		{
-			ayuda  ="Un capacitado es el trabajador que tomará las capacitaciones en CAVIH.";
+			ayuda  ="Un capacitado es el trabajador que tomará las capacitaciones en CAVI.";
 		}
 		return ayuda;
 	}

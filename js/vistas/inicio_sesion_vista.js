@@ -11,8 +11,8 @@ class InicioSesionVista extends Vista
 	inicializar()
 	{
 		$("#olvideContrasenaLink").click(this.olvideContrasena);
-		if(this.aplicacionId=="CAVIH")
-			this.inicializarValidacionesCuentaCAVIH();
+		if(this.aplicacionId=="CAVI")
+			this.inicializarValidacionesCuentaCAVI();
 		else
 			this.inicializarValidacionesCuenta();
 	}
@@ -93,7 +93,7 @@ class InicioSesionVista extends Vista
             }
         });
 	}
-	inicializarValidacionesCuentaCAVIH()
+	inicializarValidacionesCuentaCAVI()
 	{
         jQuery("#inicioSesionForm").validate({
             ignore: [],

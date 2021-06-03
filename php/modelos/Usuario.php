@@ -24,7 +24,7 @@ class Usuario
     public $permiso10y7;
     public $departamentoId;
     public $corporativo;
-    public $permisoCAVIH;
+    public $permisoCAVI;
     public $perfilId;
     public $recursosHumanos;
     public $numeroEmpleado;

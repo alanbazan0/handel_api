@@ -212,8 +212,8 @@ try
                                 case "10y7":
                                     $tienePermiso =  $resultado->valor->permiso10y7==1?true:false;
                                 break;
-                                case "CAVIH":
-                                    $tienePermiso =  $resultado->valor->permisoCAVIH==1?true:false;
+                                case "CAVI":
+                                    $tienePermiso =  $resultado->valor->permisoCAVI==1?true:false;
                                 break;
                             }
                         }
@@ -287,7 +287,7 @@ try
                                         }
                                             
                                     break;
-                                    case "CAVIH":
+                                    case "CAVI":
 //                                         if($resultado->valor->tipoUsuarioId == TipoUsuario::ADMINISTRADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::COORDINADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::SUPERVISOR ||  $resultado->valor->tipoUsuarioId == TipoUsuario::CAPACITADO)
 //                                         {
 //                                             $_SESSION['usuario']=$resultado->valor;
@@ -301,7 +301,7 @@ try
 //                                             $resultado->mensajeError="El acceso a la plataforma en linea esta restringido a usuarios autorizados, si necesita ingresar para realizar cambios por favor solicite los cambios con su supervisor autorizado.";
 //                                             unset($_SESSION['usuario']);
 //                                         }
-//                                             if($resultado->valor->permisoCAVIH==1)
+//                                             if($resultado->valor->permisoCAVI==1)
 //                                             {
                                                 $_SESSION['usuario']=$resultado->valor;
                                                 $historialAccesoRepositorio = new HistorialAccesoRepositorio($conexion);
