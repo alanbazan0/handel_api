@@ -189,7 +189,7 @@ class EntrenamientoVista extends CatalogoVista
 			_this.salirFormulario();
 		});
 		
-		if(this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR)
+		if(this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR || this.usuario.tipoUsuarioId==TipoUsuario.COORDINADOR || this.usuario.recursosHumanos==1 )
 		{
 			$("#reporteCapacitacionVirtualButton").fadeIn();
 			$("#reporteCapacitacionVirtualButton").click(function(){
@@ -253,10 +253,43 @@ class EntrenamientoVista extends CatalogoVista
 	
 	imprimirReporteCapacitacionVirtual()
 	{
-		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_capacitacion_virtual.php");
-		this.createNewFormElement(submitForm, "criteriosSeleccion", JSON.stringify(this.criteriosSeleccionReporte));	 
-	    submitForm.target= "_blank";
-	    submitForm.submit();
+		var empresaNombre = $( "#empresaSelectReporte option:selected" ).text();
+		var sedeNombre = $( "#sedeSelectReporte option:selected" ).text();
+		var _this = this;
+		var texto = `<p>CAVI va a generar el reporte: en una nueva pestaña, esto podría tardar unos segundos, por favor verifica que el bloqueador de ventanas no esté activo 
+					y espera tu reporte.</p>
+					<p><strong>El reporte solicitado es</strong>
+					<br>
+					
+					`+empresaNombre+ "<br>" +
+					sedeNombre+ "<br>" +
+					_this._fechaInicial + " - " + _this._fechaFinal + "<br>"+
+					`</p>`;
+		swal({
+	            title: "",
+	            text: texto,
+				html: true,
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#3c8dbc",
+	            confirmButtonText: "Aceptar",
+				cancelButtonColor: "#DD6B55",
+	            cancelButtonText: "Cancelar",
+	            closeOnConfirm: true,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_capacitacion_virtual.php");
+						this.createNewFormElement(submitForm, "criteriosSeleccion", JSON.stringify(_this.criteriosSeleccionReporte));	 
+					    submitForm.target= "_blank";
+					    submitForm.submit();
+	            }
+	        });
+		
 	}
 	
 	crearEventosActualizacion()
