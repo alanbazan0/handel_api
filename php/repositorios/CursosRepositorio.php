@@ -5581,33 +5581,55 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return  $contenido;
     }
     
+    private function buscarDepartamento($id, $registros)
+    {
+        if($registros!=null)
+        {
+            for ($i = 0; $i < count($registros); $i++) {
+                $registro = $registros[$i];
+                if($registro->id== $id)
+                    return $registro;
+            }
+        }
+        return null;
+    }
+    
     private function getContenidoCoordinador($usuario)
     {
-        $resultado = $this->consultarResultadosDepartamentos($usuario,(object)["tipoReporte" => \TipoReporte::CAPACITACION_INICIADA]);
+        $resultado = $this->consultarResultadosDepartamentos($usuario,(object)["tipoReporte" => \TipoReporte::TODOS]);
         $contenido = "";
         if($resultado->correcto())
         {
             $registros = $resultado->valor;
-            for ($j = 0; $j < count($registros); $j++)
+            $resultado = $this->consultarResultadosDepartamentos($usuario,(object)["tipoReporte" => \TipoReporte::CAPACITACION_INICIADA]);
+            $contenido = "";
+            if($resultado->correcto())
             {
-                $registro = $registros[$j];
-                $nombre = trim($registro->nombre);
-                $contenido.= "<p><strong>";
-                $contenido.=  "<span style='text-decoration: underline; color: #0c5581;'>$registro->nombre: </span></strong>";
-                
-                $contenido.="<br>" . $this->porcentajeSemaforizado("Avance $registro->porcentajeAvance%",$registro->porcentajeAvance,false);
-                $contenido.=" - " . $this->porcentajeSemaforizado("Aprovechamiento $registro->porcentaje%",$registro->porcentaje,false);
-                if($registro->porcentajeAvance==100)
+                $registrosCapacitacionIniciada = $resultado->valor;
+                for ($j = 0; $j < count($registros); $j++)
                 {
-                    if($registro->porcentajeAvanceMensual!=0)
+                    $registro = $registros[$j];
+                    $registroIniciada = $this->buscarDepartamento($registro->id, $registrosCapacitacionIniciada);
+                    if($registroIniciada!=null)
+                        $registro->porcentaje = $registroIniciada->porcentaje;
+                    $nombre = trim($registro->nombre);
+                    $contenido.= "<p><strong>";
+                    $contenido.=  "<span style='text-decoration: underline; color: #0c5581;'>$nombre: </span></strong>";
+                    
+                    $contenido.="<br>" . $this->porcentajeSemaforizado("Avance $registro->porcentajeAvance%",$registro->porcentajeAvance,false);
+                    $contenido.=" - " . $this->porcentajeSemaforizado("Aprovechamiento $registro->porcentaje%",$registro->porcentaje,false);
+                    if($registro->porcentajeAvance==100)
+                    {
+                        if($registro->porcentajeAvanceMensual!=0)
+                            $contenido.=" - " . $this->porcentajeSemaforizado("$registro->porcentajeAvanceMensual% de avance en el ultimo mes",$registro->porcentajeAvanceMensual,true);
+                    }
+                    else
+                    {
                         $contenido.=" - " . $this->porcentajeSemaforizado("$registro->porcentajeAvanceMensual% de avance en el ultimo mes",$registro->porcentajeAvanceMensual,true);
+                    }
+                    
+                    $contenido.= "</p>";
                 }
-                else
-                {
-                    $contenido.=" - " . $this->porcentajeSemaforizado("$registro->porcentajeAvanceMensual% de avance en el ultimo mes",$registro->porcentajeAvanceMensual,true);
-                }
-                
-                $contenido.= "</p>";
             }
         }
         else
