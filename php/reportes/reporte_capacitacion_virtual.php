@@ -699,11 +699,11 @@ abstract class PDF extends FPDF
               $this->introduccion();
              $this->comparativaAvanceAprovechamiento();
             
-             $this->avanceDepartamentos($colores);
-             $this->aprovechamientoDepartamentos($colores);
-             $this->usuariosDepartamento($colores);
-             $this->resumenCapacitaciones();
-             $this->mejoresAprovechamiento();
+              $this->avanceDepartamentos($colores);
+              $this->aprovechamientoDepartamentos($colores);
+              $this->usuariosDepartamento($colores);
+              $this->resumenCapacitaciones();
+              $this->mejoresAprovechamiento();
         }
     }
     
@@ -716,6 +716,7 @@ abstract class PDF extends FPDF
         
         $chartWidth = 120;
         $repositorio = new CursosRepositorio($this->conexion);
+        $this->criteriosSeleccion->tipoReporte = TipoReporte::TODOS;
         $resultado = $repositorio->consultarUsuariosDepartamento($this->usuario, $this->criteriosSeleccion);
         if($resultado->correcto())
         {
@@ -741,6 +742,7 @@ abstract class PDF extends FPDF
         
         $chartWidth = 220;
         $repositorio = new CursosRepositorio($this->conexion);
+        $this->criteriosSeleccion->tipoReporte = TipoReporte::TODOS;
         $resultado = $repositorio->consultarResultadosDepartamentos($this->usuario, $this->criteriosSeleccion);
         if($resultado->correcto())
         {
@@ -763,6 +765,7 @@ abstract class PDF extends FPDF
         
         $chartWidth = 220;
         $repositorio = new CursosRepositorio($this->conexion);
+        $this->criteriosSeleccion->tipoReporte = TipoReporte::CAPACITACION_INICIADA;
         $resultado = $repositorio->consultarResultadosDepartamentos($this->usuario, $this->criteriosSeleccion);
         if($resultado->correcto())
         {
@@ -788,56 +791,97 @@ abstract class PDF extends FPDF
         $pdfWidth = $this->w;
         $chartWidth = 220;
         $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-        //$resultado = $repositorio->consultarPorcentajesSecciones($this->modelo->id);
-        //$resultado = $repositorio->consultarAuditoriaAnterior($this->modelo->empresaId,$this->modelo->sedeId, $this->modelo->plantillaId, $this->modelo->id);
-        $repositorio = new CursosRepositorio($this->conexion);
-        $resultado = $repositorio->consultarResultados($this->usuario, $this->criteriosSeleccion);
+        
         $avancePeriodo = 0;
         $aprovechamientoPeriodo=0;
         $avanceActual=0;
         $aprovechamientoActual=0;
+        
+        $criteriosSeleccionActual= clone $this->criteriosSeleccion;
+        $fechaUltimoDia = Mes::getUltimoDiaMesActual();
+        $criteriosSeleccionActual->fechaFinal =$fechaUltimoDia;
+        list($dia, $mes, $ano) = explode("/",  $criteriosSeleccionActual->fechaFinal);
+        $criteriosSeleccionActual->fechaInicial = "1/$mes/$ano";
+        
+        $repositorio = new CursosRepositorio($this->conexion);
+        
+        $this->criteriosSeleccion->tipoReporte = TipoReporte::TODOS;
+        $resultado = $repositorio->consultarResultados($this->usuario, $this->criteriosSeleccion);
         if($resultado->correcto())
         {
             if(count($resultado->valor)>0)
             {
                 $registro = $resultado->valor[0];
                 $avancePeriodo=  $registro->porcentajeAvance;
-                $aprovechamientoPeriodo= $registro->porcentaje;
+            }
+        }
+        else 
+            var_dump($resultado->mensajeError);
+        $criteriosSeleccionActual->tipoReporte = TipoReporte::TODOS;
+        $resultado = $repositorio->consultarResultados($this->usuario, $criteriosSeleccionActual);
+        if($resultado->correcto())
+        {
+            if(count($resultado->valor)>0)
+            {
+                $registro = $resultado->valor[0];
+                $avanceActual=  $registro->porcentajeAvance;
+            }
+        }
+        else
+            var_dump($resultado->mensajeError);
+        $this->criteriosSeleccion->tipoReporte = TipoReporte::CAPACITACION_INICIADA;
+        $resultado = $repositorio->consultarResultados($this->usuario, $this->criteriosSeleccion);
+        if($resultado->correcto())
+        {
+            if(count($resultado->valor)>0)
+            {
+                $registro = $resultado->valor[0];
+                $aprovechamientoPeriodo=  $registro->porcentaje;
+            }
+        }
+        else
+            var_dump($resultado->mensajeError);
+        $criteriosSeleccionActual->tipoReporte = TipoReporte::CAPACITACION_INICIADA;
+        $resultado = $repositorio->consultarResultados($this->usuario,$criteriosSeleccionActual);
+        if($resultado->correcto())
+        {
+            if(count($resultado->valor)>0)
+            {
+                $registro = $resultado->valor[0];
+                $aprovechamientoActual = $registro->porcentajeAvance;
+            }
+        }
+        else
+            var_dump($resultado->mensajeError);
+       
                 
-                $criteriosSeleccionActual= clone $this->criteriosSeleccion;
-               
-                $fechaUltimoDia = Mes::getUltimoDiaMesActual();
-                $criteriosSeleccionActual->fechaFinal =$fechaUltimoDia;
-                list($dia, $mes, $ano) = explode("/",  $criteriosSeleccionActual->fechaFinal);
-                $criteriosSeleccionActual->fechaInicial = "1/$mes/$ano";
+                
 //                 $criteriosSeleccionActual->fechaFinal="";
 //                 $criteriosSeleccionActual->fechaInicial ="";
                 
                 //var_dump($criteriosSeleccionActual);
                 //$fechaAnterior = substr($resultado->valor->fecha,0,10);
-                $resultado = $repositorio->consultarResultados($this->usuario, $criteriosSeleccionActual);
-                if($resultado->correcto())
-                {
-                    if(count($resultado->valor)>0)
-                    {
-                        $registro = $resultado->valor[0];
-                        $avanceActual=  $registro->porcentajeAvance;
-                        $aprovechamientoActual= $registro->porcentaje;
-                        
-                        $porcentajes = array();
-                        array_push($porcentajes,(object)["nombre"=>"Avance", "periodo"=> $avancePeriodo, "actual" =>$avanceActual]);
-                        array_push($porcentajes,(object)["nombre"=>"Aprovechamiento", "periodo"=> $aprovechamientoPeriodo, "actual" =>$aprovechamientoActual]);
-                        
-                        //var_dump($porcentajes);
-                    
-                        $image = $this->graficaComparativoAvanceAprovechamiento("",'',"Este mes","Periodo seleccionado",$porcentajes,"nombre","actual","periodo",$colores,false,100);
-                        if($image!='')
-                            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
-                    }
-                }
-            }
+//                 $resultado = $repositorio->consultarResultados($this->usuario, $criteriosSeleccionActual);
+//                 if($resultado->correcto())
+//                 {
+//                     if(count($resultado->valor)>0)
+//                     {
+//         $registro = $resultado->valor[0];
+//         $avanceActual=  $registro->porcentajeAvance;
+//         $aprovechamientoActual= $registro->porcentaje;
+        
+        $porcentajes = array();
+        array_push($porcentajes,(object)["nombre"=>"Avance", "periodo"=> $avancePeriodo, "actual" =>$avanceActual]);
+        array_push($porcentajes,(object)["nombre"=>"Aprovechamiento", "periodo"=> $aprovechamientoPeriodo, "actual" =>$aprovechamientoActual]);
+        
+        //var_dump($porcentajes);
+    
+        $image = $this->graficaComparativoAvanceAprovechamiento("",'',"Este mes","Periodo seleccionado",$porcentajes,"nombre","actual","periodo",$colores,false,100);
+        if($image!='')
+            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
+//                     }
+//                 }
             
-        }
     }
     
     

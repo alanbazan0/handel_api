@@ -210,7 +210,7 @@ class EntrenamientoVista extends CatalogoVista
 			
 			moment.locale('es') ;
 			var start = moment().startOf('month');
-    		var end = moment();
+    		var end = moment();	
 
 		 function cb(start, end) {
 				_this._fechaInicial = start.format('DD/MM/YYYY');
@@ -224,10 +224,10 @@ class EntrenamientoVista extends CatalogoVista
 				drops: 'auto',
 				//opens: 'center',
 		        ranges   : {
-		          'Hoy'       : [moment(), moment()],
-		          'Ayer'   : [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-		          'Hace 7 días' : [moment().subtract(6, 'days'), moment()],
-		          'Hace 30 días': [moment().subtract(29, 'days'), moment()],
+		          'Histórico'       : ["01/08/2020", moment()],
+		          'Ultimo año'   : [moment().subtract(1, 'year'), moment()],
+		          'Ultimo semestre' : [moment().subtract(6, 'month'), moment()],
+		          'Ultimo trimestre': [moment().subtract(3, 'month'), moment()],
 		          'Este mes'  : [moment().startOf('month'), moment().endOf('month')],
 		          'Mes pasado'  : [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
 		        },
