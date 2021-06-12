@@ -1,3 +1,4 @@
+
 class MinutasPresentador extends CatalogoPresentador
 {
 	 constructor(vista)
@@ -15,6 +16,7 @@ class MinutasPresentador extends CatalogoPresentador
 				 this.vista.ocultarIndicador();	
 				 if(resultado.mensajeError=="")
 				 {
+					
 					 this.vista.mostrarMensaje("","Guardado.");
 				 }
 				 else
@@ -54,6 +56,7 @@ class MinutasPresentador extends CatalogoPresentador
 				if(resultado.mensajeError=="")
 				{
 					this.vista.mostrarMensaje("","Guardado.");
+					this.vista.calcularPorcentajesEncabezados();
 				}
 				else
 					this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
@@ -83,7 +86,9 @@ class MinutasPresentador extends CatalogoPresentador
 							this.consultarTareasPendientes();
 						}
 						this.consultarPorcentajeAvance();
+						this.vista.calcularPorcentajesEncabezados()
 					 }
+				
 				 }
 				 else
 				 {
@@ -124,6 +129,7 @@ class MinutasPresentador extends CatalogoPresentador
 				
 				 this.vista.listaTareas.eliminarTarea(this.vista.minutaId, tareaId);
 				this.consultarPorcentajeAvance();
+				 this.vista.calcularPorcentajesEncabezados();
 			 }
 			 else
 			 {
@@ -147,9 +153,14 @@ class MinutasPresentador extends CatalogoPresentador
 				 this.vista.mostrarMensaje("","Guardado.");
 				 this.vista.listaTareas.eliminarBorrador();
 				 this.vista.listaTareas.agregar(this.vista.minutaId,resultado.valor,modelo);
+				 
 				 this.vista.mostrarBotonAgregar();
-				 this.vista.agregarTarea();
+				 if(modelo.tipo == TipoComponente.TAREA)
+				 {
+					 this.vista.agregarTarea();
+				 }	
 				 this.consultarPorcentajeAvance();
+				 this.vista.calcularPorcentajesEncabezados();
 				 //this.vista.seleccionarLeccion(null, resultado.valor);
 			 }
 			 else

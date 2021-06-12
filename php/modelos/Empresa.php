@@ -15,6 +15,7 @@ class Empresa
     public $ciudadId;
     public $corporativoId;
     public $administradorId;
+    public $administradorIdSIVAH;
     public $perfilId;
 }
 

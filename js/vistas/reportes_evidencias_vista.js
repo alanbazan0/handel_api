@@ -91,18 +91,50 @@ class ReportesEvidenciasVista extends CatalogoVista
 	
 	imprimirReporte()
 	{
-		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_evidencias.php");
-		if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
-		{
-			var usuarioSeleccionado =$("#usuarioSelectCriterio").val();
-			this.createNewFormElement(submitForm, "usuarioId", usuarioSeleccionado);
-		}
-		else
-			this.createNewFormElement(submitForm, "usuarioId", this.usuario.id);	 
-		this.createNewFormElement(submitForm, "ano", this._registroSeleccionado.ano);	 
-		this.createNewFormElement(submitForm, "mes", this._registroSeleccionado.mes);	 
-		submitForm.target= "_blank";
-	    submitForm.submit();
+		
+		var _this = this;
+		
+		var empresaNombre= $( "#empresaSelectCriterio option:selected" ).text(); 
+		var texto = "<p><strong>SAHA va a generar el reporte de</strong></p>"+
+					"<br><p>"+empresaNombre+"</p>"+
+					//"<p>"+this._registroSeleccionado.sedeNombre+"</p>"+
+					"<br><p>"+this._registroSeleccionado.mesNombre+" " + this._registroSeleccionado.ano  +"</p>"+
+					"<br><p>Este proceso demora unos segundos por la cantidad de consultas que se realizan a la base de datos.</p>"+
+					"<br><p>En caso de que exista algún detalle en su reporte por favor espere unos minutos y vuelva a intentar generarlo.</p>";
+		swal({
+	            title: "",
+	            text: texto,
+				html: true,
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#3c8dbc",
+	            confirmButtonText: "Aceptar",
+				cancelButtonColor: "#DD6B55",
+	            cancelButtonText: "Cancelar",
+	            closeOnConfirm: true,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	var submitForm = _this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_evidencias.php");
+					if(_this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
+					{
+						var usuarioSeleccionado =$("#usuarioSelectCriterio").val();
+						_this.createNewFormElement(submitForm, "usuarioId", usuarioSeleccionado);
+					}
+					else
+						_this.createNewFormElement(submitForm, "usuarioId", _this.usuario.id);	 
+					_this.createNewFormElement(submitForm, "ano", _this._registroSeleccionado.ano);	 
+					_this.createNewFormElement(submitForm, "mes", _this._registroSeleccionado.mes);	 
+					submitForm.target= "_blank";
+				    submitForm.submit();
+	            }
+	        });
+		
+		
 	}
 	
 	

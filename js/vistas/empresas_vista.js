@@ -297,6 +297,7 @@ class EmpresasVista extends CatalogoVista
 		this.consultarPaises();
 		this.consultarCorporativos();
 		this.consultarAdministradores();
+		this.consultarAdministradoresSIVAH();
 		this.consultarPerfiles();
 	}
 	
@@ -399,6 +400,7 @@ class EmpresasVista extends CatalogoVista
 			 ciudadId:$('#ciudadSelect').val(),
 			 corporativoId:$('#corporativoSelect').val(),
 			 administradorId:$('#administradorSelect').val(),
+		 	 administradorIdSIVAH:$('#administradorSIVAHSelect').val(),
 			 perfilId:$('#perfilSelect').val(),
 			 estatus:$('#estatusRadio').is(':checked')?1:0
 		 };
@@ -430,6 +432,12 @@ class EmpresasVista extends CatalogoVista
 	{
 		this.cargandoOpciones("#administradorSelect");
 		this.presentador.consultarAdministradores();
+	}
+	
+	consultarAdministradoresSIVAH()
+	{
+		this.cargandoOpciones("#administradorSIVAHSelect");
+		this.presentador.consultarAdministradoresSIVAH();
 	}
 	
 	consultarPerfiles()
@@ -519,6 +527,11 @@ class EmpresasVista extends CatalogoVista
 	set administradores(registros)
 	{
 		this.cargarOpciones('#administradorSelect', registros, this.modo, this.modeloEdicion, 'administradorId',"","nombreCompleto");
+	}
+	
+	set administradoresSIVAH(registros)
+	{
+		this.cargarOpciones('#administradorSIVAHSelect', registros, this.modo, this.modeloEdicion, 'administradorIdSIVAH',"","nombreCompleto");
 	}
 	
 }

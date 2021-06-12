@@ -24,7 +24,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
     {
         $this->conexion = $conexion;
         $this->consultaBase = "SELECT M.id, titulo, descripcion, IFNULL(DATE_FORMAT(M.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, usuario_id, terminada, IFNULL(DATE_FORMAT(M.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, IFNULL(DATE_FORMAT(M.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion, U.nombre, U.apellido,
-                                (SELECT count(*) FROM minutas_tareas T WHERE T.minuta_id = M.id) total,
+                                (SELECT count(*) FROM minutas_tareas T WHERE T.minuta_id = M.id AND T.tipo='t') total,
                                (SELECT count(*) FROM minutas_tareas T WHERE T.minuta_id = M.id AND T.terminada=1) terminadas, acuerdos, participantes, color,
                                 U.empresa_id, E.nombre 
                                 FROM minutas M
@@ -391,7 +391,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         $consulta = "SELECT T.minuta_id, M.titulo minutaTitulo, RTRIM(M.color), T.id, RTRIM(T.titulo) titulo, IFNULL(DATE_FORMAT(T.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, IFNULL(DATE_FORMAT(T.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion, 
             IFNULL(DATE_FORMAT(T.fecha_compromiso,'%d/%m/%Y'),'') as fecha_compromiso, 
             IFNULL(DATE_FORMAT(T.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, T.terminada, T.usuario_id, U.nombre, U.apellido, 
-            (SELECT count(*) FROM minutas_tareas_comentarios MTC WHERE MTC.minuta_id = T.minuta_id AND MTC.tarea_id = T.id) numeroComentarios
+            (SELECT count(*) FROM minutas_tareas_comentarios MTC WHERE MTC.minuta_id = T.minuta_id AND MTC.tarea_id = T.id) numeroComentarios, T.tipo
             FROM minutas_tareas T
                 INNER JOIN usuarios U ON U.id = T.usuario_id 
                 INNER JOIN minutas M ON M.id = T.minuta_id
@@ -404,7 +404,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                 if($sentencia->execute())
                 {
                     //$valores = array();
-                    if ($sentencia->bind_result($minutaId,$minutaTitulo,$minutaColor,$id, $titulo, $fechaAlta, $fechaModificacion, $fechaCompromiso, $fechaFinalizacion, $terminada, $usuarioId, $usuarioNombre, $usuarioApellido, $numeroComentarios))
+                    if ($sentencia->bind_result($minutaId,$minutaTitulo,$minutaColor,$id, $titulo, $fechaAlta, $fechaModificacion, $fechaCompromiso, $fechaFinalizacion, $terminada, $usuarioId, $usuarioNombre, $usuarioApellido, $numeroComentarios, $tipo))
                     //if ($sentencia->bind_result($valores))
                     {
                         while($sentencia->fetch())
@@ -423,7 +423,8 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                                 'usuarioId' => $usuarioId,
                                 'usuarioNombre' => $usuarioNombre,
                                 'usuarioApellido' => $usuarioApellido,
-                                'numeroComentarios' => $numeroComentarios
+                                'numeroComentarios' => $numeroComentarios,
+                                'tipo' => $tipo
                             ];
                             
                             /*$tarea->titulo = preg_replace( "/<br>|\n/", "", $tarea->titulo );
@@ -503,7 +504,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             FROM minutas_tareas T
                 INNER JOIN usuarios U ON U.id = T.usuario_id
                 INNER JOIN minutas M ON M.id = T.minuta_id
-             WHERE $usuario->id IN (SELECT usuario_id FROM minutas_tareas_responsables MTR WHERE MTR.minuta_id = M.id AND MTR.tarea_id = T.id) 
+             WHERE T.tipo = 't' AND $usuario->id IN (SELECT usuario_id FROM minutas_tareas_responsables MTR WHERE MTR.minuta_id = M.id AND MTR.tarea_id = T.id) 
             $and
             ORDER BY UNIX_TIMESTAMP(fecha_compromiso)";
         
@@ -1048,6 +1049,42 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             return $resultado;
     }   
     
+    public function consultarNumeroTareasMinuta($minutaId)
+    {
+        $resultado = new Resultado();
+        $consulta =  "SELECT count(*) AS id FROM minutas_tareas WHERE minuta_id = ?";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("i", $minutaId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $resultado->valor = $id;
+                        }
+                        else
+                            $resultado->mensajeError =  __FUNCTION__. " No se encontró ningún resultado";
+                    }
+                    else
+                        $resultado->mensajeError =  __FUNCTION__. " Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError =  __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+            {
+                $resultado->mensajeError =  __FUNCTION__. " Falló el enlace de parámetros";
+            }
+        }
+        else
+            $resultado->mensajeError =  __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            return $resultado;
+    }   
+    
     private function actualizarMinuta($minutaId)
     {
         $resultado = new Resultado();
@@ -1055,10 +1092,22 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         if($resultado->correcto())
         {
             $pendientes = $resultado->valor;
-            if($pendientes==0)
-                $resultado = $this->actualizarFinalizacionMinuta($minutaId,1,"NOW()");
-            else
-                $resultado = $this->actualizarFinalizacionMinuta($minutaId,0,"NULL");
+            $resultado = $this->consultarNumeroTareasMinuta($minutaId);
+            if($resultado->correcto())
+            {
+                $tareasTotales = $resultado->valor;
+                if($tareasTotales==0)
+                {
+                    $resultado = $this->actualizarFinalizacionMinuta($minutaId,0,"NULL");
+                }
+                else 
+                {
+                    if($pendientes==0)
+                        $resultado = $this->actualizarFinalizacionMinuta($minutaId,1,"NOW()");
+                    else
+                        $resultado = $this->actualizarFinalizacionMinuta($minutaId,0,"NULL");
+                }
+            }
         }
         return $resultado;
     }
@@ -1258,11 +1307,11 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             if($resultado->correcto())
             {
                 $orden =  $resultado->valor;
-                $consulta = "INSERT INTO minutas_tareas(minuta_id, id, orden, usuario_id, fecha_alta, fecha_modificacion, terminada, titulo,fecha_compromiso) " .
-                    "VALUE(?, ?, ?, ?, NOW(), NOW(), 0, ?, ?)";
+                $consulta = "INSERT INTO minutas_tareas(minuta_id, id, orden, usuario_id, fecha_alta, fecha_modificacion, terminada, titulo,fecha_compromiso, tipo) " .
+                    "VALUE(?, ?, ?, ?, NOW(), NOW(), 0, ?, ?, ?)";
                 if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    if($sentencia->bind_param("iiiiss",$minutaId, $modelo->id , $orden, $usuario->id, $modelo->titulo,  $fechaCompromiso))
+                    if($sentencia->bind_param("iiiisss",$minutaId, $modelo->id , $orden, $usuario->id, $modelo->titulo,  $fechaCompromiso, $modelo->tipo))
                     {
                         if($sentencia->execute())
                         {

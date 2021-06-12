@@ -7,6 +7,7 @@ class Tarea
   public $titulo;
   public $fechaCompromiso;
   public $responsables;
+  public $tipo;
 //   public $fechaAlta;
 //   public $usuarioId;
 //   public $terminada;

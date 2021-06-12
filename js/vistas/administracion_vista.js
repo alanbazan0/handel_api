@@ -441,6 +441,7 @@ class AdministracionVista extends CatalogoVista
 			 modelo.permisoSAHA=0;
 			 modelo.permisoSIVAH=0;
 			 modelo.permisoCAVI=1;
+			 modelo.permiso10y7=0;
 		 }
 		 return modelo;
 	 }

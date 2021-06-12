@@ -239,18 +239,32 @@ class EmpresasPresentador extends CatalogoPresentador
 	 consultarAdministradores()	
 	 {
 		 var repositorio = new UsuariosRepositorio(this);		
-		 repositorio.consultarAdministradores(this,this.consultarAdministradoresResultado);
+		 repositorio.consultarAdministradores(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.administradores = resultado.valor;		
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 });
+	 }
+
+ 	consultarAdministradoresSIVAH()	
+	 {
+		 var repositorio = new UsuariosRepositorio(this);		
+		 repositorio.consultarAdministradores(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.administradoresSIVAH = resultado.valor;		
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 });
 	 }
 	 
-	 consultarAdministradoresResultado(resultado)
-	 {
-		if(resultado.mensajeError=="")
-		{
-			this.vista.administradores = resultado.valor;		
-		}
-		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-	 }
+	
 	 
 	 consultarPerfiles()	
 	 {

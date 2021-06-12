@@ -2,6 +2,7 @@
 use php\clases\AdministradorConexion;
 use php\modelos\Resultado;
 use php\repositorios\MinutasRepositorio;
+use php\clases\Porcentaje;
 
 
 require('../vendor/fpdf181/fpdf.php');
@@ -580,15 +581,23 @@ abstract class PDF extends FPDF
         $this->fontWeights = array("B","","","","");
         $this->aligns = array("C","L","L","C","C");
        
+        $this->calcularPorcentajesEncabezados();
+        
+        $item = 0;
+        $encabezado = 0;
         for($i = 0; $i < count($this->minuta->tareas); $i++)
         {
+            $tarea = $this->minuta->tareas[$i];
             $color = "";
             if($i%2==0)
                 $color = "#ffffff";
             else
                 $color = "#f5f5f5";
-            $this->backgroundColors = array("#e6e6e6",$color,$color,$color,$color);
-            $tarea = $this->minuta->tareas[$i];
+            
+            
+                
+          
+           
             $fechaCompromiso = substr($tarea->fechaCompromiso,0,10);
             $fechaTerminacion = substr($tarea->fechaFinalizacion,0,10);
             
@@ -602,8 +611,35 @@ abstract class PDF extends FPDF
                     $responsables.=", ";
             }
             
-            $titulo = $this->texto(trim($tarea->titulo));
-            $this->Row2(array($i+1,$titulo,$this->texto($responsables),$fechaCompromiso, $fechaTerminacion),8);
+            switch($tarea->tipo)
+            {
+                case "t":
+                    $item++;
+                   
+                    $this->borders = array(1,1,1,1,1);
+                    $this->backgroundColors = array("#e6e6e6",$color,$color,$color,$color);
+                    $this->fontWeights = array("B","","","","");
+                    $titulo = $this->texto(trim($tarea->titulo));
+                    $edt = "";
+                    if($encabezado!=0)
+                        $edt = $encabezado.".";
+                    $this->Row2(array($edt . $item,$titulo,$this->texto($responsables),$fechaCompromiso, $fechaTerminacion),8);
+                    
+                break;
+                case "e":
+                    $porcentaje = $tarea->porcentaje;
+                    $encabezado++;
+                    if($encabezado==1)
+                        $encabezado = $item+1;
+                    $item = 0;
+                    $this->borders = array(0,0,0,0,0);
+                    $this->backgroundColors = array("#c5d9f1","#c5d9f1","#c5d9f1","#c5d9f1","#c5d9f1");
+                    $this->fontWeights = array("B","B","B","B","B");
+                    $titulo = $this->texto(trim($tarea->titulo));
+                    $this->Row2(array($encabezado,$titulo,$this->texto($responsables),"", $porcentaje."%"),8);
+                    
+                break;
+            }
         }
     }
     
@@ -1288,6 +1324,59 @@ abstract class PDF extends FPDF
     public $aligns;
     public $columnFonts;
     public $footerset;
+    
+    function calcularPorcentajesEncabezados()
+    {
+        $tareas = $this->minuta->tareas;
+        $indicesEncabezados = [];
+        for($i=0; $i < count($tareas); $i++)
+        {
+            $tarea = $tareas[$i];
+            if($tarea->tipo=="e")
+            {
+                array_push($indicesEncabezados,$i);
+            }
+        }
+        
+        for($i=0; $i < count($indicesEncabezados); $i++)
+        {
+            $indice = $indicesEncabezados[$i];
+            $this->calcularPorcenjateEncabezado($indice,$tareas);
+        }
+        
+    }
+    
+    function calcularPorcenjateEncabezado($indice, $tareas)
+    {
+        $total = 0;
+        $terminadas = 0;
+        $porcentaje = 0;
+        for($i=$indice+1; $i < count($tareas); $i++)
+        {
+            $tarea = $tareas[$i];
+            if($tarea->tipo=="e")
+                break;
+            else
+            {
+                if($tarea->tipo=="t")
+                {
+                    $total++;
+                    if($tarea->terminada==1)
+                        $terminadas++;
+                }
+            }
+        }
+        $encabezado = $tareas[$indice];
+        
+        if($total!=0)
+            $porcentaje = $terminadas / $total * 100;
+        else
+            $porcentaje = 0;
+                
+        $porcentaje = Porcentaje::formatear($porcentaje,2);
+        $encabezado->porcentaje = $porcentaje;
+                
+    }
     
 //     function morepagestable($datas, $lineheight=8) {
 //         // some things to set and 'remember'

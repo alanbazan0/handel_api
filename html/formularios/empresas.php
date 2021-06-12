@@ -81,6 +81,12 @@
                       	 	<select name="administradorSelect" id="administradorSelect" class="form-control"></select>
                       	 </div> 
                       </div>  
+                      <div class="form-group">   
+                      	<div>
+                      	 	<label for="administradorSIVAHSelect" class="control-label mb-1">Resposable de validación de evidencias (SIVAH)</label>
+                      	 	<select name="administradorSIVAHSelect" id="administradorSIVAHSelect" class="form-control"></select>
+                      	 </div> 
+                      </div>  
                        <div class="form-group">   
                       	<div>
                       	 	<label for="perfilSelect" class="control-label mb-1">Capacitación para importaciones</label>

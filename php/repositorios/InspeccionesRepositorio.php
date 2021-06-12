@@ -4,6 +4,7 @@ namespace php\repositorios;
 use php\interfaces\IInspeccionesRepositorio;
 use php\modelos\Inspeccion;
 use php\modelos\Resultado;
+use php\clases\Logger;
 
 include "../interfaces/IInspeccionesReporitorio.php";
 include "../modelos/Inspeccion.php";
@@ -11,6 +12,7 @@ include "../modelos/Punto.php";
 include "../clases/TipoUsuario.php";
 require_once("RepositorioBase.php");
 require_once("UsuariosRepositorio.php");
+require_once("../clases/Logger.php");
 require_once("../clases/Resultado.php");
 
 class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRepositorio
@@ -36,10 +38,17 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
     
     public function insertar(Inspeccion $modelo)
     {
+        $this->conexion->autocommit(FALSE);
+        $modeloJson =  json_encode($modelo, JSON_UNESCAPED_UNICODE);
+       
         $resultado =  $this->calcularId("id","inspecciones");
+     
         if($resultado->mensajeError=="")
         {
             $modelo->id = $resultado->valor;
+            
+           
+            
             $consulta = "INSERT INTO inspecciones(id, sede_id, usuario_id, inspector_id, area_id, fecha_inspeccion, fecha_finalizacion, numero_caja,  transportista, chofer, numero_tractor, placas_tractor, placas_caja, color_tractor, color_caja, numero_contenedor, tipo_caja, sello, sello_viajero, alto, ancho, profundidad, entrada_salida, tipo_inspeccion_id, fecha_inicio,tablet_id,destino, numero_orden,piezas, bultos, peso, otras_mercancias, turno_inicio, turno_fin, fecha_subida,manifiesto, inspector_termina, sello_colocado, tiene_impreso_sello,caja_libre_objetos_organicos,factura,inspector_aleatorio_id ) " .
                 "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, NOW(),?,?,?,?,?,?,?)";
             if($sentencia = $this->conexion->prepare($consulta))
@@ -58,32 +67,42 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
                             if($resultado->mensajeError=="")
                             {
                                 $resultado->valor = $modelo->id;
-                                $this->conexion->commit();
+                               
+                               
                             }
-                            else
-                                $this->conexion->rollback();
+                            
                         }
-                        else
-                            $this->conexion->rollback();
+                       
                     }
                     else
                     {
-                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
-                        $this->conexion->rollback();
+                        $resultado->mensajeError = __FUNCTION__ . ".Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
                     }
                 }
                 else
                 {
-                    $resultado->mensajeError = "Falló el enlace de parámetros";
-                    $this->conexion->rollback();
+                    $resultado->mensajeError = __FUNCTION__.".Falló el enlace de parámetros";
                 }
             }
             else
             {
-                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-                $this->conexion->rollback();
+                $resultado->mensajeError = __FUNCTION__.".Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             }
         }
+        
+        if($resultado->correcto())
+        {
+            $this->conexion->commit();
+           Logger::log("InspeccionesRepositorio_insertar_$modelo->id"."_CORRECTO.log", $modeloJson);
+        }
+        else 
+        {
+            
+            $this->conexion->rollback();
+            Logger::log("InspeccionesRepositorio_insertar_$modelo->id"."_INCORRECTO.log", $resultado->mensajeError);
+            Logger::log("InspeccionesRepositorio_insertar_$modelo->id"."_INCORRECTO.log", $modeloJson);
+        }
+        
         return $resultado;
     }
     

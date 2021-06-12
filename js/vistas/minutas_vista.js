@@ -532,6 +532,7 @@ class MinutasVista extends CatalogoVista
 		{
 			this.listaTareas.responsables = this._responsables;
 			this.listaTareas.tareas= this.modeloEdicion.tareas;
+			this.calcularPorcentajesEncabezados();
 		}
 		else
 		{
@@ -747,7 +748,10 @@ class MinutasVista extends CatalogoVista
 			
 			 
 		}
+		
 	}
+	
+	
 	
 	set tarea(tarea)
 	{
@@ -918,7 +922,12 @@ class MinutasVista extends CatalogoVista
 		if(componenteTarea!=null)
 		{
 			var _this = this;
-			this.confirmar("¿Desea eliminar esta tarea?</br></br><label>" +componenteTarea.titulo +"</label>",this,function(tareaId)
+			
+			var texto ="esta tarea";
+			if(componenteTarea.registro.tipo=="e")
+			 	texto ="este encabezado";
+			
+			this.confirmar("¿Desea eliminar "+texto+"?</br></br><label>" +componenteTarea.titulo +"</label>",this,function(tareaId)
 			{
 				_this._llavesTarea = {minutaId : minutaId, tareaId: tareaId};
 				_this.eliminarTareaBaseDatos();
@@ -972,6 +981,17 @@ class MinutasVista extends CatalogoVista
 		this.listaTareas.cancelarEdicion();
 		this.listaTareas.agregarBorrador();
 		$("#agregarTareaButton").hide();
+		$("#agregarEncabezadoButton").hide();
+		
+	}
+	
+	agregarEncabezado()
+	{
+	
+		this.listaTareas.cancelarEdicion();
+		this.listaTareas.agregarBorradorEncabezado();
+		$("#agregarTareaButton").hide();
+		$("#agregarEncabezadoButton").hide();
 		
 	}
 	
@@ -989,6 +1009,7 @@ class MinutasVista extends CatalogoVista
 	mostrarBotonAgregar()
 	{
 		$("#agregarTareaButton").fadeIn();
+		$("#agregarEncabezadoButton").fadeIn();
 	}
 	
 	
@@ -1145,6 +1166,73 @@ class MinutasVista extends CatalogoVista
 	set porcentajeAvance(porcentaje){
 		$('#avanceH').html("("+porcentaje + " % de avance)");
 	}
+	
+	calcularPorcentajesEncabezados()
+	{
+		var tareas = this.listaTareas.tareasOrdenadas;
+		var indicesEncabezados = [];
+		for(var i=0; i < tareas.length; i++)
+		{
+			var tarea = tareas[i];
+			if(tarea.tipo==TipoComponente.ENCABEZADO)
+			{
+				indicesEncabezados.push(i);
+			}
+		}
+		
+		for(var i=0; i < indicesEncabezados.length; i++)
+		{
+			var indice = indicesEncabezados[i];
+			this.calcularPorcenjateEncabezado(indice,tareas);
+		}
+		
+	}
+	
+	calcularPorcenjateEncabezado(indice, tareas)
+	{
+		var total = 0;
+		var terminadas = 0;
+		var porcentaje = 0;
+		for(var i=indice+1; i < tareas.length; i++)
+		{
+			var tarea = tareas[i];
+			if(tarea.tipo==TipoComponente.ENCABEZADO)
+				break;
+			else
+			{
+				if(tarea.tipo==TipoComponente.TAREA)
+				{
+					total++;
+					if(tarea.terminada==1)
+						terminadas++;
+				}
+			}
+		}
+		var encabezado = tareas[indice];
+		
+		if(total!=0)
+			porcentaje = terminadas / total * 100;	
+		else
+			porcentaje = 0;
+		
+		var porcentaje = parseFloat(porcentaje).toFixed(2);
+		var decimales = porcentaje.split(".")[1];
+		if(decimales=="00")
+		{
+			porcentaje =  porcentaje.split(".")[0];
+		}
+		
+		if(encabezado.tipo==TipoComponente.ENCABEZADO)
+		{
+			var componente = this.listaTareas.getComponente(encabezado.minutaId,encabezado.id);
+			if(componente!=null)
+			{
+				componente.porcentaje = porcentaje;
+			}
+		}
+		
+	}
+	
 	
 }
 var vista = new MinutasVista(this);

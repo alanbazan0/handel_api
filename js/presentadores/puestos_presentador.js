@@ -44,7 +44,7 @@ class PuestosPresentador extends CatalogoPresentador
 	 consultarEmpresasCriterio()	
 	 {
 		 var repositorio = new EmpresasRepositorio(this);		
-		 repositorio.consultar(this,this.consultarEmpresasCriterioResultado,null,true);
+		 repositorio.consultar(this,this.consultarEmpresasCriterioResultado,{estatus:1},true);
 	 }
 	 
 	 consultarEmpresasCriterioResultado(resultado)

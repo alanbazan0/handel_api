@@ -3029,16 +3029,16 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
         
         $usuarios = array();
         array_push($usuarios,$usuario);
-        array_push($usuarios,(object)["nombreUsuario"=> "noemi@handel-sce.com"]);
-        array_push($usuarios,(object)["nombreUsuario"=> "eduardo@handel-sce.com"]);
-        array_push($usuarios,$usuario);
+         array_push($usuarios,(object)["nombreUsuario"=> "noemi@handel-sce.com"]);
+         array_push($usuarios,(object)["nombreUsuario"=> "eduardo@handel-sce.com"]);
+//         array_push($usuarios,$usuario);
                 
         $administrador_correo = new AdministradorCorreo();
         
         
         
         $contenido = "<tr>
-                <td align='center' class='padding-copy' style='font-size: 25px; font-family: Helvetica, Arial, sans-serif; color: #548dd4; padding-top: 0px;'><strong>¡Hola!</strong><br></td>
+                <td align='center' class='padding-copy' style='font-size: 25px; font-family: Helvetica, Arial, sans-serif; color: #548dd4; padding-top: 0px;'><strong>¡Hola! $usuario->nombre</strong><br></td>
             </tr>
             <tr>
                 <td align='center' class='padding-copy textlightStyle' style='padding: 20px 0 0 0; font-size: 16px; line-height: 25px; font-family: Helvetica, Arial, sans-serif; color: #3F3D33;'>
@@ -4242,14 +4242,14 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
         $resultado = new Resultado();
         $usuarios = array();
         
-        $consulta = "SELECT E.administrador_id id, ADM.nombre, ADM.apellido, ADM.nombre_usuario
+        $consulta = "SELECT E.administrador_sivah_id id, ADM.nombre, ADM.apellido, ADM.nombre_usuario
                     FROM recomendaciones R 
                     	INNER JOIN usuarios RP ON RP.id = R.responsable_id 
                         INNER JOIN empresas E ON E.id = RP.empresa_id
                         INNER JOIN sedes S ON S.id = RP.sede_id
-                        INNER JOIN usuarios ADM ON E.administrador_id  = ADM.id
+                        INNER JOIN usuarios ADM ON E.administrador_sivah_id  = ADM.id
                     WHERE estatus_validacion_id = 1
-                    GROUP BY E.administrador_id";
+                    GROUP BY E.administrador_sivah_id";
         
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -4292,15 +4292,15 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
         $resultado = new Resultado();
         $sedes = array();
         
-        $consulta = "SELECT RP.empresa_id empresaId, E.nombre empresaNombre, RP.sede_id sedeId, S.nombre sedeNombre, count(*) pendientesValidacion
-                FROM recomendaciones R 
-                	INNER JOIN usuarios RP ON RP.id = R.responsable_id 
-                    INNER JOIN empresas E ON E.id = RP.empresa_id
-                    INNER JOIN sedes S ON S.id = RP.sede_id
-                    INNER JOIN auditorias A ON A.id = R.auditoria_id
+        $consulta = "SELECT RP.empresa_id empresaId, E.nombre empresaNombre, A.sede_id sedeId, S.nombre sedeNombre, count(*) pendientesValidacion
+                    FROM recomendaciones R 
+                    	INNER JOIN usuarios RP ON RP.id = R.responsable_id 
+                    	INNER JOIN empresas E ON E.id = RP.empresa_id
+                    	INNER JOIN auditorias A ON A.id = R.auditoria_id
+                        INNER JOIN sedes S ON S.id = A.sede_id
                 WHERE estatus_validacion_id = 1
-                	AND E.administrador_id = ? AND A.seguimiento_finalizado!=1
-                GROUP BY RP.empresa_id, E.nombre, RP.sede_id, S.nombre ";
+                	AND E.administrador_sivah_id = ? AND A.seguimiento_finalizado!=1
+                GROUP BY RP.empresa_id, E.nombre, A.sede_id, S.nombre  ";
         
         
         if($sentencia = $this->conexion->prepare($consulta))
