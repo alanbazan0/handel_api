@@ -460,6 +460,7 @@ class MinutasVista extends CatalogoVista
 		
 		$('#tareasSectionContenido').fadeIn();	
 		$("#agregarTareaButton").show();
+		$("#agregarEncabezadoButton").show();
 		
 		
 		var fecha = new Date();
@@ -1017,6 +1018,7 @@ class MinutasVista extends CatalogoVista
 	{
 		this.listaTareas.eliminarBorrador();
 		$("#agregarTareaButton").fadeIn();
+		$("#agregarEncabezadoButton").fadeIn();
 	}
 	
 	editarTarea(event,id)
@@ -1215,9 +1217,10 @@ class MinutasVista extends CatalogoVista
 		else
 			porcentaje = 0;
 		
-		var porcentaje = parseFloat(porcentaje).toFixed(2);
+		//var porcentaje = parseFloat(porcentaje).toFixed(1);
+		var porcentaje = Numero.formato(porcentaje, 1);
 		var decimales = porcentaje.split(".")[1];
-		if(decimales=="00")
+		if(decimales=="0")
 		{
 			porcentaje =  porcentaje.split(".")[0];
 		}

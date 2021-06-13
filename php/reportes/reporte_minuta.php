@@ -1373,7 +1373,7 @@ abstract class PDF extends FPDF
         else
             $porcentaje = 0;
                 
-        $porcentaje = Porcentaje::formatear($porcentaje,2);
+        $porcentaje = Porcentaje::formatear($porcentaje);
         $encabezado->porcentaje = $porcentaje;
                 
     }
