@@ -1,6 +1,7 @@
 <?php
 namespace php\repositorios;
 
+use php\clases\Porcentaje;
 use php\interfaces\IEvidenciasRepositorio;
 use php\modelos\Evidencia;
 use php\modelos\Resultado;
@@ -12,6 +13,7 @@ require_once('RepositorioBase.php');
 require_once('UsuariosRepositorio.php');
 require_once("../clases/TipoUsuario.php");
 require_once('../clases/Resultado.php');
+require_once('../clases/Porcentaje.php');
 require_once('../repositorios/EvidenciasComentariosRepositorio.php');
 
 class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasRepositorio
@@ -506,6 +508,8 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                                 'pendientes' =>  $pendientes
                             ];
                             
+                          
+                            
                             $this->calcularPorcentaje($registro);
                             
                             array_push($registros,$registro);
@@ -543,6 +547,9 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                 $registro->porcentajeCumplimiento = str_replace(".$decimales","",$registro->porcentajeCumplimiento);
             
         }
+        $registro->cero = 0;
+        Porcentaje::calcularPorcentaje($registro,'justificadas','total',"porcentajeJustificadas",2);
+        Porcentaje::calcularPorcentaje($registro,'enviadas','total',"porcentajeEnviadas",2);
     }
     
     public function consultarPorcentajesSedes($usuario,$criteriosSeleccion)
@@ -578,6 +585,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                                 'enviadas' =>  $enviadas,
                                 'pendientes' =>  $pendientes
                             ];
+                            
                             $this->calcularPorcentaje($registro);
 //                             $registro->total = $registro->justificadas + $registro->enviadas + $registro->pendientes;
 //                             $registro->cumplidas =$registro->justificadas + $registro->enviadas;
@@ -938,6 +946,8 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                                 'pendientes' =>  $pendientes
                             ];
                             
+                          
+                            
                             $this->calcularPorcentaje($registro);
                             
                             $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
@@ -945,11 +955,10 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                             $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
                             if(file_exists($registro->fotoPerfil))
                                 $registro->fotoPerfil =  "php/fotos/usuario". $registro->id .".jpg";
-                                else
-                                    $registro->fotoPerfil =  "php/fotos/default.jpg";
-                                    
-                                    
-                                    array_push($registros,$registro);
+                            else
+                                $registro->fotoPerfil =  "php/fotos/default.jpg";
+                                
+                            array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
                     }

@@ -403,7 +403,7 @@ class PDF extends FPDF
             $this->mes = $mes;
             $this->ano = $ano;
             $this->SetFont($this->font,'',20);
-          
+                      
              $this->encabezado();
              $this->aviso();
              $this->introduccion();
@@ -421,6 +421,8 @@ class PDF extends FPDF
     {
         $pdfWidth = 190;
         $this->AddPage();
+        $this->SetLeftMargin(20);
+        $this->SetRightMargin(20);
         
         $criteriosSeleccion= (object) [
             'mes' =>  $this->mes,
@@ -487,7 +489,7 @@ class PDF extends FPDF
                     
                     //var_dump($meses);
                     
-                    $image = graficaBarrasMesActualAnterior("Cumplimiento global del área",'','Cumplimiento global',$meses,"nombreMes","porcentajeCumplimiento",true,100);
+                    $image = graficaBarrasMesActualAnterior("Porcentaje de cumplimiento global del área",'','Cumplimiento global',$meses,"nombreMes","porcentajeCumplimiento",true,100);
                     if($image!='')
                         $this->Image($image,20 ,40, $chartWidth);
                 }
@@ -500,20 +502,20 @@ class PDF extends FPDF
             {
                 $porcentajes = $resultado->valor;
                 $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-                $image = toColumnChart("Cumplimiento por empresa <br>($nombreMes)",'','Areas',$porcentajes,"nombre","porcentajeCumplimiento",$colores,false,100);
+                $image = toColumnChart("Porcentaje de cumplimiento por empresa <br>($nombreMes)",'','Areas',$porcentajes,"nombre","porcentajeCumplimiento",$colores,false,100);
                 if($image!='')
                     $this->Image($image,110, 40, $chartWidth);
             }
         }
         else 
         {
-            $chartWidth = 120;
+            $chartWidth = 115;
             $resultado = $repositorio->consultarPorcentajesEvidencias($this->usuario, $criteriosSeleccion);
             if($resultado->correcto())
             {
                 $porcentajes = $resultado->valor;
                 $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
-                $image = toPieChart("Cumplimiento global del área <br>($nombreMes)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
+                $image = toPieChart("Porcentaje de cumplimiento global del área <br>($nombreMes)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
                 if($image!='')
                     $this->Image($image,0 ,40, $chartWidth);
             }
@@ -523,7 +525,7 @@ class PDF extends FPDF
             {
                 $porcentajes = $resultado->valor;
                 $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
-                $image = toPieChart("Cumplimiento global del área <br>($nombreMesAnterior)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
+                $image = toPieChart("Porcentaje de cumplimiento global del área <br>($nombreMesAnterior)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
                 if($image!='')
                     $this->Image($image, 95 ,40,$chartWidth);
             }
@@ -531,21 +533,23 @@ class PDF extends FPDF
         
        
         
+        $this->SetLeftMargin(20);
         $this->SetX(0);
         $this->SetY(120);
         $this->SetFont($this->font,'I',9);
         $this->Cell(0, 10, $this->texto("Es aconsejable mantener el porcentaje de justificaciones (gráfica amarilla) en no más del 15%"),0,1,'C',1);
         
         
-        $chartWidth= 150;
+        $chartWidth= $this->w - 40;
         $resultado = $repositorio->consultarPorcentajesAreas($this->usuario, $criteriosSeleccion);
         if($resultado->correcto())
         {
             $porcentajes = $resultado->valor;
             $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-            $image = toColumnChart("Cumplimiento por departamento <br>($nombreMes)",'','Areas',$porcentajes,"nombre","porcentajeCumplimiento",$colores,false,100);
+            //$image = toColumnChart("Cumplimiento por departamento <br>($nombreMes)",'','Areas',$porcentajes,"nombre","porcentajeCumplimiento",$colores,false,100);
+            $image = $this->graficaBarrasDepartamentos("Porcentaje de cumplimiento por departamento <br>($nombreMes)",'','Areas',$porcentajes,"nombre");
             if($image!='')
-                $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,140, $chartWidth);
+                $this->Image($image,$this->w/2 -$chartWidth/2 ,140, $chartWidth);
         }
         
         $this->AddPage();
@@ -558,9 +562,10 @@ class PDF extends FPDF
         {
             $porcentajes = $resultado->valor;
             $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-            $image = toColumnChart("Porcentaje de cumplimiento <br>($nombreMes)",'','Usuarios',$porcentajes,"nombreCompleto","porcentajeCumplimiento",$colores,false,100);
+            //$image = toColumnChart("Porcentaje de cumplimiento <br>($nombreMes)",'','Usuarios',$porcentajes,"nombreCompleto","porcentajeCumplimiento",$colores,false,100);
+            $image = $this->graficaBarrasUsuarios("Porcentaje de cumplimiento por usuario <br>($nombreMes)",'','Usuarios',$porcentajes,"nombreCompleto");
             if($image!='')
-                $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,20, $chartWidth);
+                $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,25, $chartWidth);
         }
         
         
@@ -604,10 +609,287 @@ class PDF extends FPDF
         $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
         $image = toLineChart("Nivel de riesgo anual <br>($this->ano)",'','Cumplimiento global',$meses,"nombreMes","porcentajeCumplimiento",$colores,true,100,$this->mes);
         if($image!='')
-            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,130, $chartWidth);
+            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,135, $chartWidth);
       
         
       
+    }
+    
+    function graficaBarrasDepartamentos($title, $yTitle, $serieTitle, $rows, $xField)
+    {
+        $showInLegend = true;
+        
+        $categories = array();
+        $data = array();
+        
+        $data = array();
+        
+        $data1 = array();
+        $data2 = array();
+        $data3 = array();
+        
+        $fecha = new DateTime();
+        $mesActual = (int)$fecha->format("m");
+        
+        for ($i = 0; $i < count($rows); $i++)
+        {
+            $row = $rows[$i];
+            
+            //         $newRow= (object) [
+            //             'name' =>  $row->$xField,
+            //             'y' => (float)$row->cumplidas,
+            //             'color' => "#00a1ff"
+            
+            //         ];
+            
+            $newRow1= (object) [
+                'name' =>  $row->$xField,
+                'y' => (float)$row->porcentajeEnviadas,
+               // 'color' => "#3c8dbc"
+            ];
+            
+            $newRow2= (object) [
+                'name' =>  $row->$xField,
+                'y' => (float)$row->porcentajeJustificadas,
+                //'color' => "#f39c12"
+            ];
+            
+//             $newRow3= (object) [
+//                 'name' =>  $row->$xField,
+//                 'y' => (float)$row->proceso,
+//                 'color' => "#919191"
+//             ];
+            
+            array_push($categories, $row->$xField);
+            array_push($data1, $newRow1);
+            array_push($data2, $newRow2);
+           // array_push($data3, $newRow3);
+        }
+        
+        $yAxis = (object) [ 'title' => (object) [ 'text'=> $yTitle]];
+        
+        $yAxis->min= 0;
+        $yAxis->max= 100;
+        $yAxis->tickInterval= 10;
+        
+        
+        
+        $highchart = (object)
+        [
+            'chart' => (object) [ 'type' => "column"],
+            'title' => (object) [ 'text'=> $title],
+            'credits' => (object) ['enabled' => false],
+            'xAxis' => (object) [ 'categories' => $categories],
+            'plotOptions' => (object)
+            [
+                'column'=> (object)[
+                    'stacking' => 'normal',
+                    'dataLabels'=>(object)
+                    [
+                        'enabled'=>true,
+                        //'crop'=>false,
+                        //'overflow' =>'none',
+                        //"inside"=> false,
+                        'color'=> 'black',
+                        'style'=> (object)
+                        [
+                            'fontSize' => 10,
+                            'textOutline' => '0px'
+                        ],
+                        'verticalAlign' => 'bottom'
+                       // 'format'=>"{point.y:.1f} %"
+                    ]
+                ]
+            ],
+            'yAxis' => $yAxis,
+            'series' => array(
+                (object) ['name' => "Justificadas", 'data' => $data2,  'showInLegend' => $showInLegend, "color"=>"#f39c12"],
+                (object) ['name' => "Enviadas", 'data' => $data1,  'showInLegend' => $showInLegend, "color"=>"#00a65a"],
+                //(object) ['name' => "En proceso de validación", 'data' => $data3,  'showInLegend' => $showInLegend, "color"=>"#919191"]
+            )
+        ];
+        
+        $data= (object) [
+            'async' =>  true,
+            'type' => 'image/jpeg',
+            'width' => 1080,
+            'options' => $highchart
+        ];
+        
+        $options = array(
+            'http' => array(
+                'method'  => 'POST',
+                'content' => json_encode( $data ),
+                'header'=>  "Content-Type: application/json\r\n" .
+                "Accept: application/json\r\n"
+            )
+        );
+        
+        $url = 'https://export.highcharts.com/';
+        
+        $context  = stream_context_create( $options );
+        
+        
+        
+        $result = file_get_contents( $url, false, $context );
+        
+        $charturl='';
+        if ($result === FALSE)
+        {
+            
+        }
+        else
+        {
+            $charturl = $url . $result;
+            
+        }
+        return $charturl;
+        
+        //  return 'ok';
+        
+    }
+    
+    function graficaBarrasUsuarios($title, $yTitle, $serieTitle, $rows, $xField)
+    {
+        $showInLegend = true;
+        
+        $categories = array();
+        $data = array();
+        
+        $data = array();
+        
+        $data1 = array();
+        $data2 = array();
+        $data3 = array();
+        
+        $fecha = new DateTime();
+        $mesActual = (int)$fecha->format("m");
+        
+        for ($i = 0; $i < count($rows); $i++)
+        {
+            $row = $rows[$i];
+            
+            //         $newRow= (object) [
+            //             'name' =>  $row->$xField,
+            //             'y' => (float)$row->cumplidas,
+            //             'color' => "#00a1ff"
+            
+            //         ];
+            
+            $newRow1= (object) [
+                'name' =>  $row->$xField,
+                'y' => (float)$row->porcentajeEnviadas,
+                // 'color' => "#3c8dbc"
+            ];
+            
+            $newRow2= (object) [
+                'name' =>  $row->$xField,
+                'y' => (float)$row->porcentajeJustificadas,
+                //'color' => "#f39c12"
+            ];
+            
+            //             $newRow3= (object) [
+            //                 'name' =>  $row->$xField,
+            //                 'y' => (float)$row->proceso,
+            //                 'color' => "#919191"
+            //             ];
+            
+            array_push($categories, $row->$xField);
+            array_push($data1, $newRow1);
+            array_push($data2, $newRow2);
+            // array_push($data3, $newRow3);
+        }
+        
+        $yAxis = (object) [ 'title' => (object) [ 'text'=> $yTitle]];
+        
+        $yAxis->min= 0;
+        $yAxis->max= 100;
+        $yAxis->tickInterval= 10;
+        
+           
+        
+        $rotacion = 0;
+        if(count($rows)>=10)
+            $rotacion = -90;
+            
+        
+        
+        $highchart = (object)
+        [
+            'chart' => (object) [ 'type' => "column"],
+            'title' => (object) [ 'text'=> $title],
+            'credits' => (object) ['enabled' => false],
+            'xAxis' => (object) [ 'categories' => $categories],
+            'plotOptions' => (object)
+            [
+                'column'=> (object)[
+                    'stacking' => 'normal',
+                    'dataLabels'=>(object)
+                    [
+                        'enabled'=>true,
+//                         'crop'=>false,
+//                         'overflow' =>'none',
+//                         "inside"=> false,
+                         'color'=> 'black',
+                        'style'=> (object)
+                        [
+                            'fontSize' => 10,
+                            'textOutline' => '0px'
+                        ],
+//                         'rotation' => $rotacion,
+//                         'format'=>"{point.y:.1f} %",
+                       // 'format'=>"{point.y} %",
+                        'verticalAlign' => 'bottom'
+                       
+                    ]
+                ]
+            ],
+            'yAxis' => $yAxis,
+            'series' => array(
+                (object) ['name' => "Justificadas", 'data' => $data2,  'showInLegend' => $showInLegend, "color"=>"#f39c12"],
+                (object) ['name' => "Enviadas", 'data' => $data1,  'showInLegend' => $showInLegend, "color"=>"#00a65a"],
+                //(object) ['name' => "En proceso de validación", 'data' => $data3,  'showInLegend' => $showInLegend, "color"=>"#919191"]
+            )
+        ];
+        
+        $data= (object) [
+            'async' =>  true,
+            'type' => 'image/jpeg',
+            'width' => 1080,
+            'options' => $highchart
+        ];
+        
+        $options = array(
+            'http' => array(
+                'method'  => 'POST',
+                'content' => json_encode( $data ),
+                'header'=>  "Content-Type: application/json\r\n" .
+                "Accept: application/json\r\n"
+            )
+        );
+        
+        $url = 'https://export.highcharts.com/';
+        
+        $context  = stream_context_create( $options );
+        
+        
+        
+        $result = file_get_contents( $url, false, $context );
+        
+        $charturl='';
+        if ($result === FALSE)
+        {
+            
+        }
+        else
+        {
+            $charturl = $url . $result;
+            
+        }
+        return $charturl;
+        
+        //  return 'ok';
+        
     }
     
     private function graficasSupervisor()
@@ -1226,6 +1508,8 @@ class PDF extends FPDF
     function encabezado()
     {
         $this->AddPage();
+        $this->SetLeftMargin(20);
+        $this->SetRightMargin(20);
         $imagen = "../imagenes/logo_saha.png";
         $anchoFoto = 100;
         $x = (210/2) - ($anchoFoto/2);

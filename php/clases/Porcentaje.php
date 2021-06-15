@@ -3,7 +3,7 @@ namespace php\clases;
 
 class Porcentaje
 {
-    public static function calcularPorcentaje(&$registro,$campo,$campoTotal,$campoPorcentaje)
+    public static function calcularPorcentaje(&$registro,$campo,$campoTotal,$campoPorcentaje,$numeroDecimales = 1)
     {
         $total = $registro->$campoTotal;
         $cumplido =$registro->$campo;
@@ -12,7 +12,7 @@ class Porcentaje
         {
             $registro->$campoPorcentaje = $cumplido  * 100 / $total;
             
-            $registro->$campoPorcentaje = bcdiv($registro->$campoPorcentaje, '1', 1);
+            $registro->$campoPorcentaje = bcdiv($registro->$campoPorcentaje, '1', $numeroDecimales);
             
             list($enteros, $decimales) = explode(".", $registro->$campoPorcentaje);
             if($decimales=="0")

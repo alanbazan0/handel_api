@@ -957,7 +957,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                             {
                                 $tarea = $resultado->valor;
                                
-                                //$resultado = $this->enviarNotificacionDuenoTareaTerminada($usuario,$minutaId, $tarea);
+                                $resultado = $this->enviarNotificacionDuenoTareaTerminada($usuario,$minutaId, $tarea);
                             }
                         }
                     }
@@ -1016,7 +1016,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
     public function consultarNumeroTareasPendientesMinuta($minutaId)
     {
         $resultado = new Resultado();
-        $consulta =  "SELECT count(*) AS id FROM minutas_tareas WHERE minuta_id = ? AND terminada != 1  ";
+        $consulta =  "SELECT count(*) AS id FROM minutas_tareas WHERE minuta_id = ? AND terminada != 1 AND tipo='t'  ";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -1052,7 +1052,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
     public function consultarNumeroTareasMinuta($minutaId)
     {
         $resultado = new Resultado();
-        $consulta =  "SELECT count(*) AS id FROM minutas_tareas WHERE minuta_id = ?";
+        $consulta =  "SELECT count(*) AS id FROM minutas_tareas WHERE minuta_id = ? AND tipo='t'";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {

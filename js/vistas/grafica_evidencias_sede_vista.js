@@ -141,41 +141,7 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 			valueAxis.min = 0;
 			valueAxis.max = 100;
 
-			// Create series
-			var series = chart.series.push(new am4charts.ColumnSeries());
-			series.sequencedInterpolation = true;
-			series.dataFields.valueY = "porcentajeCumplimiento";
-			series.dataFields.categoryX = "nombreId";
-			series.tooltipText = "{nombre} : {valueY}% ({cumplidas}/{total})";
-			series.columns.template.strokeWidth = 0;
-
-			series.tooltip.pointerOrientation = "vertical";
-
-			series.columns.template.column.cornerRadiusTopLeft = 10;
-			series.columns.template.column.cornerRadiusTopRight = 10;
-			series.columns.template.column.fillOpacity = 0.8;
-			
-			
-			
-
-			// on hover, make corner radiuses bigger
-			var hoverState = series.columns.template.column.states.create("hover");
-			hoverState.properties.cornerRadiusTopLeft = 0;
-			hoverState.properties.cornerRadiusTopRight = 0;
-			hoverState.properties.fillOpacity = 1;
-
-			series.columns.template.adapter.add("fill", function(fill, target) 
-			{
-				if (target.dataItem.valueY >= 0 && target.dataItem.valueY < 51) 
-				    return am4core.color("#dd4b39");
-				else if (target.dataItem.valueY >= 51 && target.dataItem.valueY < 100)
-					 return am4core.color("#f39c12");
-				else if (target.dataItem.valueY >= 100)
-					return am4core.color("#00a65a");
-				else
-					return fill;
-			});
-			
+			EvidenciasSeries.crear(chart,"nombreId","nombre");
 			
 
 			// Cursor
