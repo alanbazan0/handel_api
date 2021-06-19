@@ -718,11 +718,11 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                         {
                             if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
                             {
-                                $registro = $this->crearRegistro("", "Todos los usuarios", null, null, null,null, null, null, null, null, null, null, null, null, null, null, null,null, null,null, null,null, null, null, null,null, null,null, null, null,null,null,null);
+                                $registro = $this->crearRegistro("", "", null, "Todos los usuarios", null,null, null, null, null, null, null, null, null, null, null, null, null,null, null,null, null,null, null, null, null,null, null,null, null, null,null,null,null,null,null,null,null);
                                 array_unshift($registros, $registro);
                             }
                         }
-                        $resultado->valor = $registros; 
+                        $resultado->valor = $registros;     
                     }           
                     else
                         $resultado->mensajeError = "Falló el enlace del resultado.";       

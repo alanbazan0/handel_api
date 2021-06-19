@@ -413,6 +413,28 @@ class EvidenciasRepositorio extends Repositorio
 	}
 	
 	
+	validarJustificadas(contexto,funcion,ids)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "validarJustificadas",ids:ids},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : errorThrown + "." +jqXhr.responseText});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : errorThrown+ "." +jqXhr.responseText});
+	       }
+	   });
+	}
+	
 	
 	
 }

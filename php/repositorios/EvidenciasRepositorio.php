@@ -1,6 +1,7 @@
 <?php
 namespace php\repositorios;
 
+use TipoReporteEvidencias;
 use php\clases\Porcentaje;
 use php\interfaces\IEvidenciasRepositorio;
 use php\modelos\Evidencia;
@@ -12,6 +13,7 @@ require_once('../modelos/Evidencia.php');
 require_once('RepositorioBase.php');
 require_once('UsuariosRepositorio.php');
 require_once("../clases/TipoUsuario.php");
+require_once("../clases/TipoReporteEvidencias.php");
 require_once('../clases/Resultado.php');
 require_once('../clases/Porcentaje.php');
 require_once('../repositorios/EvidenciasComentariosRepositorio.php');
@@ -1532,6 +1534,54 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             $this->conexion->rollback();
         return $resultado;
     }
+    
+    public function validarJustificadas($usuario, $ids)
+    {
+        ini_set('max_execution_time', 0);
+        $this->conexion->autocommit(FALSE);
+        
+            $resultado = new Resultado();
+            $consulta = "UPDATE evidencias
+                     SET
+                         validada = 1,
+                         comentarios_validacion = '',
+                         fecha_modificacion = NOW(),
+                         validacion_usuario_id = ?
+                     WHERE id IN ($ids)";
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($sentencia->bind_param('i',$usuario->id))
+                {
+                    if($sentencia->execute())
+                    {
+                        
+//                         $comentariosRepositorio = new EvidenciasComentariosRepositorio($this->conexion);
+//                         $comentario= new EvidenciaComentario();
+//                         $comentario->usuarioId = $usuario->id;
+//                         $comentario->evidenciaId = $modelo->id;
+//                         $comentario->comentario =  $modelo->comentariosValidacion;
+                        
+//                         $resultado = $comentariosRepositorio->insertar($usuario,$comentario);
+//                         if($resultado->correcto())
+//                         {
+//                             $resultado->valor=$modelo->id;
+//                         }
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__ .' Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__ .' Falló el enlace de parámetros';
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__ .' Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                
+            if($resultado->correcto())
+                $this->conexion->commit();
+            else
+                $this->conexion->rollback();
+            return $resultado;
+    }
 
     public function consultar($criteriosSeleccion)
     {
@@ -1547,7 +1597,31 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             $where="";
             if($criteriosSeleccion!=null)
             {
-               
+//                 if(isset($criteriosSeleccion->tipoReporte))
+//                 {
+                   
+//                     switch($criteriosSeleccion->tipoReporte)
+//                     {
+//                         case TipoReporteEvidencias::VALIDADAS:
+//                             array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'validada','valor'=> 1]);
+//                         break;
+//                         case TipoReporteEvidencias::NO_VALIDADAS:
+//                             array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'validada','valor'=> 0]);
+//                         break;
+//                         case TipoReporteEvidencias::JUSTIFICADAS:
+//                             array_push($filtros,(object)['tipo'=>'estatico','texto'=>'E.justificacion_id is not null']);
+//                         break;
+//                     }
+//                 }
+                if(isset($criteriosSeleccion->validada) && $criteriosSeleccion->validada!="")
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'validada','valor'=> $criteriosSeleccion->validada]);
+                if(isset($criteriosSeleccion->justificada) && $criteriosSeleccion->justificada!="")
+                {
+                    if($criteriosSeleccion->justificada==1)
+                        array_push($filtros,(object)['tipo'=>'estatico','texto'=>'E.justificacion_id is not null']);
+                    else  if($criteriosSeleccion->justificada==0)
+                        array_push($filtros,(object)['tipo'=>'estatico','texto'=>'E.justificacion_id is null']);
+                }
                 if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
                 if(isset($criteriosSeleccion->sedeId) && $criteriosSeleccion->sedeId!="")
@@ -1558,13 +1632,21 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'UP', 'campo'=>'usuario_id','valor'=>$criteriosSeleccion->usuarioId]);
                 if(isset($criteriosSeleccion->administradorId)  && $criteriosSeleccion->administradorId!="")
                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'EM', 'campo'=>'administrador_id','valor'=>$criteriosSeleccion->administradorId]);
-                if(isset($criteriosSeleccion->validada)  && $criteriosSeleccion->validada!="")
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'validada','valor'=> $criteriosSeleccion->validada]);
+//                 if(isset($criteriosSeleccion->validada) && $criteriosSeleccion->validada!="")
+//                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'validada','valor'=> $criteriosSeleccion->validada]);
+//                 if(isset($criteriosSeleccion->justificada)  && $criteriosSeleccion->justificada!="")
+//                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'justificada','valor'=> $criteriosSeleccion->justificada]);
                 if(isset($criteriosSeleccion->mes)  && $criteriosSeleccion->mes!="")
                     array_push($filtros,(object)['tipoDato'=>'int','campo'=>'MONTH(E.fecha_alta)','valor'=> $criteriosSeleccion->mes]);
                 if(isset($criteriosSeleccion->ano)  && $criteriosSeleccion->ano!="")
                     array_push($filtros,(object)['tipoDato'=>'int','campo'=>'YEAR(E.fecha_alta)','valor'=> $criteriosSeleccion->ano]);
+                if(isset($criteriosSeleccion->departamentoId) && $criteriosSeleccion->departamentoId!="")
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'departamento_id','valor'=>$criteriosSeleccion->departamentoId]);
+                   
+               
             }
+            
+            
             
             
             
@@ -1705,6 +1787,12 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             
         ];
         
+        if($registro->justificacionId!=null)
+            $registro->justificada = 1;
+        else
+            $registro->justificada = 0;
+            
+        
         $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
         $registro->fotoPerfil =  "../fotos/usuario". $registro->usuarioId .".jpg";
         if(file_exists($registro->fotoPerfil))
@@ -1722,28 +1810,28 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
     
 //         if($registro->validada==1) 
 //         {
-            if($registro->validadorId==null || $registro->validadorId=="")
-            {
-                $registro->validadorId = $registro->administradorId;
-                $registro->validadorNombre = $registro->administradorNombre;
-                $registro->validadorApellido = $registro->administradorApellido;
-                $registro->validadorNombreCompleto = $registro->validadorNombre . " " . $registro->validadorApellido;
-                $registro->validadorFotoPerfil =  "../fotos/usuario". $registro->administradorId .".jpg";
-                if(file_exists($registro->validadorFotoPerfil))
-                    $registro->validadorFotoPerfil =  "php/fotos/usuario". $registro->administradorId .".jpg";
+//         if($registro->validadorId==null || $registro->validadorId=="")
+//         {
+//             $registro->validadorId = $registro->administradorId;
+//             $registro->validadorNombre = $registro->administradorNombre;
+//             $registro->validadorApellido = $registro->administradorApellido;
+//             $registro->validadorNombreCompleto = $registro->validadorNombre . " " . $registro->validadorApellido;
+//             $registro->validadorFotoPerfil =  "../fotos/usuario". $registro->administradorId .".jpg";
+//             if(file_exists($registro->validadorFotoPerfil))
+//                 $registro->validadorFotoPerfil =  "php/fotos/usuario". $registro->administradorId .".jpg";
+//             else
+//                 $registro->validadorFotoPerfil =  "php/fotos/default.jpg";
+          
+//         }
+//         else
+       // {
+            $registro->validadorNombreCompleto = $registro->validadorNombre . " " . $registro->validadorApellido;
+            $registro->validadorFotoPerfil =  "../fotos/usuario". $registro->validadorId .".jpg";
+            if(file_exists($registro->validadorFotoPerfil))
+                $registro->validadorFotoPerfil =  "php/fotos/usuario". $registro->validadorId .".jpg";
                 else
                     $registro->validadorFotoPerfil =  "php/fotos/default.jpg";
-              
-            }
-            else
-            {
-                $registro->validadorNombreCompleto = $registro->validadorNombre . " " . $registro->validadorApellido;
-                $registro->validadorFotoPerfil =  "../fotos/usuario". $registro->validadorId .".jpg";
-                if(file_exists($registro->validadorFotoPerfil))
-                    $registro->validadorFotoPerfil =  "php/fotos/usuario". $registro->validadorId .".jpg";
-                    else
-                        $registro->validadorFotoPerfil =  "php/fotos/default.jpg";
-            }
+        //}
        // }
        
              

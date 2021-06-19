@@ -1,3 +1,7 @@
+/*alanbazan
+version 2.0
+17/06/2021
+*/
 class ArrayUtils
 {
 	static copy(array)
@@ -270,6 +274,18 @@ class ArrayUtils
 				} 	
 			}				
 		return max;
+	}
+	
+	static join(array, field)
+	{
+		var values = [];
+		for(var i =0;i<array.length;i++)
+		{
+			var row = array[i];
+			var value = row[field];
+			values.push(value);
+		}
+		return values.join();
 	}
 
 }

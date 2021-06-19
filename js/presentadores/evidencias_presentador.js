@@ -4,19 +4,6 @@ class EvidenciasPresentador extends CatalogoPresentador
 	 {
 		 super(vista,new EvidenciasRepositorio());
 	 }
-////	 
-//	 consultar()
-//	 {
-//		 this.vista.mostrarIndicador();
-//		 this._repositorio.consultarEvidencias(this,function(resultado)
-//		 {
-//			 this.vista.ocultarIndicador();	
-//				if(resultado.mensajeError=="")
-//					this.vista.datos = resultado.valor;
-//				else
-//					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-//		 },this.vista.criteriosSeleccion);
-//	 }
 
 	 
 	 consultarEmpresasCriterio()	
@@ -32,7 +19,22 @@ class EvidenciasPresentador extends CatalogoPresentador
 			else
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 			
-		 },null,true);
+		 },{estatus:1},true);
+	 }
+
+ 	consultarAdministradoresCriterio()	
+	 {
+		 var repositorio = new UsuariosRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.administradoresCriterio = resultado.valor;
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },{estatus:1, tipoUsuarioId : TipoUsuario.ADMINISTRADOR},true);
 	 }
 	 
 	
@@ -63,31 +65,42 @@ class EvidenciasPresentador extends CatalogoPresentador
 				this.vista.cambiarSedeCriterio();
 			}
 			else
-				this.vista.mostrarMensaje("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		 }
 		,this.vista.criteriosSeleccion.empresaId,true);
 	 }
 	 
-	 consultarAreasCriterio()	
+	 consultarDepartamentosCriterio()	
 	 {
-		 var repositorio = new AreasRepositorio(this);		
-		 repositorio.consultarPorEmpresaSede(this, function(resultado)
+		 var repositorio = new DepartamentosRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
 		 {
 			if(resultado.mensajeError=="")
 			{
-				this.vista.areasCriterio = resultado.valor;			
+				this.vista.departamentosCriterio = resultado.valor;			
 			}
 			else
-				this.vista.mostrarMensaje("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		 }
-		,this.vista.criteriosSeleccion.empresaId,this.vista.criteriosSeleccion.sedeId,true);
+		,null,true);
 	 }
-	 
-	 
 
-	
-	
+	validarJustificadas(ids)
+	{
+		vista.cargando = true;
+		 this._repositorio.validarJustificadas(this, function(resultado)
+		 {
+			vista.cargando = false;
+			if(resultado.mensajeError=="")
+			{
+				this.vista.eliminarValidadas(ids);			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		,ids);
+	}
 	 
-	
+	 
 	 
 }

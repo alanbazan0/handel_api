@@ -299,6 +299,20 @@ class Vista
 		$('#indicador').show();				
 	}
 	
+	set cargando(cargando)
+	{
+		this._cargando = cargando;
+		if(cargando)
+			this.mostrarIndicador();
+		else
+			this.ocultarIndicador();
+	}
+	
+	get cargando()
+	{
+		return this._cargando;
+	}
+	
 	ocultarIndicador()
 	{		
 		$('#indicador').hide();

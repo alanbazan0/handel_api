@@ -4,7 +4,16 @@ class EvidenciasVista extends CatalogoVista
 	{	
 		super();
 		this.presentador = new EvidenciasPresentador(this);
+		var fecha = new Date();
+		this._time = fecha.getTime();
 	}
+	
+	
+	get time()
+	{
+		return this._time;
+	}
+
 	
 	inicializar()
 	{
@@ -24,27 +33,32 @@ class EvidenciasVista extends CatalogoVista
 		this.consultoGrid = false;
 		this.consultarAnos();
 		
-		
+		$("#estadoValidacionSelectCriterio").val(0)
+		//$("#estadoJusSelectCriterio").val(0)
+		$("#validarJustificadasButton").click(function(){
+			_this.validarJustificadas();
+		});
 		
 	}
 	
 	crearColumnasGrid()
 	{
 		this.tabla.columnas = [
-			{longitud:200, 	titulo:"Id",   	alias:"id", alineacion:"I" },
-			{longitud:200, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I" },
-			{longitud:200, 	titulo:"Código",   	alias:"codigo", alineacion:"I" },
+			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"I" },
+			{longitud:300, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I" },
+			//{longitud:200, 	titulo:"Código",   	alias:"codigo", alineacion:"I" },
 			{longitud:200, 	titulo:"Fecha",   	alias:"fecha", alineacion:"I" },
-			{longitud:30, 	titulo:"Justificada",   alias:"justificada", alineacion:"I", itemRenderer:this.renderJustificada},
-			{longitud:100, 	titulo:"Evidencia",   alias:"nombreArchivo", alineacion:"I", itemRenderer:this.renderArchivo},
+			{longitud:30, 	titulo:"Justificada",   alias:"justificada", alineacion:"C", itemRenderer:this.renderJustificada},
+			{longitud:100, 	titulo:"Evidencia",   alias:"nombreArchivo", alineacion:"C", itemRenderer:this.renderArchivo},
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoUsuario},
 			{longitud:100, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I"},
+			{longitud:100, 	titulo:"Comentarios",   alias:"comentarios", alineacion:"I", itemRenderer:this.renderComentarios},
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderLogoEmpresa},
 			{longitud:100, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I"},
-			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoAdministrador},
-			{longitud:100, 	titulo:"Administrador responsable",   alias:"administradorNombreCompleto", alineacion:"I",itemRenderer:this.renderNombreAdministrador},
+			//{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoAdministrador},
+			//	{longitud:100, 	titulo:"Administrador responsable",   alias:"administradorNombreCompleto", alineacion:"I",itemRenderer:this.renderNombreAdministrador},
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoValidador},
-			{longitud:100, 	titulo:"Administrador que validó",   alias:"administradorNombreCompleto", alineacion:"I",itemRenderer:this.renderNombreValidador},
+			{longitud:100, 	titulo:"Usuario que validó",   alias:"validadorNombreCompleto", alineacion:"I",itemRenderer:this.renderNombreValidador},
 			//{longitud:100, 	titulo:"Comentarios",   alias:"comentarios", alineacion:"I", itemRenderer:this.renderComentarios},
 			//{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"I" },
 			//{longitud:50, 	titulo:"Código",   	alias:"codigo", alineacion:"I" }
@@ -64,7 +78,7 @@ class EvidenciasVista extends CatalogoVista
 		var contenido = "";
 		if(renglon.administradorId!=null)
 		{
-			var icono = HANDEL_API+ "/"+renglon.administradorFotoPerfil+"?"+fecha.getTime();
+			var icono = HANDEL_API+ "/"+renglon.administradorFotoPerfil+"?"+vista.time;
 			contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;border-radius: 50%'></img></center>";
 		}
 	    return contenido;
@@ -87,7 +101,7 @@ class EvidenciasVista extends CatalogoVista
 		var contenido = "";
 		if(renglon.validadorId!=null)
 		{
-			var icono = HANDEL_API+ "/"+renglon.validadorFotoPerfil+"?"+fecha.getTime();
+			var icono = HANDEL_API+ "/"+renglon.validadorFotoPerfil+"?"+vista.time;
 			contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;border-radius: 50%'></img></center>";
 		}
 	    return contenido;
@@ -100,7 +114,7 @@ class EvidenciasVista extends CatalogoVista
 		if(renglon.validadorId!=null)
 			contenido = renglon.validadorNombreCompleto;
 		else
-			contenido ="-";
+			contenido ="";
 	    return contenido;
 	}
 	
@@ -118,7 +132,8 @@ class EvidenciasVista extends CatalogoVista
 	{    
 		var contenido = "";
 		if(renglon.justificacionId!=null)
-			contenido += "<center><span data-toggle='tooltip' title='"+renglon.justificacionNombre+"' data-placemen='bottom' class='archivo fa fa-check fa-lg text-blue' style='cursor:pointer'></span></center>";
+			contenido += "<center><span data-toggle='tooltip' title='"+renglon.justificacionNombre+"' data-placemen='bottom' class='archivo fa fa-check fa-lg text-blue' style='cursor:pointer'>"+
+			 			"</span></center>";
 		else
 			contenido += "";
 	    return contenido;
@@ -130,7 +145,7 @@ class EvidenciasVista extends CatalogoVista
 		var comentarios ="";
 		if(renglon.numeroComentarios>0)
 			comentarios = "<span class='label-warning notificacion'>"+renglon.numeroComentarios+"</span>";
-		contenido = "<span style='cursor:pointer;margin-left:15px;width:50px;height:30px' data-toggle='tooltip' data-placemen='bottom' title='Comentarios'  type='button' class='comentarios text-aqua'><span  data-toggle='tooltip' class='fas fa-comments fa-lg'>"+comentarios+"</span>";;
+		contenido = "<center><span style='cursor:pointer;margin-left:15px;width:50px;height:30px' data-toggle='tooltip' data-placemen='bottom' title='Comentarios'  type='button' class='comentarios text-aqua'><span  data-toggle='tooltip' class='fas fa-comments fa-lg'>"+comentarios+"</span></center>";;
 	    return contenido;
 	}
 	
@@ -144,7 +159,14 @@ class EvidenciasVista extends CatalogoVista
 			var iconoColor = vista.getIconoArchivo(renglon.nombreArchivo);
 			if(renglon.validada==1)
 				comentarios = "<span class='label-success' style='position: relative;top: 6px;right: 4px;font-size: 10px;padding: 2px 3px;line-height: .9;'><i class='fas fa-check-double'></i></span>";
-			contenido = "<span style='cursor:pointer;margin-left:15px;width:50px;height:30px' data-toggle='tooltip' data-placemen='bottom' title='Evidencia'  type='button' class='archivo'><span  data-toggle='tooltip' class='"+iconoColor.icono+" fa-lg "+iconoColor.color+"'>"+comentarios+"</span>";
+			contenido = "<center><span style='cursor:pointer;margin-left:15px;width:50px;height:30px' data-toggle='tooltip' data-placemen='bottom' title='Evidencia'  type='button' class='archivo'><span  data-toggle='tooltip' class='"+iconoColor.icono+" fa-lg "+iconoColor.color+"'>"+comentarios+"</span></center>";
+		}
+		else
+		{
+			if(renglon.validada==1)
+				comentarios = "<span class='label-success' style='position: relative;top: 6px;right: 4px;font-size: 10px;padding: 2px 3px;line-height: .9;'><i class='fas fa-check-double'></i></span>";
+			contenido = "<center>"+comentarios+"</center>";
+	
 		}
 	    return contenido;
 	}
@@ -223,7 +245,7 @@ class EvidenciasVista extends CatalogoVista
 	{    
 		var fecha = new Date();
 		var contenido = "";
-		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+fecha.getTime();
+		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+vista.time;
 		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;border-radius: 50%'></img></center>";
 	    return contenido;
 	}
@@ -233,7 +255,7 @@ class EvidenciasVista extends CatalogoVista
 	{    
 		var fecha = new Date();
 		var contenido = "";
-		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+fecha.getTime();
+		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+vista.time;
 		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
 	    return contenido;
 	}
@@ -260,6 +282,7 @@ class EvidenciasVista extends CatalogoVista
 		
 		this.consultarEmpresasCriterio();
 		
+		
 		//this.consultar();
 		
 	}
@@ -271,7 +294,7 @@ class EvidenciasVista extends CatalogoVista
 
 	cambiarSedeCriterio()
 	{
-		this.consultarAreasCriterio();
+		
 	}
 
 	
@@ -287,10 +310,10 @@ class EvidenciasVista extends CatalogoVista
 		this.presentador.consultarSedesCriterio();
 	}
 	
-	consultarAreasCriterio()
+	consultarDepartamentosCriterio()
 	{
-		this.cargandoOpciones("#areaSelectCriterio");
-		this.presentador.consultarAreasCriterio();
+		this.cargandoOpciones("#departamentoSelectCriterio");
+		this.presentador.consultarDepartamentosCriterio();
 	}
 	
 	set sedesCriterio(registros)
@@ -298,9 +321,17 @@ class EvidenciasVista extends CatalogoVista
 		this.cargarOpciones('#sedeSelectCriterio', registros);
 	}
 	
-	set areasCriterio(registros)
+	set departamentosCriterio(registros)
 	{		
-		this.cargarOpciones('#areaSelectCriterio', registros);
+		this.cargarOpciones('#departamentoSelectCriterio', registros);
+		this.presentador.consultarAdministradoresCriterio();
+	}
+	
+	set administradoresCriterio(registros)
+	{
+		//this.cargarOpciones('#administradorSelectCriterio', registros,"nombreCompleto");
+		this.cargarOpciones('#administradorSelectCriterio', registros, null, null, null, null,  "nombreCompleto");
+		$("#administradorSelectCriterio").val(this.usuario.id);
 		if(this.consultoGrid==false)
 		{
 			this.consultar();
@@ -313,18 +344,28 @@ class EvidenciasVista extends CatalogoVista
 	set empresasCriterio(registros)
 	{		
 		this.cargarOpciones('#empresaSelectCriterio', registros);
+		this.consultarDepartamentosCriterio();
 	}
 	
 	get criteriosSeleccion()
 	{
+		
+		
 		var criteriosSeleccion = 
 		{
 			empresaId:  $('#empresaSelectCriterio').val(),
 			sedeId:  $('#sedeSelectCriterio').val(),
-			areaId:  $('#areaSelectCriterio').val(),
+			departamentoId:  $('#departamentoSelectCriterio').val(),
 			mes:  $('#mesSelectCriterio').val(),
-			ano: $('#anoSelectCriterio').val()
+			ano: $('#anoSelectCriterio').val(),
+			administradorId : $('#administradorSelectCriterio').val(),
+			validada : $('#estadoValidacionSelectCriterio').val(),
+			justificada : $('#estadoJustificacionSelectCriterio').val()
+			
 		};
+		
+		
+		
 		return criteriosSeleccion;
 	}
 
@@ -430,7 +471,59 @@ class EvidenciasVista extends CatalogoVista
 
 	}
 	
+	cambiarEstado()
+	{
+		
+		
+	}
 	
+	set datos(datos)
+	{
+		super.datos = datos;
+		var justificadasSinValidar = ArrayUtils.filterWithValues("validada,justificada",[0,1],datos);
+		if(justificadasSinValidar.length>0)
+		{
+			$("#justificadasSpan").html("("+justificadasSinValidar.length+")");
+			$("#validarJustificadasButton").fadeIn();
+		}
+		else
+			$("#validarJustificadasButton").fadeOut();
+	}
+	
+	validarJustificadas()
+	{
+		var justificadasSinValidar = ArrayUtils.filterWithValues("validada,justificada",[0,1],this.tabla.registros);
+		var ids = ArrayUtils.join(justificadasSinValidar,"id");
+		this.presentador.validarJustificadas(ids);
+	}
+	
+	eliminarValidadas(ids)
+	{
+		var registros = ids.split(",");
+		for(var i=0; i < registros.length; i++)
+		{
+			var id = registros[i];
+			var row = $("#tabla").find("tr[data-id="+id+"]");
+			if(row!=null)
+				row.remove();
+		}
+		$("#validarJustificadasButton").fadeOut();
+		var texto = "";
+		if(registros.length==1)
+			texto = "validó 1 evidencia";
+		else
+			texto = "validaron "+registros.length+" evidencias";
+		this.mostrarMensaje("","Se "+ texto +" justificadas correctamente")
+	}
+	
+	set cargando(cargando)
+	{
+		super.cargando = cargando;
+		if(cargando)
+			$("#validarJustificadasButton").attr("disabled",true);
+		else
+			$("#validarJustificadasButton").attr("disabled",false);
+	}
 }
 
 var vista = new EvidenciasVista(this);	

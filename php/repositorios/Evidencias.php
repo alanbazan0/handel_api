@@ -74,7 +74,7 @@ try
                     {
     
                     }
-                    break;
+                break;
                 case 'consultar':
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultar($criteriosSeleccion);
@@ -183,8 +183,21 @@ try
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarEvidenciasAnualUsuario($usuario,$criteriosSeleccion);
                  break;
+                case 'validarJustificadas':
+                    //                 session_start();
+                    //                 $usuario = null;
+                    //                 if(isset($_SESSION['usuario']))
+                    //                     $usuario = $_SESSION['usuario'];
+                    $ids =  REQUEST('ids');
+                    $mapper = new JsonMapper();
+                    $resultado = $repositorio->validarJustificadas($usuario,$ids);
+                    if($resultado->correcto())
+                    {
+                        
+                    }
+                    break;
                 default:
-                    $resultado->mensajeError = 'Acción no válida';
+                    $resultado->mensajeError = 'Acción no implementada';
                 break;
                 
             }

@@ -506,6 +506,7 @@ function toLineChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colo
     $data1 = array();
     $data2 = array();
     $data3 = array();
+    $data4 = array();
     
     $fecha = new DateTime();
     $mesActual = (int)$fecha->format("m");
@@ -517,34 +518,45 @@ function toLineChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colo
         $newRow= (object) [
             'name' =>  $row->$xField,
             'y' => (float)$row->$yField,
-            'color' => "#00a1ff" 
+            //'color' => "#005493" 
             
         ];
         
         $newRow1= (object) [
             'name' =>  $row->$xField,
             'y' => 85,
-            'color' => "#00a65a"
+            //'color' => "#00a65a"
         ];
         
         $newRow2= (object) [
             'name' =>  $row->$xField,
             'y' => 70,
-            'color' => "#f39c12"
+           // 'color' => "#f39c12"
             
         ];
         
         $newRow3= (object) [
             'name' =>  $row->$xField,
             'y' => 50,
-            'color' => "#dd4b39"
+           // 'color' => "#dd4b39"
+            
+            
+        ];
+        
+        $newRow4= (object) [
+            'name' =>  $row->$xField,
+            'y' => (float)$row->porcentajeCumplimientoEnviadas,
+           // 'color' => "#00a1ff"
             
             
         ];
         
         array_push($categories, $row->$xField);
         if($i<=$mes-1)
+        {
             array_push($data, $newRow);
+            array_push($data4, $newRow4);
+        }
         array_push($data1, $newRow1);
         array_push($data2, $newRow2);
         array_push($data3, $newRow3);
@@ -567,34 +579,35 @@ function toLineChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colo
         'title' => (object) [ 'text'=> $title],
         'credits' => (object) ['enabled' => false],
         'xAxis' => (object) [ 'categories' => $categories],
-//         'plotOptions' => (object)
-//         [
-//             'line'=> (object)[
-//                 'dataLabels'=>(object)
-//                 [
-//                     'enabled'=>false,
-//                     'style'=> (object)
-//                     [
-//                         'fontSize' => 10,
-//                         'textOutline' => '0px'
-//                     ]
-//                 ]
-//             ]
-//         ],
         'yAxis' => $yAxis,
         'series' => array(
-            (object) ['name' => $serieTitle, 'data' => $data,  'showInLegend' => $showInLegend,  'dataLabels'=>(object)
+            (object) ['name' => "Riesgo mínimo", 'data' => $data,  'showInLegend' => $showInLegend,  
+                'dataLabels'=>(object)
                 [
                     'enabled'=>true,
                     'style'=> (object)
                     [
                         'fontSize' => 10,
                         'textOutline' => '0px'
-                    ]
-                ]],
+                    ],
+                    'verticalAlign' => 'bottom',
+                    'y' => -20
+                ],"color"=>"#005493"],
+            
             (object) ['name' => "Riesgo bajo", 'data' => $data1,  'showInLegend' => $showInLegend, "color"=>"#60d836"],
             (object) ['name' => "Riesgo medio", 'data' => $data2,  'showInLegend' => $showInLegend, "color"=>"#f9c320"],
-            (object) ['name' => "Riesgo alto", 'data' => $data3,  'showInLegend' => $showInLegend, "color"=>"#fe2500"]
+            (object) ['name' => "Riesgo alto", 'data' => $data3,  'showInLegend' => $showInLegend, "color"=>"#fe2500"],
+            (object) ['name' => "Riesgo máximo", 'data' => $data4,  'showInLegend' => $showInLegend,  
+                'dataLabels'=>(object)
+                [
+                    'enabled'=>true,
+                    'style'=> (object)
+                    [
+                        'fontSize' => 10,
+                        'textOutline' => '0px'
+                    ],
+                    'verticalAlign' => 'top'
+                ], "color" => "#00a1ff"]
         )
     ];
     
@@ -732,7 +745,7 @@ function toPieChart( $title, $yTitle, $serieTitle, $rows, $xField, $yField, $col
 }
 
 
-function toPieChartWithLabels( $title, $yTitle, $serieTitle, $rows, $xField, $yField, $colors,$distance=-50)
+function toPieChartWithLabels( $title, $yTitle, $serieTitle, $rows, $xField, $yField, $colors,$distance=50)
 {
     $categories = array();
     $data = array();

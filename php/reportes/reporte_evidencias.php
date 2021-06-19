@@ -515,7 +515,7 @@ class PDF extends FPDF
             {
                 $porcentajes = $resultado->valor;
                 $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
-                $image = toPieChart("Porcentaje de cumplimiento global del área <br>($nombreMes)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
+                $image = toPieChartWithLabels("Porcentaje de cumplimiento global del área <br>($nombreMes)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores,20);
                 if($image!='')
                     $this->Image($image,0 ,40, $chartWidth);
             }
@@ -525,7 +525,7 @@ class PDF extends FPDF
             {
                 $porcentajes = $resultado->valor;
                 $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
-                $image = toPieChart("Porcentaje de cumplimiento global del área <br>($nombreMesAnterior)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
+                $image = toPieChartWithLabels("Porcentaje de cumplimiento global del área <br>($nombreMesAnterior)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores,20);
                 if($image!='')
                     $this->Image($image, 95 ,40,$chartWidth);
             }
@@ -596,7 +596,12 @@ class PDF extends FPDF
                 if($total!=0)
                     $porcentajeCumplimiento = $cumplidas * 100 / $total;
                     
-                    $mes->porcentajeCumplimiento=    number_format($porcentajeCumplimiento, 1, '.', '');
+                $porcentajeCumplimientoEnviadas = 0;
+                if($total!=0)
+                    $porcentajeCumplimientoEnviadas = $mes->enviadas * 100 / $total;
+                    
+                $mes->porcentajeCumplimiento=    number_format($porcentajeCumplimiento, 1, '.', '');
+                $mes->porcentajeCumplimientoEnviadas =  number_format($porcentajeCumplimientoEnviadas, 1, '.', '');
                     
                     
             }
@@ -925,7 +930,7 @@ class PDF extends FPDF
         {
             $porcentajes = $resultado->valor;
             $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
-            $image = toPieChart("Cumplimiento global del área <br>($nombreMes)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
+            $image = toPieChartWithLabels("Cumplimiento global del área <br>($nombreMes)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores,20);
             if($image!='')
                 $this->Image($image,0 ,40, $chartWidth);
         }
@@ -935,7 +940,7 @@ class PDF extends FPDF
         {
             $porcentajes = $resultado->valor;
             $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
-            $image = toPieChart("Cumplimiento global del área <br>($nombreMesAnterior)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores);
+            $image = toPieChartWithLabels("Cumplimiento global del área <br>($nombreMesAnterior)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores,20);
             if($image!='')
                 $this->Image($image, 95 ,40,$chartWidth);
         }
@@ -952,9 +957,11 @@ class PDF extends FPDF
         {
             $porcentajes = $resultado->valor;
             $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-            $image = toColumnChart("Porcentaje de cumplimiento <br>($nombreMes)",'','Usuarios',$porcentajes,"nombreCompleto","porcentajeCumplimiento",$colores,false,100);
+            //$image = toColumnChart("Porcentaje de cumplimiento <br>($nombreMes)",'','Usuarios',$porcentajes,"nombreCompleto","porcentajeCumplimiento",$colores,false,100);
+            $image = $this->graficaBarrasUsuarios("Porcentaje de cumplimiento por usuario <br>($nombreMes)",'','Usuarios',$porcentajes,"nombreCompleto");
+            
             if($image!='')
-                $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,130, $chartWidth);
+                $this->Image($image,$this->w/2 -$chartWidth/2 ,130, $chartWidth);
         }
         
         $resultado = $repositorio->consultarPorcentajesUsuarios($this->usuario, $criteriosSeleccionAnterior);
@@ -962,9 +969,11 @@ class PDF extends FPDF
         {
             $porcentajes = $resultado->valor;
             $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-            $image = toColumnChart("Porcentaje de cumplimiento  <br>($nombreMesAnterior)",'','Usuarios',$porcentajes,"nombreCompleto","porcentajeCumplimiento",$colores,false,100);
+            //$image = toColumnChart("Porcentaje de cumplimiento  <br>($nombreMesAnterior)",'','Usuarios',$porcentajes,"nombreCompleto","porcentajeCumplimiento",$colores,false,100);
+            $image = $this->graficaBarrasUsuarios("Porcentaje de cumplimiento por usuario <br>($nombreMesAnterior)",'','Usuarios',$porcentajes,"nombreCompleto");
+            
             if($image!='')
-                $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,200, $chartWidth);
+                $this->Image($image,$this->w/2 -$chartWidth/2 ,200, $chartWidth);
         }
         
         $this->AddPage();
@@ -1015,9 +1024,11 @@ class PDF extends FPDF
         
         
         $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-        $image = toColumnChart("Porcentaje de cumplimiento en el año <br>($this->ano)",'','Usuarios',$usuarios,"nombreCompleto","porcentajeCumplimiento",$colores,false,100);
+        $image = $this->graficaBarrasUsuarios("Porcentaje de cumplimiento en el año <br>($this->ano)",'','Usuarios',$porcentajes,"nombreCompleto");
+        
+        //$image = toColumnChart("Porcentaje de cumplimiento en el año <br>($this->ano)",'','Usuarios',$usuarios,"nombreCompleto","porcentajeCumplimiento",$colores,false,100);
         if($image!='')
-            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,30, $chartWidth);
+            $this->Image($image,$this->w/2 -$chartWidth/2 ,30, $chartWidth);
     
         
         $fecha = new DateTime();
@@ -1046,8 +1057,13 @@ class PDF extends FPDF
                 $porcentajeCumplimiento = 0;
                 if($total!=0)
                     $porcentajeCumplimiento = $cumplidas * 100 / $total;
+                
+                $porcentajeCumplimientoEnviadas = 0;
+                if($total!=0)
+                    $porcentajeCumplimientoEnviadas = $mes->enviadas * 100 / $total;
                     
                 $mes->porcentajeCumplimiento=    number_format($porcentajeCumplimiento, 1, '.', '');
+                $mes->porcentajeCumplimientoEnviadas =  number_format($porcentajeCumplimientoEnviadas, 1, '.', '');
                 
                 
             }
