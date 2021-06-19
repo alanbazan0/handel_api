@@ -100,6 +100,55 @@ class EvidenciasPresentador extends CatalogoPresentador
 		 }
 		,ids);
 	}
+	
+	consultarComentariosEvidencia()
+	 {
+		// this.vista.mostrarIndicador();
+		 var repositorio = new EvidenciasComentariosRepositorio(this);		
+		 repositorio.consultar(this,function(resultado)
+		 {
+			//this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.comentariosEvidencia = resultado.valor;
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 } ,{evidenciaId: this.vista.evidenciaSeleccionada.id});
+	 }
+	
+	 enviarComentarioEvidencia()
+	 {
+		 if(this.vista.modeloCometarioEvidencia.comentario!="" && this.vista.modeloCometarioEvidencia.comentario!=undefined)
+		 {
+			 var repositorio = new EvidenciasComentariosRepositorio(this);		
+			 repositorio.insertar(this, function(resultado)
+			 {
+				this.vista.ocultarIndicador();	
+				if(resultado.mensajeError=="")
+					this.vista.consultarComentariosEvidencia();
+				else
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				
+			 },this.vista.modeloCometarioEvidencia);
+		}
+	 }
+	
+	consultarEvidenciaPorLlaves()
+	{
+		this.vista.mostrarIndicador();	
+		 this._repositorio.consultarPorLlaves(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.modeloEvidencia = resultado.valor;
+			 }
+			 else
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError, resultado.codigoError);
+		 },this.vista.llaves);
+	}
+	 
+	
 	 
 	 
 	 

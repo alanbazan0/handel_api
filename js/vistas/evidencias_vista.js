@@ -139,7 +139,7 @@ class EvidenciasVista extends CatalogoVista
 	    return contenido;
 	}
 	
-	renderComentarios(renglon, type, set)
+	/*renderComentarios(renglon, type, set)
 	{    
 		var contenido = "";
 		var comentarios ="";
@@ -147,6 +147,11 @@ class EvidenciasVista extends CatalogoVista
 			comentarios = "<span class='label-warning notificacion'>"+renglon.numeroComentarios+"</span>";
 		contenido = "<center><span style='cursor:pointer;margin-left:15px;width:50px;height:30px' data-toggle='tooltip' data-placemen='bottom' title='Comentarios'  type='button' class='comentarios text-aqua'><span  data-toggle='tooltip' class='fas fa-comments fa-lg'>"+comentarios+"</span></center>";;
 	    return contenido;
+	}*/
+	
+	renderComentarios(renglon, type, set)
+	{  
+		return "<div id='comentariosRecomendacionTabla"+renglon.id+"'>" + vista.getComentariosEvidencia(renglon) + "</div>";
 	}
 	
 	
@@ -524,6 +529,223 @@ class EvidenciasVista extends CatalogoVista
 		else
 			$("#validarJustificadasButton").attr("disabled",false);
 	}
+	
+	inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave)
+	{
+		var _this = this;
+		super.inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave);
+		$(tbody).on("click", "span.archivo", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._evidenciaSeleccionada  = table.row( tr ).data();
+			if (_this._evidenciaSeleccionada != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._evidenciaSeleccionada, ["id"]);
+				if(_this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR)
+				{
+					_this.mostrarFormularioValidacionEvidencia();
+				}
+				else if(_this.usuario.tipoUsuarioId==TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId==TipoUsuario.SUPERVISOR)
+				{
+					_this.modo = Modo.CONSULTA
+					_this.mostrarFormularioEvidencia(_this._evidenciaSeleccionada);
+				}
+			
+			}
+		});
+		
+		$(tbody).on("click", "span.comentarios", function()
+			{			
+				 var tr = $(this).closest('tr');
+				    
+			    if ( $(tr).hasClass('child') ) {
+			      tr = $(tr).prev();  
+			    }
+				
+				_this._evidenciaSeleccionada  = table.row( tr ).data();
+				if (_this._evidenciaSeleccionada != undefined)
+				{
+					_this._llaves = _this.copiarPropiedadesObjeto(_this._evidenciaSeleccionada, ["id"]);
+					_this.mostrarComentariosEvidencia();
+
+				}
+			});
+	}
+	
+	
+	mostrarComentariosEvidencia()
+	{
+		if($("#modalAlta").length ==0)
+		{
+			var url = HANDEL_API + "/html/modales/comentarios.php";
+			this.mostrarIndicador();
+			var _this = this;
+			$.post(url,{}, function(html) 
+			{
+				_this.ocultarIndicador();
+				$("body").append(html);
+				$("#modalAlta").on("hidden.bs.modal", function () 
+				{
+					clearInterval(_this.cometariosEvidenciaIntervalId);
+					_this.consultarEvidenciaPorLlaves(false);
+					$("#modalAlta").remove();
+				});
+				
+				$("#modalAlta").on("show.bs.modal", function () 
+				{
+					//_this.inicializarValidacionesComentarioEvidencia();
+					$("#enviarComentarioButton").click(function () 
+					{
+						var comentario = $("#comentarioEvidenciaInput").val().trim();
+						if(comentario!="" && comentario!=undefined)
+							_this.enviarComentarioEvidencia();
+					});
+					$("#comentarioEvidenciaInput").keypress(function(event){
+					    var keycode = (event.keyCode ? event.keyCode : event.which);
+					    if(keycode == '13')
+					    {
+					    	var comentario = $("#comentarioEvidenciaInput").val().trim();
+							if(comentario!="" && comentario!=undefined)
+								_this.enviarComentarioEvidencia();
+					    }
+					});
+					_this._comentariosEvidencia = [];
+					_this.consultarComentariosEvidencia();
+					_this.cometariosEvidenciaIntervalId = setInterval(_this.consultarComentariosAutomaticamente, 60000);
+						
+				});
+			
+				$("#modalAlta").modal({backdrop: 'static', keyboard: false});
+			});
+		}
+		else
+		{
+			$("#modalAlta").modal({backdrop: 'static', keyboard: false});
+		}
+	}
+	
+	
+	enviarComentarioEvidencia()
+	{
+		this.presentador.enviarComentarioEvidencia();
+		$("#comentarioEvidenciaInput").val("");
+	}
+	
+
+	
+	get modeloCometarioEvidencia()
+	{
+		var modelo =
+		{
+			evidenciaId: this._evidenciaSeleccionada.id,
+			usuarioId: this.usuario.id,
+			comentario: $("#comentarioEvidenciaInput").val()
+		};
+		return modelo;
+	}
+	
+	consultarComentariosEvidencia()
+	{
+		this.presentador.consultarComentariosEvidencia();
+	}
+	
+	consultarComentariosAutomaticamente()
+	{
+		var _this  = $("body").data("_this");
+		_this.consultarComentariosEvidencia();
+	}
+	
+	get evidenciaSeleccionada()
+	{
+		return this._evidenciaSeleccionada;
+	}
+	
+	set comentariosEvidencia(comentariosEvidencia)
+	{
+		if(comentariosEvidencia.length> this._comentariosEvidencia.length)
+		{
+			this._comentariosEvidencia = comentariosEvidencia;
+			var fecha = new Date();
+			var html="";
+			for(var i=0; i< comentariosEvidencia.length; i++)
+			{
+				var comentario = comentariosEvidencia[i];
+				
+				var foto ="";
+				if(comentario.fotoPerfil.includes("default.jpg"))
+					foto = comentario.fotoPerfil;
+				else
+					foto = comentario.fotoPerfil+"?"+vista.time;
+				
+				
+				//var foto = HANDEL_API + "/" + comentario.fotoPerfil+"?"+fecha.getTime();
+				var url = HANDEL_API + "/" + foto;
+				html+="<div class='item'>" +
+						"<img src='"+url+"' alt='user image' class='offline'> " +
+						"<p class='message'>" +
+						"  <a href='#' class='name'>" +
+						"	<small class='text-muted pull-right'><i class='fa fa-clock-o'></i> "+comentario.fecha +"</small>" + comentario.usuarioNombreCompleto +
+						"  </a>" + comentario.comentario + 
+						"</p>" +
+					  "</div>";
+			}
+			$("#chatbox").html(html);
+		}	
+	}
+	
+	consultarEvidenciaPorLlaves(formulario)
+	{
+		this._formularioEvidencias = formulario;
+		this.presentador.consultarEvidenciaPorLlaves();
+	}
+	
+	
+	set modeloEvidencia(modeloEvidencia)
+	{
+		this._modeloEvidencia = modeloEvidencia;
+		//$('#cumplimientoRecomendacionTabla'+this._modeloEvidencia.id).html(this.getCumplimiento(this._modeloEvidencia));
+		//$('#fotoUsuarioRecomendacionTabla'+this._modeloEvidencia.id).html(this.getFotoUsuario(this._modeloEvidencia));
+		//$('#nombreUsuarioRecomendacionTabla'+this._modeloEvidencia.id).html(this.getTexto(this._modeloEvidencia.usuarioNombreCompleto));
+		//$('#estatusValidacionRecomendacionTabla'+this._modeloEvidencia.id).html(this.getEstatusValidacionRecomendacion(this._modeloEvidencia));
+		$('#comentariosRecomendacionTabla'+this._modeloEvidencia.id).html(this.getComentariosEvidencia(this._modeloEvidencia));
+		//$("#estatusValidacionIcono").attr("class","");
+		//$("#estatusValidacionIcono").addClass(this._modeloEvidencia.estatusValidacionIcono);
+		//$("#estatusValidacionIcono").addClass(this._modeloEvidencia.estatusValidacionColor);
+		//$("#estatusValidacionLabel").html(this._modeloEvidencia.estatusValidacionDescripcion);
+		
+		/*this._evidenciaSeleccionada.cumplimiento = modeloEvidencia.cumplimiento;
+		this._evidenciaSeleccionada.estatusValidacionIcono = modeloEvidencia.estatusValidacionIcono;
+		this._evidenciaSeleccionada.estatusValidacionColor = modeloEvidencia.estatusValidacionColor;
+		this._evidenciaSeleccionada.estatusValidacionDescripcion = modeloEvidencia.estatusValidacionDescripcion;
+		this._evidenciaSeleccionada.usuarioId = modeloEvidencia.usuarioId;
+		this._evidenciaSeleccionada.usuarioNombre = modeloEvidencia.usuarioNombre;
+		this._evidenciaSeleccionada.usuarioApellido = modeloEvidencia.usuarioApellido;
+		this._evidenciaSeleccionada.usuarioNombreCompleto = modeloEvidencia.usuarioNombreCompleto;
+		
+		if(this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR && this._evidenciaSeleccionada.cumplimiento==100)
+			$("#validarRecomendacionButton").show();
+		else
+			$("#validarRecomendacionButton").hide();
+		if(this._formularioRecomendacion)	
+			this.consultarResponsablesRecomendacion();*/
+	}
+	
+	getComentariosEvidencia(renglon)
+	{    
+		var contenido = "";
+		var comentarios ="";
+		if(renglon.numeroComentarios>0)
+			comentarios = "<span class='label-warning notificacion'>"+renglon.numeroComentarios+"</span>";
+		contenido = "<span style='cursor:pointer;margin-left:15px;width:50px;height:30px;color:gray;' data-toggle='tooltip' data-placemen='bottom' title='Comentarios' type='button' class='comentarios text-blue'><span  data-toggle='tooltip' class='fas fa-comments fa-lg'>"+comentarios+"</span>";;
+	    return contenido;
+	}
+	
+	
 }
 
 var vista = new EvidenciasVista(this);	
