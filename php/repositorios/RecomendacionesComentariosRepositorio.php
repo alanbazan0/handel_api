@@ -183,7 +183,7 @@ class RecomendacionesComentariosRepositorio extends RepositorioBase implements I
                         </tr>";
             
             
-            $resultado = $administrador_correo->enviarNotificacionSIVAH($tipo,$usuarios,"Nuevo mensaje en SIVAH","#3F3D33","¡Recibiste un mensaje!", $contenido);
+            $resultado = $administrador_correo->enviarNotificacionSIVAH($tipo,$usuarios,"Nuevo mensaje en SIVAH","","#3F3D33","¡Recibiste un mensaje!", $contenido,"Responder","https://sivah.apps-handel.com",false);
             if($resultado->correcto())
             {
                 $resultado->valor = $modelo->id;

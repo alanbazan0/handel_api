@@ -151,13 +151,14 @@ class EvidenciasVista extends CatalogoVista
 	
 	renderComentarios(renglon, type, set)
 	{  
-		return "<div id='comentariosRecomendacionTabla"+renglon.id+"'>" + vista.getComentariosEvidencia(renglon) + "</div>";
+		return "<div id='comentariosEvidenciaTabla"+renglon.id+"'>" + vista.getComentariosEvidencia(renglon) + "</div>";
 	}
 	
 	
 	renderArchivo(renglon, type, set)
 	{   
-		var contenido = "";
+		return "<div id='archivoEvidenciaTabla"+renglon.id+"'>" + vista.getArchivoEvidencia(renglon) + "</div>";
+		/*var contenido = "";
 		var comentarios ="";
 		if(renglon.justificacionId==null)
 		{
@@ -173,7 +174,7 @@ class EvidenciasVista extends CatalogoVista
 			contenido = "<center>"+comentarios+"</center>";
 	
 		}
-	    return contenido;
+	    return contenido;*/
 	}
 	
 	getIconoArchivo(nombre)
@@ -493,6 +494,7 @@ class EvidenciasVista extends CatalogoVista
 		}
 		else
 			$("#validarJustificadasButton").fadeOut();
+		this._criteriosSeleccionValidada = this.criteriosSeleccion.validada;
 	}
 	
 	validarJustificadas()
@@ -543,6 +545,8 @@ class EvidenciasVista extends CatalogoVista
 		    }
 
 			_this._evidenciaSeleccionada  = table.row( tr ).data();
+			
+			
 			if (_this._evidenciaSeleccionada != undefined)
 			{
 				_this._llaves = _this.copiarPropiedadesObjeto(_this._evidenciaSeleccionada, ["id"]);
@@ -550,11 +554,11 @@ class EvidenciasVista extends CatalogoVista
 				{
 					_this.mostrarFormularioValidacionEvidencia();
 				}
-				else if(_this.usuario.tipoUsuarioId==TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId==TipoUsuario.SUPERVISOR)
+				/*else if(_this.usuario.tipoUsuarioId==TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId==TipoUsuario.SUPERVISOR)
 				{
 					_this.modo = Modo.CONSULTA
 					_this.mostrarFormularioEvidencia(_this._evidenciaSeleccionada);
-				}
+				}*/
 			
 			}
 		});
@@ -712,7 +716,7 @@ class EvidenciasVista extends CatalogoVista
 		//$('#fotoUsuarioRecomendacionTabla'+this._modeloEvidencia.id).html(this.getFotoUsuario(this._modeloEvidencia));
 		//$('#nombreUsuarioRecomendacionTabla'+this._modeloEvidencia.id).html(this.getTexto(this._modeloEvidencia.usuarioNombreCompleto));
 		//$('#estatusValidacionRecomendacionTabla'+this._modeloEvidencia.id).html(this.getEstatusValidacionRecomendacion(this._modeloEvidencia));
-		$('#comentariosRecomendacionTabla'+this._modeloEvidencia.id).html(this.getComentariosEvidencia(this._modeloEvidencia));
+		$('#comentariosEvidenciaTabla'+this._modeloEvidencia.id).html(this.getComentariosEvidencia(this._modeloEvidencia));
 		//$("#estatusValidacionIcono").attr("class","");
 		//$("#estatusValidacionIcono").addClass(this._modeloEvidencia.estatusValidacionIcono);
 		//$("#estatusValidacionIcono").addClass(this._modeloEvidencia.estatusValidacionColor);
@@ -741,9 +745,613 @@ class EvidenciasVista extends CatalogoVista
 		var comentarios ="";
 		if(renglon.numeroComentarios>0)
 			comentarios = "<span class='label-warning notificacion'>"+renglon.numeroComentarios+"</span>";
-		contenido = "<span style='cursor:pointer;margin-left:15px;width:50px;height:30px;color:gray;' data-toggle='tooltip' data-placemen='bottom' title='Comentarios' type='button' class='comentarios text-blue'><span  data-toggle='tooltip' class='fas fa-comments fa-lg'>"+comentarios+"</span>";;
+		contenido = "<center><span style='cursor:pointer;margin-left:15px;width:50px;height:30px;color:gray;' data-toggle='tooltip' data-placemen='bottom' title='Comentarios' type='button' class='comentarios text-blue'><span  data-toggle='tooltip' class='fas fa-comments fa-lg'>"+comentarios+"</span></center>";
 	    return contenido;
 	}
+	
+	
+	mostrarFormularioEvidencia(procedimiento)
+	{
+		if($("#modalAlta").length ==0)
+		{
+			var url = HANDEL_API + "/html/formularios/validacion_evidencia_saha.php";
+			this.mostrarIndicador();
+			var _this = this;
+			$.post(url,{}, function(html) 
+			{
+				_this.ocultarIndicador();
+				$("body").append(html);
+				$("#modalAlta").on("hidden.bs.modal", function () {
+					$("#modalAlta").remove();
+				});
+				
+				$("#modalAlta").on("show.bs.modal", function () 
+				{
+					
+					_this.__PAGE_RENDERING_IN_PROGRESS = 0;
+					_this.__CANVAS = $('#pdf-canvas').get(0);
+					_this.__CANVAS_CTX = _this.__CANVAS.getContext('2d');
+					
+					// Previous page of the PDF
+					$("#pdf-prev").on('click', function() {
+						if(_this.__CURRENT_PAGE != 1)
+							_this.showPage(--_this.__CURRENT_PAGE);
+					});
+
+					// Next page of the PDF
+					$("#pdf-next").on('click', function() {
+						if(_this.__CURRENT_PAGE != _this.__TOTAL_PAGES)
+							_this.showPage(++_this.__CURRENT_PAGE);
+					});
+					
+					if(_this.modo == Modo.CAMBIO ||_this.modo == Modo.CONSULTA)
+					{	
+						if(_this.presentador!=null)
+							_this.presentador.consultarPorLlaves();
+					}
+					else
+						_this.consultarCamposEvidencia(procedimiento);
+					
+						
+				});
+				
+				if(_this.modo == Modo.CONSULTA)
+				{
+					$("#tituloModalAlta").html("Evidencia");
+					$("#realizoActividadCheck").attr("disabled",true);
+					$("#botonesDiv").hide();
+					$("#justificacionSelect").attr("disabled",true);
+					$("#comentariosInput").attr("disabled",true);
+					$("#guardarButton").hide();
+					$("#guardarButton").hide();
+				}
+			
+				
+				_this.inicializarValidacionesEvidencia();
+				
+				
+				$("#guardarButton").click(function () 
+				{
+					
+					 $("#formulario").submit();
+				});
+				
+				//$("#borrarArchivoEvidenciaButton").click(function(){
+				//	_this.borrarArchivoEvidencia();
+				//});
+				
+				
+				$("#modalAlta").modal({backdrop: 'static', keyboard: false});
+			});
+		}
+		else
+		{
+			$("#modalAlta").modal({backdrop: 'static', keyboard: false});
+		}
+	}
+	
+	showPage(page_no) {
+		this.__PAGE_RENDERING_IN_PROGRESS = 1;
+		this.__CURRENT_PAGE = page_no;
+		
+		var _this = this;
+
+		// Disable Prev & Next buttons while page is being loaded
+		$("#pdf-next, #pdf-prev").attr('disabled', 'disabled');
+
+		// While page is being rendered hide the canvas and show a loading message
+		$("#pdf-canvas").hide();
+		$("#page-loader").show();
+
+		// Update current page in HTML
+		$("#pdf-current-page").text(page_no);
+		
+		// Fetch the page
+		this.__PDF_DOC.getPage(page_no).then(function(page) {
+			// As the canvas is of a fixed width we need to set the scale of the viewport accordingly
+			var scale_required = _this.__CANVAS.width / page.getViewport(1).width;
+
+			// Get viewport of the page at required scale
+			var viewport = page.getViewport(scale_required);
+
+			// Set canvas height
+			_this.__CANVAS.height = viewport.height;
+
+			var renderContext = {
+				canvasContext: _this.__CANVAS_CTX,
+				viewport: viewport
+			};
+			
+			// Render the page contents in the canvas
+			page.render(renderContext).then(function() {
+				_this.__PAGE_RENDERING_IN_PROGRESS = 0;
+
+				// Re-enable Prev & Next buttons
+				$("#pdf-next, #pdf-prev").removeAttr('disabled');
+
+				// Show the canvas and hide the page loader
+				$("#pdf-canvas").show();
+				$("#page-loader").hide();
+			});
+		});
+	}
+	
+	inicializarValidacionesEvidencia()
+	{
+		var _this = this;
+		jQuery("#formulario").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+               
+               
+            },
+            messages: {
+               
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.guardar();
+            }
+        });
+	}
+	
+	mostrarFormularioValidacionEvidencia()
+	{
+		this._evidencias = ArrayUtils.filterWithValues("validada",[0],this.tabla.registros);
+		this._evidenciaSeleccionadaIndice  = ArrayUtils.getIndexWithValues("id",[this._evidenciaSeleccionada.id],this._evidencias);
+		
+		if($("#modalAlta").length ==0)
+		{
+			
+			var url = HANDEL_API + "/html/formularios/validacion_evidencias.php";
+			this.mostrarIndicador();
+			var _this = this;
+			$.post(url,{}, function(html) 
+			{
+//				 $('#evidenciaImage')
+//				    .wrap('<span style="display:inline-block"></span>')
+//				    .css('display', 'block')
+//				    .parent()
+//				    .zoom();
+				 
+				_this.ocultarIndicador();
+				$("body").append(html);
+				$("#modalAlta").on("hidden.bs.modal", function () 
+				{
+				
+					$("#modalAlta").remove();
+				});
+				
+				$("#modalAlta").on("show.bs.modal", function () 
+				{
+					_this.__PAGE_RENDERING_IN_PROGRESS = 0;
+					_this.__CANVAS = $('#pdf-canvas').get(0);
+					_this.__CANVAS_CTX = _this.__CANVAS.getContext('2d');
+					
+					// Previous page of the PDF
+					$("#pdf-prev").on('click', function() {
+						if(_this.__CURRENT_PAGE != 1)
+							_this.showPage(--_this.__CURRENT_PAGE);
+					});
+
+					// Next page of the PDF
+					$("#pdf-next").on('click', function() {
+						if(_this.__CURRENT_PAGE != _this.__TOTAL_PAGES)
+							_this.showPage(++_this.__CURRENT_PAGE);
+					});
+					
+					$("#guardarButton").unbind();
+					$("#guardarButton").click(function () 
+					{
+						_this.validarEvidencia(true);
+					});
+					
+					$("#guardarSiguienteButton").click(function () 
+					{
+						_this.validarEvidencia(false);
+					
+						
+						
+					});
+					
+					$("#descargarEvidenciaButton").click(function () 
+					{
+						var archivo = "evidencia"+_this.modeloEdicion.id+"_" +encodeURIComponent(_this.modeloEdicion.nombreArchivo);
+						var url = HANDEL_API + "/php/archivos_evidencias/" + archivo;
+						var submitForm = _this.getNewSubmitForm(url);
+					    submitForm.target= "_blank";
+					    submitForm.submit();
+					});
+							
+					if(_this._evidenciaSeleccionadaIndice!=-1)
+					{
+						var evidencia = _this._evidencias[_this._evidenciaSeleccionadaIndice];
+						_this.mostrarEvidenciaValidacion(evidencia);
+						
+					}
+					else
+						_this.mostrarEvidenciaValidacion(_this._evidenciaSeleccionada);
+					
+				});
+			
+				$("#modalAlta").modal({backdrop: 'static', keyboard: false});
+			});
+		}
+		else
+		{
+			$("#modalAlta").modal({backdrop: 'static', keyboard: false});
+		}
+	}
+	
+	mostrarSiguienteEvidenciaValidacion()
+	{
+		this._evidenciaSeleccionadaIndice++;
+		if(this._evidenciaSeleccionadaIndice < this._evidencias.length)
+		{
+			var evidencia = this._evidencias[this._evidenciaSeleccionadaIndice];
+			this.modeloValidacion = evidencia;
+			window.scroll(0, 0);
+			return true;
+		}
+		return false;
+	}
+	
+	mostrarEvidenciaValidacion(evidencia)
+	{
+		this.modeloValidacion = evidencia;
+		
+	}
+	
+	set modeloValidacion(valor)
+	{		
+		this.modeloEdicion = valor;
+		
+		//this.modeloEdicion.cambioArchivo = false;
+		//$("#usuarioProcedimientoId").val(this._modeloEdicion.usuarioProcedimientoId);
+		$("#fechaAltaInput").val(this.modeloEdicion.fecha);
+		$("#usuarioNombreInput").val(this.modeloEdicion.usuarioNombreCompleto);
+		$("#empresaNombreInput").val(this.modeloEdicion.empresaNombre);
+		$("#sedeNombreInput").val(this.modeloEdicion.sedeNombre);
+		
+		if(this.modeloEdicion.realizoActividad)
+			$("#realizoActividadCheck").prop('checked', true);
+		else
+			$("#realizoActividadCheck").prop('checked', false);
+		if(this.modeloEdicion.justificacionId!=null)
+			$('#justificacionSelect').val(this.modeloEdicion.justificacionId);
+		$('#comentariosInput').val(this.modeloEdicion.comentarios);
+		
+		//this.cambiarRealizoActividad();
+		
+		$("#prodecimientoNombreInput").val(this.modeloEdicion.nombre);
+		$('#evidenciaImage').attr("src",HANDEL_API + "/images/tipos_archivo/vacio.png");
+		//this.consultarJustificacionesEvidencia();
+		
+		if(this.modeloEdicion.justificacionId!=null)
+			$("#justificacionInput").val(this.modeloEdicion.justificacionNombre) 
+			
+		if(this.modeloEdicion.validada)
+			$("#validadaCheck").prop('checked', true);
+		else
+			$("#validadaCheck").prop('checked', false);
+		
+		$("#comentariosValidacionInput").val(this.modeloEdicion.comentariosValidacion);
+    		
+    	this.vistaPreviaArchivo(this.modeloEdicion.nombreArchivo);
+    	
+    
+    	this.consultarComentariosPredefinidos();
+
+		if(this._evidenciaSeleccionadaIndice == this._evidencias.length - 1)
+			$("#guardarSiguienteButton").hide();
+			
+	}
+	
+	getUrlOfficeOnline(url)
+	{
+		var urlOffice =  "https://view.officeapps.live.com/op/embed.aspx?src="+url; 
+		return urlOffice;				
+	}
+	
+	vistaPreviaArchivo(nombre)
+	{
+		 $("#pdf").hide();
+		if(nombre=="")
+			$('#evidenciaImage').attr("src",HANDEL_API + "/images/tipos_archivo/vacio.png");
+		else
+		{
+			try
+			{
+				var elementos = nombre.split(".");
+				if(elementos.length>1)
+				{
+					var tipo= elementos[elementos.length-1];
+					var archivo = "evidencia"+this.modeloEdicion.id+"_" + encodeURIComponent(nombre);
+					var url = HANDEL_API + "/php/archivos_evidencias/" + archivo;
+					switch(tipo)
+					{
+						case "doc":
+						case "docx":
+							$("#officeDiv").show();
+							$("#contenedorEvidenciaImage").hide();
+							$('#evidenciaImage').hide(); 
+							url = this.getUrlOfficeOnline(url);  
+							$("#officeIframe").attr("src",url);
+							
+							/*$('#evidenciaImage').width("100px");
+							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/word.png");
+							$("#contenedorEvidenciaImage").fadeIn()*/
+						break;
+						case "xls":
+						case "xlsx":
+							// $("#officeDiv").show();
+							/*$('#evidenciaImage').width("100px");
+							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/excel.png");
+							$("#contenedorEvidenciaImage").fadeIn();*/
+							$("#officeDiv").show();
+							$("#contenedorEvidenciaImage").hide();
+							//$('#evidenciaImage').hide(); 
+							url = this.getUrlOfficeOnline(url);  
+							$("#officeIframe").attr("src",url);
+						break;
+						case "ppt":
+						case "pptx":
+						 	//$("#officeDiv").show();
+							/*$('#evidenciaImage').width("100px");
+							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/power_point.png");
+							$("#contenedorEvidenciaImage").fadeIn();*/
+							$("#officeDiv").show();
+							$("#contenedorEvidenciaImage").hide();
+							//$('#evidenciaImage').hide(); 
+							url = this.getUrlOfficeOnline(url);  
+							$("#officeIframe").attr("src",url);
+						break;
+						case "pdf":
+							 $("#pdf").show();
+							$("#officeDiv").hide();
+							$("#contenedorEvidenciaImage").hide();
+							//$('#evidenciaImage').hide(); 
+							 //$('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/pdf.png");
+							 
+							 
+							 
+							
+							//var url = HANDEL_API + "/php/archivos_evidencias/" + archivo;
+							this.showPDF(url);
+							 
+						break;
+	//					case "txt":
+	//						 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/txt.png");
+	//					break;
+						default:
+							$("#officeDiv").hide();
+							$('#contenedorEvidenciaImage').show();
+							$('#evidenciaImage').width("100px");
+							$('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/archivo.png");
+						break;
+						case "jpg":
+						case "png":
+						case "bmp":
+							$("#officeDiv").hide();
+							$('#contenedorEvidenciaImage').show();
+							$('#evidenciaImage').width("100%");
+							$('#evidenciaImage').attr('src',url);
+						break;
+						
+						
+					}
+				}
+				else
+				{
+					$('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/archivo.png");
+				}
+			}
+			catch(e)
+			{
+				 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/archivo.png");
+			}
+			
+		}
+	}
+	
+	consultarComentariosPredefinidos()
+	{
+		this.presentador.consultarComentariosPredefinidos();
+	}
+	
+	set comentariosPredefinidos(comentarios)
+	{
+		$("#comentariosPredefinidosDiv").html("");
+		for(var i=0; i < comentarios.length;i++)
+		{
+			var comentario = comentarios[i];
+			
+			var texto = $("#comentariosValidacionInput").val();
+			var checked="";
+			if(texto.includes(comentario.texto))
+				checked="checked";
+			var html="<div class='form-check  form-check-inline'>";
+			html+="<input id='comentarioPredefinido"+comentario.id+"' class='form-check-input'  type='checkbox' "+checked+">";
+			html+=" <label class='form-check-label' for='comentarioPredefinido"+comentario.id+"'>"+comentario.texto+"</label>";
+			html+="</div>";
+			$("#comentariosPredefinidosDiv").append(html);
+			$("#comentarioPredefinido" + comentario.id).data("comentario",comentario);
+			$("#comentarioPredefinido" + comentario.id).change(this.comentarioPredefinidoClick);
+			
+			
+		
+				
+		}
+	}
+	
+	comentarioPredefinidoClick(event)
+	{
+		var comentario =$("#"+event.currentTarget.id).data("comentario");
+		if($("#"+event.currentTarget.id).is(':checked'))
+		{
+			var texto = $("#comentariosValidacionInput").val();
+			texto+= comentario.texto + ". ";
+			 $("#comentariosValidacionInput").val(texto);
+			
+		}
+		else
+		{
+			var texto = $("#comentariosValidacionInput").val();
+			texto = texto.replace(comentario.texto+ ". ","");
+			 $("#comentariosValidacionInput").val(texto);
+		}
+	}
+	
+	validarEvidencia(cerrar)
+	{
+		this.presentador.validarEvidencia(cerrar);
+	}
+	
+	set guardando(guardando)
+	{
+		if(guardando)
+		{
+			$("#guardarButton").attr("disabled",true);
+			$("#guardarSiguienteButton").attr("disabled",true);
+		}
+		else
+		{
+			$("#guardarButton").attr("disabled",false);
+			$("#guardarSiguienteButton").attr("disabled",false);
+			
+		}
+	}
+	
+	get modeloValidacion()
+	{
+		 var modelo = 
+		 {		
+			 id:  this.modeloEdicion.id,
+			 comentariosValidacion:$('#comentariosValidacionInput').val(),
+			 validada:$('#validadaCheck').is(':checked')?1:0,
+			 nombre : $("#prodecimientoNombreInput").val(),
+			 justificada : this._evidenciaSeleccionada.justificada,
+			 nombreArchivo : this._evidenciaSeleccionada.nombreArchivo
+			
+		 };
+		 return modelo;
+	 }
+
+	borrarEvidencia(id)
+	{
+		var row = $("#tabla").find("tr[data-id="+id+"]");
+		if(row!=null)
+			row.remove();
+	}
+	
+	actualizarEvidencia(modelo)
+	{
+		if(this.ocultar(modelo))
+			this.borrarEvidencia(modelo.id);
+		else 
+			this.actualizarEstatus(modelo);
+	}
+	
+	actualizarEstatus(modelo)
+	{
+		$('#archivoEvidenciaTabla'+modelo.id).html(this.getArchivoEvidencia(modelo));
+	}
+	
+	
+	getArchivoEvidencia(modelo)
+	{
+		var contenido = "";
+		var comentarios ="";
+		if(modelo.justificada==0)
+		{
+			var iconoColor = vista.getIconoArchivo(modelo.nombreArchivo);
+			if(modelo.validada==1)
+				comentarios = "<span class='label-success' style='position: relative;top: 6px;right: 4px;font-size: 10px;padding: 2px 3px;line-height: .9;'><i class='fas fa-check-double'></i></span>";
+			contenido = "<center><span style='cursor:pointer;margin-left:15px;width:50px;height:30px' data-toggle='tooltip' data-placemen='bottom' title='Evidencia'  type='button' class='archivo'><span  data-toggle='tooltip' class='"+iconoColor.icono+" fa-lg "+iconoColor.color+"'>"+comentarios+"</span></center>";
+		}
+		else
+		{
+			if(modelo.validada==1)
+				comentarios = "<span class='label-success' style='position: relative;top: 6px;right: 4px;font-size: 10px;padding: 2px 3px;line-height: .9;'><i class='fas fa-check-double'></i></span>";
+			contenido = "<center>"+comentarios+"</center>";
+	
+		}
+	    return contenido;
+	}
+	
+	ocultar(modelo)
+	{
+		var o = false;
+		if(this._criteriosSeleccionValidada=="")
+			o = false;
+		else
+		{
+			var validada = parseInt(this._criteriosSeleccionValidada);
+			switch(validada)
+			{
+				case 1:
+					if(modelo.validada)
+						o = false;
+					else 
+						o = true;
+				break;
+				case 0:
+					if(modelo.validada)
+						o = true;
+					else
+						o = false;
+				break;	
+			}
+		}
+		
+		return o;
+	}
+	
+	showPDF(pdf_url) 
+	{
+		var _this = this;
+		$("#pdf-loader").show();
+
+		PDFJS.getDocument({ url: pdf_url }).then(function(pdf_doc) 
+		{
+			_this.__PDF_DOC = pdf_doc;
+			_this.__TOTAL_PAGES = _this.__PDF_DOC.numPages;
+			
+			$("#pdf").show();
+			
+			// Hide the pdf loader and show pdf container in HTML
+			$("#pdf-loader").hide();
+			$("#pdf-contents").show();
+			$("#pdf-total-pages").text(_this.__TOTAL_PAGES);
+
+			// Show the first page
+			_this.showPage(1);
+		}).catch(function(error) {
+			// If error re-show the upload button
+			$("#pdf-loader").hide();
+			$("#upload-button").show();
+			
+			$("#pdf").hide();
+			
+			 $('#evidenciaImage').show();
+			 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/pdf.png");
+			
+			_this.mostrarMensajeError("Error",error.message);
+		});;
+	}
+	
 	
 	
 }
