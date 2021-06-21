@@ -207,6 +207,7 @@ class EvidenciasVista extends CatalogoVista
 						break;
 						case "ppt":
 						case "pptx":
+						case "ppsx":
 							iconoColor.icono = "fa fa-file-powerpoint";
 							iconoColor.color ="text-red";
 						break;
@@ -1002,7 +1003,7 @@ class EvidenciasVista extends CatalogoVista
 		{
 			var evidencia = this._evidencias[this._evidenciaSeleccionadaIndice];
 			this.modeloValidacion = evidencia;
-			window.scroll(0, 0);
+			$("#modalAlta").animate({ scrollTop: 0 }, "slow");
 			return true;
 		}
 		return false;
@@ -1068,6 +1069,8 @@ class EvidenciasVista extends CatalogoVista
 	vistaPreviaArchivo(nombre)
 	{
 		 $("#pdf").hide();
+		$("#officeDiv").hide();
+		$("#contenedorEvidenciaImage").hide();
 		if(nombre=="")
 			$('#evidenciaImage').attr("src",HANDEL_API + "/images/tipos_archivo/vacio.png");
 		else
@@ -1085,8 +1088,6 @@ class EvidenciasVista extends CatalogoVista
 						case "doc":
 						case "docx":
 							$("#officeDiv").show();
-							$("#contenedorEvidenciaImage").hide();
-							$('#evidenciaImage').hide(); 
 							url = this.getUrlOfficeOnline(url);  
 							$("#officeIframe").attr("src",url);
 							
@@ -1101,27 +1102,25 @@ class EvidenciasVista extends CatalogoVista
 							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/excel.png");
 							$("#contenedorEvidenciaImage").fadeIn();*/
 							$("#officeDiv").show();
-							$("#contenedorEvidenciaImage").hide();
 							//$('#evidenciaImage').hide(); 
 							url = this.getUrlOfficeOnline(url);  
 							$("#officeIframe").attr("src",url);
 						break;
 						case "ppt":
 						case "pptx":
+						case "ppsx":
 						 	//$("#officeDiv").show();
 							/*$('#evidenciaImage').width("100px");
 							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/power_point.png");
 							$("#contenedorEvidenciaImage").fadeIn();*/
 							$("#officeDiv").show();
-							$("#contenedorEvidenciaImage").hide();
 							//$('#evidenciaImage').hide(); 
 							url = this.getUrlOfficeOnline(url);  
 							$("#officeIframe").attr("src",url);
 						break;
 						case "pdf":
-							 $("#pdf").show();
-							$("#officeDiv").hide();
-							$("#contenedorEvidenciaImage").hide();
+						// $("#pdf").show();
+							$("#officeDiv").show();
 							//$('#evidenciaImage').hide(); 
 							 //$('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/pdf.png");
 							 
@@ -1129,14 +1128,14 @@ class EvidenciasVista extends CatalogoVista
 							 
 							
 							//var url = HANDEL_API + "/php/archivos_evidencias/" + archivo;
-							this.showPDF(url);
+							//this.showPDF(url);
+							$("#officeIframe").attr("src",url);
 							 
 						break;
 	//					case "txt":
 	//						 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/txt.png");
 	//					break;
 						default:
-							$("#officeDiv").hide();
 							$('#contenedorEvidenciaImage').show();
 							$('#evidenciaImage').width("100px");
 							$('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/archivo.png");
@@ -1144,7 +1143,6 @@ class EvidenciasVista extends CatalogoVista
 						case "jpg":
 						case "png":
 						case "bmp":
-							$("#officeDiv").hide();
 							$('#contenedorEvidenciaImage').show();
 							$('#evidenciaImage').width("100%");
 							$('#evidenciaImage').attr('src',url);
@@ -1155,11 +1153,15 @@ class EvidenciasVista extends CatalogoVista
 				}
 				else
 				{
+					$('#contenedorEvidenciaImage').show();
+					$('#evidenciaImage').width("100px");
 					$('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/archivo.png");
 				}
 			}
 			catch(e)
 			{
+				$('#contenedorEvidenciaImage').show();
+				$('#evidenciaImage').width("100px");
 				 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/archivo.png");
 			}
 			

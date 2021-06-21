@@ -77,10 +77,9 @@ if(isset($_SERVER['HTTP_ORIGIN']))
                        <div>
                        		<input type="file" id="file"  name="file" style='display:none' onchange='vista.cambiarArchivoEvidencia(this);' />
                        </div>
-                       <div class='row text-center m-2'>
-							<button id="descargarEvidenciaButton"  type="button" class="btn btn-success"><i class="fa fa-download"></i> Descargar</button>
-						</div>
+                       
                   	</div> 
+                  
                   	<div id='pdf' class="form-group" >
                   		<div id="pdf-contents" style='text-align:center'>
                     		<canvas id="pdf-canvas" style='width:600px;' width="600"></canvas>
@@ -97,6 +96,9 @@ if(isset($_SERVER['HTTP_ORIGIN']))
     						</iframe>
                       	</div> 
                   	</div>
+              		<div class='row text-center m-2'>
+							<button id="descargarEvidenciaButton"  type="button" class="btn btn-success"><i class="fa fa-download"></i> Descargar</button>
+					</div>
 					<div class="form-group hidden">
 						<div>
 							<label for="justificacionInput" class="control-label mb-1">No se adjunto por</label> 
