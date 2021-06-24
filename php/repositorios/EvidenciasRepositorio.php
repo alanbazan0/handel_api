@@ -271,6 +271,90 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             return $resultado;
     }
     
+    public function consultarEvidenciasJustificadas($usuario,$mes, $ano)
+    {
+        $resultado = new Resultado();
+        
+        $registros = array();
+        $criteriosSeleccion = (object)["ano" => $ano,"mes" => $mes];
+        //$filtros = array();
+        $filtros = $this->getFiltrosN($usuario,$criteriosSeleccion,true);
+        
+        array_push($filtros,(object)['tipo'=>'estatico','texto'=>'E.justificacion_id is not null']);
+        
+        
+        $where = $this->where($filtros);
+        
+        //UP.usuario_id = ? AND
+        
+        $consulta =  "SELECT U.id, U.nombre, U.apellido,P.id, P.nombre,J.id, J.nombre, 
+                    (
+                    	SELECT count(*)
+                    	FROM evidencias E1
+                    	INNER JOIN usuarios_procedimientos UP1 ON UP1.id = E1.usuario_procedimiento_id 
+                    	INNER JOIN procedimientos P1 ON P1.id = UP1.procedimiento_id 
+                        WHERE UP1.usuario_id = UP.usuario_id AND P1.id = P.id AND E1.justificacion_id is not null 
+                        AND YEAR(E1.fecha_alta) = $criteriosSeleccion->ano
+                    ) count
+                    FROM evidencias E 
+                    INNER JOIN usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id 
+                    INNER JOIN usuarios U ON U.id = UP.usuario_id 
+                    LEFT JOIN sedes S ON S.id = U.sede_id 
+                    LEFT JOIN empresas EM ON EM.id = S.empresa_id 
+                    INNER JOIN procedimientos P ON P.id = UP.procedimiento_id 
+                    LEFT JOIN justificaciones J ON J.id = E.justificacion_id 
+                    LEFT JOIN usuarios V ON V.id = EM.administrador_id 
+                    LEFT JOIN usuarios VL ON VL.id = E.validacion_usuario_id " . 
+                        $where . " " .
+                    "GROUP BY U.id, U.nombre, U.apellido,P.id, P.nombre, J.id, J.nombre " .        
+                    "ORDER BY U.nombre, U.apellido, P.nombre";
+        
+       // var_dump($consulta);
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($usuarioId, $usuarioNombre, $usuarioApellido, $procedimientoId, $procedimientoNombre,$justificacionId, $justificacionNombre, $numeroJustificaciones ))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro = (object)
+                            [
+                                "usuarioId" => $usuarioId,
+                                "usuarioNombre" => $usuarioNombre,
+                                "usuarioApellido" => $usuarioApellido,
+                                "procedimientoId" => $procedimientoId,
+                                "procedimientoNombre" => $procedimientoNombre,
+                                "justificacionId" => $justificacionId,
+                                "justificacionNombre" => $justificacionNombre,
+                                "numeroJustificaciones" => $numeroJustificaciones
+                            ];
+                            
+                            $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
+                            
+                            //$registro = $this->crearRegistro($usuarioId, $usuarioNombre, $usuarioApellido, $evidenciaId, $evidenciaNombre,$justificacionId, $justificacionNombre);
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
+    }
+    
     public function consultarEvidencias($criteriosSeleccion)
     {
         $resultado = new Resultado();
@@ -807,7 +891,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
                     		LEFT JOIN areas A1 ON A1.id = U1.area_id
                            INNER JOIN departamentos D1 ON D1.id = U1.departamento_id
-                    	 WHERE ((UP1.estatus = 1 AND UP1.fecha_alta  <=  '$ultimoDiaMes') OR (UP1.estatus = 0 AND MONTH(UP1.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP1.fecha_alta) <= $criteriosSeleccion->ano AND MONTH(UP1.fecha_cancelacion) > $criteriosSeleccion->mes AND  YEAR(UP1.fecha_cancelacion) >= $criteriosSeleccion->ano))
+                    	 WHERE P1.estatus = 1 AND ((UP1.estatus = 1 AND UP1.fecha_alta  <=  '$ultimoDiaMes') OR (UP1.estatus = 0 AND MONTH(UP1.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP1.fecha_alta) <= $criteriosSeleccion->ano AND MONTH(UP1.fecha_cancelacion) > $criteriosSeleccion->mes AND  YEAR(UP1.fecha_cancelacion) >= $criteriosSeleccion->ano))
                                 AND EM1.id = EM.id AND A1.id = A.id AND D1.id = D.id AND U1.id = U.id 
                     		AND UP1.id NOT IN(
                     				SELECT usuario_procedimiento_id

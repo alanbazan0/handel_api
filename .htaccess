@@ -8,5 +8,6 @@ SetEnvIf Origin "^(.*\.apps-handel\.com)$" ORIGIN_SUB_DOMAIN=$1
 	Header set Access-Control-Allow-Origin: *
 </FilesMatch>
 
-RewriteEngine on
-
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://sivah.apps-handel.com/$1 [L,R=301]

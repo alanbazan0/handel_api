@@ -2,15 +2,17 @@
 use php\clases\AdministradorConexion;
 use php\repositorios\UsuariosRepositorio;
 use php\repositorios\EvidenciasRepositorio;
+use php\reportes\ReporteBase;
 
 
-require('../vendor/fpdf181/fpdf.php');
+require_once('../vendor/fpdf181/fpdf.php');
 require_once ('../clases/Utilidades.php');
 require_once('../clases/AdministradorConexion.php');
 require_once('../repositorios/EmpresasRepositorio.php');
 require_once('../repositorios/UsuariosRepositorio.php');
 require_once('../repositorios/EvidenciasRepositorio.php');
 require_once('../highcharts/highchartutils.php');
+require_once('../reportes/reporte_base.php');
 
 class VariableStream
 {
@@ -63,9 +65,9 @@ class VariableStream
     }
 }
 
-class PDF extends FPDF
+class PDF extends ReporteBase
 {
-    private $font = "Helvetica";
+    //private $font = "Helvetica";
     private $modelo;
     private $empresa;
     private $secciones;
@@ -404,17 +406,68 @@ class PDF extends FPDF
             $this->ano = $ano;
             $this->SetFont($this->font,'',20);
                       
-             $this->encabezado();
-             $this->aviso();
-             $this->introduccion();
+            $this->encabezado();
+           $this->aviso();
+           $this->introduccion();
             
             
             if($this->usuario->tipoUsuarioId==TipoUsuario::COORDINADOR)
+            {
                $this->graficasCoordinador();
+            }
             else  if($this->usuario->tipoUsuarioId==TipoUsuario::SUPERVISOR)
+            {
                 $this->graficasSupervisor();
+            }
+                $this->evidenciasJustificadas();    
         }
         
+    }
+    
+    private function evidenciasJustificadas()
+    {
+        $this->AddPage();
+        $this->titulo("Resumen de justificaciones del mes");
+        $this->Ln();
+        $this->SetY(32);
+        $borde = 1;
+        
+        $this->cMargin = 1;
+        $this->SetLeftMargin(20);
+        $this->fontSizes = array(9, 9, 9, 9, 9);
+        $this->fontWeights = array("B","B","B","B","B");
+        $this->aligns = array("C","C","C","C","C");
+        $this->widths = array(15, 35, 50, 50, 20);
+        $this->textColors = array("#000000","#000000","#000000","#000000","#000000");
+        $this->borders = array(1,1,1,1,1);
+        $this->borderColors = array("#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0");
+        $this->backgroundColors = array("#bdc1bf","#bdc1bf","#bdc1bf","#bdc1bf","#bdc1bf");
+        //  $this->SetFillColor(189, 193, 191);
+        $this->renglon(array("Item","Usuario","Evidencia",$this->texto("Justificación indicada en este mes"),$this->texto("No. de veces justificadas " . $this->ano)),5);
+       
+        $this->fontWeights = array("B","","","","");
+        $this->aligns = array("C","L","L","L","C");
+        
+        $repositorio = new EvidenciasRepositorio($this->conexion);
+        
+     
+        $resultado = $repositorio->consultarEvidenciasJustificadas($this->usuario,$this->mes,$this->ano);
+        if($resultado->correcto())
+        {
+            $registros = $resultado->valor;
+            for($i = 0; $i < count($registros); $i++)
+            {
+                $registro = $registros[$i];
+                $color = "";
+                if($i%2==0)
+                    $color = "#ffffff";
+                else
+                    $color = "#f5f5f5";
+                $this->backgroundColors = array("#e6e6e6",$color,$color,$color,$color);
+                    
+                $this->renglon(array($i+1,$this->texto($registro->usuarioNombreCompleto),$this->texto($registro->procedimientoNombre),$this->texto($registro->justificacionNombre),$registro->numeroJustificaciones),5);
+            }
+        }
     }
     
     private function graficasCoordinador()
@@ -1116,148 +1169,7 @@ class PDF extends FPDF
         }
     }
     
-    function datosGenerales()
-    {
-        $this->AddPage();
-        
-       // $this->SetY(20);
-        //$this->SetX(20);
-        $borde = 'B';
-        $w1 = 85;
-        $w2 = 85;
-
-        $this->imprimirTituloHoja("I. Datos generales");
-        
-     
-        $this->Ln();
-        
-        //Compañia
-        $this->Ln();
-        $this->SetTextColor(0, 0, 0);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell($w1, 10,$this->texto("Compañia:"), $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell($w2, 10, $this->texto($this->empresa!=null?$this->empresa->nombre:"-"), $borde, 0, 'L');
-        
-        $paisNombre ="NO ASIGNADO";
-        $estadoNombre ="NO ASIGNADO";
-        $ciudadNombre ="NO ASIGNADO";
-        if($this->empresa!=null)
-        {
-            if($this->empresa->pais!=null)
-                $paisNombre = $this->empresa->pais;
-            if($this->empresa->estado!=null)
-                $estadoNombre = $this->empresa->estado;
-            if($this->empresa->ciudad!=null)
-                $ciudadNombre = $this->empresa->ciudad;
-        }
-        
-        //Pais
-        $this->Ln();
-        $this->SetTextColor(0, 0, 0);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell($w1, 10,$this->texto("País:"), $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell($w2, 10, $this->texto($paisNombre), $borde, 0, 'L');
-        
-        //Estado
-        $this->Ln();
-        $this->SetTextColor(0, 0, 0);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell($w1, 10,$this->texto("Estado"), $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell($w2, 10, $this->texto($estadoNombre), $borde, 0, 'L');
-        
-        //Ciudad
-        $this->Ln();
-        $this->SetTextColor(0, 0, 0);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell($w1, 10,$this->texto("Ciudad"), $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell($w2, 10, $this->texto($ciudadNombre), $borde, 0, 'L');
-        
-        //campos de primera página
-       if(count($this->secciones)>0)
-       {
-           $seccion = $this->secciones[0];
-            for($i = 0; $i < count($seccion->preguntas); $i++)
-            {
-                 $pregunta = $seccion->preguntas[$i];
-                 if($pregunta->tipo=="e")
-                 {
-                     $this->Ln();
-                     $this->SetTextColor(0, 0, 0);
-                     $this->SetFillColor(242, 242, 242);
-                     $this->SetFont($this->font, 'B', 10);
-                     $this->Cell(170, 10,$this->texto($pregunta->texto), $borde, 0, 'L',1);
-                    
-                 }
-                 else if($pregunta->tipo=="m")
-                 {
-                     $altoFoto = 50;
-                     if(!$this->cabeComponente($altoFoto+10))
-                     {
-                         $this->AddPage();
-                     }
-                     $this->Ln();
-                     $this->SetTextColor(0, 0, 0);
-                     $this->SetFont($this->font, 'B', 10);
-                     $this->Cell($w1, 10,$this->texto($pregunta->texto), $borde, 0, 'L');
-                     $this->SetFont($this->font, '', 10);
-                     $this->Cell($w2, 10, $this->texto($pregunta->valor), $borde, 0, 'L');
-                     
-                     list($lat, $lng) = explode(",", $pregunta->valor);
-                     $lat =   str_replace('lat:','',$lat);
-                     $lng =   str_replace('lng:','',$lng);
-                     
-                     $imagen = "http://maps.googleapis.com/maps/api/staticmap?zoom=13&size=400x200&maptype=roadmap&markers=color:red|label:Ubicación|$lat,$lng&key=AIzaSyDkJzWNXPN2NUF2xD_OaAuVOqbJRx8dlQ4";
-                     $logo = file_get_contents($imagen);
-                     
-                     
-                     $this->setY($this->GetY() + 15,$altoFoto,null);
-                     
-                     $this->MemImage($logo, 50, null);
-                 }
-                 else if($pregunta->tipo=="ft")
-                 {
-                  
-                     $altoFoto = 50;
-                     
-                     if(!$this->cabeComponente($altoFoto+10))
-                     {
-                        $this->AddPage();
-                     }
-                     $this->Ln();
-                     $this->SetTextColor(0, 0, 0);
-                     $this->SetFont($this->font, 'B', 10);
-                     $this->Cell($w1, 10,$this->texto($pregunta->texto), $borde, 0, 'L');
-                     $this->SetFont($this->font, '', 10);
-                     $this->Cell($w2, 10, "", $borde, 0, 'L');
-                     
-                     $dataPieces = explode(',',$pregunta->valor);
-                     $encodedImg = $dataPieces[1];
-                     $decodedImg = base64_decode($encodedImg);
-                     if( $decodedImg!==false )
-                     {
-                         $x = (210/2) - ($altoFoto/2);
-                         $this->SetY($this->GetY()+15);
-                         $this->MemImage($decodedImg, $x, null, $altoFoto,$altoFoto);
-                     }
-                 }
-                 else
-                 {
-                     $this->Ln();
-                     $this->SetTextColor(0, 0, 0);
-                     $this->SetFont($this->font, 'B', 10);
-                     $this->Cell($w1, 10,$this->texto($pregunta->texto), $borde, 0, 'L');
-                     $this->SetFont($this->font, '', 10);
-                     $this->Cell($w2, 10, $this->texto($pregunta->valor), $borde, 0, 'L');
-                 }
-            }
-       }
-        
-        
-    }
+    
     
     function cabeComponente($alto)
     {
@@ -1384,123 +1296,123 @@ class PDF extends FPDF
         $this->Cell(150,$tamanoLinea,$this->texto('El equipo de trabajo de Handel Consultoria'),$borde,1,'C',0);
     }
     
-    function graficosCompania()
-    {
-        $this->AddPage();
+//     function graficosCompania()
+//     {
+//         $this->AddPage();
+// //         $this->SetY(20);
+// //         $this->SetX(20);
+
+//         $this->imprimirTituloHoja("III. Gráficos de la compañia");
+//         $borde = 0;
+//         $w1 = 60;
+//         $w2 = 110;
+        
+// //         //Titulo metodologia
+// //         $this->SetTextColor(63,103,151);
+// //         $this->SetDrawColor(118, 159, 209);
+        
+// //         $this->SetLeftMargin(20);
+// //         $this->SetFont($this->font, '', 10);
+// //         $this->Cell(170, 10,$this->texto("III. Gráficos de la compañia"), 'B', 0, 'L');
+        
+//         $this->Ln();
+//         $this->Ln();
+//         $this->cMargin=5;
+//         $this->SetFillColor(242, 242, 242);
+//         $this->SetLeftMargin(20);
+//         $this->SetTextColor(0, 0, 0);
+//         $this->SetFont($this->font, 'B', 10);
+//         $this->Cell($w1, 10,$this->texto("Resultados en su compañia"), $borde, 0, 'L',1);
+//         $this->SetFont($this->font, '', 10);
+//         $this->Cell($w2, 10, $this->texto("Es el resultado de la evaluación realizada por Händel"), $borde, 0, 'L',1);
+       
+//         $this->Ln();
+//         $this->cMargin=5;
+//         $this->SetFillColor(242, 242, 242);
+//         $this->SetLeftMargin(20);
+//         $this->SetTextColor(0, 0, 0);
+//         $this->SetFont($this->font, 'B', 10);
+//         $this->Cell($w1, 10,$this->texto("País"), $borde, 0, 'L',1);
+//         $this->SetFont($this->font, '', 10);
+//         $this->Cell($w2, 10, $this->texto("Puntaje promedio de empresas evaluadas en el país"), $borde, 0, 'L',1);
+        
+//         $this->Ln();
+//         $this->cMargin=5;
+//         $this->SetFillColor(242, 242, 242);
+//         $this->SetLeftMargin(20);
+//         $this->SetTextColor(0, 0, 0);
+//         $this->SetFont($this->font, 'B', 10);
+//         $this->Cell($w1, 10,$this->texto("Sector de la industria"), $borde, 0, 'L',1);
+//         $this->SetFont($this->font, '', 10);
+//         $this->Cell($w2, 10, $this->texto("Puntaje promedio de empresas evaluadas en el sector especifco "), $borde, 0, 'L',1);
+       
+//     }
+    
+//     function imprimirTituloHoja($titulo)
+//     {
 //         $this->SetY(20);
 //         $this->SetX(20);
-
-        $this->imprimirTituloHoja("III. Gráficos de la compañia");
-        $borde = 0;
-        $w1 = 60;
-        $w2 = 110;
-        
-//         //Titulo metodologia
 //         $this->SetTextColor(63,103,151);
 //         $this->SetDrawColor(118, 159, 209);
-        
 //         $this->SetLeftMargin(20);
 //         $this->SetFont($this->font, '', 10);
-//         $this->Cell(170, 10,$this->texto("III. Gráficos de la compañia"), 'B', 0, 'L');
-        
-        $this->Ln();
-        $this->Ln();
-        $this->cMargin=5;
-        $this->SetFillColor(242, 242, 242);
-        $this->SetLeftMargin(20);
-        $this->SetTextColor(0, 0, 0);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell($w1, 10,$this->texto("Resultados en su compañia"), $borde, 0, 'L',1);
-        $this->SetFont($this->font, '', 10);
-        $this->Cell($w2, 10, $this->texto("Es el resultado de la evaluación realizada por Händel"), $borde, 0, 'L',1);
-       
-        $this->Ln();
-        $this->cMargin=5;
-        $this->SetFillColor(242, 242, 242);
-        $this->SetLeftMargin(20);
-        $this->SetTextColor(0, 0, 0);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell($w1, 10,$this->texto("País"), $borde, 0, 'L',1);
-        $this->SetFont($this->font, '', 10);
-        $this->Cell($w2, 10, $this->texto("Puntaje promedio de empresas evaluadas en el país"), $borde, 0, 'L',1);
-        
-        $this->Ln();
-        $this->cMargin=5;
-        $this->SetFillColor(242, 242, 242);
-        $this->SetLeftMargin(20);
-        $this->SetTextColor(0, 0, 0);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell($w1, 10,$this->texto("Sector de la industria"), $borde, 0, 'L',1);
-        $this->SetFont($this->font, '', 10);
-        $this->Cell($w2, 10, $this->texto("Puntaje promedio de empresas evaluadas en el sector especifco "), $borde, 0, 'L',1);
-       
-    }
+//         $this->Cell(170, 10,$this->texto($titulo), 'B', 0, 'L');
+//     }
     
-    function imprimirTituloHoja($titulo)
-    {
-        $this->SetY(20);
-        $this->SetX(20);
-        $this->SetTextColor(63,103,151);
-        $this->SetDrawColor(118, 159, 209);
-        $this->SetLeftMargin(20);
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(170, 10,$this->texto($titulo), 'B', 0, 'L');
-    }
-    
-    function aplicacionResultados()
-    {
-        $this->AddPage();
-        $this->imprimirTituloHoja("IV. Aplicación de resultados");
+//     function aplicacionResultados()
+//     {
+//         $this->AddPage();
+//         $this->imprimirTituloHoja("IV. Aplicación de resultados");
 
-        $borde = 0;
-        $this->Ln();
-        $this->Ln();
-        $this->cMargin=10;
-        $this->SetFillColor(242, 242, 242);
-        $this->SetLeftMargin(20);
-        $this->SetTextColor(0, 0, 0);
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(170, 6,$this->texto("En esta seccion aparecerá un comparativo de las gráficas conforme se avance en el"), $borde, 1, 'FJ',1);
-        $this->Cell(170, 6,$this->texto("paquete de mantenimiento contratado con Händel SCE."), $borde, 1, 'L',1);
+//         $borde = 0;
+//         $this->Ln();
+//         $this->Ln();
+//         $this->cMargin=10;
+//         $this->SetFillColor(242, 242, 242);
+//         $this->SetLeftMargin(20);
+//         $this->SetTextColor(0, 0, 0);
+//         $this->SetFont($this->font, '', 10);
+//         $this->Cell(170, 6,$this->texto("En esta seccion aparecerá un comparativo de las gráficas conforme se avance en el"), $borde, 1, 'FJ',1);
+//         $this->Cell(170, 6,$this->texto("paquete de mantenimiento contratado con Händel SCE."), $borde, 1, 'L',1);
         
        
-    }
+//     }
     
-    function comparacionGlobal()
-    {
-        $this->AddPage();
-        $this->imprimirTituloHoja("V. Comparación global de referencia");
+//     function comparacionGlobal()
+//     {
+//         $this->AddPage();
+//         $this->imprimirTituloHoja("V. Comparación global de referencia");
         
-        $borde = 0;
-        $this->Ln();
-        $this->Ln();
-        $this->cMargin=10;
-        $this->SetFillColor(242, 242, 242);
-        $this->SetLeftMargin(20);
-        $this->SetTextColor(0, 0, 0);
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(170, 6,$this->texto("Ilustra el estado actual de la compañía en los puntos básicos de seguridad del programa"), $borde, 1, 'FJ',1);
-        $this->Cell(170, 6,$this->texto("C-TPAT	referente a empresas de transporte."), $borde, 1, 'L',1);
+//         $borde = 0;
+//         $this->Ln();
+//         $this->Ln();
+//         $this->cMargin=10;
+//         $this->SetFillColor(242, 242, 242);
+//         $this->SetLeftMargin(20);
+//         $this->SetTextColor(0, 0, 0);
+//         $this->SetFont($this->font, '', 10);
+//         $this->Cell(170, 6,$this->texto("Ilustra el estado actual de la compañía en los puntos básicos de seguridad del programa"), $borde, 1, 'FJ',1);
+//         $this->Cell(170, 6,$this->texto("C-TPAT	referente a empresas de transporte."), $borde, 1, 'L',1);
         
-    }
+//     }
     
     
-    function observaciones()
-    {
-        $this->AddPage();
-        $this->imprimirTituloHoja("VI. Observaciones, acciones y recomendaciones");
+//     function observaciones()
+//     {
+//         $this->AddPage();
+//         $this->imprimirTituloHoja("VI. Observaciones, acciones y recomendaciones");
         
-        $borde = 0;
-        $this->Ln();
-        $this->Ln();
-        $this->cMargin=10;
-        $this->SetFillColor(242, 242, 242);
-        $this->SetLeftMargin(20);
-        $this->SetTextColor(0, 0, 0);
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(170, 6,$this->texto("Se	identifican los aspectos encontrados durante la inspección realizada."), $borde, 1, 'L',1);
+//         $borde = 0;
+//         $this->Ln();
+//         $this->Ln();
+//         $this->cMargin=10;
+//         $this->SetFillColor(242, 242, 242);
+//         $this->SetLeftMargin(20);
+//         $this->SetTextColor(0, 0, 0);
+//         $this->SetFont($this->font, '', 10);
+//         $this->Cell(170, 6,$this->texto("Se	identifican los aspectos encontrados durante la inspección realizada."), $borde, 1, 'L',1);
         
-    }
+//     }
     
     function incidencias()
     {

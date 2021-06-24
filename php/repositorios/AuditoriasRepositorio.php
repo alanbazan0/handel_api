@@ -4999,6 +4999,56 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
             return $resultado;
     }
     
+    public function consultarAnos($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $filtros = array();
+        //$filtros = $this->getFiltrosN($usuario,$criteriosSeleccion,false);
+        //$where = $this->where($filtros);
+        
+        $consulta = "SELECT YEAR(E.fecha_alta) ano
+                    FROM recomendaciones E
+                       ";
+        
+        //$consulta .= $where;
+        
+        $consulta.=" GROUP BY ano
+                    ORDER BY ano";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($ano))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro= (object) [
+                                'id' =>  $ano,
+                                'nombre' =>  $ano
+                            ];
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
+    }
+    
     
 }
 

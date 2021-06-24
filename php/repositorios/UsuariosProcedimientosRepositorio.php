@@ -246,6 +246,7 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
                 AND A.estatus = 1 
                 AND D.estatus = 1 
                 AND U.permiso_saha = 1
+                AND P.estatus = 1
                 AND ((UP.estatus = 1 AND UP.fecha_alta  <=  '$ultimoDiaMes') OR (UP.estatus = 0 AND MONTH(UP.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP.fecha_alta) <= $criteriosSeleccion->ano AND MONTH(UP.fecha_cancelacion) > $criteriosSeleccion->mes AND  YEAR(UP.fecha_cancelacion) >= $criteriosSeleccion->ano))
                 AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " " .
                 "ORDER BY TU.orden, U.nombre, P.nombre";
@@ -342,6 +343,7 @@ class UsuariosProcedimientosRepositorio extends RepositorioBase implements IUsua
                 AND A.estatus = 1 
                 AND D.estatus = 1 
                 AND U.permiso_saha = 1
+                AND P.estatus = 1
                 AND ((UP.estatus = 1 AND UP.fecha_alta  <=  '$ultimoDiaMes') OR (UP.estatus = 0 AND MONTH(UP.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP.fecha_alta) <= $criteriosSeleccion->ano AND MONTH(UP.fecha_cancelacion) > $criteriosSeleccion->mes AND  YEAR(UP.fecha_cancelacion) >= $criteriosSeleccion->ano))
                 AND UP.id NOT IN(SELECT usuario_procedimiento_id FROM evidencias E WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " ";
         

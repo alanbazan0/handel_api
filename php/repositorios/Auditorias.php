@@ -171,8 +171,12 @@ try
                     $numeroUsuarios = REQUEST("numeroUsuarios");
                     $resultado = $repositorio->enviarNotificacionInicioSeguimiento($auditoriaId,$nombreUsuario,$enviarA,$numeroUsuarios);
                 break;
+                case 'consultarAnos':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarAnos($usuario,$criteriosSeleccion);
+                break;
                 default:
-                    $resultado->mensajeError = "Acción no válida";
+                    $resultado->mensajeError = "Acción no implementada";
                 break;
                 
             }
