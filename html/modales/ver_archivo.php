@@ -22,12 +22,9 @@
                         	<img id="evidenciaImage"  alt="Evidencia" class="img-responsive img-thumbnail " style='' onclick="vista.vistaPrevia(this)"  />
                   	 	</div>
     				</div>
-    				<div class='row'>
-    					<div class="col-sm-12 text-center mt-2">
-                        	<button id="descargarButton"  type="button" class="btn btn-primary"><i class="fas fa-download"></i> Descargar</button>
-                  	 	</div>
-    				</div>
+    			
 				</div>
+				
 				<div id='pdf' class="form-group" >
                   		<div id="pdf-contents" style='text-align:center'>
                     		<canvas id="pdf-canvas" style='width:600px;' width="600"></canvas>
@@ -38,8 +35,17 @@
 							<button id="pdf-next" type="button" class="btn btn-info">Siguiente <i class="fa fa-arrow-right"></i></button>
 						</div>
                  </div> 
-                  	
-				
+              	<div class='row m-1'>
+                  	<div id='officeDiv' class="form-group col-12" style='display:none;' >
+                  		<iframe id='officeIframe' src=" frameborder="0" style='width:100%;height:500px;'>
+						</iframe>
+                  	</div> 
+              	</div>
+              	<div class='row'>
+					<div class="col-sm-12 text-center mt-2">
+                    	<button id="descargarButton"  type="button" class="btn btn-primary"><i class="fas fa-download"></i> Descargar</button>
+              	 	</div>
+				</div>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>

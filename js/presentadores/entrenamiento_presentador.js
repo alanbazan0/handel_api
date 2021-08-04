@@ -576,6 +576,22 @@ class EntrenamientoPresentador extends CatalogoPresentador
 		 },null,false);
 	 }
 
+ 	consultarEmpresasDiploma()	
+	 {
+		 var repositorio = new EmpresasRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.empresasDiploma = resultado.valor;
+				this.vista.cambiarEmpresaDiploma();
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },null,false);
+	 }
+
 	 consultarSedesReporte()	
 	 {
 		 var repositorio = new SedesRepositorio(this);		
@@ -590,6 +606,53 @@ class EntrenamientoPresentador extends CatalogoPresentador
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		 }
 		,this.vista.criteriosSeleccionReporte.empresaId,true);
+	 }
+
+	consultarSedesDiploma()	
+	 {
+		 var repositorio = new SedesRepositorio(this);		
+		 repositorio.consultarPorEmpresa(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.sedesDiploma = resultado.valor;			
+				this.vista.cambiarSedeDiploma();
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		,this.vista.criteriosSeleccionDiploma.empresaId,false);
+	 }
+
+	consultarDepartamentosDiploma()	
+	 {
+		 var repositorio = new DepartamentosRepositorio(this);		
+		 repositorio.consultarPorEmpresaSede(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.departamentosDiploma = resultado.valor;			
+				this.vista.cambiarDepartamentoDiploma();
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		,{empresaId:this.vista.criteriosSeleccionDiploma.empresaId,sedeId:this.vista.criteriosSeleccionDiploma.sedeId},false);
+	 }
+
+	consultarUsuariosDiploma()	
+	 {
+		 var repositorio = new UsuariosRepositorio(this);		
+		 repositorio.consultarPorEmpresaSedeDepartamento(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.usuariosDiploma = resultado.valor;			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		,this.vista.criteriosSeleccionDiploma.empresaId,this.vista.criteriosSeleccionDiploma.sedeId,this.vista.criteriosSeleccionDiploma.departamentoId,false);
 	 }
 	 
 	 

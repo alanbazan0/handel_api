@@ -25,18 +25,18 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = "SELECT U.id, U.nombre_usuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id, D.nombre as departamentoNombre, U.permiso_cavi, U.perfil_id, PR.nombre, U.recursos_humanos, U.numero_empleado " .
-                             "FROM usuarios U " .
-                             "  LEFT JOIN empresas E ON U.empresa_id=E.id ".
-                             "  LEFT JOIN sedes S ON U.sede_id = S.id " .
-                             "  LEFT JOIN puestos P ON U.puesto_id = P.id " .
-                             "  LEFT JOIN areas A ON U.area_id = A.id " .
-                             "  LEFT JOIN tipos_usuario T ON U.tipo_usuario_id = T.id " .
-                             "  LEFT JOIN usuarios SU1 ON U.supervisor1_id = SU1.id " .
-                             "  LEFT JOIN usuarios SU2 ON U.supervisor2_id = SU2.id " .
-                             "  LEFT JOIN usuarios SU3 ON U.supervisor3_id = SU3.id ".
-                             "  LEFT JOIN departamentos D ON D.id = U.departamento_id" .
-                             "  LEFT JOIN perfiles PR ON PR.id = U.perfil_id";
+        $this->consultaBase = "SELECT U.id, U.nombre_usuario, U.contrasena contrasena,U.nombre, U.apellido, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1,SU2.id supervisor2Id,CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2,SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta,  IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha,U.permiso_sivah,U.permiso_10y7, U.departamento_id, D.nombre as departamentoNombre, U.permiso_cavi, U.perfil_id, PR.nombre, U.recursos_humanos, U.numero_empleado 
+                             FROM usuarios U 
+                               LEFT JOIN empresas E ON U.empresa_id=E.id
+                               LEFT JOIN sedes S ON U.sede_id = S.id 
+                               LEFT JOIN puestos P ON U.puesto_id = P.id 
+                               LEFT JOIN areas A ON U.area_id = A.id 
+                               LEFT JOIN tipos_usuario T ON U.tipo_usuario_id = T.id 
+                               LEFT JOIN usuarios SU1 ON U.supervisor1_id = SU1.id 
+                               LEFT JOIN usuarios SU2 ON U.supervisor2_id = SU2.id 
+                               LEFT JOIN usuarios SU3 ON U.supervisor3_id = SU3.id 
+                               LEFT JOIN departamentos D ON D.id = U.departamento_id
+                               LEFT JOIN perfiles PR ON PR.id = U.perfil_id";
     }    
    
     public function insertar(Usuario $modelo)
@@ -698,7 +698,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                     $where .
                      " ORDER BY U.nombre, U.apellido";
         
-     
+        //var_dump($consulta);
 
         if($sentencia = $this->conexion->prepare($consulta))
         {

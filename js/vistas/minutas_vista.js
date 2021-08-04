@@ -663,7 +663,11 @@ class MinutasVista extends CatalogoVista
 				_this.ocultarIndicador();
 				$("body").append(html);
 				$("#modalAlta").on("hidden.bs.modal", function () {
-					$("#compartirGroup").show();
+					if(_this.modeloEdicion!=null)
+					{
+						if(_this.modeloEdicion.usuarioId == _this.usuario.id)
+							$("#compartirGroup").fadeIn();
+					}					
 					clearInterval(_this.cometariosIntervalId);
 					$("#modalAlta").remove();
 					_this._tareaEdicionFormulario = null;

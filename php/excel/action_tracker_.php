@@ -49,7 +49,7 @@ try
             ];
             $hallazgos = array();
             $repositorio = new AuditoriasRepositorio($conexion);
-            $resultado = $repositorio->consultarRecomendaciones($auditoria->id);
+            $resultado = $repositorio->consultarRecomendacionesAuditoria($auditoria->id);
             if($resultado->correcto())
             {
                 $hallazgos = $resultado->valor;

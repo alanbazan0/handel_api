@@ -26,17 +26,21 @@ class TiposUsuarioRepositorio extends RepositorioBase implements ITiposUsuarioRe
             $consulta = " SELECT id, nombre " .                  
                     " FROM tipos_usuario order by orden";       
         }
-        if($usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
+        else if($usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
         {
             $consulta = " SELECT id, nombre " .
                 " FROM tipos_usuario  WHERE id IN(3) order by orden";   
         }
-        if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR)
+        else if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR)
         {
             $consulta = " SELECT id, nombre " .
                 " FROM tipos_usuario WHERE id IN(3) order by orden";
         }
-        
+        else
+        {
+            $consulta = " SELECT id, nombre " .
+                " FROM tipos_usuario WHERE id IN(3) order by orden";
+        }
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->execute())

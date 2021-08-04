@@ -1879,20 +1879,23 @@ class SeguimientoVista extends CatalogoVista
 			_this._archivoSeleccionado  = table.row( tr ).data();
 			if (_this._archivoSeleccionado != undefined)
 			{
-				
-				_this.mostrarFormularioHTML(HANDEL_API+"/html/modales/ver_archivo.php",_this, null, function()
+				if(_this._archivoSeleccionado.subido)
 				{
-					
-					_this.vistaPreviaArchivo(_this._archivoSeleccionado);
-					
-				},null,"archivoModal","","", function()
-				{
-					
-				},function()
-				{
-					
-				});
-				
+					_this.mostrarFormularioHTML(HANDEL_API+"/html/modales/ver_archivo.php",_this, null, function()
+					{
+						
+						_this.vistaPreviaArchivo(_this._archivoSeleccionado);
+						
+					},null,"archivoModal","","", function()
+					{
+						
+					},function()
+					{
+						
+					});
+				}
+				else
+					_this.mostrarMensajeAdvertencia("","Para visualizar archivos es necesario guardar la información.")
 			}
 		});
 		
@@ -1953,6 +1956,8 @@ class SeguimientoVista extends CatalogoVista
 	vistaPreviaArchivo(archivoSeleccionado)
 	{
 		 $("#pdf").hide();
+		$("#officeDiv").hide();
+		$("#contenedorEvidenciaImage").hide();
 		var _this = this;
 		$("#descargarButton").click(function()
 			{
@@ -1973,56 +1978,40 @@ class SeguimientoVista extends CatalogoVista
 				if(elementos.length>1)
 				{
 					var tipo= elementos[elementos.length-1];
+					var archivo = encodeURIComponent(archivoSeleccionado.nombre);
+					var url = HANDEL_API + "/php/archivos_avances/avance" + _this._avanceSeleccionado.id+"/"+archivo;
 					switch(tipo)
 					{
 						case "doc":
 						case "docx":
-							$("#evidenciaImage").css({'width': '50%'});
-							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/word.png");
+							$("#officeDiv").show();
+							url = this.getUrlOfficeOnline(url);  
+							$("#officeIframe").attr("src",url);
 						break;
 						case "xls":
 						case "xlsx":
-							$("#evidenciaImage").css({'width': '50%'});
-							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/excel.png");
+							$("#officeDiv").show();
+							url = this.getUrlOfficeOnline(url);  
+							$("#officeIframe").attr("src",url);
 						break;
 						case "ppt":
 						case "pptx":
-							$("#evidenciaImage").css({'width': '50%'});
-							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/power_point.png");
+						case "ppsx":
+							$("#officeDiv").show();
+							url = this.getUrlOfficeOnline(url);  
+							$("#officeIframe").attr("src",url);
 						break;
 						case "pdf":
-							_this.__PAGE_RENDERING_IN_PROGRESS = 0;
-							_this.__CANVAS = $('#pdf-canvas').get(0);
-							_this.__CANVAS_CTX = _this.__CANVAS.getContext('2d');
-							
-							// Previous page of the PDF
-							$("#pdf-prev").on('click', function() {
-								if(_this.__CURRENT_PAGE != 1)
-									_this.showPage(--_this.__CURRENT_PAGE);
-							});
-		
-							// Next page of the PDF
-							$("#pdf-next").on('click', function() {
-								if(_this.__CURRENT_PAGE != _this.__TOTAL_PAGES)
-									_this.showPage(++_this.__CURRENT_PAGE);
-							});
-						
-						
-							 $("#pdf").show();
-							 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/pdf.png");
+							$("#officeDiv").show();
+							//$('#evidenciaImage').hide(); 
+							 //$('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/pdf.png");
 							 
-							 $('#evidenciaImage').hide(); 
-							 if(archivoSeleccionado.subido)
-							 {
-								var archivo = encodeURIComponent(archivoSeleccionado.nombre);
-								var url = HANDEL_API + "/php/archivos_avances/avance" + this._avanceSeleccionado.id+"/"+ archivo;
-								this.showPDF(url);
-							 }
-							 else
-							 {
-								if(archivoSeleccionado.file.type=="application/pdf")
-                			  		this.showPDF(URL.createObjectURL(archivoSeleccionado.file));
-							 }
+							 
+							 
+							
+							//var url = HANDEL_API + "/php/archivos_evidencias/" + archivo;
+							//this.showPDF(url);
+							$("#officeIframe").attr("src",url);
 							
 							 
 						break;
@@ -2036,7 +2025,7 @@ class SeguimientoVista extends CatalogoVista
 						case "jpg":
 						case "png":
 						case "bmp":
-							$("#evidenciaImage").css({'width': '100%'});
+							/*$("#evidenciaImage").css({'width': '100%'});
 							if(archivoSeleccionado.subido)
 							{
 								var archivo = encodeURIComponent(archivoSeleccionado.nombre);
@@ -2046,7 +2035,10 @@ class SeguimientoVista extends CatalogoVista
 							else
 							{
 								$('#evidenciaImage').attr('src',archivoSeleccionado.result);
-							}
+							}*/
+							$('#contenedorEvidenciaImage').show();
+							$('#evidenciaImage').width("100%");
+							$('#evidenciaImage').attr('src',url);
 						break;
 						
 						
@@ -2066,6 +2058,13 @@ class SeguimientoVista extends CatalogoVista
 		}
 		
 	}
+	
+	getUrlOfficeOnline(url)
+	{
+		var urlOffice =  "https://view.officeapps.live.com/op/embed.aspx?src="+url; 
+		return urlOffice;				
+	}
+	
 	
 	showPDF(pdf_url) 
 	{

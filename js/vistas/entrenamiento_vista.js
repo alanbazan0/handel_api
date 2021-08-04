@@ -196,6 +196,10 @@ class EntrenamientoVista extends CatalogoVista
 				_this.mostrarFormularioReporteCapacitacionVirtual();
 			});
 		}
+		
+		$("#diplomaButton").click(function(){
+				_this.mostrarFormularioDiploma();
+			});
 	
 	}
 	
@@ -251,6 +255,58 @@ class EntrenamientoVista extends CatalogoVista
 		});
 	}
 	
+	mostrarFormularioDiploma()
+	{
+		var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/diploma.php",this, null, function()
+		{
+			
+			_this.consultarEmpresasDiploma();
+			
+			
+			moment.locale('es') ;
+			var start = moment().startOf('month');
+    		var end = moment();	
+
+		 function cb(start, end) {
+				_this._fechaInicial = start.format('DD/MM/YYYY');
+				_this._fechaFinal = end.format('DD/MM/YYYY');
+		       	$('#daterange-btn span').html(start.format('D MMMM YYYY') + ' - ' + end.format('D MMMM YYYY'))
+		    }
+
+			$('#daterange-btn').daterangepicker(
+		      {
+			// drops: 'up',
+				drops: 'auto',
+				//opens: 'center',
+		        ranges   : {
+		          'Histórico'       : ["01/08/2020", moment()],
+		          'Ultimo año'   : [moment().subtract(1, 'year'), moment()],
+		          'Ultimo semestre' : [moment().subtract(6, 'month'), moment()],
+		          'Ultimo trimestre': [moment().subtract(3, 'month'), moment()],
+		          'Este mes'  : [moment().startOf('month'), moment().endOf('month')],
+		          'Mes pasado'  : [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+		        },
+		        startDate: start,
+		        endDate  : end,
+				locale: {
+				    "customRangeLabel": "Rango",
+					"cancelLabel" : "Cancelar"
+				  },
+		      },
+		      cb
+		    );
+			 
+			cb(start,end);
+			
+		},null,"reporteModal","","imprimirButton",function()
+		{
+			//$("#reporteFormulario").submit();
+			_this.imprimirDiploma();
+			
+		});
+	}
+	
 	imprimirReporteCapacitacionVirtual()
 	{
 		var empresaNombre = $( "#empresaSelectReporte option:selected" ).text();
@@ -290,6 +346,55 @@ class EntrenamientoVista extends CatalogoVista
 	            }
 	        });
 		
+	}
+	
+	imprimirDiploma()
+	{
+		if(this.criteriosSeleccionDiploma.empresaId!="" && this.criteriosSeleccionDiploma.sedeId!="" && this.criteriosSeleccionDiploma.departamentoId!="" && this.criteriosSeleccionDiploma.usuarioId!="")
+		{
+			var empresaNombre = $( "#empresaSelectDiploma option:selected" ).text();
+			var sedeNombre = $( "#sedeSelectDiploma option:selected" ).text();
+			var departamentoNombre = $( "#departamentoSelectDiploma option:selected" ).text();
+			var usuarioNombre = $( "#usuarioSelectDiploma option:selected" ).text();
+			var _this = this;
+			var texto = `<p>CAVI va a generar el diploma: en una nueva pestaña, esto podría tardar unos segundos, por favor verifica que el bloqueador de ventanas no esté activo 
+						y espera tu diploma.</p>
+						<p><strong>El diploma solicitado es</strong>
+						<br>
+						
+						`+empresaNombre+ "<br>" +
+						sedeNombre+ "<br>" +
+						departamentoNombre+ "<br>" +
+						usuarioNombre+ "<br>" +
+						_this._fechaInicial + " - " + _this._fechaFinal + "<br>"+
+						`</p>`;
+				swal({
+		            title: "",
+	            text: texto,
+				html: true,
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#3c8dbc",
+	            confirmButtonText: "Aceptar",
+				cancelButtonColor: "#DD6B55",
+	            cancelButtonText: "Cancelar",
+	            closeOnConfirm: true,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	var submitForm = _this.getNewSubmitForm(HANDEL_API+"/php/reportes/diploma.php");
+						_this.createNewFormElement(submitForm, "criteriosSeleccion", JSON.stringify(_this.criteriosSeleccionDiploma));	 
+					    submitForm.target= "_blank";
+					    submitForm.submit();
+	            }
+	        });
+		}
+		else
+			this.mostrarMensajeAdvertencia("Advertencia","Todos los criterios son obligatorios")
 	}
 	
 	crearEventosActualizacion()
@@ -1390,8 +1495,14 @@ class EntrenamientoVista extends CatalogoVista
 	
 	consultarEmpresasReporte()
 	{
-		this.cargandoOpciones("#empresaSelectCriterio");
+		this.cargandoOpciones("#empresaSelectReporte");
 		this.presentador.consultarEmpresasReporte();
+	}
+	
+	consultarEmpresasDiploma()
+	{
+		this.cargandoOpciones("#empresaSelectDimploma");
+		this.presentador.consultarEmpresasDiploma();
 	}
 	
 	set empresasReporte(registros)
@@ -1400,18 +1511,65 @@ class EntrenamientoVista extends CatalogoVista
 		//this.consultar();
 	}
 	
+	set empresasDiploma(registros)
+	{		
+		this.cargarOpciones('#empresaSelectDiploma', registros);
+		//this.consultar();
+	}
+	
+	
+	
 	cambiarEmpresaReporte()
 	{
 		//this.cargandoOpciones("#departamentoSelectCriterio");
 		this.consultarSedesReporte();
 	}
 	
+	cambiarEmpresaDiploma()
+	{
+		this.cargandoOpciones("#sedeSelectDiploma");
+		this.cargandoOpciones("#departamentoSelectDiploma");
+		this.cargandoOpciones("#usuarioSelectDiploma");
+		this.consultarSedesDiploma();
+	}
+	
+	cambiarSedeDiploma()
+	{
+		this.cargandoOpciones("#departamentoSelectCriterio");
+		this.cargandoOpciones("#usuarioSelectCriterio");
+		this.consultarDepartamentosDiploma();
+	}
+	
+	cambiarDepartamentoDiploma()
+	{
+		this.cargandoOpciones("#usuarioSelectCriterio");
+		this.consultarUsuariosDiploma();
+	}
+	
+	consultarDepartamentosDiploma()
+	{
+		this.cargandoOpciones("#departamentoSelectReporte");
+		this.presentador.consultarDepartamentosDiploma();
+	}
+	
+	consultarUsuariosDiploma()
+	{
+		this.cargandoOpciones("#usuarioSelectDiploma");
+		this.presentador.consultarUsuariosDiploma();
+	}
 	
 	
 	consultarSedesReporte()
 	{
 		this.cargandoOpciones("#sedeSelectReporte");
 		this.presentador.consultarSedesReporte();
+	}
+	
+	
+	consultarSedesDiploma()
+	{
+		this.cargandoOpciones("#sedeSelectDiploma");
+		this.presentador.consultarSedesDiploma();
 	}
 	
 	get criteriosSeleccionReporte()
@@ -1427,10 +1585,41 @@ class EntrenamientoVista extends CatalogoVista
 		 return criteriosSeleccion;
 	}	
 	
+	get criteriosSeleccionDiploma()
+	{
+		 var criteriosSeleccion = 
+		 {				    
+			empresaId: $('#empresaSelectDiploma').val(),
+			sedeId: $('#sedeSelectDiploma').val(),
+			departamentoId: $('#departamentoSelectDiploma').val(),
+			usuarioId: $('#usuarioSelectDiploma').val(),
+			fechaInicial: this._fechaInicial,
+			fechaFinal: this._fechaFinal,
+			tipoReporte: TipoReporte.CAPACITACION_INICIADA
+		 }
+		 return criteriosSeleccion;
+	}	
+	
 	
 	set sedesReporte(registros)
 	{		
 		this.cargarOpciones('#sedeSelectReporte', registros);
+	}
+	
+	set sedesDiploma(registros)
+	{		
+		this.cargarOpciones('#sedeSelectDiploma', registros);
+	}
+	
+	
+	set departamentosDiploma(registros)
+	{		
+		this.cargarOpciones('#departamentoSelectDiploma', registros);
+	}
+	
+	set usuariosDiploma(registros)
+	{		
+		this.cargarOpciones('#usuarioSelectDiploma', registros,"", "", "", null, "nombreCompleto");
 	}
 	
 	

@@ -69,15 +69,16 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
             LEFT JOIN sedes S ON A.sede_id = S.id
             LEFT JOIN tipos_auditoria TA ON TA.id = A.tipo_auditoria_id";
         
-        $this->consultaBaseRecomendaciones = "SELECT RC.id, edt, titulo, responsable_id, U.nombre, U.apellido,  IFNULL(DATE_FORMAT(RC.fecha_alta,'%d/%m/%Y'),'')fechaAlta, prioridad, cumplimiento,  IFNULL(DATE_FORMAT(RC.fecha_vencimiento,'%d/%m/%Y'),'')fechaVencimiento, fecha_finalizacion, terminada, estatus_validacion_id, EST.descripcion AS estatusValidacionId, fecha_validacion, 
+        $this->consultaBaseRecomendaciones = "SELECT RC.id, edt, titulo, responsable_id, U.nombre, U.apellido,  IFNULL(DATE_FORMAT(RC.fecha_alta,'%d/%m/%Y'),'')fechaAlta, prioridad, cumplimiento,  IFNULL(DATE_FORMAT(RC.fecha_vencimiento,'%d/%m/%Y'),'')fechaVencimiento,  IFNULL(DATE_FORMAT(RC.fecha_finalizacion,'%d/%m/%Y'),'')fecha_finalizacion, terminada, estatus_validacion_id, EST.descripcion AS estatusValidacionId, fecha_validacion, 
                             validacion_usuario_id AS validadorId, VL.nombre AS validadorNombre, VL.apellido AS validadorApellido,
-                            E1.administrador_id AS administradorId, V.nombre AS administradorNombre, V.apellido AS administradorApellido,
-                            E1.id AS empresaId, E1.nombre AS empresaNombre,(SELECT count(C.id) FROM recomendaciones_comentarios C WHERE C.recomendacion_id = RC.id) numeroComentarios, EST.icono, EST.color,comentarios_validacion 
+                            E1.administrador_sivah_id AS administradorId, V.nombre AS administradorNombre, V.apellido AS administradorApellido,
+                            E1.id AS empresaId, E1.nombre AS empresaNombre,(SELECT count(C.id) FROM recomendaciones_comentarios C WHERE C.recomendacion_id = RC.id) numeroComentarios, EST.icono, EST.color,comentarios_validacion,
+                        IFNULL(DATE_FORMAT(RC.fecha_modificacion,'%d/%m/%Y'),'')fechaModificacion 
                        FROM recomendaciones RC
                        LEFT JOIN usuarios U ON U.id =  RC.responsable_id
                        LEFT JOIN tipos_usuario TU ON TU.id = U.tipo_usuario_id
                        LEFT JOIN empresas E1 ON E1.id = U.empresa_id
-                       LEFT JOIN usuarios V ON V.id = E1.administrador_id
+                       LEFT JOIN usuarios V ON V.id = E1.administrador_sivah_id
                        LEFT JOIN usuarios VL ON VL.id = RC.validacion_usuario_id
                        INNER JOIN estatus_validacion EST ON RC.estatus_validacion_id = EST.id";
         
@@ -1733,6 +1734,46 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
        return $resultado;
     }
     
+    public function consultarAvanceTerminadoRecomendacion($recomendacionId)
+    {
+        $resultado = new Resultado();
+        ini_set('max_execution_time', 300);
+        $consulta = $this->consultaBaseAvances .
+        " WHERE RA.recomendacion_id = ? AND cumplimiento=100
+        ORDER BY UNIX_TIMESTAMP(RA.fecha_alta) desc
+        LIMIT 1";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$recomendacionId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $comentario, $cumplimiento, $fechaAlta, $fechaModificacion, $archivos, $usuarioId, $usuarioNombre, $usuarioApellido ))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $registro = $this->crearRegistroAvance($id, $comentario, $cumplimiento, $fechaAlta, $fechaModificacion, $archivos, $usuarioId, $usuarioNombre, $usuarioApellido);
+                            $resultado->valor = $registro;
+                            $sentencia->close();
+                        }
+                        else
+                            $resultado->mensajeError = "No se encontró ningún resultado.";
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
     public function consultarAvancePorLlaves($llaves)
     {
         $resultado = new Resultado();
@@ -1791,11 +1832,11 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor, $comentariosValidacion))
+                    if ($sentencia->bind_result($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor, $comentariosValidacion, $fechaModificacion))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistroRecomendacion($id, $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion, $terminada, $estatusValidacionId, $estatusValidacionDescripcion,$fechaValidacion, $validadorId,$validadorNombre, $validadorApellido,$administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion);
+                            $registro = $this->crearRegistroRecomendacion($id, $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion, $terminada, $estatusValidacionId, $estatusValidacionDescripcion,$fechaValidacion, $validadorId,$validadorNombre, $validadorApellido,$administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion, $fechaModificacion);
                             $resultado->valor = $registro;
                             
                             $sentencia->close();
@@ -1867,7 +1908,7 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
             return $resultado;
     }
     
-    public function consultarRecomendaciones($auditoriaId)
+    public function consultarRecomendacionesAuditoria($auditoriaId)
     {
         $resultado = new Resultado();
         $hallazgos = array();
@@ -2547,7 +2588,7 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
         return $registro;
     }
     
-    private function crearRegistroRecomendacion($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId, $estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido, $administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre, $numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion)
+    private function crearRegistroRecomendacion($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId, $estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido, $administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre, $numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion, $fechaModificacion)
     {
         $registro =  (object)[
             "id" => $id,
@@ -2576,7 +2617,8 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
             'empresaId' => $empresaId,
             "empresaNombre" => $empresaNombre,
             "numeroComentarios" => $numeroComentarios,
-            "comentariosValidacion" => $comentariosValidacion
+            "comentariosValidacion" => $comentariosValidacion,
+            "fechaModificacion" => $fechaModificacion
             
         ];
         $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
@@ -3556,11 +3598,11 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido, $administradorId,$administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion))
+                    if ($sentencia->bind_result($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido, $administradorId,$administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion, $fechaModificacion))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistroRecomendacion($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido,$administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre, $numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion);
+                            $registro = $this->crearRegistroRecomendacion($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido,$administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre, $numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion, $fechaModificacion);
                          
                             
                             array_push($registros,$registro);
@@ -3580,6 +3622,80 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
         
         return $resultado;
+    }
+    
+    public function consultarRecomendaciones($criteriosSeleccion,$usuario)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+       // $filtros = $this->getFiltros($usuario,(object)[]);
+       $filtros = array();
+       // array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'RC','campo'=>'auditoria_id','valor'=>$llaves->id]);
+        
+        if($criteriosSeleccion!=null)
+        {
+            if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E1', 'campo'=>'id','valor'=>$criteriosSeleccion->empresaId]);
+            if(isset($criteriosSeleccion->sedeId) && $criteriosSeleccion->sedeId!="")
+              array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+              if(isset($criteriosSeleccion->departamentoId) && $criteriosSeleccion->departamentoId!="")
+                  array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'departamento_id','valor'=>$criteriosSeleccion->departamentoId]);
+                  
+            if(isset($criteriosSeleccion->estatusValidacionId))
+            {
+                if($criteriosSeleccion->estatusValidacionId!="" && $criteriosSeleccion->estatusValidacionId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'RC','campo'=>'estatus_validacion_id','valor'=>$criteriosSeleccion->estatusValidacionId]);
+            }
+            if(isset($criteriosSeleccion->ano) && $criteriosSeleccion->ano!="")
+                array_push($filtros,(object)['tipoDato'=>'int', 'campo'=>'YEAR(RC.fecha_alta)','valor'=>$criteriosSeleccion->ano]);
+            if(isset($criteriosSeleccion->mes) && $criteriosSeleccion->mes!="")
+                array_push($filtros,(object)['tipoDato'=>'int', 'campo'=>'MONTH(RC.fecha_alta)','valor'=>$criteriosSeleccion->mes]);
+            if(isset($criteriosSeleccion->administradorId)  && $criteriosSeleccion->administradorId!="")
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E1', 'campo'=>'administrador_sivah_id','valor'=>$criteriosSeleccion->administradorId]);
+                    //            
+        }
+        
+        
+        
+        
+        $where = $this->where($filtros);
+        $consulta = $this->consultaBaseRecomendaciones .
+        $where .
+        " ORDER BY  UNIX_TIMESTAMP(fecha_finalizacion) desc";
+        
+       // echo $consulta;
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido, $administradorId,$administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion, $fechaModificacion))
+                    {
+                        while($row = $sentencia->fetch())
+                        {
+                            $registro = $this->crearRegistroRecomendacion($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido,$administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre, $numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion,$fechaModificacion);
+                            
+                            
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado.";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
     }
     
     public function consultarActivasPorUsuario($criteriosSeleccion, $usuario)

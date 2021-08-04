@@ -71,7 +71,7 @@ class PDF extends FPDF
     private $empresa;
     private $secciones;
     private $conexion;
-    private $apiKey = "AIzaSyB7dydU6J78km_U76v44CHP5M3vol2igM8";
+    private $apiKey = "AIzaSyA3YhSwuW4LsOwW60WD1MekhIf8n_uGAK0";
    // private $apiKey = "AIzaSyB0xfZC35A5kb5qr8HR7uya8KrZf5OyER0";
     
     function __construct($orientation='P', $unit='mm', $format='A4')
@@ -472,8 +472,27 @@ class PDF extends FPDF
                           );
                          $query = http_build_query($query_array);
                          $imagen = "https://maps.googleapis.com/maps/api/staticmap?" . $query;
-                        // echo $imagen;
-                         $logo = file_get_contents($imagen);
+                         $errLevel = error_reporting(E_ALL ^ E_WARNING);
+                         $mapa = file_get_contents($imagen);
+                         error_reporting($errLevel);
+                         $error = error_get_last();
+                         
+                         if ( $error["type"] == E_WARNING)
+                         {
+                             $this->Ln();
+                             $this->SetTextColor(0, 0, 0);
+                             $this->SetFillColor(242, 242, 242);
+                             $this->SetFont($this->font, '', 10);
+                             $this->MultiCell(170, 10,$this->texto("Ocurrió un error al cargar el mapa." ));
+                             $this->MultiCell(170, 10,$this->texto($error["message"]));
+                         }
+                         else
+                         {
+                            $this->setY($this->GetY() + 15,$altoFoto,null);
+                            if($mapa!=null)
+                                $this->MemImage($mapa, 50, null);
+                         }
+                         
                          
                          //error_reporting($errLevel);
                          //$error = error_get_last();
@@ -487,9 +506,7 @@ class PDF extends FPDF
 //                          }
 //                          else
                          //
-                             $this->setY($this->GetY() + 15,$altoFoto,null);
-                              if($logo!=null)
-                                  $this->MemImage($logo, 50, null);
+                             
                         //º }
                          
                          
@@ -1427,20 +1444,40 @@ class PDF extends FPDF
             $this->SetFont($this->font, '', 10);
             $this->Cell(170, 6,$this->texto("Se	listan a continuación incidentes menores	observados durante	la visita de inspección."), $borde, 1, 'L',1);
             $this->Ln();
+//             $observaciones = explode("\n", $this->modelo->observaciones);
+//             $indice = 1;
+//             for($i = 0; $i < count($observaciones); $i++)
+//             {
+//                 $observacion = $observaciones[$i];
+//                 if($observacion!="")
+//                 {
+//                     $texto =  $indice .". " . $observacion;
+//                     $this->Cell(170, 6,$this->texto($texto), $borde, 1, 'L');
+//                     $this->Ln();
+//                     $indice++;
+//                 }
+//             }
+            
+            
+            $this->cMargin = 1;
+            $this->SetLeftMargin(20);
+            $this->fontSizes = array(10);
+            $this->fontWeights = array("");
+            $this->aligns = array("L");
+            $this->widths = array(170);
+            $this->textColors = array("#000000");
+            $this->borders = array(0);
+            $this->backgroundColors = array("#ffffff");
+            
             $observaciones = explode("\n", $this->modelo->observaciones);
-            $indice = 1;
             for($i = 0; $i < count($observaciones); $i++)
             {
                 $observacion = $observaciones[$i];
-                if($observacion!="")
-                {
-                    $texto =  $indice .". " . $observacion;
-                    $this->Cell(170, 6,$this->texto($texto), $borde, 1, 'L');
-                    $this->Ln();
-                    $indice++;
-                }
+                $indice = $i +1;
+                $texto =  $indice .". " . $observacion;
+                $this->Row2(array($this->texto($texto)),5);
+                $this->Ln();
             }
-        //}
     }
     
     function buenasPracticas()
@@ -1461,20 +1498,40 @@ class PDF extends FPDF
             //$this->MultiCell(170,12,"Se indican en esta sección las prácticas que exceden los requerimientos minimos de seguridad aplicables a la certificación.",0,"L");
             $this->Cell(170, 6,$this->texto("Se	indican en esta sección las prácticas que exceden los requerimientos minimos de seguridad"), $borde, 1, 'L',1);
             $this->Cell(170, 6,$this->texto("aplicables a la certificación."), $borde, 1, 'L',1);
-            
             $this->Ln();
-            $practicas = explode("\n", $this->modelo->buenasPracticas);
-            $indice = 1;
-            for($i = 0; $i < count($practicas); $i++)
+//             $this->Ln();
+//             $practicas = explode("\n", $this->modelo->buenasPracticas);
+//             $indice = 1;
+//             for($i = 0; $i < count($practicas); $i++)
+//             {
+//                 $practica = $practicas[$i];
+//                 if($practica!="")
+//                 {
+//                     $texto =  $indice .". " . $practica;
+//                     $this->Cell(170, 6,$this->texto($texto), $borde, 1, 'L');
+//                     $this->Ln();
+//                     $indice++;
+//                 }
+//             }
+            
+            $this->cMargin = 1;
+            $this->SetLeftMargin(20);
+            $this->fontSizes = array(10);
+            $this->fontWeights = array("");
+            $this->aligns = array("L");
+            $this->widths = array(170);
+            $this->textColors = array("#000000");
+            $this->borders = array(0);
+            $this->backgroundColors = array("#ffffff");
+            
+            $observaciones = explode("\n", $this->modelo->buenasPracticas);
+            for($i = 0; $i < count($observaciones); $i++)
             {
-                $practica = $practicas[$i];
-                if($practica!="")
-                {
-                    $texto =  $indice .". " . $practica;
-                    $this->Cell(170, 6,$this->texto($texto), $borde, 1, 'L');
-                    $this->Ln();
-                    $indice++;
-                }
+                $observacion = $observaciones[$i];
+                $indice = $i +1;
+                $texto =  $indice .". " . $observacion;
+                $this->Row2(array($this->texto($texto)),5);
+                $this->Ln();
             }
      //   }
     }

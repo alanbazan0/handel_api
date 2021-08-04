@@ -248,9 +248,9 @@ class Vista
 	salirSesionCaducada()
 	{
 		console.log("Sesion caducada.");
-		 vista.detenerVerificacion();
-		vista.detenerConteo();
-		swal({
+		 //vista.detenerVerificacion();
+		//vista.detenerConteo();
+		/*swal({
 	            title: "Sesión caducada",
 	            text: "Inicie sesión",
 	            type: "error",
@@ -263,7 +263,9 @@ class Vista
 	        {
 			
 				vista.cerrarSesion();
-	        });
+	        });*/
+
+		vista.cerrarSesion();
 			
 	}
 	
@@ -419,10 +421,29 @@ class Vista
 		{
 			 var _this = this;
 		
+			 toastr.error(mensaje,titulo,{
+			        "positionClass": "toast-bottom-right",
+			        timeOut: 5000,
+			        "closeButton": true,
+			        "debug": false,
+			        "newestOnTop": true,
+			        "progressBar": true,
+			        "preventDuplicates": true,
+			        "onclick": null,
+			        "showDuration": "300",
+			        "hideDuration": "1000",
+			        "extendedTimeOut": "1000",
+			        "showEasing": "swing",
+			        "hideEasing": "linear",
+			        "showMethod": "fadeIn",
+			        "hideMethod": "fadeOut",
+			        "tapToDismiss": false
+	
+			    });
 				 setTimeout(() => 
 				{
 					_this.salirSesionCaducada();
-				}, 2000);
+				}, 3000);
 		}
 		else
 		{

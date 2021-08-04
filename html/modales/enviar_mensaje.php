@@ -37,8 +37,8 @@
               	</div>
               	<div class="form-group col-sm-6">
 					<div>
-                  	 	<label for="usuarSelectMensaje" class="control-label mb-1">Usuario</label>
-                  	 	<select name="usuarSelectMensaje" id="usuarioSelectMensaje" class="form-control"><option value="">Cargando...</option></select>
+                  	 	<label for="usuarioSelectMensaje" class="control-label mb-1">Usuario</label>
+                  	 	<select name="usuarioSelectMensaje" id="usuarioSelectMensaje" class="form-control"><option value="">Cargando...</option></select>
                   	 </div> 
               	</div>
               	

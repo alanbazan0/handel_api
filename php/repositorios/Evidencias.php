@@ -15,6 +15,7 @@ ini_set('display_errors', 1);
 
 include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
+include '../clases/CodigoError.php';
 include '../clases/AdministradorConexion.php';
 include '../clases/AdministradorArchivos.php';
 include '../clases/AdministradorCorreo.php';
@@ -206,7 +207,7 @@ try
     else 
     {
         $resultado->mensajeError = "La sesión caducó. Inicie sesión e intente de nuevo.";
-        $resultado->codigoError = 10;
+        $resultado->codigoError = CodigoError::SESION_CADUCADA;
     }
 }
 catch(Exception $e)

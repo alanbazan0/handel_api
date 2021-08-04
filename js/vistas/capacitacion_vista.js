@@ -311,13 +311,22 @@ class CapacitacionVista extends CatalogoVista
 	salirFormulario()
 	{
 		var pantalla = $("body").attr("data-pantalla");
-		if(pantalla!=null)
+		if(pantalla!=null && pantalla!="")
 		{
 			var submitForm = getNewSubmitForm(pantalla);
 			submitForm.method = "get"
 			submitForm.target= "_self";
 			submitForm.submit();	
 		}
+		else
+		{
+			pantalla = "entrenamiento.php";
+			var submitForm = getNewSubmitForm(pantalla);
+			submitForm.method = "get"
+			submitForm.target= "_self";
+			submitForm.submit();		
+		}
+		
 	
 	}
 	

@@ -117,7 +117,7 @@ class ValidacionEvidenciasPresentador extends CatalogoPresentador
 	{
 		vista.mostrarIndicador();
 		//var repositorio = new AuditoriasRepositorio();
-		this._repositorio.consultarRecomendacionesPendientesUsuario(this, function(resultado){
+		this._repositorio.consultarRecomendaciones(this, function(resultado){
 			vista.ocultarIndicador();
 			if(resultado.mensajeError=="")
 			{
@@ -125,7 +125,7 @@ class ValidacionEvidenciasPresentador extends CatalogoPresentador
 			}
 			else
 				vista.mostrarMensajeError("Error",resultado.mensajeError)
-		},this.vista.llaves,this.vista.criteriosSeleccionRecomendaciones);
+		},this.vista.criteriosSeleccionRecomendaciones);
 	}
 	
 	consultarAvancesRecomendacion()	
@@ -366,16 +366,25 @@ class ValidacionEvidenciasPresentador extends CatalogoPresentador
 	 {
 		 this.vista.guardando = true;
 		 this.vista.mostrarIndicador();	
+		var modelo = this.vista._modeloRecomendacionValidacion;
 		 this._repositorio.validarRecomendacion(this,function(resultado)
 		 {
 			this.vista.ocultarIndicador();	
 			if(resultado.mensajeError=="")
 			{	
-				this.vista.mostrarMensaje("Notificación","Guardado. Id: " + resultado.valor);
+				/*this.vista.mostrarMensaje("Notificación","Guardado. Id: " + resultado.valor);
 				this.vista.salirFormularioValidacion();
 				this.vista.salirFormularioArchivos();
 				this.vista.salirFormularioAvances();
-				this.vista.consultarRecomendaciones();
+				this.vista.consultarRecomendaciones();*/
+				this.vista.actualizarRecomendacion(modelo);
+				if(!this.vista.mostrarSiguienteEvidenciaValidacion())
+				{
+					this.vista.mostrarMensaje("","Validación terminada");
+					this.vista.salirFormularioArchivos();
+					
+				}
+				this.vista.mostrarMensaje(modelo.titulo, "Validada correctamente");
 			}
 			else
 			{
@@ -389,7 +398,7 @@ class ValidacionEvidenciasPresentador extends CatalogoPresentador
 	       }, 2000);
 			
 				
-		 }	,this.vista.modeloRecomendacionValidacion);	
+		 }	,modelo);	
 	 }
 	 
 	consultarComentariosRecomendacion()
@@ -518,6 +527,21 @@ class ValidacionEvidenciasPresentador extends CatalogoPresentador
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 			
 		 },{estatus:1, tipoUsuarioId : TipoUsuario.ADMINISTRADOR},true);
+	 }
+
+	consultarAvanceTerminado()	
+	 {
+		 this._repositorio.consultarAvanceTerminadoRecomendacion(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.modeloAvance = resultado.valor;
+				//this.consultarArchivos(resultado.valor.id)
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },this.vista._recomendacionSeleccionada.id);
 	 }
 	 
 }

@@ -1298,6 +1298,8 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             $elementos = array_reverse($elementos);
             $fechaCompromiso = join("-",$elementos);
         }
+        if($modelo->tipo=="" || $modelo->tipo==null)
+            $modelo->tipo = "t";
         $this->conexion->autocommit(FALSE);
         $resultado =  $this->calcularIdTarea($minutaId, "id");
         if($resultado->correcto())

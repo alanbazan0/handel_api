@@ -4,12 +4,14 @@ use php\clases\JsonMapper;
 use php\modelos\Resultado;
 use php\repositorios\TareasComentariosRepositorio;
 use php\modelos\TareaComentario;
+use php\clases\CodigoError;
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
+include '../clases/CodigoError.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/TareasComentariosRepositorio.php';
 
@@ -25,45 +27,53 @@ $resultado = new Resultado();
 $conexion=null;
 try
 {
-    $conexion = $administrador_conexion->abrir();
-    if($conexion)
+    session_start();
+    $usuario = null;
+    if(isset($_SESSION['usuario']))
+        $usuario = $_SESSION['usuario'];
+    if($usuario!=null)
     {
-        $accion = REQUEST('accion');
-        $repositorio = new TareasComentariosRepositorio($conexion);
-        switch($accion)
+        $conexion = $administrador_conexion->abrir();
+        if($conexion)
         {
-            case 'insertar':
-                session_start();
-                $usuario = null;
-                if(isset($_SESSION['usuario']))
-                    $usuario = $_SESSION['usuario'];
-                $json = json_decode(REQUEST('modelo'));
-                $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new TareaComentario());
-                $resultado = $repositorio->insertar($usuario,$modelo);
-            break;
-            case 'actualizar':
-                $json = json_decode(REQUEST('modelo'));
-                $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new TareaComentario());
-                $resultado = $repositorio->actualizar($modelo) ;
-            break;
-            case 'consultar':
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultar($criteriosSeleccion);
-            break;
-            case 'consultarPorLlaves':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->consultarPorLlaves($llaves);
-            break;
-            case 'eliminar':
-                $llaves = json_decode(REQUEST('llaves'));
-                $resultado = $repositorio->eliminar($llaves);
-            break;
-            default:
-                $resultado->mensajeError = 'Acción no válida';
-            break;
+            $accion = REQUEST('accion');
+            $repositorio = new TareasComentariosRepositorio($conexion);
+            switch($accion)
+            {
+                case 'insertar':
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new TareaComentario());
+                    $resultado = $repositorio->insertar($usuario,$modelo);
+                break;
+                case 'actualizar':
+                    $json = json_decode(REQUEST('modelo'));
+                    $mapper = new JsonMapper();
+                    $modelo = $mapper->map($json, new TareaComentario());
+                    $resultado = $repositorio->actualizar($modelo) ;
+                break;
+                case 'consultar':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultar($criteriosSeleccion);
+                break;
+                case 'consultarPorLlaves':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarPorLlaves($llaves);
+                break;
+                case 'eliminar':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->eliminar($llaves);
+                break;
+                default:
+                    $resultado->mensajeError = 'Acción no válida';
+                break;
+            }
         }
+    }
+    else
+    {
+        $resultado->mensajeError = "La sesión caducó. Inicie sesión e intente de nuevo.";
+        $resultado->codigoError = CodigoError::SESION_CADUCADA;
     }
 }
 catch(Exception $e)

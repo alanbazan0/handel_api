@@ -72,6 +72,10 @@ try
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarRecomendacionesPendientesUsuario($llaves,$criteriosSeleccion,$usuario);
                 break;
+                case 'consultarRecomendaciones':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarRecomendaciones($criteriosSeleccion,$usuario);
+                break;
                 case 'consultarAvancesRecomendacion':
                     $llaves = json_decode(REQUEST('llaves'));
                     $resultado = $repositorio->consultarAvancesRecomendacion($llaves,$usuario);
@@ -129,6 +133,10 @@ try
                     $mapper = new JsonMapper();
                     $modelo = $mapper->map($json, new Avance());
                     $resultado = $repositorio->actualizarAvance($recomendacionId,$modelo,$usuario) ;
+                break;
+                case 'consultarAvanceTerminadoRecomendacion':
+                    $recomendacionId = REQUEST('recomendacionId');
+                    $resultado = $repositorio->consultarAvanceTerminadoRecomendacion($recomendacionId) ;
                 break;
                 case 'actualizarRecomendacion':
                     $json = json_decode(REQUEST('modelo'));

@@ -128,6 +128,14 @@
 							class="switch-label"></span> <span class="switch-handle"></span>
 						</label>
 					</div>
+					<div class="form-group" style='display:none'>
+						<label class="control-label mb-1">Acceso a CAVI</label> <label
+							class="switch switch-3d switch-success mr-3"> <input
+							id="permisoCAVIRadio" name="permisoCAVI" type="checkbox"
+							class="switch-input" checked="true"> <span
+							class="switch-label"></span> <span class="switch-handle"></span>
+						</label>
+					</div>
 					<div id='perfilGroup' >
     					<div class="form-group" >
     						<div>

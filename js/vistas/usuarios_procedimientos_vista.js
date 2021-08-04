@@ -30,6 +30,7 @@ class UsuariosProcedimientosVista extends CatalogoVista
 		this.tabla.columnas = [
 			{longitud:200, 	titulo:"Id",   alias:"id", alineacion:"I", class: "desc" }, 
 			{longitud:200, 	titulo:"Usuario",   alias:"usuarioNombre", alineacion:"I", class: "desc" }, 
+			{longitud:200, 	titulo:"Id procedimiento",   alias:"procedimientoId", alineacion:"D", class: "desc" }, 
 			{longitud:200, 	titulo:"Procedimiento",   alias:"nombre", alineacion:"I"}, 
 			{longitud:200, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I",  },		
 			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
