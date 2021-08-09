@@ -153,6 +153,11 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','operador'=>'IN','valor'=>$empresasIds]);
                 }
             }
+            else if($usuario->tipoUsuarioId!=\TipoUsuario::ADMINISTRADOR)
+            {
+                array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'E','campo'=>'id','valor'=>$usuario->empresaId]);
+                
+            }
             
         }
         

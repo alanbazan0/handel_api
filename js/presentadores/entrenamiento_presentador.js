@@ -23,7 +23,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 			this.vista.mostrarMensaje("Notificación","Guardado.")
 		}
 		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 		
 	 }
 	 
@@ -42,7 +42,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 			this.vista.mostrarMensaje("Notificación","Guardado.")
 		}
 		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 		
 	 }
 	 
@@ -56,7 +56,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 			if(resultado.mensajeError=="")
 				this.vista.perfiles = resultado.valor;
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 		
 		 },null);
 	 }
@@ -76,7 +76,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 		if(resultado.mensajeError=="")
 			this.vista.estandares = resultado.valor;
 		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 		
 	 }
 
@@ -92,7 +92,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 					this.vista.mostrarMensaje("","Guardado.");
 				}
 				else
-					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 				
 		 },this.vista.cursoId, this.vista.leccionIdSeleccionada,seleccion);
 	 }
@@ -431,7 +431,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 					this.vista.mostrarMensaje("","Guardado.");
 				}
 				else
-					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 				
 		 },this.vista.cursoId,seleccion);
 	 }
@@ -471,7 +471,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 			if(resultado.mensajeError=="")
 				this.vista.cursosContestando = resultado.valor;
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 				
 		 },this.vista.criteriosSeleccion);
 	 }
@@ -485,7 +485,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 			if(resultado.mensajeError=="")
 				this.vista.cursosPendientes = resultado.valor;
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 					
 		 },this.vista.criteriosSeleccion);
 	 }
@@ -499,7 +499,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 				if(resultado.mensajeError=="")
 					this.vista.cursosTerminados = resultado.valor;
 				else
-					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 					
 		 },this.vista.criteriosSeleccion);
 	 }
@@ -513,7 +513,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 			if(resultado.mensajeError=="")
 				this.vista.avance = resultado.valor;
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 					
 		 });
 	 }
@@ -527,7 +527,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 			if(resultado.mensajeError=="")
 				this.vista.aprovechamiento = resultado.valor;
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 					
 		 });
 	 }
@@ -541,7 +541,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 			if(resultado.mensajeError=="")
 				this.vista.videosVistos = resultado.valor;
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 					
 		 });
 	 }
@@ -555,7 +555,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 			if(resultado.mensajeError=="")
 				this.vista.diasCapacitacion = resultado.valor;
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 					
 		 });
 	 }
@@ -571,7 +571,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 				this.vista.cambiarEmpresaReporte();
 			}
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 			
 		 },null,false);
 	 }
@@ -587,7 +587,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 				this.vista.cambiarEmpresaDiploma();
 			}
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 			
 		 },null,false);
 	 }
@@ -603,7 +603,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 				//this.vista.cambiarSedeCriterio();
 			}
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 		 }
 		,this.vista.criteriosSeleccionReporte.empresaId,true);
 	 }
@@ -619,7 +619,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 				this.vista.cambiarSedeDiploma();
 			}
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 		 }
 		,this.vista.criteriosSeleccionDiploma.empresaId,false);
 	 }
@@ -635,7 +635,7 @@ class EntrenamientoPresentador extends CatalogoPresentador
 				this.vista.cambiarDepartamentoDiploma();
 			}
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 		 }
 		,{empresaId:this.vista.criteriosSeleccionDiploma.empresaId,sedeId:this.vista.criteriosSeleccionDiploma.sedeId},false);
 	 }
@@ -643,16 +643,17 @@ class EntrenamientoPresentador extends CatalogoPresentador
 	consultarUsuariosDiploma()	
 	 {
 		 var repositorio = new UsuariosRepositorio(this);		
-		 repositorio.consultarPorEmpresaSedeDepartamento(this, function(resultado)
+		 
+		 repositorio.consultar(this, function(resultado)
 		 {
 			if(resultado.mensajeError=="")
 			{
 				this.vista.usuariosDiploma = resultado.valor;			
 			}
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 		 }
-		,this.vista.criteriosSeleccionDiploma.empresaId,this.vista.criteriosSeleccionDiploma.sedeId,this.vista.criteriosSeleccionDiploma.departamentoId,false);
+		,{empresaId: this.vista.criteriosSeleccionDiploma.empresaId, sedeId: this.vista.criteriosSeleccionDiploma.sedeId, departamentoId: this.vista.criteriosSeleccionDiploma.departamentoId, permisoCAVI: 1, estatus: 1},false);
 	 }
 	 
 	 

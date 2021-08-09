@@ -235,5 +235,21 @@ class AdministracionPresentador extends CatalogoPresentador
 		 },null);
 	 }
 	
+	actualizarPerfil(usuarios, perfilId)
+	{
+		var usuariosIds = ArrayUtils.join(usuarios,"id");
+		 var repositorio = new UsuariosRepositorio(this);		
+		 repositorio.actualizarPerfil(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.mostrarMensaje("",usuarios.length +" usuarios fueron actualizados.")
+				$("#reporteModal").modal('hide');
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },usuariosIds, perfilId);
+	}
 	 
 }

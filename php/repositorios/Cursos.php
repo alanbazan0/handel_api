@@ -346,7 +346,8 @@ try
 //                     $usuario = null;
 //                     if(isset($_SESSION['usuario']))
 //                         $usuario = $_SESSION['usuario'];
-                $resultado = $repositorio->consultarAprovechamientoUsuario($usuario);
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarAprovechamientoUsuario($usuario,$criteriosSeleccion);
                 break;
                 case 'consultarVideosVistosUsuario':
 //                     session_start();

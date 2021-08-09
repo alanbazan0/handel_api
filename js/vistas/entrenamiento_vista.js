@@ -198,6 +198,7 @@ class EntrenamientoVista extends CatalogoVista
 		}
 		
 		$("#diplomaButton").click(function(){
+				_this.diplomaPrimeraVez = true;
 				_this.mostrarFormularioDiploma();
 			});
 	
@@ -260,12 +261,25 @@ class EntrenamientoVista extends CatalogoVista
 		var _this = this;
 		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/diploma.php",this, null, function()
 		{
+			_this.diplomaEmpresa = true;
+			_this.diplomaSede = true;
+			_this.diplomaDepartamento = true;
+			_this.diplomaUsuario = true;
+			
+			if(this.usuario.tipoUsuarioId != TipoUsuario.ADMINISTRADOR && this.usuario.tipoUsuarioId != TipoUsuario.COORDINADOR && this.usuario.tipoUsuarioId != TipoUsuario.SUPERVISOR )
+			{
+				$("#empresaSelectDiploma").attr("disabled",true);
+				$("#sedeSelectDiploma").attr("disabled",true);
+				$("#departamentoSelectDiploma").attr("disabled",true);
+				$("#usuarioSelectDiploma").attr("disabled",true);
+			}
+			
 			
 			_this.consultarEmpresasDiploma();
 			
 			
 			moment.locale('es') ;
-			var start = moment().startOf('month');
+			var start = moment().subtract(1, 'years');
     		var end = moment();	
 
 		 function cb(start, end) {
@@ -304,6 +318,12 @@ class EntrenamientoVista extends CatalogoVista
 			//$("#reporteFormulario").submit();
 			_this.imprimirDiploma();
 			
+		},function()
+		{
+			_this.diplomaEmpresa = false;
+			_this.diplomaSede = false;
+			_this.diplomaDepartamento = false;
+			_this.diplomaUsuario = false;
 		});
 	}
 	
@@ -1508,14 +1528,10 @@ class EntrenamientoVista extends CatalogoVista
 	set empresasReporte(registros)
 	{		
 		this.cargarOpciones('#empresaSelectReporte', registros);
-		//this.consultar();
+		
+		
 	}
 	
-	set empresasDiploma(registros)
-	{		
-		this.cargarOpciones('#empresaSelectDiploma', registros);
-		//this.consultar();
-	}
 	
 	
 	
@@ -1593,8 +1609,8 @@ class EntrenamientoVista extends CatalogoVista
 			sedeId: $('#sedeSelectDiploma').val(),
 			departamentoId: $('#departamentoSelectDiploma').val(),
 			usuarioId: $('#usuarioSelectDiploma').val(),
-			fechaInicial: this._fechaInicial,
-			fechaFinal: this._fechaFinal,
+			fechaInicialTerminado: this._fechaInicial,
+			fechaFinalTerminado: this._fechaFinal,
 			tipoReporte: TipoReporte.CAPACITACION_INICIADA
 		 }
 		 return criteriosSeleccion;
@@ -1606,20 +1622,50 @@ class EntrenamientoVista extends CatalogoVista
 		this.cargarOpciones('#sedeSelectReporte', registros);
 	}
 	
+	set empresasDiploma(registros)
+	{		
+		this.cargarOpciones('#empresaSelectDiploma', registros);
+		if(this.diplomaEmpresa)
+		{
+			if(this.usuario.tipoUsuarioId != TipoUsuario.ADMINISTRADOR)
+				$("#empresaSelectDiploma").val(this.usuario.empresaId);
+			this.diplomaEmpresa = false;
+		}
+	}
+	
+	
 	set sedesDiploma(registros)
 	{		
 		this.cargarOpciones('#sedeSelectDiploma', registros);
+		if(this.diplomaSede)
+		{
+			if(this.usuario.tipoUsuarioId != TipoUsuario.ADMINISTRADOR)
+				$("#sedeSelectDiploma").val(this.usuario.sedeId);
+			this.diplomaSede = false;
+		}
 	}
 	
 	
 	set departamentosDiploma(registros)
 	{		
 		this.cargarOpciones('#departamentoSelectDiploma', registros);
+		if(this.diplomaDepartamento)
+		{
+			if(this.usuario.tipoUsuarioId != TipoUsuario.ADMINISTRADOR)
+				$("#departamentoSelectDiploma").val(this.usuario.departamentoId);
+			this.diplomaDepartamento = false;
+		}
 	}
 	
 	set usuariosDiploma(registros)
 	{		
-		this.cargarOpciones('#usuarioSelectDiploma', registros,"", "", "", null, "nombreCompleto");
+		this.cargarOpciones('#usuarioSelectDiploma', registros,"", "", "", "", "nombreCompleto");
+		if(this.diplomaUsuario)
+		{
+			if(this.usuario.tipoUsuarioId != TipoUsuario.ADMINISTRADOR)
+				$("#usuarioSelectDiploma").val(this.usuario.id);
+			this.diplomaUsuario = false;
+		}
 	}
 	
 	

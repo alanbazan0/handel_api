@@ -7,6 +7,7 @@ use php\repositorios\EmpresasRepositorio;
 
 require('../vendor/fpdf181/fpdf.php');
 include '../clases/Utilidades.php';
+include '../clases/Maps.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/AuditoriasRepositorio.php';
 require_once('../repositorios/EmpresasRepositorio.php');
@@ -472,26 +473,44 @@ class PDF extends FPDF
                           );
                          $query = http_build_query($query_array);
                          $imagen = "https://maps.googleapis.com/maps/api/staticmap?" . $query;
-                         $errLevel = error_reporting(E_ALL ^ E_WARNING);
-                         $mapa = file_get_contents($imagen);
-                         error_reporting($errLevel);
-                         $error = error_get_last();
                          
-                         if ( $error["type"] == E_WARNING)
+                         $resultadoMaps = Maps::getMap($imagen);
+                         if($resultadoMaps->correcto())
+                         {
+                             $this->setY($this->GetY() + 15,$altoFoto,null);
+                             $this->MemImage($resultadoMaps->valor, 50, null);
+                         }
+                         else 
                          {
                              $this->Ln();
-                             $this->SetTextColor(0, 0, 0);
-                             $this->SetFillColor(242, 242, 242);
-                             $this->SetFont($this->font, '', 10);
-                             $this->MultiCell(170, 10,$this->texto("Ocurrió un error al cargar el mapa." ));
-                             $this->MultiCell(170, 10,$this->texto($error["message"]));
+                              $this->SetTextColor(0, 0, 0);
+                              $this->SetFillColor(242, 242, 242);
+                              $this->SetFont($this->font, '', 10);
+                              $this->MultiCell(170, 10,$this->texto("Ocurrió un error al cargar el mapa. key=" . $this->apiKey ));
+                              $this->MultiCell(170, 10,$this->texto($resultadoMaps->mensajeError));
                          }
-                         else
-                         {
-                            $this->setY($this->GetY() + 15,$altoFoto,null);
-                            if($mapa!=null)
-                                $this->MemImage($mapa, 50, null);
-                         }
+                         
+                         
+//                          $errLevel = error_reporting(E_ALL ^ E_WARNING);
+//                          $mapa = file_get_contents($imagen);
+//                          error_reporting($errLevel);
+//                          $error = error_get_last();
+                         
+//                          if ( $error["type"] == E_WARNING)
+//                          {
+//                              $this->Ln();
+//                              $this->SetTextColor(0, 0, 0);
+//                              $this->SetFillColor(242, 242, 242);
+//                              $this->SetFont($this->font, '', 10);
+//                              $this->MultiCell(170, 10,$this->texto("Ocurrió un error al cargar el mapa." ));
+//                              $this->MultiCell(170, 10,$this->texto($error["message"]));
+//                          }
+//                          else
+//                          {
+//                             $this->setY($this->GetY() + 15,$altoFoto,null);
+//                             if($mapa!=null)
+//                                 $this->MemImage($mapa, 50, null);
+//                          }
                          
                          
                          //error_reporting($errLevel);
@@ -987,6 +1006,7 @@ class PDF extends FPDF
         //$resultado = $repositorio->consultarPorcentajesSecciones($this->modelo->id);
         $resultado = $repositorio->consultarAuditoriaAnterior($this->modelo->empresaId,$this->modelo->sedeId, $this->modelo->plantillaId, $this->modelo->id);
         
+        
         if($resultado->correcto())
         {
             $auditoriaAnteriorId = $resultado->valor->id;
@@ -1023,8 +1043,12 @@ class PDF extends FPDF
           
           
         }
-           
+        else 
+        {
         
+        }
+           
+       // var_dump($this->modelo);
        
     }
     

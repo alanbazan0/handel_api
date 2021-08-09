@@ -241,7 +241,7 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
         $consulta = "SELECT id, DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s')
                     FROM auditorias
                     WHERE empresa_id = ? 
-                           AND sede_id = ?,
+                           AND sede_id = ?
                             AND plantilla_id = ? AND id < ?
                     ORDER BY id DESC
                     LIMIT 1";

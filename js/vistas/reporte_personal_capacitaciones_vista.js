@@ -37,8 +37,12 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 		this.crearColumnasGrid();		
 		
 		this.consultoGrid = false;
-		this.consultarDepartamentosCriterio();
 		
+		
+		this.crearFechas();
+		
+		this.consultarEmpresasCriterio();
+		this.consultarCursosCriterio();
 		
 		//this.consultarDepartamentosCriterio();
 	}
@@ -69,7 +73,8 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogo},
 			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I",class: "desc" }, 
 			{longitud:200, 	titulo:"Apellido",   alias:"apellido", alineacion:"I",class: "desc" },
-			//{longitud:200, 	titulo:"Nombre de usuario",   	alias:"nombreUsuario", alineacion:"I", classSpan:"block-email" }, 
+			{longitud:100, 	titulo:"Número de empleado",   alias:"numeroEmpleado", alineacion:"I" },
+			//¡{longitud:200, 	titulo:"Nombre de usuario",   	alias:"nombreUsuario", alineacion:"I", classSpan:"block-email" }, 
 			{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },	
 			{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" },	
 			//{longitud:100, 	titulo:"Puesto",   alias:"puestoNombre", alineacion:"I" },	
@@ -96,6 +101,58 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 		if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR || this.usuario.recursosHumanos==1)
 			this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar resultados'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
+		var _this = this;
+		
+		var datatable = this.tabla.datatable.DataTable();
+
+		 var buttonCommon = {
+				   text:      '<i class="fa fa-file-excel-o"></i> Exportar',
+			        exportOptions: {
+			        	 modifier: {
+		                        selected: null
+		                    },
+			            format: {
+			                body: function ( data, row, column, node ) 
+			                {
+			                	if(column==ArrayUtils.indexWithValues("alias",["logo"],_this.tabla.columnas))
+			                	{
+			                		return "";
+			                	} 
+			                	else if(column==ArrayUtils.indexWithValues("alias",["terminado"],_this.tabla.columnas))
+			                	{
+		                		  if(data.includes("fa-check"))
+			                		   return "Si";
+			                	   else
+			                		   return "No";
+			                	}
+								else if(column==ArrayUtils.indexWithValues("alias",["porcentaje"],_this.tabla.columnas))
+			                	{
+									var registro = _this.tabla.registros[row];
+									if(registro!=null)
+										return registro.porcentaje+"%";
+			                	}
+			                	else if(node.innerHTML.includes("button"))
+			                		return "";
+			                	return data;
+			                 
+			                }
+			            }
+			        }
+			    };
+
+		 this.tabla.botones =  {
+			      buttons: [
+			    	  $.extend( true, {}, buttonCommon, {
+			                extend: 'excel',"className": 'btn btn-success' 
+			            } ),
+			               ],
+			       dom: {
+					  button: {
+					  className: 'btn'
+				         }
+			       }
+		 };
+	
 		this.tabla.registros = [];	
 	}
 	
@@ -145,51 +202,6 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
             }
         });
 	}
-	
-//	inicializarValidacionesFormularioInspector()
-//	{
-//		var _this = this;
-//		jQuery("#formulario").validate({
-//            ignore: [],
-//            errorClass: "invalid-feedback animated fadeInDown",
-//            errorElement: "div",
-//            errorPlacement: function(e, a) {
-//                jQuery(a).parents(".form-group > div").append(e)
-//            },
-//            highlight: function(e) {
-//                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
-//            },
-//            success: function(e) {
-//                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
-//            },
-//            rules: {
-//            	
-//                "contrasenaInput": {required: !0},
-//                "nombreInput": {required: !0},
-//                "apellidoInput": {required: !0},
-//                "empresaSelect": {required: !0},
-//                "sedeSelect": {required: !0},
-//                "puestoSelect": {required: !0},
-//                "areaSelect": {required: !0}
-//               
-//            },
-//            messages: {
-//            	
-//            	 "contrasenaInput": "Por favor ingrese una contraseña",
-//                "nombreInput": "Por favor ingrese un nombre",
-//                "apellidoInput": "Por favor ingrese un apellido",
-//                "empresaSelect": "Por favor seleccione una empresa",
-//                "sedeSelect": "Por favor seleccione una sede",
-//                "puestoSelect": "Por favor seleccione un puesto",
-//                "areaSelect": "Por favor seleccione un área"
-//                	
-//                
-//            },
-//            submitHandler:function (form) {
-//            	 _this.guardar();
-//            }
-//        });
-//	}
 
 	renderLogo(renglon, type, set)
 	{    
@@ -309,13 +321,23 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 	set departamentosCriterio(registros)
 	{		
 		this.cargarOpciones('#departamentoSelectCriterio', registros);
-		this.consultarCursosCriterio();
+		
+	}
+	
+	set usuariosCriterio(registros)
+	{		
+		this.cargarOpciones('#usuarioSelectCriterio', registros, "", null, "",null, "nombreCompleto");
+		if(this.consultoGrid==false)
+		{
+			this.consultar();
+			this.consultoGrid=true;
+		}
 	}
 	
 	set cursosCriterio(registros)
 	{
 		this.cargarOpciones('#cursoSelectCriterio', registros,"",null, "id", null, "titulo");
-		this.consultarEmpresasCriterio();
+		//this.consultarEmpresasCriterio();
 	}
 	
 	editar(id)
@@ -595,10 +617,11 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 			empresaId: $('#empresaSelectCriterio').val(),
 			sedeId: $('#sedeSelectCriterio').val(),
 			departamentoId: $('#departamentoSelectCriterio').val(),
+			usuarioId : $('#usuarioSelectCriterio').val(),
 			cursoId : $('#cursoSelectCriterio').val(),
-//			fechaInicial: this.getFechaYMD($	('#fechaInicialInputCriterio').val()),
-//			fechaFinal: this.getFechaYMD($('#fechaFinalInputCriterio').val()),
-			tipoReporte:$('#tipoReporteSelectCriterio').val()
+			tipoReporte:$('#tipoReporteSelectCriterio').val(),
+			fechaInicial: this._fechaInicial,
+			fechaFinal: this._fechaFinal
 		 }
 		 return criteriosSeleccion;
 	}	
@@ -610,70 +633,41 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 	
 	crearFechas()
 	{
-	
-				
-				 $(function() 
-				{
-					 
-						$.datepicker.regional = [];
-						
-						$.datepicker.regional['es'] = {
-								 closeText: 'Cerrar',
-								 prevText: '< Ant',
-								 nextText: 'Sig >',
-								 currentText: 'Hoy',
-								 monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-								 monthNamesShort: ['Ene','Feb','Mar','Abr', 'May','Jun','Jul','Ago','Sep', 'Oct','Nov','Dic'],
-								 dayNames: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-								 dayNamesShort: ['Dom','Lun','Mar','Mié','Juv','Vie','Sáb'],
-								 dayNamesMin: ['Do','Lu','Ma','Mi','Ju','Vi','Sá'],
-								 weekHeader: 'Sm',
-								 dateFormat: 'dd/mm/yy',
-								 firstDay: 1,
-								 isRTL: false,
-								 showMonthAfterYear: false,
-								 yearSuffix: ''
-								 };
-						
-								 $.datepicker.setDefaults($.datepicker.regional['es']);
-					 
-//				    $.datepicker._updateDatepicker_original = $.datepicker._updateDatepicker;
-//				    $.datepicker._updateDatepicker = function(inst) {
-//				        $.datepicker._updateDatepicker_original(inst);
-//				        var afterShow = this._get(inst, 'afterShow');
-//				        if (afterShow)
-//				            afterShow.apply((inst.input ? inst.input[0] : null));  // trigger custom callback
-//				    }
-				    
-				    $( "#fechaInicialInputCriterio" ).datepicker();
-				    
-				    $( "#fechaFinalInputCriterio" ).datepicker();
-				});
+		var _this = this;
+			moment.locale('es') ;
+			var start = moment().subtract(1, 'years');
+    		var end = moment();	
+
+		 function cb(start, end) {
+				_this._fechaInicial = start.format('DD/MM/YYYY');
+				_this._fechaFinal = end.format('DD/MM/YYYY');
+		       	$('#daterange-btn span').html(start.format('D MMMM YYYY') + ' - ' + end.format('D MMMM YYYY'))
+		    }
+
+			$('#daterange-btn').daterangepicker(
+		      {
+			// drops: 'up',
+				drops: 'auto',
+				//opens: 'center',
+		        ranges   : {
+		          'Histórico'       : ["01/08/2020", moment()],
+		          'Ultimo año'   : [moment().subtract(1, 'year'), moment()],
+		          'Ultimo semestre' : [moment().subtract(6, 'month'), moment()],
+		          'Ultimo trimestre': [moment().subtract(3, 'month'), moment()],
+		          'Este mes'  : [moment().startOf('month'), moment().endOf('month')],
+		          'Mes pasado'  : [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+		        },
+		        startDate: start,
+		        endDate  : end,
+				locale: {
+				    "customRangeLabel": "Rango",
+					"cancelLabel" : "Cancelar"
+				  },
+		      },
+		      cb
+		    );
 			 
-			
-//				
-//				
-//				var hoy = new Date();
-//				var manana = new Date();
-//				manana.setDate(hoy.getDate() + 1);
-//				
-//				var dd = manana.getDate();
-//				var mm = manana.getMonth()+1; 
-//				var yyyy = manana.getFullYear();
-//				
-//				if(dd<10) 
-//				{
-//				    dd='0'+dd;
-//				} 
-//
-//				if(mm<10) 
-//				{
-//				    mm='0'+mm;
-//				} 
-//				
-//				var fecha =  dd+'/'+mm+'/'+yyyy;
-//				
-//				$("#fechaFinalInputCriterio").val(fecha);
+			cb(start,end);
 				
 	}
 	
@@ -700,11 +694,7 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 	set sedesCriterio(registros)
 	{		
 		this.cargarOpciones('#sedeSelectCriterio', registros);
-		if(this.consultoGrid==false)
-		{
-			this.consultar();
-			this.consultoGrid=true;
-		}
+	
 	}
 	
 
@@ -716,7 +706,19 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 	
 	cambiarSedeCriterio()
 	{
-		//this.consultarDepartamentosCriterio();
+		this.consultarDepartamentosCriterio();
+	}
+	
+	
+	cambiarDepartamentoCriterio()
+	{
+		this.consultarUsuariosCriterio();
+	}
+	
+	consultarUsuariosCriterio()
+	{
+		this.cargandoOpciones("#usuarioSelectCriterio");
+		this.presentador.consultarUsuariosCriterio();
 	}
 	
 	
@@ -729,6 +731,7 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 	consultarDepartamentosCriterio()
 	{
 		this.cargandoOpciones("#departamentoSelectCriterio");
+		this.cargandoOpciones("#usuarioSelectCriterio");
 		this.presentador.consultarDepartamentosCriterio();
 	}
 	

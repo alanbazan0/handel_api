@@ -26,16 +26,18 @@ abstract class PDF extends FPDF
 {
     protected $font = "Helvetica";
     protected $auditoria;
-    protected $margen = 25;
+    protected $margen = 10;
     protected $conexion;
     
     public function __construct()
     {
-        parent::__construct("L","mm","A4");
+        //parent::__construct("L","mm","A4");
+        parent::__construct("L","mm",array(279,216));
         $this->SetLeftMargin($this->margen);
         $this->SetRightMargin($this->margen);
         
         $this->AddFont('SummerFestival','','SummerFestival-Regular.php');
+        $this->AddFont('SFNSText','','SFNSText-Regular.php');
     }
     
     function setAuditoria($auditoria)
@@ -177,11 +179,11 @@ abstract class PDF extends FPDF
         if($this->usuario!=null)
             $folio.="-". str_replace(" ","-",$this->usuarioDiploma->nombreCompleto);
                 
-        if($this->criteriosSeleccion->fechaInicial!=null && $this->criteriosSeleccion->fechaFinal!=null)
+        if($this->criteriosSeleccion->fechaInicialTerminado!=null && $this->criteriosSeleccion->fechaFinalTerminado!=null)
         {
-            list($dia, $mes, $ano) = explode("/", $this->criteriosSeleccion->fechaInicial);
+            list($dia, $mes, $ano) = explode("/", $this->criteriosSeleccion->fechaInicialTerminado);
             $folio.="-".$dia.$mes.$ano;
-            list($dia, $mes, $ano) = explode("/", $this->criteriosSeleccion->fechaFinal);
+            list($dia, $mes, $ano) = explode("/", $this->criteriosSeleccion->fechaFinalTerminado);
             $folio.="-".$dia.$mes.$ano;
         }
                 
@@ -320,9 +322,9 @@ abstract class PDF extends FPDF
         //If the height h would cause an overflow, add a new page immediately
         if($this->GetY()+$h>$this->PageBreakTrigger)
         {
-            $this->AddPage($this->CurOrientation);
-            $this->SetY(25);
-            $this->SetX($this->margen);
+//             $this->AddPage($this->CurOrientation);
+//             $this->SetY(25);
+//             $this->SetX($this->margen);
             //$this->SetLeftMargin(5);
         }
     }
@@ -379,10 +381,10 @@ abstract class PDF extends FPDF
     }
     
                             
-function portada()
+function fondo()
 {
     $this->AddPage();
-    $imagen = "../imagenes/diploma_cavi1.png";
+    $imagen = "../imagenes/diploma_cavi2.png";
     $this->Image($imagen,0,0,$this->w,$this->h);
 }
 
@@ -422,9 +424,13 @@ public function generar($usuario,$criteriosSeleccion)
                 
         $colores = GeneradorColores::generar(100);
         
-        $this->portada();
+        $this->SetAutoPageBreak(false);
+        $this->fondo();
         $this->usuario();
-       
+        $this->capacitaciones();
+        $this->periodo();
+        $this->requiereCapacitacion();
+        $this->porcentaje();
     }
 }
 
@@ -439,8 +445,101 @@ function usuario()
     
 }
 
+function capacitaciones()
+{
+   
+    $borde = 0;
+    $this->SetFont('SFNSText','',9);
+    $this->SetTextColor(0,0,0);
+    //$this->Cell(0,$tamanoLinea,$this->texto($this->usuarioDiploma->nombreCompleto),$borde,1,'L');
+    $repositorio = new CursosRepositorio($this->conexion);
+    
+    
+    $resultado = $repositorio->consultarCursosTerminados($this->usuarioDiploma,  $this->criteriosSeleccion);
+    $numeroColumnas = 3;
+    $anchoColumna = ($this->w - ($this->margen*2)) / $numeroColumnas;
+    $altoColumna = 4;
+    $yInicial = 128;
+    $yFinal = 170;
+    $this->SetY($yInicial);
+    $x = $this->GetX();
+    if($resultado->correcto())
+    {
+        $columna = 0;
+        $cursos = $resultado->valor;
+        for($i = 0; $i < count($cursos); $i++)
+        {
+            $curso = $cursos[$i];
+            $this->SetX($x);
+            $this->MultiCell($anchoColumna, $altoColumna, $this->texto(($i+1).". ".$curso->titulo), $borde);
+            $y = $this->GetY();
+            if($y > $yFinal)
+            {
+                $columna++;
+                $x = ($columna * $anchoColumna) + $this->margen;
+                $this->SetXY($x, $yInicial);
+            }
+        }
+         
+    }
+        
+    
+}
+
 function periodo()
 {
+    $borde = 0;
+    $this->SetFont('SFNSText','',10);
+    $this->SetTextColor(256,256,256);
+    $this->SetXY(120, 195);
+    $fechaInicial = $this->criteriosSeleccion->fechaInicialTerminado;
+    $fechaFinal = $this->criteriosSeleccion->fechaFinalTerminado;
+    $this->Cell(100,8,$this->texto("Período del certificado: $fechaInicial - $fechaFinal"),$borde,1,'L');
+    
+   
+}
+
+function requiereCapacitacion()
+{
+    $borde = 0;
+    $this->SetFont('SFNSText','',10);
+    $this->SetTextColor(256,256,256);
+    $this->SetXY(113, 204);
+    
+    $repositorio = new CursosRepositorio($this->conexion);
+    $resultado = $repositorio->consultarDiasCapacitacionUsuario($this->usuarioDiploma);
+    if($resultado->correcto())
+    {
+        $resultados = $resultado->valor;
+        $this->Cell(100,8,$this->texto("El usuario requiere capacitación a partir de: $resultados->fechaRecapacitacion"),$borde,1,'L');
+    }
+   // var_dump($resultado);
+    
+   
+    
+}
+
+function porcentaje()
+{
+    $borde = 0;
+    $this->SetFont('SFNSText','',9);
+    $this->SetTextColor(256,256,256);
+    $this->SetXY(233, 198);
+    $this->Cell(40,4,$this->texto("Aprovechamiento"),$borde,1,'C');
+    
+    $repositorio = new CursosRepositorio($this->conexion);
+    $criteriosSeleccion = (object) [ "fechaInicialTerminado" => $this->criteriosSeleccion->fechaInicialTerminado, "fechaFinalTerminado" => $this->criteriosSeleccion->fechaFinalTerminado];
+    $resultado = $repositorio->consultarAprovechamientoUsuario($this->usuarioDiploma, $criteriosSeleccion);
+    if($resultado->correcto())
+    {
+        $resultados = $resultado->valor;
+        $this->SetX(233);
+        $this->SetFont('SFNSText','',16);
+        $this->Cell(40,10,$this->texto($resultados->porcentaje."%"),$borde,1,'C');
+    }
+    
+   
+   
     
 }
 
@@ -495,17 +594,7 @@ public function imprimir()
     }
 }
 
-function avance()
-{
-    $borde = 0;
-    $avance = $this->auditoria->porcentaje;
-    $this->SetTextColor(0,0,0);
-    $this->SetFont($this->font,'I',9);
-    $this->Ln();
-    $this->SetX(0);
-    $this->SetMargins(5,5,5);
-    $this->Cell(0, 8, "Avance: $avance%", $borde, 0, 'R');
-}
+
 
 function titulo()
 {
@@ -517,16 +606,6 @@ function titulo()
     $this->Cell(0,0,$this->texto("auditoria DE REUNIÓN"),0,2,'C');
 }
 
-
-function campo($ancho,$texto,$valor)
-{
-    $borde = 0  ;
-    $this->SetLeftMargin(5);
-    $this->SetFont($this->font,'',11);
-    $this->SetTextColor(0, 0, 0);
-    $this->Cell($ancho, 6, $this->texto($texto), $borde, 0, 'L');
-    $this->Cell($this->w - $ancho - ($this->margen *  2), 6, $this->texto($valor), $borde, 0, 'L');
-}
 
 function formatoFecha($fecha)
 {

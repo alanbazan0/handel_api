@@ -32,7 +32,7 @@ class GraficaCapacitacionesUsuarioVista extends CatalogoVista
 		this.consultoGrid = false;
 		this.consultarDepartamentosCriterio();
 		
-		
+		this.crearFechas();
 		//this.consultarDepartamentosCriterio();
 	}
 	
@@ -585,7 +585,9 @@ class GraficaCapacitacionesUsuarioVista extends CatalogoVista
 			sedeId: $('#sedeSelectCriterio').val(),
 			departamentoId: $('#departamentoSelectCriterio').val(),
 			cursoId : $('#cursoSelectCriterio').val(),
-			tipoReporte: TipoReporte.CAPACITACION_INICIADA
+			tipoReporte: TipoReporte.CAPACITACION_INICIADA,
+			fechaInicial: this._fechaInicial,
+			fechaFinal: this._fechaFinal
 		 }
 		 return criteriosSeleccion;
 	}	
@@ -597,70 +599,41 @@ class GraficaCapacitacionesUsuarioVista extends CatalogoVista
 	
 	crearFechas()
 	{
-	
-				
-				 $(function() 
-				{
-					 
-						$.datepicker.regional = [];
-						
-						$.datepicker.regional['es'] = {
-								 closeText: 'Cerrar',
-								 prevText: '< Ant',
-								 nextText: 'Sig >',
-								 currentText: 'Hoy',
-								 monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-								 monthNamesShort: ['Ene','Feb','Mar','Abr', 'May','Jun','Jul','Ago','Sep', 'Oct','Nov','Dic'],
-								 dayNames: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-								 dayNamesShort: ['Dom','Lun','Mar','Mié','Juv','Vie','Sáb'],
-								 dayNamesMin: ['Do','Lu','Ma','Mi','Ju','Vi','Sá'],
-								 weekHeader: 'Sm',
-								 dateFormat: 'dd/mm/yy',
-								 firstDay: 1,
-								 isRTL: false,
-								 showMonthAfterYear: false,
-								 yearSuffix: ''
-								 };
-						
-								 $.datepicker.setDefaults($.datepicker.regional['es']);
-					 
-//				    $.datepicker._updateDatepicker_original = $.datepicker._updateDatepicker;
-//				    $.datepicker._updateDatepicker = function(inst) {
-//				        $.datepicker._updateDatepicker_original(inst);
-//				        var afterShow = this._get(inst, 'afterShow');
-//				        if (afterShow)
-//				            afterShow.apply((inst.input ? inst.input[0] : null));  // trigger custom callback
-//				    }
-				    
-				    $( "#fechaInicialInputCriterio" ).datepicker();
-				    
-				    $( "#fechaFinalInputCriterio" ).datepicker();
-				});
+		var _this = this;
+			moment.locale('es') ;
+			var start = moment().subtract(1, 'years');
+    		var end = moment();	
+
+		 function cb(start, end) {
+				_this._fechaInicial = start.format('DD/MM/YYYY');
+				_this._fechaFinal = end.format('DD/MM/YYYY');
+		       	$('#daterange-btn span').html(start.format('D MMMM YYYY') + ' - ' + end.format('D MMMM YYYY'))
+		    }
+
+			$('#daterange-btn').daterangepicker(
+		      {
+			// drops: 'up',
+				drops: 'auto',
+				//opens: 'center',
+		        ranges   : {
+		          'Histórico'       : ["01/08/2020", moment()],
+		          'Ultimo año'   : [moment().subtract(1, 'year'), moment()],
+		          'Ultimo semestre' : [moment().subtract(6, 'month'), moment()],
+		          'Ultimo trimestre': [moment().subtract(3, 'month'), moment()],
+		          'Este mes'  : [moment().startOf('month'), moment().endOf('month')],
+		          'Mes pasado'  : [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+		        },
+		        startDate: start,
+		        endDate  : end,
+				locale: {
+				    "customRangeLabel": "Rango",
+					"cancelLabel" : "Cancelar"
+				  },
+		      },
+		      cb
+		    );
 			 
-			
-//				
-//				
-//				var hoy = new Date();
-//				var manana = new Date();
-//				manana.setDate(hoy.getDate() + 1);
-//				
-//				var dd = manana.getDate();
-//				var mm = manana.getMonth()+1; 
-//				var yyyy = manana.getFullYear();
-//				
-//				if(dd<10) 
-//				{
-//				    dd='0'+dd;
-//				} 
-//
-//				if(mm<10) 
-//				{
-//				    mm='0'+mm;
-//				} 
-//				
-//				var fecha =  dd+'/'+mm+'/'+yyyy;
-//				
-//				$("#fechaFinalInputCriterio").val(fecha);
+			cb(start,end);
 				
 	}
 	

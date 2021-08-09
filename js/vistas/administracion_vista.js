@@ -29,6 +29,14 @@ class AdministracionVista extends CatalogoVista
 			_this.iniciarImportarUsuarios();
 		});
 		
+		if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
+		{
+			$("#reasignarPerfilButton").fadeIn();
+			$("#reasignarPerfilButton").click(function(){
+				_this.mostrarModalReasignarPerfilUsuarios();
+			});
+		}
+		
 		
 		this.crearColumnasGrid();		
 		
@@ -65,6 +73,7 @@ class AdministracionVista extends CatalogoVista
 	
 	set perfilesCriterio(registros)
 	{		
+		this._perfiles = registros;	
 		this.cargarOpciones('#perfilSelectCriterio', registros);
 		
 	}
@@ -74,6 +83,103 @@ class AdministracionVista extends CatalogoVista
 	{
 		this._importarUsuariosModal = new ImportarUsuariosAsistente();
 		this._importarUsuariosModal.mostrar(this, this.importarUsuarios, this.criteriosSeleccion.empresaId);
+	}
+	
+	consultar()
+	{
+		super.consultar();
+		this.empresaNombre = $( "#empresaSelectCriterio option:selected" ).text();
+		if(this.empresaNombre=="")
+			this.empresaNombre ="Todas las empresas";
+		
+		this.sedeNombre = $( "#sedeSelectCriterio option:selected" ).text();
+		if(this.sedeNombre=="")
+			this.sedeNombre = "Todas las sedes";
+			
+		this.departamentoNombre = $( "#departamentoSelectCriterio option:selected" ).text();
+		if(this.departamentoNombre=="")
+			this.departamentoNombre = "Todos los departamentos";
+			
+		this.perfilNombre = $( "#perfilSelectCriterio option:selected" ).text();
+		if(this.perfilNombre=="")
+			this.perfilNombre = "Todos los perfiles";
+	}
+	
+	mostrarModalReasignarPerfilUsuarios()
+	{
+		if(this.tabla.registros.length>0)
+		{
+			var _this = this;
+			this.mostrarFormularioHTML(HANDEL_API+"/html/modales/reasignar_perfil.php",this, null, function()
+			{
+				
+				
+				$("#usuariosReaginarSpan").html(this.tabla.registros.length);
+				$("#empresaInputReasignar").val(_this.empresaNombre);
+				$("#sedeInputReasignar").val(_this.sedeNombre);
+				$("#departamentoInputReasignar").val(_this.departamentoNombre);
+				$("#perfilInputReasignar").val(_this.perfilNombre);
+				
+				_this._perfiles.splice(0,1);
+				
+				this.cargarOpciones('#perfilNuevoSelectReasignar', _this._perfiles);
+				
+			},null,"reporteModal","","imprimirButton",function()
+			{
+				//$("#reporteFormulario").submit();
+				_this.confirmarReasignarPerfil();
+				
+			},function()
+			{
+				
+			});
+		}
+		else
+			vista.mostrarMensajeAdvertencia("","No se econtraron resultados con los criterios seleccionados");
+	}
+	
+	confirmarReasignarPerfil()
+	{
+		var _this = this;
+		var perfilNuevo = $( "#perfilNuevoSelectReasignar option:selected" ).text();
+		
+		
+		
+		var texto = "Se reasignará el perfil <strong>" + perfilNuevo + "</strong> a <strong>" + this.tabla.registros.length +"</strong> usuarios." +
+					"<br><strong>Criterios seleccionados:</strong>" +
+					"<br>" + this.empresaNombre +
+					"<br>" + this.sedeNombre +
+					"<br>" + this.departamentoNombre +
+					"<br>" + this.perfilNombre +
+					"<br> ¿Desea continuar?";
+		swal({
+	            title: "Advertencia",
+	            text: texto,
+				html: true,
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#3c8dbc",
+	            confirmButtonText: "Aceptar",
+				cancelButtonColor: "#DD6B55",
+	            cancelButtonText: "Cancelar",
+	            closeOnConfirm: true,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	_this.actualizarPerfil();	
+	            }
+	        });
+	}
+	
+	actualizarPerfil()
+	{
+		
+		var perfilId = $( "#perfilNuevoSelectReasignar").val();
+		this.presentador.actualizarPerfil(this.tabla.registros,perfilId);
 	}
 	
 	importarUsuarios()
@@ -96,6 +202,8 @@ class AdministracionVista extends CatalogoVista
 			{longitud:200, 	titulo:"Nombre de usuario",   	alias:"nombreUsuario", alineacion:"I", classSpan:"block-email" }, 
 			{longitud:200, 	titulo:"Contraseña",   	alias:"contrasena", alineacion:"I", classSpan:"block-email" },
 			{longitud:100, 	titulo:"Número de empleado",   alias:"numeroEmpleado", alineacion:"I" }];
+		
+		columnas.push({longitud:200, 	titulo:"Perfil",   alias:"perfilNombre", alineacion:"I" });	
 		
 		//if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
 			columnas.push({longitud:200, 	titulo:"Tipo de usuario",   alias:"tipoUsuarioNombre", alineacion:"I" });	
@@ -337,7 +445,8 @@ class AdministracionVista extends CatalogoVista
 	}
 	
 	set perfiles(registros)
-	{		
+	{	
+		
 		this.cargarOpciones('#perfilSelect', registros, this.modo, this.modeloEdicion, 'perfilId',"");
 	}
 	

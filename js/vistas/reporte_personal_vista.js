@@ -38,6 +38,7 @@ class ReportePersonalVista extends CatalogoVista
 		this.consultoGrid = false;
 		this.consultarDepartamentosCriterio();
 		
+		this.crearFechas();
 		
 		//this.consultarDepartamentosCriterio();
 	}
@@ -67,6 +68,7 @@ class ReportePersonalVista extends CatalogoVista
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogo},
 			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I",class: "desc" }, 
 			{longitud:200, 	titulo:"Apellido",   alias:"apellido", alineacion:"I",class: "desc" },
+			{longitud:100, 	titulo:"Número de empleado",   alias:"numeroEmpleado", alineacion:"I" },
 			{longitud:200, 	titulo:"Nombre de usuario",   	alias:"nombreUsuario", alineacion:"I", classSpan:"block-email" }, 
 			{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },	
 			{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" },	
@@ -98,7 +100,7 @@ class ReportePersonalVista extends CatalogoVista
 		var _this = this;
 		
 		 var buttonCommon = {
-				   text:      '<i class="fa fa-file-excel-o"></i>',
+				   text:      '<i class="fa fa-file-excel-o"></i> Exportar',
 			        exportOptions: {
 			            format: {
 			                body: function ( data, row, column, node ) {
@@ -702,9 +704,9 @@ class ReportePersonalVista extends CatalogoVista
 			sedeId: $('#sedeSelectCriterio').val(),
 			departamentoId: $('#departamentoSelectCriterio').val(),
 			cursoId : $('#cursoSelectCriterio').val(),
-//			fechaInicial: this.getFechaYMD($	('#fechaInicialInputCriterio').val()),
-//			fechaFinal: this.getFechaYMD($('#fechaFinalInputCriterio').val()),
-			tipoReporte:$('#tipoReporteSelectCriterio').val()
+			tipoReporte:$('#tipoReporteSelectCriterio').val(),
+			fechaInicial: this._fechaInicial,
+			fechaFinal: this._fechaFinal
 		 }
 		 return criteriosSeleccion;
 	}	
@@ -716,70 +718,41 @@ class ReportePersonalVista extends CatalogoVista
 	
 	crearFechas()
 	{
-	
-				
-				 $(function() 
-				{
-					 
-						$.datepicker.regional = [];
-						
-						$.datepicker.regional['es'] = {
-								 closeText: 'Cerrar',
-								 prevText: '< Ant',
-								 nextText: 'Sig >',
-								 currentText: 'Hoy',
-								 monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-								 monthNamesShort: ['Ene','Feb','Mar','Abr', 'May','Jun','Jul','Ago','Sep', 'Oct','Nov','Dic'],
-								 dayNames: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-								 dayNamesShort: ['Dom','Lun','Mar','Mié','Juv','Vie','Sáb'],
-								 dayNamesMin: ['Do','Lu','Ma','Mi','Ju','Vi','Sá'],
-								 weekHeader: 'Sm',
-								 dateFormat: 'dd/mm/yy',
-								 firstDay: 1,
-								 isRTL: false,
-								 showMonthAfterYear: false,
-								 yearSuffix: ''
-								 };
-						
-								 $.datepicker.setDefaults($.datepicker.regional['es']);
-					 
-//				    $.datepicker._updateDatepicker_original = $.datepicker._updateDatepicker;
-//				    $.datepicker._updateDatepicker = function(inst) {
-//				        $.datepicker._updateDatepicker_original(inst);
-//				        var afterShow = this._get(inst, 'afterShow');
-//				        if (afterShow)
-//				            afterShow.apply((inst.input ? inst.input[0] : null));  // trigger custom callback
-//				    }
-				    
-				    $( "#fechaInicialInputCriterio" ).datepicker();
-				    
-				    $( "#fechaFinalInputCriterio" ).datepicker();
-				});
+		var _this = this;
+			moment.locale('es') ;
+			var start = moment().subtract(1, 'years');
+    		var end = moment();	
+
+		 function cb(start, end) {
+				_this._fechaInicial = start.format('DD/MM/YYYY');
+				_this._fechaFinal = end.format('DD/MM/YYYY');
+		       	$('#daterange-btn span').html(start.format('D MMMM YYYY') + ' - ' + end.format('D MMMM YYYY'))
+		    }
+
+			$('#daterange-btn').daterangepicker(
+		      {
+			// drops: 'up',
+				drops: 'auto',
+				//opens: 'center',
+		        ranges   : {
+		          'Histórico'       : ["01/08/2020", moment()],
+		          'Ultimo año'   : [moment().subtract(1, 'year'), moment()],
+		          'Ultimo semestre' : [moment().subtract(6, 'month'), moment()],
+		          'Ultimo trimestre': [moment().subtract(3, 'month'), moment()],
+		          'Este mes'  : [moment().startOf('month'), moment().endOf('month')],
+		          'Mes pasado'  : [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+		        },
+		        startDate: start,
+		        endDate  : end,
+				locale: {
+				    "customRangeLabel": "Rango",
+					"cancelLabel" : "Cancelar"
+				  },
+		      },
+		      cb
+		    );
 			 
-			
-//				
-//				
-//				var hoy = new Date();
-//				var manana = new Date();
-//				manana.setDate(hoy.getDate() + 1);
-//				
-//				var dd = manana.getDate();
-//				var mm = manana.getMonth()+1; 
-//				var yyyy = manana.getFullYear();
-//				
-//				if(dd<10) 
-//				{
-//				    dd='0'+dd;
-//				} 
-//
-//				if(mm<10) 
-//				{
-//				    mm='0'+mm;
-//				} 
-//				
-//				var fecha =  dd+'/'+mm+'/'+yyyy;
-//				
-//				$("#fechaFinalInputCriterio").val(fecha);
+			cb(start,end);
 				
 	}
 	

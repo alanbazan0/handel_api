@@ -153,6 +153,24 @@ try
                     $resultado->codigoError = 10;
                 }
             break;
+            case 'consultarSimple':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                    
+                    if($usuario!=null)
+                    {
+                        $opcional = REQUEST('opcional');
+                        $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                        $resultado = $repositorio->consultarSimple($usuario,$criteriosSeleccion,$opcional);
+                    }
+                    else
+                    {
+                        $resultado->mensajeError = "La sesión caducó. Inicie sesión e intente de nuevo.";
+                        $resultado->codigoError = 10;
+                    }
+            break;
             case 'consultarPorPermiso':
                 session_start();
                 $usuario = null;
@@ -400,7 +418,6 @@ try
             case 'consultarEstructura':
                 $empresaId = REQUEST('empresaId');
                 $resultado = $repositorio->consultarEstructura($empresaId);
-           
             break;
             case 'importar':
                 $empresaId = REQUEST('empresaId');
@@ -425,6 +442,11 @@ try
                 }
                 //$adminstradorArchivos->eliminar($carpeta, $nombreArchivo);
                 
+            break;
+            case 'actualizarPerfil':
+                $usuariosIds = REQUEST('usuariosIds');
+                $perfilId = REQUEST('perfilId');
+                $resultado = $repositorio->actualizarPerfil($usuariosIds,$perfilId);
             break;
 //             case 'enviarNotificacion':
 //                 session_start();

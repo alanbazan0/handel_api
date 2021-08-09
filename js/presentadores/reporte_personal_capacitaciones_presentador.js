@@ -52,11 +52,45 @@ class ReportePersonalCapacitacionesPresentador extends CatalogoPresentador
 			if(resultado.mensajeError=="")
 			{
 				this.vista.departamentos = resultado.valor;
+				this.vista.cambiarDepartamento();
 			}
 			else
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 			
 		 },null,true);
+	 }
+
+ 	consultarEmpresasCriterio()	
+	 {
+		 var repositorio = new EmpresasRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.empresasCriterio = resultado.valor;
+				this.vista.cambiarEmpresaCriterio();
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },null,true);
+	 }
+	 
+	 
+	 consultarSedesCriterio()	
+	 {
+		 var repositorio = new SedesRepositorio(this);		
+		 repositorio.consultarPorEmpresa(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.sedesCriterio = resultado.valor;			
+				this.vista.cambiarSedeCriterio();
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		,this.vista.criteriosSeleccion.empresaId,true);
 	 }
 	 
 	 consultarDepartamentosCriterio()	
@@ -67,11 +101,27 @@ class ReportePersonalCapacitacionesPresentador extends CatalogoPresentador
 			if(resultado.mensajeError=="")
 			{
 				this.vista.departamentosCriterio = resultado.valor;
+				this.vista.cambiarDepartamentoCriterio();
 			}
 			else
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 			
-		 },null,true);
+		 },{empresaId: this.vista.criteriosSeleccion.empresaId, sedeId: this.vista.criteriosSeleccion.sedeId },true);
+	 }
+
+ 	consultarUsuariosCriterio()	
+	 {
+		 var repositorio = new UsuariosRepositorio(this);		
+		 repositorio.consultarSimple(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.usuariosCriterio = resultado.valor;
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },{empresaId: this.vista.criteriosSeleccion.empresaId, sedeId: this.vista.criteriosSeleccion.sedeId, departamentoId: this.vista.criteriosSeleccion.departamentoId },true);
 	 }
 	 
 	 consultarTiposUsuario()	
@@ -170,39 +220,7 @@ class ReportePersonalCapacitacionesPresentador extends CatalogoPresentador
 	 
 	
 
-	 consultarEmpresasCriterio()	
-	 {
-		 var repositorio = new EmpresasRepositorio(this);		
-		 repositorio.consultar(this,this.consultarEmpresasCriterioResultado,null,true);
-	 }
-	 
-	 consultarEmpresasCriterioResultado(resultado)
-	 {
-		if(resultado.mensajeError=="")
-		{
-			this.vista.empresasCriterio = resultado.valor;
-			this.vista.cambiarEmpresaCriterio();
-		}
-		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-		
-	 }
-	 
-	 consultarSedesCriterio()	
-	 {
-		 var repositorio = new SedesRepositorio(this);		
-		 repositorio.consultarPorEmpresa(this, function(resultado)
-		 {
-			if(resultado.mensajeError=="")
-			{
-				this.vista.sedesCriterio = resultado.valor;			
-				this.vista.cambiarSedeCriterio();
-			}
-			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-		 }
-		,this.vista.criteriosSeleccion.empresaId,true);
-	 }
+	
 	 
 	 consultarCursosCriterio()	
 	 {
