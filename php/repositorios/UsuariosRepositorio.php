@@ -52,100 +52,126 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                                LEFT JOIN departamentos D ON D.id = U.departamento_id
                                LEFT JOIN perfiles PR ON PR.id = U.perfil_id";
     }    
+    
+    private function usuarioValido($usuario,$modelo)
+    {
+        $resultado = new Resultado();
+        if($modelo->tipoUsuarioId == \TipoUsuario::INSPECTOR)
+        {
+            $resultado = $this->consultar($usuario,(object)["empresaId" => $modelo->empresaId, "tipoUsuarioId" => \TipoUsuario::INSPECTOR , "contrasena" => $modelo->contrasena], "");
+            if($resultado->correcto())
+            {
+                 $usuarios = count($resultado->valor);
+                 if($usuarios>0)
+                 {
+                    $resultado->mensajeError = "El PIN $modelo->contrasena ya esta siendo utilizado por otro usuario dentro de la empresa, ingrese uno diferente";   
+                 }
+                 
+            }
+        }
+        return $resultado;
+    }
+    
+    
    
-    public function insertar(Usuario $modelo)
+    public function insertar($usuario,Usuario $modelo)
     {            
        
-        $resultado =  $this->calcularId("id","usuarios");
-        if($modelo->supervisor1Id=="")
-            $modelo->supervisor1Id=null;
-        if($modelo->supervisor2Id=="")
-            $modelo->supervisor2Id=null;
-        if($modelo->supervisor3Id=="")
-            $modelo->supervisor3Id=null;
-        if($modelo->areaId=="")
-            $modelo->areaId=null;
-        if($modelo->puestoId=="")
-            $modelo->puestoId=null;
-        if($modelo->numeroEmpleado=="")
-            $modelo->numeroEmpleado=null;
-                
-            
-        if($resultado->mensajeError=="")
+        $resultado = new Resultado();
+        $resultado = $this->usuarioValido($usuario,$modelo);
+        if($resultado->correcto())
         {
-            $id = $resultado->valor;
-            $modelo->id = $id;
-           
-            
-            if($modelo->tipoUsuarioId==\TipoUsuario::INSPECTOR)
+            $resultado =  $this->calcularId("id","usuarios");
+            if($modelo->supervisor1Id=="")
+                $modelo->supervisor1Id=null;
+            if($modelo->supervisor2Id=="")
+                $modelo->supervisor2Id=null;
+            if($modelo->supervisor3Id=="")
+                $modelo->supervisor3Id=null;
+            if($modelo->areaId=="")
+                $modelo->areaId=null;
+            if($modelo->puestoId=="")
+                $modelo->puestoId=null;
+            if($modelo->numeroEmpleado=="")
+                $modelo->numeroEmpleado=null;
+                    
+                
+            if($resultado->mensajeError=="")
             {
-                $modelo->nombreUsuario = "inspector".$id;
-            }
-            
-            $consulta = " INSERT INTO usuarios "
-                        . " (id, "
-                        . " nombre_usuario, "
-                        . " contrasena, "    
-                        . " nombre, "
-                        . " apellido, "
-                        . " empresa_id, "
-                        . " sede_id, "
-                        . " puesto_id, "
-                        . " area_id, "
-                        . " tipo_usuario_id, "
-                        . " supervisor1_id, "
-                        . " supervisor2_id, "
-                        . " supervisor3_id, "
-                        . " fecha_alta, "
-                        . " fecha_modificacion, "
-                        . " estatus, "
-                        . " permiso_saha, "
-                        . " permiso_sivah, "
-                        . " permiso_10y7, "
-                        . " departamento_id, permiso_cavi, perfil_id, recursos_humanos,numero_empleado ) "
-                        . " VALUE(?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW(),?,?,?,?,?,?,?,?,?) ";
-            if($sentencia = $this->conexion->prepare($consulta))
-            {
-                if( $sentencia->bind_param("issssiiiiiiiiiiiiiiiii",
-                    $id, 
-                    $modelo->nombreUsuario,
-                    $modelo->contrasena,
-                    $modelo->nombre,
-                    $modelo->apellido,
-                    $modelo->empresaId,
-                    $modelo->sedeId,
-                    $modelo->puestoId,
-                    $modelo->areaId,
-                    $modelo->tipoUsuarioId,
-                    $modelo->supervisor1Id,
-                    $modelo->supervisor2Id,
-                    $modelo->supervisor3Id,
-                    $modelo->estatus,
-                    $modelo->permisoSAHA,
-                    $modelo->permisoSIVAH,
-                    $modelo->permiso10y7,
-                    $modelo->departamentoId,
-                    $modelo->permisoCAVI,
-                    $modelo->perfilId,
-                    $modelo->recursosHumanos,
-                    $modelo->numeroEmpleado))
+                $id = $resultado->valor;
+                $modelo->id = $id;
+               
+                
+                if($modelo->tipoUsuarioId==\TipoUsuario::INSPECTOR)
                 {
-                    if(!$sentencia->execute())              
+                    $modelo->nombreUsuario = "inspector".$id;
+                }
+                
+                $consulta = " INSERT INTO usuarios "
+                            . " (id, "
+                            . " nombre_usuario, "
+                            . " contrasena, "    
+                            . " nombre, "
+                            . " apellido, "
+                            . " empresa_id, "
+                            . " sede_id, "
+                            . " puesto_id, "
+                            . " area_id, "
+                            . " tipo_usuario_id, "
+                            . " supervisor1_id, "
+                            . " supervisor2_id, "
+                            . " supervisor3_id, "
+                            . " fecha_alta, "
+                            . " fecha_modificacion, "
+                            . " estatus, "
+                            . " permiso_saha, "
+                            . " permiso_sivah, "
+                            . " permiso_10y7, "
+                            . " departamento_id, permiso_cavi, perfil_id, recursos_humanos,numero_empleado ) "
+                            . " VALUE(?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW(),?,?,?,?,?,?,?,?,?) ";
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if( $sentencia->bind_param("issssiiiiiiiiiiiiiiiii",
+                        $id, 
+                        $modelo->nombreUsuario,
+                        $modelo->contrasena,
+                        $modelo->nombre,
+                        $modelo->apellido,
+                        $modelo->empresaId,
+                        $modelo->sedeId,
+                        $modelo->puestoId,
+                        $modelo->areaId,
+                        $modelo->tipoUsuarioId,
+                        $modelo->supervisor1Id,
+                        $modelo->supervisor2Id,
+                        $modelo->supervisor3Id,
+                        $modelo->estatus,
+                        $modelo->permisoSAHA,
+                        $modelo->permisoSIVAH,
+                        $modelo->permiso10y7,
+                        $modelo->departamentoId,
+                        $modelo->permisoCAVI,
+                        $modelo->perfilId,
+                        $modelo->recursosHumanos,
+                        $modelo->numeroEmpleado))
                     {
-                        $resultado->codigoError = $this->conexion->errno;
-                        if($resultado->codigoError==1062)
-                            $resultado->mensajeError ="Ya existe un usuario " . $modelo->nombreUsuario . ", intente con otro nombre.";
-                            
-                        else
-                            $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;      
+                        if(!$sentencia->execute())              
+                        {
+                            $resultado->codigoError = $this->conexion->errno;
+                            if($resultado->codigoError==1062)
+                                $resultado->mensajeError ="Ya existe un usuario " . $modelo->nombreUsuario . ", intente con otro nombre.";
+                                
+                            else
+                                $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;      
+                        }
                     }
+                    else
+                        $resultado->mensajeError = "Falló el enlace de parámetros";   
                 }
                 else
-                    $resultado->mensajeError = "Falló el enlace de parámetros";   
-            }
-            else
-                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;   
-        }   
+                    $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;   
+            }   
+        }
         return $resultado;
     }
     
@@ -704,6 +730,11 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             {
                 if($criteriosSeleccion->supervisor1Id!="" && $criteriosSeleccion->supervisor1Id!=null)
                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'supervisor1_id','valor'=>$criteriosSeleccion->supervisor1Id]);
+            }
+            if(isset($criteriosSeleccion->contrasena))
+            {
+                if($criteriosSeleccion->contrasena!="" && $criteriosSeleccion->contrasena!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'contrasena','valor'=>$criteriosSeleccion->contrasena]);
             }
             $where = $this->where($filtros);
         }
@@ -1334,6 +1365,49 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             return $resultado;
     }   
+    
+    public function consultarUsuariosAplicacion10y7($empresaId,$sedeId)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $consulta =   $this->consultaBase .
+        " WHERE U.estatus = 1  
+            AND (U.tipo_usuario_id = 2 OR U.tipo_usuario_id = 3 OR U.tipo_usuario_id = 4 OR  U.tipo_usuario_id = 5)
+            AND U.empresa_id = ? 
+            AND U.sede_id = ? ";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("ii",$empresaId,$sedeId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre,$permisoCAVI, $perfilId, $perfilNombre, $recursosHumanos, $numeroEmpleado)  )
+                    {
+                        while($row = $sentencia->fetch())
+                        {
+                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre,$permisoCAVI, $perfilId, $perfilNombre, $recursosHumanos, $numeroEmpleado);
+                            array_push($registros,$registro);
+                        }
+                       
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado.";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            return $resultado;
+    }   
+    
     
     public function consultarPorLLaves($llaves)
     {

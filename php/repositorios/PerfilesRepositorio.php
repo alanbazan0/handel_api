@@ -81,7 +81,7 @@ class PerfilesRepositorio extends RepositorioBase implements IPerfilesRepositori
         {
             $where = $this->where($filtros);
         }
-        $consulta = $this->consultaBase . $where;
+        $consulta = $this->consultaBase . $where . " ORDER BY nombre";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($this->bind_param($sentencia, $filtros))

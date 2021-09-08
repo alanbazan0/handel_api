@@ -10,4 +10,6 @@ class Minuta
   public $usuarioId;
   public $terminada;
   public $fechaTermino;
+  public $plantilla;
+  public $plantillaId;
 }

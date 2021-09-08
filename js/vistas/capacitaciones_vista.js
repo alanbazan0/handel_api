@@ -203,15 +203,15 @@ class CapacitacionesVista extends CatalogoVista
 		}
 		else
 		{
-			//var valor = $(event.currentTarget).val();
-			 var valor = $(event.currentTarget).is(':checked')?1:0;
-			/*if(campo=="publicado")
+			var valor = $(event.currentTarget).val();
+			if(campo=="publicado")
 			{
+				valor = $(event.currentTarget).is(':checked')?1:0;
 				if(valor=="on" || valor=="1")
 					valor=1;
 				else
 					valor=0;
-			}*/
+			}
 			vista.presentador.actualizarValor(campo,valor);
 		}
 	}

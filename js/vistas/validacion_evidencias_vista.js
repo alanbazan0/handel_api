@@ -179,9 +179,16 @@ class ValidacionEvidenciasVista extends CatalogoVista
 			contenido += "<center><span data-toggle='tooltip' data-placemen='bottom' title='Terminada'  class='fa fa-check fa-lg ' style='color:gray;'></span></center>";
 		else
 			contenido += "";  */
+		var comentarios = "";
+		if(renglon.comentariosValidacion!=null)
+		{
+			comentarios = renglon.administradorNombreCompleto + " comentó el "+renglon.fechaValidacion.substring(0,10) +": " + renglon.comentariosValidacion;
+		}
+		var descripcion = renglon.estatusValidacionDescripcion+". "+ comentarios;
+				
 		if(renglon.estatusValidacionId!=0)
 		{
-			contenido += "<center><span data-toggle='tooltip' data-placemen='bottom' title='"+renglon.estatusValidacionDescripcion+"'  class='"+renglon.estatusValidacionIcono+" fa-lg "+renglon.estatusValidacionColor+"' ></span></center>";
+			contenido += "<center><span data-toggle='tooltip' data-placemen='bottom' title='"+descripcion+"'  class='"+renglon.estatusValidacionIcono+" fa-lg "+renglon.estatusValidacionColor+"' ></span></center>";
 		
 		}
 	

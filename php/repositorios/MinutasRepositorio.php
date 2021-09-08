@@ -1,6 +1,7 @@
 <?php
 namespace php\repositorios;
 
+use DateTime;
 use php\interfaces\IMinutasRepositorio;
 use php\modelos\Minuta;
 use php\modelos\Resultado;
@@ -15,6 +16,7 @@ require_once('../clases/Porcentaje.php');
 require_once('../clases/AdministradorCorreo.php');
 require_once('FrasesRepositorio.php');
 require_once('UsuariosRepositorio.php');
+require_once('TareasComentariosRepositorio.php');
 
 class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
 {
@@ -26,7 +28,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         $this->consultaBase = "SELECT M.id, titulo, descripcion, IFNULL(DATE_FORMAT(M.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, usuario_id, terminada, IFNULL(DATE_FORMAT(M.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, IFNULL(DATE_FORMAT(M.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion, U.nombre, U.apellido,
                                 (SELECT count(*) FROM minutas_tareas T WHERE T.minuta_id = M.id AND T.tipo='t') total,
                                (SELECT count(*) FROM minutas_tareas T WHERE T.minuta_id = M.id AND T.terminada=1) terminadas, acuerdos, participantes, color,
-                                U.empresa_id, E.nombre 
+                                U.empresa_id, E.nombre, plantilla, plantilla_id, numero_plantilla
                                 FROM minutas M
                                     INNER JOIN usuarios U ON U.id = M.usuario_id
                                     INNER JOIN empresas E ON E.id = U.empresa_id";
@@ -34,18 +36,31 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
 
     public function insertar(Minuta $modelo,$usuario)
     {
+        if($modelo->plantillaId=="")
+            $modelo->plantillaId=null;
+        
         $resultado = $this->calcularId('id','minutas');
         if($resultado->mensajeError=='')
         {
             $id = $resultado->valor;
+            $numeroPlantilla = 0;
+            if($modelo->plantilla==1)
+            {
+                $resultado = $this->calcularId('numero_plantilla','minutas');
+                if($resultado->mensajeError=='')
+                {
+                    $numeroPlantilla = $resultado->valor;
+                }
+            }
+            
             
             $color = sprintf('#%06X', mt_rand(0, 0xFFFFFF));
             
-            $consulta = "INSERT INTO minutas(id, titulo, descripcion, fecha_alta, usuario_id, terminada, fecha_finalizacion, fecha_modificacion, color)
-                        VALUES(?, ?, ?, NOW(), ?, 0, ?, NOW(), ?)";
+            $consulta = "INSERT INTO minutas(id, titulo, descripcion, fecha_alta, usuario_id, terminada, fecha_finalizacion, fecha_modificacion, color, plantilla, plantilla_id, numero_plantilla)
+                        VALUES(?, ?, ?, NOW(), ?, 0, ?, NOW(), ?, ?, ?, ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param('ississ', $id, $modelo->titulo,$modelo->descripcion, $usuario->id,  $modelo->fechaTermino,$color))
+                if($sentencia->bind_param('ississiii', $id, $modelo->titulo,$modelo->descripcion, $usuario->id,  $modelo->fechaTermino,$color, $modelo->plantilla, $modelo->plantillaId, $numeroPlantilla))
                 {
                     if($sentencia->execute())
                         $resultado->valor = $id;
@@ -57,6 +72,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             }
             else
                 $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' .$this->conexion->error;
+            
         }
         return $resultado;
     }
@@ -104,6 +120,8 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                 array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'M','campo'=>'titulo','valor'=>$criteriosSeleccion->titulo]);
             if(isset($criteriosSeleccion->terminada) && $criteriosSeleccion->terminada!="")
                 array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'M','campo'=>'terminada','valor'=>$criteriosSeleccion->terminada]);
+            if(isset($criteriosSeleccion->plantilla) && $criteriosSeleccion->plantilla!="")
+                array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'M','campo'=>'plantilla','valor'=>$criteriosSeleccion-> plantilla]);
            
         }
         
@@ -128,11 +146,11 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $descripcion, $titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino, $fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas, $acuerdos, $participantes, $color, $empresaId, $empresaNombre))
+                    if($sentencia->bind_result($id, $descripcion, $titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino, $fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas, $acuerdos, $participantes, $color, $empresaId, $empresaNombre, $plantilla, $plantillaId, $numeroPlantilla))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id,$descripcion, $titulo,$fechaAlta, $usuarioId, $terminada, $fechaTermino,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas, $acuerdos, $participantes, $color, $empresaId, $empresaNombre);
+                            $registro = $this->crearRegistro($id,$descripcion, $titulo,$fechaAlta, $usuarioId, $terminada, $fechaTermino,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas, $acuerdos, $participantes, $color, $empresaId, $empresaNombre, $plantilla, $plantillaId, $numeroPlantilla);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -162,11 +180,11 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $descripcion,$titulo,$fechaAlta, $usuarioId, $terminada, $fechaTermino,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas,$acuerdos, $participantes, $color, $empresaId, $empresaNombre))
+                    if($sentencia->bind_result($id, $descripcion,$titulo,$fechaAlta, $usuarioId, $terminada, $fechaTermino,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas,$acuerdos, $participantes, $color, $empresaId, $empresaNombre, $plantilla, $plantillaId, $numeroPlantilla))
                     {
                         if($sentencia->fetch())
                         {
-                            $minuta = $this->crearRegistro($id,$descripcion,$titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino, $fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas,$acuerdos, $participantes, $color, $empresaId, $empresaNombre);
+                            $minuta = $this->crearRegistro($id,$descripcion,$titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino, $fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas,$acuerdos, $participantes, $color, $empresaId, $empresaNombre, $plantilla, $plantillaId, $numeroPlantilla);
                             $resultado->valor = $minuta;
                             
                             $sentencia->close();
@@ -275,33 +293,41 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         $resultado = $this->eliminarResponsablesMinuta($llaves->id);
         if($resultado->correcto())
         {
-             $resultado = $this->eliminarTareas($llaves->id);
-             if($resultado->correcto())
-             {
-                $consulta = "DELETE FROM minutas WHERE id = ?";
-                if($sentencia = $this->conexion->prepare($consulta))
-                {
-                    if($sentencia->bind_param('i',$llaves->id))
-                    {
-                        if($sentencia->execute())
+            $resultado = $this->eliminarUsuarios($llaves->id);
+            if($resultado->correcto())
+            {
+                 $resultado = $this->eliminarComentariosMinuta($llaves->id);
+                 if($resultado->correcto())
+                 {
+                     $resultado = $this->eliminarTareas($llaves->id);
+                     if($resultado->correcto())
+                     {
+                        $consulta = "DELETE FROM minutas WHERE id = ?";
+                        if($sentencia = $this->conexion->prepare($consulta))
                         {
-                            $resultado->valor = $llaves->id;
+                            if($sentencia->bind_param('i',$llaves->id))
+                            {
+                                if($sentencia->execute())
+                                {
+                                    $resultado->valor = $llaves->id;
+                                }
+                                else
+                                {
+                                    $resultado->codigoError = $this->conexion->errno;
+                                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                                }
+                            }
+                            else
+                                $resultado->mensajeError = 'Falló el enlace de parámetros';
                         }
                         else
                         {
                             $resultado->codigoError = $this->conexion->errno;
-                            $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
                         }
-                    }
-                    else
-                        $resultado->mensajeError = 'Falló el enlace de parámetros';
-                }
-                else
-                {
-                    $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
-                }
-             }
+                     }
+                 }
+            }
         }
             
         if($resultado->correcto())
@@ -315,7 +341,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         return $resultado;
     }
 
-    private function crearRegistro($id, $titulo,$descripcion,$fechaAlta, $usuarioId, $terminada, $fechaFinalizacion,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas, $acuerdos, $participantes, $color, $empresaId, $empresaNombre)
+    private function crearRegistro($id, $titulo,$descripcion,$fechaAlta, $usuarioId, $terminada, $fechaFinalizacion,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas, $acuerdos, $participantes, $color, $empresaId, $empresaNombre, $plantilla, $plantillaId, $numeroPlantilla)
     {
         $registro= (object) 
         [
@@ -335,7 +361,10 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             'participantes' => $participantes,
             'color' => $color,
             'empresaId' => $empresaId,
-            'empresaNombre' => $empresaNombre
+            'empresaNombre' => $empresaNombre,
+            'plantilla' => $plantilla,
+            'plantillaId' => $plantillaId,
+            'numeroPlantilla' => $numeroPlantilla
         ];
         
         if($registro->color=="" || $registro->color==null)
@@ -391,7 +420,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         $consulta = "SELECT T.minuta_id, M.titulo minutaTitulo, RTRIM(M.color), T.id, RTRIM(T.titulo) titulo, IFNULL(DATE_FORMAT(T.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, IFNULL(DATE_FORMAT(T.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion, 
             IFNULL(DATE_FORMAT(T.fecha_compromiso,'%d/%m/%Y'),'') as fecha_compromiso, 
             IFNULL(DATE_FORMAT(T.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, T.terminada, T.usuario_id, U.nombre, U.apellido, 
-            (SELECT count(*) FROM minutas_tareas_comentarios MTC WHERE MTC.minuta_id = T.minuta_id AND MTC.tarea_id = T.id) numeroComentarios, T.tipo
+            (SELECT count(*) FROM minutas_tareas_comentarios MTC WHERE MTC.minuta_id = T.minuta_id AND MTC.tarea_id = T.id) numeroComentarios, T.tipo, orden, usuario_finalizacion_id
             FROM minutas_tareas T
                 INNER JOIN usuarios U ON U.id = T.usuario_id 
                 INNER JOIN minutas M ON M.id = T.minuta_id
@@ -404,7 +433,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                 if($sentencia->execute())
                 {
                     //$valores = array();
-                    if ($sentencia->bind_result($minutaId,$minutaTitulo,$minutaColor,$id, $titulo, $fechaAlta, $fechaModificacion, $fechaCompromiso, $fechaFinalizacion, $terminada, $usuarioId, $usuarioNombre, $usuarioApellido, $numeroComentarios, $tipo))
+                    if ($sentencia->bind_result($minutaId,$minutaTitulo,$minutaColor,$id, $titulo, $fechaAlta, $fechaModificacion, $fechaCompromiso, $fechaFinalizacion, $terminada, $usuarioId, $usuarioNombre, $usuarioApellido, $numeroComentarios, $tipo, $orden, $usuarioFinalizacionId))
                     //if ($sentencia->bind_result($valores))
                     {
                         while($sentencia->fetch())
@@ -424,7 +453,9 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                                 'usuarioNombre' => $usuarioNombre,
                                 'usuarioApellido' => $usuarioApellido,
                                 'numeroComentarios' => $numeroComentarios,
-                                'tipo' => $tipo
+                                'tipo' => $tipo,
+                                'orden' => $orden,
+                                'usuarioFinalizacionId' => $usuarioFinalizacionId
                             ];
                             
                             /*$tarea->titulo = preg_replace( "/<br>|\n/", "", $tarea->titulo );
@@ -504,7 +535,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             FROM minutas_tareas T
                 INNER JOIN usuarios U ON U.id = T.usuario_id
                 INNER JOIN minutas M ON M.id = T.minuta_id
-             WHERE T.tipo = 't' AND $usuario->id IN (SELECT usuario_id FROM minutas_tareas_responsables MTR WHERE MTR.minuta_id = M.id AND MTR.tarea_id = T.id) 
+             WHERE T.tipo = 't' AND M.plantilla!=1 AND $usuario->id IN (SELECT usuario_id FROM minutas_tareas_responsables MTR WHERE MTR.minuta_id = M.id AND MTR.tarea_id = T.id) 
             $and
             ORDER BY UNIX_TIMESTAMP(fecha_compromiso)";
         
@@ -1199,6 +1230,38 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param("ii",$minutaId,$tareaId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__ ." Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__ ." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
+    public function eliminarComentariosMinuta($minutaId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta ="DELETE FROM minutas_tareas_comentarios WHERE minuta_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$minutaId))
             {
                 if($sentencia->execute())
                 {
@@ -1949,6 +2012,251 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
 
     }
     
+    function copiarUsuarios($usuario,$minutaId, $usuarios)
+    {
+           
+        $resultado = new Resultado();
+        
+        $resultado = $this->consultarUsuariosNoAsignadosMinuta($minutaId,$usuarios);
+        
+        if($resultado->correcto())
+        {
+            $usuariosCompartir = $resultado->valor;
+//             $resultado  = $this->eliminarUsuarios($minutaId);
+//             if($resultado->correcto())
+//             {
+                $resultado  = $this->insertarUsuarios($minutaId,$usuarios);
+                if($resultado->correcto())
+                {
+                    $resultado = $this->actualizarMinuta($minutaId);
+                    if($resultado->correcto())
+                    {
+                        $resultado = $this->enviarNotificacionUsuariosMinuta($usuario,$minutaId, $usuariosCompartir);
+                    }
+                }
+            //}
+        }
+        return $resultado;
+            
+    }
+    
+    function copiarTareas($usuario,$minutaId, $tareas, $fechaAltaMinuta)
+    {
+        $tareasComentariosRepositorio = new TareasComentariosRepositorio($this->conexion);
+        for ($i = 0; $i < count($tareas); $i++) 
+        {
+            $modelo = $tareas[$i];
+            
+            
+            if($modelo->tipo=="" || $modelo->tipo==null)
+                $modelo->tipo = "t";
+            
+            $fechaCompromiso = "";
+            
+            if($modelo->tipo=="t")
+            {
+                if(isset($modelo->fechaCompromiso))
+                {
+                    if($modelo->fechaCompromiso!="" && $modelo->fechaCompromiso!=null)
+                    {
+                        if($modelo->terminada==1)
+                        {
+                            $elementos = explode("/",$modelo->fechaCompromiso);
+                            $elementos = array_reverse($elementos);
+                            $fechaCompromiso = join("-",$elementos);
+                        }
+                        else
+                        {
+                            $fechaAltaMinuta = substr($fechaAltaMinuta, 0, 10);
+                            $fechaAltaMinutaDate = date_create_from_format("d/m/Y",$fechaAltaMinuta);
+                            $fechaCompromisoTareaDate = date_create_from_format("d/m/Y",$modelo->fechaCompromiso);
+                            
+                            $diff = (array) date_diff($fechaAltaMinutaDate, $fechaCompromisoTareaDate);
+                            $diasDiferencia = $diff["days"];
+                            
+                           
+                            
+                            if($diasDiferencia>=0)
+                            {
+                                $diaActual = date_create_from_format('Y-m-d', date('Y-m-d'));
+                                if($diasDiferencia>0)
+                                    date_add($diaActual, date_interval_create_from_date_string("$diasDiferencia days"));
+                                $fechaCompromiso = date_format($diaActual, "Y-m-d");
+                                
+                                var_dump($diaActual);
+                            }
+                            
+                            
+                        }
+                    }
+                }
+            }
+                
+            $fechaFinalizacion = "";
+            if($modelo->fechaFinalizacion!="")
+            {
+                $elementos = explode(" ",$modelo->fechaFinalizacion);
+                
+                $fecha = $elementos[0];
+                $hora = $elementos[1];
+                $elementosFecha = explode("/",$fecha);
+                $elementosFecha = array_reverse($elementosFecha);
+                $fechaFinalizacion = join("-",$elementosFecha). " " . $hora;
+                
+                
+            }
+//             $resultado =  $this->calcularIdTarea($minutaId, "id");
+//             if($resultado->correcto())
+//             {
+//                 $modelo->id =  $resultado->valor;
+//                 $resultado =  $this->calcularIdTarea($minutaId,"orden");
+//                 if($resultado->correcto())
+//                 {
+//                     $orden =  $resultado->valor;
+                    $consulta = "INSERT INTO minutas_tareas(minuta_id, id, orden, usuario_id, fecha_alta, fecha_modificacion, terminada, titulo,fecha_compromiso, tipo, fecha_finalizacion, usuario_finalizacion_id) " .
+                        "VALUE(?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?, ?, ?)";
+                    if($sentencia = $this->conexion->prepare($consulta))
+                    {
+                        if($sentencia->bind_param("iiiiissssi",$minutaId, $modelo->id , $modelo->orden, $usuario->id, $modelo->terminada, $modelo->titulo,  $fechaCompromiso, $modelo->tipo, $fechaFinalizacion, $modelo->usuarioFinalizacionId))
+                        {
+                            if($sentencia->execute())
+                            {
+                                $sentencia->close();
+                                $resultado = $tareasComentariosRepositorio->consultar((object)["minutaId"=>$modelo->minutaId, "tareaId" => $modelo->id]);
+                                if($resultado->correcto())
+                                {
+                                    $comentarios = $resultado->valor;
+                                    $resultado = $this->copiarComentarios($minutaId, $modelo->id, $comentarios);
+                                    if($resultado->correcto())
+                                    {
+                                        $resultado = $this->consultarUsuariosNoAsignados($minutaId,$modelo);
+                                        if($resultado->correcto())
+                                        {
+                                            $usuarios = $resultado->valor;
+                                            $resultado = $this->insertarResponsablesTarea($minutaId, $modelo);
+                                            if($resultado->correcto())
+                                            {
+                                                $resultado = $this->actualizarMinuta($minutaId);
+                                                if($resultado->correcto())
+                                                {
+                                                    $resultado = $this->enviarNotificacionResponsables($usuario,$minutaId, $modelo, $usuarios);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                $resultado->mensajeError = __FUNCTION__.". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            $resultado->mensajeError = __FUNCTION__.". Falló el enlace de parámetros";
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        $resultado->mensajeError = __FUNCTION__.". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                        break;
+                    }
+//                 }
+//             }
+                   
+        }
+        return $resultado;
+        
+    }
+    
+    private function copiarComentarios($minutaId, $tareaId, $comentarios)
+    {
+        $resultado = new Resultado();
+        //$repositorio = new TareasComentariosRepositorio($this->conexion);
+        for ($i = 0; $i < count($comentarios); $i++)
+        {
+            $modelo = $comentarios[$i];
+            $resultado = $this->calcularId('id','minutas_tareas_comentarios');
+            if($resultado->correcto())
+            {
+                $id = $resultado->valor;
+                $consulta = "INSERT INTO minutas_tareas_comentarios(id, minuta_id, tarea_id, usuario_id, comentario, fecha)VALUES(?, ?, ?, ?, ?, NOW())";
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if($sentencia->bind_param('iiiis', $id, $minutaId, $tareaId, $modelo->usuarioId, $modelo->comentario))
+                    {
+                        if($sentencia->execute())
+                        {
+                            $sentencia->close();
+//                             $llaves= (object)
+//                             [
+//                                 'minutaId'=> $modelo->minutaId,
+//                                 'tareaId'=> $modelo->tareaId
+//                             ];
+//                             $repositorio = new MinutasRepositorio($this->conexion);
+//                             $resultado = $repositorio->consultarTareaPorLlaves($llaves);
+//                             if($resultado->correcto())
+//                             {
+//                                 $tarea =  $resultado->valor;
+//                                 $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+//                                 $resultado = $this->consultaUsuariosComentario($tarea->minutaId,$tarea->id);
+//                                 if($resultado->correcto())
+//                                 {
+//                                     $usuarios = $resultado->valor;
+                                    
+//                                     if(!$usuariosRepositorio->existeUsuarioArreglo($tarea->usuarioId,$usuarios))
+//                                     {
+//                                         $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$tarea->usuarioId]);
+//                                         if($resultado->correcto())
+//                                             array_push($usuarios, $resultado->valor);
+//                                     }
+                                    
+//                                     if($usuario->supervisor1Id!=null)
+//                                     {
+//                                         if(!$usuariosRepositorio->existeUsuarioArreglo($usuario->supervisor1Id,$usuarios))
+//                                         {
+//                                             $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$usuario->supervisor1Id]);
+//                                             if($resultado->correcto())
+//                                                 array_push($usuarios, $resultado->valor);
+//                                         }
+//                                     }
+                                    
+                                    
+//                                     $usuariosRepositorio->eliminarUsuarioArreglo($usuario->id,$usuarios);
+                                    
+//                                     $resultado = $this->enviarNotificacionComentario($usuario,$usuarios,$tarea, $modelo->comentario);
+//                                     if($resultado->correcto())
+//                                     {
+//                                         $resultado->valor = $modelo->id;
+//                                     }
+//                                 }
+//                             }
+                        }
+                        else
+                        {
+                            $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        $resultado->mensajeError = 'Falló el enlace de parámetros';
+                        break;
+                    }
+                }
+                else
+                {
+                    $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' .$this->conexion->error;
+                    break;
+                }
+            }
+        }
+        
+        return $resultado;
+    }
+    
     private function eliminarUsuarios($minutaId)
     {
         $resultado = new Resultado();
@@ -2115,5 +2423,88 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         }
         return $resultado;
     }  
+    
+    public function copiar($usuario,$llaves,$titulo)
+    {
+        ini_set('max_execution_time', 300);
+        $this->conexion->autocommit(FALSE);
+        
+        $resultado = $this->consultarPorLlaves($llaves,true);
+        if($resultado->correcto())
+        {
+            $modelo = $resultado->valor;
+            $modelo->titulo = $titulo;
+            $resultado = $this->copiarEncabezado($usuario,$modelo);
+            if($resultado->correcto())
+            {
+                $copia = $resultado->valor;
+                $resultado = $this->copiarUsuarios($usuario,$copia->id, $modelo->usuarios);
+                if($resultado->correcto())
+                {
+                    $resultado =  $this->copiarTareas($usuario,$copia->id, $modelo->tareas, $modelo->fechaAlta);
+                     if($resultado->correcto())
+                     {
+                         $resultado->valor = $copia->id;
+                     }
+                 }
+            }
+        }
+        
+        
+        if($resultado->correcto())
+        {
+            $this->conexion->commit();
+            
+        }
+        else
+            $this->conexion->rollback();
+            return $resultado;
+    }
+    
+    public function copiarEncabezado($usuario,$modelo)
+    {
+        $resultado =  $this->calcularId("id","minutas");
+        if($resultado->mensajeError=="")
+        {
+            $fechaFinalizacion = null;
+            if($modelo->fechaFinalizacion!=null)
+            {
+                $elementos = explode('/', $modelo->fechaFinalizacion);
+                if(count($elementos)==3)
+                {
+                    $dia = $elementos[0];
+                    $mes = $elementos[1];
+                    $ano = $elementos[2];
+                    $fechaFinalizacion = date("Y-m-d H:i:s", mktime(10, 30, 0, $mes, $dia, $ano));
+                }
+            }
+            $plantillaId = $modelo->id;
+            $modelo->id = $resultado->valor;
+            $consulta = "INSERT INTO minutas(id, titulo, descripcion, fecha_alta, fecha_modificacion, usuario_id, terminada, fecha_finalizacion, acuerdos, participantes, color, plantilla, plantilla_id) " .
+                "VALUE(?, ?, ?, NOW(), NOW(), ?, ?, ?, ?, ?, ?, 0, ?)";
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if( $sentencia->bind_param("issiissssi", $modelo->id, $modelo->titulo,$modelo->descripcion, $usuario->id, $modelo->terminada, $fechaFinalizacion, $modelo->acuerdos, $modelo->participantes, $modelo->color, $plantillaId))
+                {
+                    if($sentencia->execute())
+                    {
+                        $sentencia->close();
+                        $resultado->valor = $modelo;
+                    }
+                    else
+                    {
+                        $resultado->mensajeError = __FUNCTION__. ". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    }
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__. ". Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. ". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                
+        }
+        return $resultado;
+    }
+    
     
 }

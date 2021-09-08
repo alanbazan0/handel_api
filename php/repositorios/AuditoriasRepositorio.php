@@ -69,7 +69,7 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
             LEFT JOIN sedes S ON A.sede_id = S.id
             LEFT JOIN tipos_auditoria TA ON TA.id = A.tipo_auditoria_id";
         
-        $this->consultaBaseRecomendaciones = "SELECT RC.id, edt, titulo, responsable_id, U.nombre, U.apellido,  IFNULL(DATE_FORMAT(RC.fecha_alta,'%d/%m/%Y'),'')fechaAlta, prioridad, cumplimiento,  IFNULL(DATE_FORMAT(RC.fecha_vencimiento,'%d/%m/%Y'),'')fechaVencimiento,  IFNULL(DATE_FORMAT(RC.fecha_finalizacion,'%d/%m/%Y'),'')fecha_finalizacion, terminada, estatus_validacion_id, EST.descripcion AS estatusValidacionId, fecha_validacion, 
+        $this->consultaBaseRecomendaciones = "SELECT RC.id, edt, titulo, responsable_id, U.nombre, U.apellido,  IFNULL(DATE_FORMAT(RC.fecha_alta,'%d/%m/%Y'),'')fechaAlta, prioridad, cumplimiento,  IFNULL(DATE_FORMAT(RC.fecha_vencimiento,'%d/%m/%Y'),'')fechaVencimiento,  IFNULL(DATE_FORMAT(RC.fecha_finalizacion,'%d/%m/%Y'),'')fecha_finalizacion, terminada, estatus_validacion_id, EST.descripcion AS estatusValidacionId, IFNULL(DATE_FORMAT(RC.fecha_validacion,'%d/%m/%Y %H:%i:%s'),'')fecha_validacion, 
                             validacion_usuario_id AS validadorId, VL.nombre AS validadorNombre, VL.apellido AS validadorApellido,
                             E1.administrador_sivah_id AS administradorId, V.nombre AS administradorNombre, V.apellido AS administradorApellido,
                             E1.id AS empresaId, E1.nombre AS empresaNombre,(SELECT count(C.id) FROM recomendaciones_comentarios C WHERE C.recomendacion_id = RC.id) numeroComentarios, EST.icono, EST.color,comentarios_validacion,

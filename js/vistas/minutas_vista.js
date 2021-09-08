@@ -59,6 +59,19 @@ class MinutasVista extends CatalogoVista
 			_this._llaves = {id: _this.modeloEdicion.id};
 			_this.imprimirReporte();
 		});
+		
+		this.tablaPlantillas = new Tabla("tablaPlantillas");	
+		this.crearColumnasGridPlantillas();
+		
+				
+		var _this = this;
+		$("#consultarButtonPlantillas").click(function(){
+			_this.consultarPlantillas();
+		});
+		
+		$("#agregarButtonPlantillas").click(function(){
+			_this.agregarPlantilla();
+		});
 	}
 	
 	
@@ -156,12 +169,19 @@ class MinutasVista extends CatalogoVista
 	    	  switch(target)
 	    	  {
 	    	  	case "#minutas":
+					_this._plantilla = false;
 	    	  		if(!_this._consultoMinutas)
 	    	  			_this.consultar();	
 	    		break;
 	    	  	case "#tareas-pendientes":
+					_this._plantilla = false;
 	    	  		//if(!_this._consultoTareasPendientes)
 	    	  			_this.consultarMisTareas();	
+	    		break;
+				case "#plantillas":
+					_this._plantilla = true;
+	    	  		if(!_this._consultoPlantillas)
+	    	  			_this.consultarPlantillas();	
 	    		break;
 	    	  }
 	    	});
@@ -179,6 +199,12 @@ class MinutasVista extends CatalogoVista
 	{
 		this._consultoMinutas = true;
 		super.consultar();
+	}
+	
+	consultarPlantillas()
+	{
+		this._consultoPlantillas = true;
+		this.presentador.consultarPlantillas();
 	}
 	
 	consultarMisTareas()
@@ -311,6 +337,33 @@ class MinutasVista extends CatalogoVista
 		this.tabla.registros = [];
 	}
 	
+	crearColumnasGridPlantillas()
+	{
+		this.tablaPlantillas.columnas = [
+			{longitud:30, 	titulo:"",   alias:"terminada", alineacion:"I", itemRenderer: this.renderTerminada},
+			{longitud:40, 	titulo:"Id",   	alias:"id", alineacion:"D" },
+			{longitud:40, 	titulo:"Número",   	alias:"numeroPlantilla", alineacion:"D" },
+			{longitud:200, 	titulo:"Título",   alias:"titulo", alineacion:"I" },
+			{longitud:300, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I" },
+			{longitud:50, 	titulo:"Color de etiqueta",   alias:"color", alineacion:"C", itemRenderer: this.renderColor },
+			{longitud:50, 	titulo:"Avance",   alias:"titulo", alineacion:"C", itemRenderer: this.rendererPorcentaje },
+			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogo},
+			{longitud:200, 	titulo:"Usuario que creó" ,   alias:"usuarioNombreCompleto", alineacion:"I",class: "desc" }, 
+			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
+			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
+			{longitud:100, 	titulo:"Fecha de terminación",   alias:"fechaFinalizacion", alineacion:"I"}
+		]
+		
+		
+		
+		this.tablaPlantillas.contenidoAdicional ="<button data-toggle='tooltip' data-placemen='bottom' title='Copiar a minutas'  type='button' class='copiar btn-circle mr-0 botones-icon btn btn-sm float-left btn-warning' style=''><span  data-toggle='tooltip' class='fa fa-copy fa-lg'></span></button>" +
+		 "<button data-toggle='tooltip' data-placemen='bottom' title='PDF'  type='button' class='imprimir btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active' style='background-color:#d62929'><span  data-toggle='tooltip' class='fa fa-file-pdf-o fa-lg'></span></button>" +
+		"<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
+		"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+
+		this.tablaPlantillas.registros = [];
+	}
+	
 	inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave)
 	{
 		super.inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave);
@@ -432,7 +485,18 @@ class MinutasVista extends CatalogoVista
 		 var criteriosSeleccion = 
 		 {				    
 			titulo:$('#tituloInputCriterio').val(),
-			terminada: $('#terminadaSelectCriterio').val()
+			terminada: $('#terminadaSelectCriterio').val(),
+			plantilla : "0"
+		 }
+		 return criteriosSeleccion;
+	}	
+		
+	get criteriosSeleccionPlantilla()
+	{
+		 var criteriosSeleccion = 
+		 {				    
+			titulo:$('#tituloInputCriterioPlantilla').val(),
+			plantilla : 1
 		 }
 		 return criteriosSeleccion;
 	}		
@@ -608,6 +672,16 @@ class MinutasVista extends CatalogoVista
 			 descripcion:$('#descripcionInputAlta').val(),	
 			 estatus:$('#estatusRadio').is(':checked')?1:0
 		 };
+			
+		if(this._plantilla)
+		{
+			modelo.plantilla = 1;
+		}
+		else
+		{
+			modelo.plantilla = 0;
+		}
+	
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
 		 return modelo;
@@ -787,10 +861,17 @@ class MinutasVista extends CatalogoVista
 	agregar()
 	{
 		this.modo = Modo.ALTA;
+		this._plantilla = false;
 		this.ocultarIndicador();
 		this.mostrarFormularioAlta();
-		//$('#nombreInput').focus();
-		//this.inicializarValidacionesFormulario();
+	}
+	
+	agregarPlantilla()
+	{
+		this.modo = Modo.ALTA;
+		this._plantilla = true;
+		this.ocultarIndicador();
+		this.mostrarFormularioAlta();
 	}
 	
 	mostrarFormularioAlta()
@@ -798,9 +879,13 @@ class MinutasVista extends CatalogoVista
 		var _this = this;
 		this.mostrarFormularioHTML(HANDEL_API+"/html/formularios/minutas.php",this, null, function()
 		{
-			//mostrar
+			if(_this._plantilla)
+				$("#scrollmodalLabel").html("Nueva plantilla");
+			else
+				$("#scrollmodalLabel").html("Nueva minuta");
 			 setTimeout(function(){
 					$('#tituloInputAlta').focus();
+					
 //					$('#logoImageAlta').show();
 //					$('#logoImageAlta').attr('src', HANDEL_API + "/php/portadas_cursos/default.png");
 					_this.inicializarValidacionesFormularioAlta("formularioAlta");
@@ -878,6 +963,10 @@ class MinutasVista extends CatalogoVista
     	  		//if(!_this._consultoTareasPendientes)
     	  			this.consultarMisTareas();	
     		break;
+			case "#plantillas":
+    	  		//if(!_this._consultoTareasPendientes)
+    	  			this.consultarPlantillas();	
+    		break;
     	  }
 	}
 	
@@ -888,8 +977,11 @@ class MinutasVista extends CatalogoVista
 	
 	eliminar(texto)
 	{ 
+		var tipo = "minuta";
+		if(this._plantilla)
+			tipo = "plantilla";
 		if(texto==undefined)
-			texto ="Se eliminar\u00e1 la minuta<br><label>"+this._registroSeleccionado.titulo+"</label>";
+			texto ="Se eliminar\u00e1 la "+tipo+"<br><label>"+this._registroSeleccionado.titulo+"</label>";
 		var _this = this;
 		swal({
 	            title: "\u00bfEst\u00E1 seguro de eliminar?",
@@ -1238,6 +1330,140 @@ class MinutasVista extends CatalogoVista
 			}
 		}
 		
+	}
+	
+	set datosPlantillas(datos)
+	{
+		this.tablaPlantillas.registros = datos;	
+		this.inicializarEventosTablaPlantillas("#" + this.tablaPlantillas._id+"Table tbody",this.tablaPlantillas.datatable.DataTable());
+	}
+	
+	inicializarEventosTablaPlantillas(tbody, table)
+	{
+		this.inicializarEventosBotonesTablaPlantillas(tbody, table, ["id"]);
+	}
+	
+	inicializarEventosBotonesTablaPlantillas(tbody, table, nombresCamposLlave)
+	{
+		var _this = this;
+		$(tbody).on("click", "button.editar", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+		    
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.editar();
+			}
+		});
+
+		$(tbody).on("click", "button.eliminar", function()
+		{
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+		    _this._registroSeleccionado  = table.row( tr ).data();
+			
+			
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.eliminar();
+			}
+		});
+		
+		$(tbody).on("click", "button.imprimir", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.imprimirReporte();
+			}
+		});
+		
+		$(tbody).on("click", "button.copiar", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.copiarMinuta();
+			}
+		});
+		
+	}
+	
+	copiarMinuta()
+	{
+		var _this = this;
+		var plantilla = this._registroSeleccionado.titulo;
+		$(".sa-button-container").attr("disabled",false);
+		$("fieldset").attr("disabled",false);
+		swal({
+	            title: "\u00bfEst\u00E1 seguro de copiar?",
+	            text: "Se creará una copia de la plantilla <strong>" + plantilla + "</strong> en la sección de minutas",
+	            html: true,
+	            type: "input",
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Si, copiar",
+	            cancelButtonText: "No",
+	            closeOnConfirm: false,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+ 				inputPlaceholder: "Ingrese un título para la minuta"
+	        },
+	      /*  function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	 setTimeout(function(){
+	            		 _this.presentador.copiar();
+	 	            }, 1000);
+	            }
+	        }*/
+			function(valor){
+				if (valor === false) return false;
+				else  if (valor === null) return false;
+					  
+				else if (valor === "") 
+				{
+					    swal.showInputError("Es necesario ingresar un título");
+					    return false
+				}
+				else
+				{
+					$(".sa-button-container").attr("disabled",true);
+					$("fieldset").attr("disabled",true);
+					setTimeout(function(){
+						
+		            		 _this.presentador.copiar(valor);
+		 	            }, 1000);
+				}
+				
+			});
 	}
 	
 	

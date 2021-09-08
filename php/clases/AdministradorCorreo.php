@@ -522,9 +522,13 @@ class AdministradorCorreo
     
     function mensajeLog($archivo, $correos, $mensaje, $info)   
     {
-        $carpeta = "logs";
-        if(file_exists("../".$carpeta."/") || @mkdir("../".$carpeta."/"))
+        $ano = date("Y");
+        $mes = date("m");
+        $dia = date("j");
+        $carpeta = "logs/correos/$ano/$mes/$dia";
+        if(file_exists("../".$carpeta."/") || @mkdir("../".$carpeta."/",0777,true))
         {
+            
             $mensaje = date("j/m/Y H:i:s") .":".$mensaje;
             $mensaje.= "\n" . $info;
             $mensaje.= "\n" . $correos;

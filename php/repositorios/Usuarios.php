@@ -51,13 +51,16 @@ try
         switch ($accion)
         {           
             case 'insertar':
-               
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
                 $modelo = $mapper->map($json, new Usuario());     
                 
              
-                $resultado = $repositorio->insertar($modelo);     
+                $resultado = $repositorio->insertar($usuario,$modelo);     
                 if($resultado->mensajeError=="")
                 {
                     $administrador_correo = new AdministradorCorreo();
@@ -130,6 +133,11 @@ try
                 $empresaId = REQUEST('empresaId');
                 $sedeId = REQUEST('sedeId');
                 $resultado = $repositorio->consultarPorEmpresaSede($usuario,$empresaId,$sedeId,$opcional);
+            break;
+            case 'consultarUsuariosAplicacion10y7':
+                $empresaId = REQUEST('empresaId');
+                $sedeId = REQUEST('sedeId');
+                $resultado = $repositorio->consultarUsuariosAplicacion10y7($empresaId,$sedeId);
             break;
             case 'consultarPorLlaves':
                 $llaves = json_decode(REQUEST('llaves'));

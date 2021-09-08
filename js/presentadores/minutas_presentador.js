@@ -302,6 +302,64 @@ class MinutasPresentador extends CatalogoPresentador
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
 		 }, minutaId, tareaId);
 	 }
+
+	 consultarPlantillas()
+	 {
+		 this.vista.mostrarIndicador();
+		 this._repositorio.consultar(this, function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.datosPlantillas = resultado.valor;
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
+			
+		 },this.vista.criteriosSeleccionPlantilla);
+	 }
+	
+	
+	 eliminarResultado(resultado)
+	 {		
+		 this.vista.ocultarIndicador();	
+		 this.vista.cerrarConfirmacionEliminar();
+		 if(resultado.mensajeError=="")
+		 {
+			 this.vista.mostrarMensaje("Notificación","El registro se eliminó correctamente.");
+			if(this.vista._plantilla)
+				this.consultarPlantillas();
+			else
+			 	this.consultar();
+		 }
+		 else
+		 {
+			 if(resultado.codigoError==1451)
+				 this.vista.mostrarMensajeAdvertencia("Error","No se puede eliminar el registro porque esta relacionado con otro catálogo. ") ;
+			 else
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar el registro. " + resultado.mensajeError, resultado.codigoError);
+		 }
+	 }
+
+	 copiar(titulo)
+	 {
+		 this.vista.mostrarIndicador();	
+		 this._repositorio.copiar(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+		 	this.vista.cerrarConfirmacionEliminar();
+			 if(resultado.mensajeError=="")
+			 {
+				swal.close();
+				 this.vista.mostrarMensaje("Notificación","La plantilla se copió correctamente. Id: " + resultado.valor);
+				 	this.consultar();
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al copiar la plantilla. " + resultado.mensajeError, resultado.codigoError);
+			 }
+		 },this.vista.llaves,titulo);
+	 }
+	 
+	 
 	
 	 
 }

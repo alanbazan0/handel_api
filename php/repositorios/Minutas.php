@@ -139,6 +139,11 @@ try
                     $minutaId = REQUEST('minutaId');
                     $resultado = $repositorio->consultarPorcentajeAvance($minutaId);
                 break;
+                case 'copiar':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $titulo = REQUEST('titulo');
+                    $resultado = $repositorio->copiar($usuario,$llaves,$titulo);
+                break;
                 default:
                     $resultado->mensajeError = 'Acción no implementada';
                 break;
