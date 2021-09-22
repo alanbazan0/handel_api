@@ -23,7 +23,7 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
     {
         
         $this->conexion = $conexion;
-        $this->consultaBase = " SELECT I.id, E.id empresaId, E.nombre empresaNombre, I.id sedeId, S.nombre sedeNombre, usuario_id usuarioId, US.nombre usuarioNombre, inspector_id inspectorId, CONCAT(INS.nombre,' ', INS.apellido) inspectorNombre, IFNULL(DATE_FORMAT(fecha_inspeccion ,'%d/%m/%Y %H:%i:%s'),'')fechaInspeccion, I.area_id, A.nombre, numero_caja numeroCaja, E.nombre_corto, S.nombre_corto, A.tipo_area_id, TA.nombre, IFNULL(DATE_FORMAT(fecha_finalizacion ,'%d/%m/%Y %H:%i:%s'),'')fechaFinalizacion, transportista, chofer, numero_tractor, placas_tractor, placas_caja, color_tractor, color_caja, numero_contenedor, tipo_caja, sello, sello_viajero, alto,  ancho, profundidad,  entrada_salida, TI.id, TI.descripcion,destino, numero_orden,piezas, bultos, peso, otras_mercancias, turno_inicio, turno_fin, fecha_subida, manifiesto, inspector_termina, CONCAT(INST.nombre,' ', INST.apellido) , sello_colocado, tiene_impreso_sello, caja_libre_objetos_organicos,factura, inspector_aleatorio_id, CONCAT(INSA.nombre,' ', INSA.apellido)  
+        $this->consultaBase = " SELECT I.id, E.id empresaId, E.nombre empresaNombre, I.id sedeId, S.nombre sedeNombre, usuario_id usuarioId, US.nombre usuarioNombre, inspector_id inspectorId, CONCAT(INS.nombre,' ', INS.apellido) inspectorNombre, IFNULL(DATE_FORMAT(fecha_inspeccion ,'%d/%m/%Y %H:%i:%s'),'')fechaInspeccion, I.area_id, A.nombre, numero_caja numeroCaja, E.nombre_corto, S.nombre_corto, A.tipo_area_id, TA.nombre, IFNULL(DATE_FORMAT(fecha_finalizacion ,'%d/%m/%Y %H:%i:%s'),'')fechaFinalizacion, transportista, chofer, numero_tractor, placas_tractor, placas_caja, color_tractor, color_caja, numero_contenedor, tipo_caja, sello, sello_viajero, alto,  ancho, profundidad,  entrada_salida, TI.id, TI.descripcion,destino, numero_orden,piezas, bultos, peso, otras_mercancias, turno_inicio, turno_fin, fecha_subida, manifiesto, inspector_termina, CONCAT(INST.nombre,' ', INST.apellido) , sello_colocado, tiene_impreso_sello, caja_libre_objetos_organicos,factura, inspector_aleatorio_id, CONCAT(INSA.nombre,' ', INSA.apellido)aleatorioNombre, caja_libre_objetos_organicos_justificacion,unidad_libre_objetos_organicos,unidad_libre_objetos_organicos_justificacion,chofer_no_firma,chofer_no_firma_justificacion, sello_vvtt  
              FROM inspecciones I 
                LEFT JOIN sedes S ON S.id = I.sede_id 
                LEFT JOIN empresas E ON E.id = S.empresa_id 
@@ -49,11 +49,11 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             
            
             
-            $consulta = "INSERT INTO inspecciones(id, sede_id, usuario_id, inspector_id, area_id, fecha_inspeccion, fecha_finalizacion, numero_caja,  transportista, chofer, numero_tractor, placas_tractor, placas_caja, color_tractor, color_caja, numero_contenedor, tipo_caja, sello, sello_viajero, alto, ancho, profundidad, entrada_salida, tipo_inspeccion_id, fecha_inicio,tablet_id,destino, numero_orden,piezas, bultos, peso, otras_mercancias, turno_inicio, turno_fin, fecha_subida,manifiesto, inspector_termina, sello_colocado, tiene_impreso_sello,caja_libre_objetos_organicos,factura,inspector_aleatorio_id ) " .
-                "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, NOW(),?,?,?,?,?,?,?)";
+            $consulta = "INSERT INTO inspecciones(id, sede_id, usuario_id, inspector_id, area_id, fecha_inspeccion, fecha_finalizacion, numero_caja,  transportista, chofer, numero_tractor, placas_tractor, placas_caja, color_tractor, color_caja, numero_contenedor, tipo_caja, sello, sello_viajero, alto, ancho, profundidad, entrada_salida, tipo_inspeccion_id, fecha_inicio,tablet_id,destino, numero_orden,piezas, bultos, peso, otras_mercancias, turno_inicio, turno_fin, fecha_subida,manifiesto, inspector_termina, sello_colocado, tiene_impreso_sello,caja_libre_objetos_organicos,factura,inspector_aleatorio_id,caja_libre_objetos_organicos_justificacion,unidad_libre_objetos_organicos,unidad_libre_objetos_organicos_justificacion,chofer_no_firma,chofer_no_firma_justificacion, sello_vvtt) " .
+                "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, NOW(),?,?,?,?,?,?,?,?,?,?,?,?,?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if( $sentencia->bind_param("iiiiissssssssssssssssssisisssssssssissssi", $modelo->id, $modelo->sedeId,$modelo->usuarioId, $modelo->inspectorId, $modelo->areaId, $modelo->fechaInspeccion, $modelo->fechaFinalizacion, $modelo->numeroCaja, $modelo->transportista, $modelo->chofer, $modelo->numeroTractor, $modelo->placasTractor, $modelo->placasCaja, $modelo->colorTractor, $modelo->colorCaja, $modelo->numeroContenedor, $modelo->tipoCaja, $modelo->sello, $modelo->selloViajero,$modelo->alto, $modelo->ancho, $modelo->profundidad, $modelo->entradaSalida, $modelo->tipoInspeccionId, $modelo->fechaInicio, $modelo->tabletId,$modelo->destino,$modelo->numeroOrden, $modelo->piezas, $modelo->bultos, $modelo->peso, $modelo->otrasMercancias, $modelo->turnoInicio, $modelo->turnoFin, $modelo->manifiesto, $modelo->inspectorTermina, $modelo->selloColocado,$modelo->tieneImpresoSello,$modelo->cajaLibreObjetosOrganicos,$modelo->factura,$modelo->inspectorAleatorioId ))
+                if( $sentencia->bind_param("iiiiissssssssssssssssssisisssssssssissssissssss", $modelo->id, $modelo->sedeId,$modelo->usuarioId, $modelo->inspectorId, $modelo->areaId, $modelo->fechaInspeccion, $modelo->fechaFinalizacion, $modelo->numeroCaja, $modelo->transportista, $modelo->chofer, $modelo->numeroTractor, $modelo->placasTractor, $modelo->placasCaja, $modelo->colorTractor, $modelo->colorCaja, $modelo->numeroContenedor, $modelo->tipoCaja, $modelo->sello, $modelo->selloViajero,$modelo->alto, $modelo->ancho, $modelo->profundidad, $modelo->entradaSalida, $modelo->tipoInspeccionId, $modelo->fechaInicio, $modelo->tabletId,$modelo->destino,$modelo->numeroOrden, $modelo->piezas, $modelo->bultos, $modelo->peso, $modelo->otrasMercancias, $modelo->turnoInicio, $modelo->turnoFin, $modelo->manifiesto, $modelo->inspectorTerminaId, $modelo->selloColocado,$modelo->tieneImpresoSello,$modelo->cajaLibreObjetosOrganicos,$modelo->factura,$modelo->inspectorAleatorioId,$modelo->cajaLibreObjetosOrganicosJustificacion, $modelo->unidadLibreObjetosOrganicos, $modelo->unidadLibreObjetosOrganicosJustificacion, $modelo->choferNoFirma, $modelo->choferNoFirmaJustificacion,$modelo->selloVVTT ))
                 {
                     if($sentencia->execute())
                     {
@@ -125,7 +125,12 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
                         $numeroFoto = $j + 1;
                         $id = $inspeccion->id . "_" .$punto->id  . "_" . $numeroFoto .".jpg"; 
                         
-                        $archivo = '../fotos_inspecciones/'.$id;
+                        $carpeta = '../fotos_inspecciones/'.$inspeccion->id;
+                        if (!file_exists($carpeta)) {
+                            mkdir($carpeta, 0777, true);
+                        }
+                        
+                        $archivo = $carpeta.'/'.$id;
                         
                         if(file_exists($archivo))
                             unlink($archivo);
@@ -144,11 +149,17 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             {
                 $fotoBase64 = $inspeccion->fotos[$j]->base64;
                 $nombre = $inspeccion->fotos[$j]->nombre;
+                
                 $foto = base64_decode($fotoBase64);
                 
                 $id = $inspeccion->id . "_" .$nombre.".jpg";
+                $carpeta = '../fotos_inspecciones/'.$inspeccion->id;
+                if (!file_exists($carpeta)) {
+                    mkdir($carpeta, 0777, true);
+                }
+                $archivo = $carpeta.'/'.$id;
                 
-                $file = fopen('../fotos_inspecciones/' .$id, 'wb');
+                $file = fopen($archivo, 'wb');
                 fwrite($file, $foto);
                 fclose($file);
             }
@@ -329,11 +340,11 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId,$areaNombre, $numeroCaja, $empresaNombreCorto, $sedeNombreCorto, $tipoAreaId, $tipoAreaNombre, $fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero, $alto, $ancho, $profundidad, $entrada_salida, $tipoInspeccionId, $tipoInspeccionDescripcion,$destino, $numeroOrden, $piezas, $bultos, $peso, $otrasMercancias, $turnoInicio, $turnoFin, $fechaSubida, $manifiesto, $inspectorTerminaId,$inspectorTerminaNombre, $selloColocado,$tieneSelloImpreso, $cajaLibreObjetosOrganicos,$factura,$inspectorAleatorioId, $inspectorAleatorioNombre))
+                    if ($sentencia->bind_result($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId,$areaNombre, $numeroCaja, $empresaNombreCorto, $sedeNombreCorto, $tipoAreaId, $tipoAreaNombre, $fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero, $alto, $ancho, $profundidad, $entrada_salida, $tipoInspeccionId, $tipoInspeccionDescripcion,$destino, $numeroOrden, $piezas, $bultos, $peso, $otrasMercancias, $turnoInicio, $turnoFin, $fechaSubida, $manifiesto, $inspectorTerminaId,$inspectorTerminaNombre, $selloColocado,$tieneSelloImpreso, $cajaLibreObjetosOrganicos,$factura,$inspectorAleatorioId, $inspectorAleatorioNombre,$cajaLibreObjetosOrganicosJustificacion,$unidadLibreObjetosOrganicos,$unidadLibreObjetosOrganicosJustificacion,$choferNoFirma, $choferNoFirmaJustificacion,$selloVVTT))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId, $areaNombre,$numeroCaja, $empresaNombreCorto, $sedeNombreCorto,$tipoAreaId, $tipoAreaNombre,$fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero,  $alto, $ancho, $profundidad, $entrada_salida,$tipoInspeccionId, $tipoInspeccionDescripcion,$destino, $numeroOrden, $piezas, $bultos, $peso, $otrasMercancias, $turnoInicio, $turnoFin, $fechaSubida, $manifiesto, $inspectorTerminaId,$inspectorTerminaNombre, $selloColocado, $tieneSelloImpreso, $cajaLibreObjetosOrganicos,$factura,$inspectorAleatorioId, $inspectorAleatorioNombre);
+                            $registro = $this->crearRegistro($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId, $areaNombre,$numeroCaja, $empresaNombreCorto, $sedeNombreCorto,$tipoAreaId, $tipoAreaNombre,$fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero,  $alto, $ancho, $profundidad, $entrada_salida,$tipoInspeccionId, $tipoInspeccionDescripcion,$destino, $numeroOrden, $piezas, $bultos, $peso, $otrasMercancias, $turnoInicio, $turnoFin, $fechaSubida, $manifiesto, $inspectorTerminaId,$inspectorTerminaNombre, $selloColocado, $tieneSelloImpreso, $cajaLibreObjetosOrganicos,$factura,$inspectorAleatorioId, $inspectorAleatorioNombre,$cajaLibreObjetosOrganicosJustificacion,$unidadLibreObjetosOrganicos,$unidadLibreObjetosOrganicosJustificacion,$choferNoFirma, $choferNoFirmaJustificacion,$selloVVTT);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -365,11 +376,11 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId,$areaNombre, $numeroCaja, $empresaNombreCorto, $sedeNombreCorto,$tipoAreaId, $tipoAreaNombre,$fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero, $alto, $ancho, $profundidad, $entrada_salida,$tipoInspeccionId, $tipoInspeccionDescripcion,$destino, $numeroOrden, $piezas, $bultos, $peso, $otrasMercancias, $turnoInicio, $turnoFin, $fechaSubida,$manifiesto, $inspectorTerminaId,$inspectorTerminaNombre, $selloColocado,$tieneSelloImpreso, $cajaLibreObjetosOrganicos,$factura,$inspectorAleatorioId, $inspectorAleatorioNombre))
+                    if ($sentencia->bind_result($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId,$areaNombre, $numeroCaja, $empresaNombreCorto, $sedeNombreCorto,$tipoAreaId, $tipoAreaNombre,$fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero, $alto, $ancho, $profundidad, $entrada_salida,$tipoInspeccionId, $tipoInspeccionDescripcion,$destino, $numeroOrden, $piezas, $bultos, $peso, $otrasMercancias, $turnoInicio, $turnoFin, $fechaSubida,$manifiesto, $inspectorTerminaId,$inspectorTerminaNombre, $selloColocado,$tieneSelloImpreso, $cajaLibreObjetosOrganicos,$factura,$inspectorAleatorioId, $inspectorAleatorioNombre,$cajaLibreObjetosOrganicosJustificacion,$unidadLibreObjetosOrganicos,$unidadLibreObjetosOrganicosJustificacion,$choferNoFirma, $choferNoFirmaJustificacion,$selloVVTT))
                     {
                         if($sentencia->fetch())
                         {
-                            $inspeccion = $this->crearRegistro($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId, $areaNombre, $numeroCaja, $empresaNombreCorto, $sedeNombreCorto,$tipoAreaId, $tipoAreaNombre,$fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero, $alto, $ancho, $profundidad, $entrada_salida,$tipoInspeccionId, $tipoInspeccionDescripcion,$destino, $numeroOrden, $piezas, $bultos, $peso, $otrasMercancias, $turnoInicio, $turnoFin, $fechaSubida,$manifiesto, $inspectorTerminaId,$inspectorTerminaNombre, $selloColocado,$tieneSelloImpreso, $cajaLibreObjetosOrganicos,$factura,$inspectorAleatorioId, $inspectorAleatorioNombre);
+                            $inspeccion = $this->crearRegistro($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId, $areaNombre, $numeroCaja, $empresaNombreCorto, $sedeNombreCorto,$tipoAreaId, $tipoAreaNombre,$fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero, $alto, $ancho, $profundidad, $entrada_salida,$tipoInspeccionId, $tipoInspeccionDescripcion,$destino, $numeroOrden, $piezas, $bultos, $peso, $otrasMercancias, $turnoInicio, $turnoFin, $fechaSubida,$manifiesto, $inspectorTerminaId,$inspectorTerminaNombre, $selloColocado,$tieneSelloImpreso, $cajaLibreObjetosOrganicos,$factura,$inspectorAleatorioId, $inspectorAleatorioNombre,$cajaLibreObjetosOrganicosJustificacion,$unidadLibreObjetosOrganicos,$unidadLibreObjetosOrganicosJustificacion,$choferNoFirma, $choferNoFirmaJustificacion,$selloVVTT);
                             $resultado->valor = $inspeccion;
                             
                             $sentencia->close();
@@ -410,7 +421,7 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             return $resultado;
     }
     
-    private function crearRegistro($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId, $areaNombre, $numeroCaja, $empresaNombreCorto, $sedeNombreCorto,$tipoAreaId, $tipoAreaNombre,$fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero, $alto, $ancho, $profundidad, $entrada_salida,$tipoInspeccionId, $tipoInspeccionDescripcion,$destino, $numeroOrden, $piezas, $bultos, $peso, $otrasMercancias, $turnoInicio, $turnoFin, $fechaSubida,$manifiesto, $inspectorTerminaId,$inspectorTerminaNombre, $selloColocado,$tieneSelloImpreso, $cajaLibreObjetosOrganicos,$factura,$inspectorAleatorioId, $inspectorAleatorioNombre)
+    private function crearRegistro($id, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $usuarioId, $usuarioNombre, $inspectorId, $inspectorNombre, $fechaInspeccion, $areaId, $areaNombre, $numeroCaja, $empresaNombreCorto, $sedeNombreCorto,$tipoAreaId, $tipoAreaNombre,$fechaFinalizacion,$transportista, $chofer, $numeroTractor, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $numeroContenedor, $tipoCaja, $sello, $selloViajero, $alto, $ancho, $profundidad, $entrada_salida,$tipoInspeccionId, $tipoInspeccionDescripcion,$destino, $numeroOrden, $piezas, $bultos, $peso, $otrasMercancias, $turnoInicio, $turnoFin, $fechaSubida,$manifiesto, $inspectorTerminaId,$inspectorTerminaNombre, $selloColocado,$tieneSelloImpreso, $cajaLibreObjetosOrganicos,$factura,$inspectorAleatorioId, $inspectorAleatorioNombre,$cajaLibreObjetosOrganicosJustificacion,$unidadLibreObjetosOrganicos,$unidadLibreObjetosOrganicosJustificacion,$choferNoFirma, $choferNoFirmaJustificacion,$selloVVTT)
     {
         $registro= (object) [
             'id' =>  $id,
@@ -466,6 +477,12 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             'factura' => $factura,
             'inspectorAleatorioId' =>$inspectorAleatorioId,
             'inspectorAleatorioNombre' =>$inspectorAleatorioNombre, 
+            'cajaLibreObjetosOrganicosJustificacion' => $cajaLibreObjetosOrganicosJustificacion,
+            'unidadLibreObjetosOrganicos' => $unidadLibreObjetosOrganicos,
+            'unidadLibreObjetosOrganicosJustificacion' =>$unidadLibreObjetosOrganicosJustificacion,
+            'choferNoFirma' => $choferNoFirma, 
+            'choferNoFirmaJustificacion' => $choferNoFirmaJustificacion,
+            "selloVVTT" => $selloVVTT
             
         ];
         return $registro;

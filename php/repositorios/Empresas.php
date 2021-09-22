@@ -5,6 +5,7 @@ use php\modelos\Empresa;
 use php\repositorios\EmpresasRepositorio;
 use php\modelos\Resultado;
 use php\clases\AdministradorArchivos;
+use php\clases\AdministradorCorreo;
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -96,6 +97,8 @@ try
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);
             break;
+            
+            
             default:
                 $resultado->mensajeError = "Acción no válida";
             break;

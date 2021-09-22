@@ -41,12 +41,18 @@ class Inspeccion
     public $turnoInicio;
     public $turnoFin;
     public $manifiesto;
-    public $inspectorTermina;
+    public $inspectorTerminaId;
     public $selloColocado;
     public $fotos;
     public $tieneImpresoSello;
     public $cajaLibreObjetosOrganicos;
+    public $cajaLibreObjetosOrganicosJustificacion;
     public $factura;
     public $inspectorAleatorioId;
+    public $unidadLibreObjetosOrganicos;
+    public $unidadLibreObjetosOrganicosJustificacion;
+    public $choferNoFirma;
+    public $choferNoFirmaJustificacion;
+    public $selloVVTT;
 }
 

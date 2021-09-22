@@ -215,7 +215,8 @@ abstract class PDF extends FPDF
         for($i = 0 ; $i < count($puntos); $i++)
         {
             $punto = $puntos[$i];
-            $descripcion = $punto->id .". " . $punto->descripcion;
+            //$descripcion = $punto->id .". " . $punto->descripcion;
+            $descripcion = $punto->descripcion;
             
             $resultado = "";
             if($punto->resultado == "S")
@@ -458,8 +459,12 @@ abstract class PDF extends FPDF
         $this->SetLeftMargin(45);
         $this->SetFontSize(11);
         
+        $tipoInspeccion = "Inspección de " . $this->inspeccion->tipoInspeccionId. " puntos";
+        
+        
         $this->Cell(150,8,$this->texto("FOLIO: $folio"),0,1,'R');
         $this->Cell(150,8,$this->texto("AREA: $area"),0,1,'R');
+        $this->Cell(150,8,$this->texto($tipoInspeccion),0,1,'R');
         $this->Cell(150,8,$this->texto("FECHA DE EMBARQUE: $fecha"),0,1,'R');
     }
     
@@ -942,59 +947,66 @@ abstract class PDF extends FPDF
         $this->SetFillColor(242, 242, 242);
         $this->Cell(0,8,$this->texto("INFORMACIÓN DE EMBARQUE"),$borde,2,'C',1);
         
-        $ancho1 = 5;
-        $ancho2 = 60;
-        $ancho3 = 70;
+        $ancho2 = 100;
+        $ancho3 = 30;
         
         $this->SetFont($this->font, '', 10);
-        $this->Cell($ancho1, 8, "1.", $borde, 0, 'R' );
+        //$this->Cell($ancho1, 8, "1.", $borde, 0, 'R' );
         $this->Cell($ancho2, 8, "Apertura de embarque en turno:", $borde, 0, 'L' );
         $this->Cell($ancho3, 8, $this->texto($this->inspeccion->turnoInicio), $borde, 0, 'L' );
         $this->Ln();
-        $this->Cell($ancho1, 8, "2.", $borde, 0, 'R' );
+        //$this->Cell($ancho1, 8, "2.", $borde, 0, 'R' );
         $this->Cell($ancho2, 8, "Destino:", $borde, 0, 'L' );
         $this->Cell($ancho3, 8, $this->texto($this->inspeccion->destino), $borde, 0, 'L' );
         $this->Ln();
-        $this->Cell($ancho1, 8, "3.", $borde, 0, 'R' );
-        $this->Cell($ancho2, 8, $this->texto("Número de orden:"), $borde, 0, 'L' );
+        //$this->Cell($ancho1, 8, "3.", $borde, 0, 'R' );
+        $this->Cell($ancho2, 8, $this->texto("Número de caja porte:"), $borde, 0, 'L' );
         $this->Cell($ancho3, 8, $this->texto($this->inspeccion->numeroOrden), $borde, 0, 'L' );
         $this->Ln();
-        $this->Cell($ancho1, 8, "4.", $borde, 0, 'R' );
+        //$this->Cell($ancho1, 8, "4.", $borde, 0, 'R' );
         $this->Cell($ancho2, 8, $this->texto("Piezas:"), $borde, 0, 'L' );
         $this->Cell($ancho3, 8, $this->texto($this->inspeccion->piezas), $borde, 0, 'L' );
         $this->Ln();
-        $this->Cell($ancho1, 8, "5.", $borde, 0, 'R' );
+        //$this->Cell($ancho1, 8, "5.", $borde, 0, 'R' );
         $this->Cell($ancho2, 8, $this->texto("Bultos:"), $borde, 0, 'L' );
         $this->Cell($ancho3, 8, $this->texto($this->inspeccion->bultos), $borde, 0, 'L' );
         $this->Ln();
-        $this->Cell($ancho1, 8, "6.", $borde, 0, 'R' );
+        // $this->Cell($ancho1, 8, "6.", $borde, 0, 'R' );
         $this->Cell($ancho2, 8, $this->texto("Peso:"), $borde, 0, 'L' );
         $this->Cell($ancho3, 8, $this->texto($this->inspeccion->peso), $borde, 0, 'L' );
         $this->Ln();
-        $this->Cell($ancho1, 8, "7.", $borde, 0, 'R' );
+        // $this->Cell($ancho1, 8, "7.", $borde, 0, 'R' );
         $this->Cell($ancho2, 8, $this->texto("Otras mercancias:"), $borde, 0, 'L' );
         $this->Cell($ancho3, 8, $this->texto($this->inspeccion->otrasMercancias), $borde, 0, 'L' );
         $this->Ln();
-        $this->Cell($ancho1, 8, "8.", $borde, 0, 'R' );
+        //$this->Cell($ancho1, 8, "8.", $borde, 0, 'R' );
         $this->Cell($ancho2, 8, $this->texto("Manifiesto:"), $borde, 0, 'L' );
         $this->Cell($ancho3, 8, $this->texto($this->inspeccion->manifiesto), $borde, 0, 'L' );
         $this->Ln();
-        $this->Cell($ancho1, 8, "9.", $borde, 0, 'R' );
+        //$this->Cell($ancho1, 8, "9.", $borde, 0, 'R' );
         $this->Cell($ancho2, 8, $this->texto("Sello colocado:"), $borde, 0, 'L' );
         $this->Cell($ancho3, 8, $this->texto($this->inspeccion->selloColocado), $borde, 0, 'L' );
         $this->Ln();
-        $this->Cell($ancho1, 8, "10.", $borde, 0, 'R' );
+        //$this->Cell($ancho1, 8, "9.", $borde, 0, 'R' );
+        $this->Cell($ancho2, 8, $this->texto("Sello colocado de acuerdo a VVTT:"), $borde, 0, 'L' );
+        $this->Cell($ancho3, 8, $this->texto($this->inspeccion->selloVVTT), $borde, 0, 'L' );
+        
+        $this->Ln();
+        //$this->Cell($ancho1, 8, "10.", $borde, 0, 'R' );
         $this->Cell($ancho2, 8, $this->texto("Inspector de cierre de embarque:"), $borde, 0, 'L' );
         $this->Cell($ancho3, 8, $this->texto($this->inspeccion->inspectorTerminaNombre), $borde, 0, 'L' );
         $this->Ln();
-        $this->Cell($ancho1, 8, "11.", $borde, 0, 'R' );
+        //$this->Cell($ancho1, 8, "11.", $borde, 0, 'R' );
         $this->Cell($ancho2, 8, $this->texto("Cierre de embarque en turno:"), $borde, 0, 'L' );
         $this->Cell($ancho3, 8, $this->texto($this->inspeccion->turnoFin), $borde, 0, 'L' );
         $this->Ln();
-        $this->Cell($ancho1, 8, "12.", $borde, 0, 'R' );
+        //$this->Cell($ancho1, 8, "12.", $borde, 0, 'R' );
         $this->Cell($ancho2, 8, $this->texto("Factura:"), $borde, 0, 'L' );
         $this->Cell($ancho3, 8, $this->texto($this->inspeccion->factura), $borde, 0, 'L' );
-        
+        $this->Ln();
+        //$this->Cell($ancho1, 8, "13.", $borde, 0, 'R' );
+        $this->Cell($ancho2, 8, $this->texto("La tarima tiene impreso el sello de tratamiento de fumigación:"), $borde, 0, 'L' );
+        $this->Cell($ancho3, 8, $this->texto($this->inspeccion->tieneSelloImpreso), $borde, 0, 'L' );
        
     }
     
@@ -1138,6 +1150,8 @@ abstract class PDF extends FPDF
                 array_push($seccionesFotos,$seccion);
         }
         
+       
+        
 //         for($i = 0 ; $i < count($this->inspeccion->puntos2); $i++)
 //         {
 //             $punto = $this->inspeccion->puntos2[$i];;
@@ -1209,6 +1223,58 @@ abstract class PDF extends FPDF
             ];
             array_push($fotos,$foto);
         }
+        else 
+        {
+            $archivo = "../fotos_inspecciones/".$inspeccionId."/".$inspeccionId ."_" . $nombreArchivo.".jpg";
+            if (file_exists($archivo))
+            {
+                $foto= (object) [
+                    'titulo' => $titulo,
+                    'archivo' => $archivo
+                ];
+                array_push($fotos,$foto);
+            }
+        }
+    }
+    
+    function agregarFotoFirma($inspeccion, $nombreArchivo ,$titulo,&$fotos)
+    {
+        
+        $archivo = "../fotos_inspecciones/".$inspeccion->id ."_" . $nombreArchivo.".jpg";
+        if (file_exists($archivo))
+        {
+            $foto= (object) [
+                'titulo' => $titulo,
+                'archivo' => $archivo
+            ];
+            array_push($fotos,$foto);
+        }
+        else
+        {
+            $archivo = "../fotos_inspecciones/".$inspeccion->id."/".$inspeccion->id ."_" . $nombreArchivo.".jpg";
+            if (file_exists($archivo))
+            {
+                $foto= (object) [
+                    'titulo' => $titulo,
+                    'archivo' => $archivo
+                ];
+                array_push($fotos,$foto);
+            }
+            else 
+            {
+                if($nombreArchivo=="firma_chofer")
+                {
+                    $archivo = "../imagenes/firma_blanco.jpg";
+                    $foto= (object) [
+                        'titulo' => $titulo,
+                        'archivo' => $archivo,
+                        'texto1' => "La firma no fue recopilada por:",
+                        'texto2' => $inspeccion->choferNoFirmaJustificacion
+                    ];
+                    array_push($fotos,$foto);
+                }
+            }
+        }
     }
     
     function imprimirFotosHallazgos()
@@ -1217,15 +1283,18 @@ abstract class PDF extends FPDF
         
         $fotos = array();
         $this->agregarFoto($this->inspeccion->id,"sello","SELLO",$fotos);
-        $this->agregarFoto($this->inspeccion->id,"sellocaja","SELLO CAJA",$fotos);
-        $this->agregarFoto($this->inspeccion->id,"placatractor","PLACA TRACTOR",$fotos);
-        $this->agregarFoto($this->inspeccion->id,"placacontenedor","PLACA CONTENEDOR",$fotos);
-        $this->agregarFoto($this->inspeccion->id,"licchofer","LICENCIA CHOFER",$fotos);
+        $this->agregarFoto($this->inspeccion->id,"sellocaja","SELLO DE LA CAJA",$fotos);
+        $this->agregarFoto($this->inspeccion->id,"placatractor","PLACA DEL TRACTOR",$fotos);
+        $this->agregarFoto($this->inspeccion->id,"placacontenedor","PLACA DEL CONTENEDOR",$fotos);
+        $this->agregarFoto($this->inspeccion->id,"mediacarga","CAJA A MEDIA CARGA",$fotos);
+        $this->agregarFoto($this->inspeccion->id,"licchofer","LICENCIA DEL CHOFER",$fotos);
         
         $this->agregarFoto($this->inspeccion->id,"cajavacia","CAJA VACIA",$fotos);
-        $this->agregarFoto($this->inspeccion->id,"cajafinal","CAJA FINAL",$fotos);
+        $this->agregarFoto($this->inspeccion->id,"cajafinal","ACOMODO CARGA FINAL",$fotos);
         $this->agregarFoto($this->inspeccion->id,"cajacerrada","CAJA CERRADA",$fotos);
+        $this->agregarFoto($this->inspeccion->id,"tarima_fumigada","TARIMA FUMIGADA",$fotos);
         
+        //var_dump($fotos);
         if(count($fotos)>0)
         {
             $this->AddPage();
@@ -1254,7 +1323,7 @@ abstract class PDF extends FPDF
                 $foto = $fotos[$i];
                  $this->SetXY($xFoto, $yFotos - $separacionY);
                  $this->SetLeftMargin(10);
-                 $this->SetFont($this->font, 'B', 13);
+                 $this->SetFont($this->font, 'B', 10);
                  $this->Ln();
                  $this->SetXY($xFoto, $yFotos - $separacionY +10);
                  $this->SetFillColor(242, 242, 242);
@@ -1286,13 +1355,13 @@ abstract class PDF extends FPDF
         //$this->AddPage();
         
         $fotos = array();
-        $this->agregarFoto($this->inspeccion->id,"firma_chofer","FIRMA CHOFER",$fotos);
-        $this->agregarFoto($this->inspeccion->id,"firma_inspector","FIRMA INSPECTOR",$fotos);
+        $this->agregarFotoFirma($this->inspeccion,"firma_chofer","FIRMA DEL CHOFER",$fotos);
+        $this->agregarFotoFirma($this->inspeccion,"firma_inspector","FIRMA DEL INSPECTOR",$fotos);
         if($this->inspeccion->inspectorAleatorioId!=null)
         {
             //$nombre = $this->inspeccion->inspectorAleatorioNombre;
             $nombre="";
-            $this->agregarFoto($this->inspeccion->id,"firma_aleatoria","INSPECTOR ALEATORIO " .$nombre ,$fotos);
+            $this->agregarFotoFirma($this->inspeccion,"firma_aleatoria","INSPECTOR ALEATORIO " .$nombre ,$fotos);
         }
         if(count($fotos)>0)
         {
@@ -1312,26 +1381,11 @@ abstract class PDF extends FPDF
             
             for($i = 0 ; $i < count($fotos); $i++)
             {
-    //             $foto = $fotos[$i];
-    //             $this->SetXY($xFoto, $yFotos - $separacionY);
-    //             $this->SetLeftMargin(10);
-    //             $this->SetFont($this->font, 'B', 13);
-    //             $this->Ln();
-    //             $this->SetXY($xFoto, $yFotos - $separacionY +10);
-    //             $this->SetFillColor(242, 242, 242);
-    //             $this->Cell($anchoFoto,8,$this->texto($foto->titulo),$borde,2,'C');
-    //             $this->correctImageOrientation($foto->archivo);
-    //             $this->Image($foto->archivo,$xFoto,$yFotos,$anchoFoto,$altoFoto);
-    //             $xFoto+=$separacionX + $anchoFoto;
-    //             if(($i+1)%3==0)
-    //             {
-    //                 $xFoto = 25;
-    //                 $yFotos+=$altoFoto +15;
-    //             }
+  
                 $foto = $fotos[$i];
                 $this->SetXY($xFoto, $yFotos - $separacionY);
                 $this->SetLeftMargin(10);
-                $this->SetFont($this->font, 'B', 13);
+                $this->SetFont($this->font, 'B', 10);
                 $this->Ln();
                 $this->SetXY($xFoto, $yFotos - $separacionY +$altoFoto + 20);
                 $this->SetFillColor(242, 242, 242);
@@ -1339,10 +1393,21 @@ abstract class PDF extends FPDF
                 $this->correctImageOrientation($foto->archivo);
                 $this->Image($foto->archivo,$xFoto,$yFotos,$anchoFoto,$altoFoto);
                 
+                $this->SetXY($xFoto, $yFotos+5);
+                if($foto->texto1!=null)
+                    $this->Cell($anchoFoto,8,$this->texto($foto->texto1),$borde,2,'C');
+                
+                $this->SetXY($xFoto, $yFotos+10);
+                if($foto->texto2!=null)
+                    $this->Cell($anchoFoto,8,$this->texto($foto->texto2),$borde,2,'C');
+                
                 $this->SetLineWidth(0.5);
                 $this->SetDrawColor(0,0,0);
                 $y = $altoFoto + 30;
                 $this->Line($xFoto, $y, $xFoto + $anchoFoto, $y);
+                
+               
+                    
                 
                 $xFoto+=$separacionX + $anchoFoto;
                 if(($i+1)%3==0)
@@ -1513,18 +1578,30 @@ abstract class PDF extends FPDF
         $foto = "../fotos_inspecciones/".$inspeccionId ."_" . $punto->id ."_1.jpg";
         if (file_exists($foto))
             array_push($fotos,$foto);
-            $foto = "../fotos_inspecciones/".$inspeccionId ."_" . $punto->id ."_2.jpg";
+        else 
+        {
+            $foto = "../fotos_inspecciones/".$inspeccionId."/".$inspeccionId ."_" . $punto->id ."_1.jpg";
             if (file_exists($foto))
                 array_push($fotos,$foto);
-                $foto = "../fotos_inspecciones/".$inspeccionId ."_" . $punto->id ."_3.jpg";
-                if (file_exists($foto))
-                    array_push($fotos,$foto);
-                    $seccion= (object) [
-                        'id' =>  $punto->id,
-                        'descripcion' => $punto->descripcion,
-                        'fotos' => $fotos
-                    ];
-                    return $seccion;
+        }
+        
+            
+        $fotos = array();
+        $foto = "../fotos_inspecciones/".$inspeccionId ."_" . $punto->id ."_2.jpg";
+        if (file_exists($foto))
+            array_push($fotos,$foto);
+        else
+        {
+            $foto = "../fotos_inspecciones/".$inspeccionId."/".$inspeccionId ."_" . $punto->id ."_2.jpg";
+            if (file_exists($foto))
+                array_push($fotos,$foto);
+        }
+        $seccion= (object) [
+            'id' =>  $punto->id,
+            'descripcion' => $punto->descripcion,
+            'fotos' => $fotos
+        ];
+        return $seccion;
     }
     
     function texto($texto)
@@ -1651,16 +1728,19 @@ class Reporte7 extends PDF
         $this->SetFont($this->font, '', 10);
         $this->Cell(40, 8, $this->texto($inspectorAleatorio), $borde, 0, 'L');
         
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(110, 8, $this->texto("La tarima tiene impreso el sello de tratamiento de fumigación:"), $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($this->inspeccion->tieneSelloImpreso), $borde, 0, 'L');
+//         $this->Ln();
+//         $this->SetFont($this->font, 'B', 10);
+//         $this->Cell(110, 8, $this->texto("La tarima tiene impreso el sello de tratamiento de fumigación:"), $borde, 0, 'L');
+//         $this->SetFont($this->font, '', 10);
+//         $this->Cell(55, 8, $this->texto($this->inspeccion->tieneSelloImpreso), $borde, 0, 'L');
         $this->Ln();
         $this->SetFont($this->font, 'B', 10);
         $this->Cell(110, 8, $this->texto("La caja o contenedor está libre de contaminantes agrícolas:"), $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($this->inspeccion->cajaLibreObjetosOrganicos), $borde, 0, 'L');
+        $libreContaminantes = $this->inspeccion->cajaLibreObjetosOrganicos;
+        if($this->inspeccion->cajaLibreObjetosOrganicos=="NO")
+            $libreContaminantes.=", ".$this->inspeccion->cajaLibreObjetosOrganicosJustificacion;
+        $this->Cell(55, 8, $this->texto($libreContaminantes), $borde, 0, 'L');
         
         $this->SetLeftMargin(10);
         $this->SetFont($this->font, 'B', 13);
@@ -1706,9 +1786,9 @@ class Reporte7 extends PDF
     {
        //this->imprimirPuntos("INSPECCIÓN DE TRACTOR",$this->inspeccion->puntos);
        $borde = 0;
-       $anchoColumna1 = 50;
+       $anchoColumna1 = 60;
        $anchoColumna2 = 30;
-       $anchoColumna3 = 110;
+       $anchoColumna3 = 100;
        
        $this->SetLeftMargin(10);
        $this->SetFont($this->font, 'B', 13);
@@ -1740,13 +1820,13 @@ class Reporte10 extends PDF
         $transportista = strtoupper($this->inspeccion->transportista);
         $chofer = strtoupper($this->inspeccion->chofer);
         $numeroTractor = $this->inspeccion->numeroTractor;
-        $numeroCaja = $this->inspeccion->numeroCaja;
+        //$numeroCaja = $this->inspeccion->numeroCaja;
         $colorTractor = strtoupper($this->inspeccion->colorTractor);
-        $colorCaja = strtoupper($this->inspeccion->colorCaja);
-        $numeroContenedor = $this->inspeccion->numeroContenedor;
-        $tipoCaja = strtoupper($this->inspeccion->tipoCaja);
-        $sello =  $this->inspeccion->sello;
-        $selloViajero =  $this->inspeccion->selloViajero;
+        //$colorCaja = strtoupper($this->inspeccion->colorCaja);
+        //$numeroContenedor = $this->inspeccion->numeroContenedor;
+        //$tipoCaja = strtoupper($this->inspeccion->tipoCaja);
+        //$sello =  $this->inspeccion->sello;
+        //$selloViajero =  
         $alto = $this->inspeccion->alto;
         $ancho = $this->inspeccion->ancho;
         $profundidad = $this->inspeccion->profundidad;
@@ -1800,7 +1880,7 @@ class Reporte10 extends PDF
         $this->SetFont($this->font, 'B', 10);
         $this->Cell(40, 8, "Sello viajero:", $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($selloViajero), $borde, 0, 'L');
+        $this->Cell(45, 8, $this->texto($this->inspeccion->selloViajero), $borde, 0, 'L');
         
         
         
@@ -1817,7 +1897,7 @@ class Reporte10 extends PDF
         //ORDEN -FACTURA
         $this->Ln();
         $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, $this->texto("Número de orden:"), $borde, 0, 'L');
+        $this->Cell(40, 8, $this->texto("Número de carta porte:"), $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
         $this->Cell(45, 8, $this->texto($this->inspeccion->numeroOrden), $borde, 0, 'L');
         $this->SetFont($this->font, 'B', 10);
@@ -1843,7 +1923,10 @@ class Reporte10 extends PDF
         $this->SetFont($this->font, 'B', 10);
         $this->Cell(110, 8, $this->texto("La unidad está libre de contaminantes agrícolas:"), $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($this->inspeccion->cajaLibreObjetosOrganicos), $borde, 0, 'L');
+        $libreContaminantes = $this->inspeccion->unidadLibreObjetosOrganicos;
+        if($this->inspeccion->cajaLibreObjetosOrganicos=="NO")
+            $libreContaminantes.=", ".$this->inspeccion->unidadLibreObjetosOrganicosJustificacion;
+        $this->Cell(55, 8, $this->texto($libreContaminantes), $borde, 0, 'L');
         
         $this->imprimirPuntosInspeccion();
     }
@@ -1890,7 +1973,7 @@ class Reporte17 extends PDF
         $colorCaja = strtoupper($this->inspeccion->colorCaja);
         $numeroContenedor = $this->inspeccion->numeroContenedor;
         $tipoCaja = strtoupper($this->inspeccion->tipoCaja);
-        $sello =  $this->inspeccion->sello;
+        $sello =  $this->inspeccion->selloColocado;
         $selloViajero =  $this->inspeccion->selloViajero;
         $alto = $this->inspeccion->alto;
         $ancho = $this->inspeccion->ancho;
@@ -1980,18 +2063,18 @@ class Reporte17 extends PDF
         
         $this->Ln();
         $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, "Sello:", $borde, 0, 'L');
+        $this->Cell(40, 8, "Sello colocado:", $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($sello), $borde, 0, 'L');
+        $this->Cell(45, 8, $this->texto($this->inspeccion->sello), $borde, 0, 'L');
         $this->SetFont($this->font, 'B', 10);
         $this->Cell(40, 8, "Sello viajero:", $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($selloViajero), $borde, 0, 'L');
+        $this->Cell(45, 8, $this->texto($this->inspeccion->selloViajero), $borde, 0, 'L');
         
         //ORDEN -FACTURA
         $this->Ln();
         $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, $this->texto("Número de orden:"), $borde, 0, 'L');
+        $this->Cell(40, 8, $this->texto("Número de carta porte:"), $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
         $this->Cell(45, 8, $this->texto($this->inspeccion->numeroOrden), $borde, 0, 'L');
         $this->SetFont($this->font, 'B', 10);
@@ -2017,12 +2100,18 @@ class Reporte17 extends PDF
         $this->SetFont($this->font, 'B', 10);
         $this->Cell(110, 8, $this->texto("La caja o contenedor está libre de contaminantes agrícolas:"), $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($this->inspeccion->tieneSelloImpreso), $borde, 0, 'L');
+        $libreContaminantes = $this->inspeccion->cajaLibreObjetosOrganicos;
+        if($this->inspeccion->cajaLibreObjetosOrganicos=="NO")
+            $libreContaminantes.=", ".$this->inspeccion->cajaLibreObjetosOrganicosJustificacion;
+        $this->Cell(55, 8, $this->texto($libreContaminantes), $borde, 0, 'L');
         $this->Ln();
         $this->SetFont($this->font, 'B', 10);
         $this->Cell(110, 8, $this->texto("La unidad está libre de contaminantes agrícolas:"), $borde, 0, 'L');
         $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($this->inspeccion->cajaLibreObjetosOrganicos), $borde, 0, 'L');
+        $libreContaminantes = $this->inspeccion->unidadLibreObjetosOrganicos;
+        if($this->inspeccion->unidadLibreObjetosOrganicos=="NO")
+            $libreContaminantes.=", ".$this->inspeccion->unidadLibreObjetosOrganicosJustificacion;
+        $this->Cell(55, 8, $this->texto($libreContaminantes), $borde, 0, 'L');
         
         $this->SetLeftMargin(10);
         $this->SetFont($this->font, 'B', 13);

@@ -1297,6 +1297,13 @@ abstract class PDF extends FPDF
         $this->Cell($ancho1, 8, "12.", $borde, 0, 'R' );
         $this->Cell($ancho2, 8, $this->texto("Factura:"), $borde, 0, 'L' );
         $this->Cell($ancho3, 8, $this->texto($this->auditoria->factura), $borde, 0, 'L' );
+        $this->Ln();
+        $this->Cell($ancho1, 8, "12.", $borde, 0, 'R' );
+        $this->Cell($ancho2, 8, $this->texto("Factura:"), $borde, 0, 'L' );
+        $this->Cell($ancho3, 8, $this->texto($this->auditoria->factura), $borde, 0, 'L' );
+        
+        
+      
         
        
     }

@@ -29,6 +29,16 @@ try
             $resultado = $adminstradorCorreo->enviarContacto($nombre,$correoElectronico, $telefono, $mensaje);
           
         break;
+        case 'contactar10y7':
+            $nombre = REQUEST('nombre');
+            $empresa = REQUEST('empresa');
+            $giro = REQUEST('giro');
+            $correoElectronico = REQUEST('correoElectronico');
+            $telefono = REQUEST('telefono');
+            $administradorCorreo = new AdministradorCorreo();
+            $resultado = $administradorCorreo->contactar10y7($nombre, $empresa, $giro, $correoElectronico, $telefono);
+        break;
+            
        
         default:
             $resultado->mensajeError = "Acción no válida";

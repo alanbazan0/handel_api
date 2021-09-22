@@ -500,6 +500,53 @@ class AdministradorCorreo
             return $resultado;
     }
     
+    public function contactar10y7($nombre,$empresa, $giro, $correoElectronico,$telefono)
+    {
+        $resultado = new Resultado();
+        
+        
+        
+        $cabecera = "From: 10y7 <noreply@apps-handel.com>\r\n"; //Remitente
+        $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";
+        
+        $asunto = "Contacto desde aplicación: " . $nombre ;
+        
+        $informacion= "Se ha recibido una solicitud de información desde la app de 10y7 con los siguientes datos:";
+        $informacion .= "<br><label style='font-weight:bold'>Nombre:</label> $nombre";
+        $informacion .= "<br><label style='font-weight:bold'>Empresa:</label> $empresa";
+        $informacion .= "<br><label style='font-weight:bold'>Giro:</label> $giro";
+        $informacion .= "<br><label style='font-weight:bold'>Correo electrónico:</label> $correoElectronico";
+        $informacion .= "<br><label style='font-weight:bold'>Teléfono:</label> $telefono";
+        
+        $contenido="";
+        $contenido .= $this->getTexto($informacion);
+        $contenido.="<div style='text-align:center;width:100%'>
+                        <div style='text-align:left; display: inline-block; width:90%'>";
+        
+//         $contenido.="<label style='font-weight:bold'>Mensaje:</label><br>";
+//         $contenido.=$textoMensaje;
+        
+        //$contenido .= "<br>".$this->getCaricatura("https://api.apps-handel.com/images/caricatura/Bonus_Shapes_and_Backgounds-12.png",100);
+        $contenido .= "</div>
+                        </div>";
+        
+        $mensaje= file_get_contents('../plantillas_correo/contacto.html');
+        $mensaje=  str_replace("@contenido",$contenido,$mensaje);
+        
+        $resultadoMail= mail($this->correoContacto, $asunto, $mensaje, $cabecera);
+        //$resultadoMail= mail("alanbazan@apps-handel.com", $asunto, $mensaje, $cabecera);
+        
+        if($resultadoMail)
+        {
+            $resultado->Valor="OK";
+        }
+        else
+            $resultado->MensajeError="No se pudo enviar el correo electrónico, intente mas tarde.";
+            
+            return $resultado;
+    }
+    
+    
     
 //     public function enviarNotificacionPorDia($usuarios)
 //     {
@@ -551,6 +598,15 @@ class AdministradorCorreo
         </td>
         </tr>
         </table>
+        </div>
+        </div>";
+    }
+    
+    function getTexto($texto)
+    {
+        return "<div style='text-align:center;width:100%'>
+        <div style='text-align:center; display: inline-block; width:90%'>
+         $texto
         </div>
         </div>";
     }
