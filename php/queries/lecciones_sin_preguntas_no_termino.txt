@@ -1,0 +1,12 @@
+select *
+from(
+select E.id, E.nombre as empresaNombre, usuario_id, U.nombre, U.apellido, curso_id, leccion_id, (SELECT count(*)
+ FROM cursos_preguntas CP
+ WHERE curso_id  = UCL.curso_id AND leccion_id = UCL.leccion_id
+		AND CP.id NOT IN(SELECT pregunta_id FROM usuarios_cursos_lecciones_preguntas CPE WHERE CPE.curso_id = CP.curso_id AND CPE.leccion_id = CP.leccion_id AND CPE.usuario_id = UCL.usuario_id)) restantes, terminado
+from usuarios_cursos_lecciones UCL
+	inner join usuarios U on UCL.usuario_id = U.id
+    inner join empresas E on U.empresa_id = E.id
+where UCL.terminado = 0
+) as a
+where restantes = 0

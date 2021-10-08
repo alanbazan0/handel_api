@@ -137,8 +137,8 @@ class ProcesosVista extends CatalogoVista
 	{		
 		this.modeloEdicion = valor;
 		$('#nombreInput').val(this.modeloEdicion.nombre);
-		$('#codigoInput').val(this.modeloEdicion.codigo);
-		$('#descripcionInput').val(this.modeloEdicion.descripcion);
+		//$('#codigoInput').val(this.modeloEdicion.codigo);
+		//$('#descripcionInput').val(this.modeloEdicion.descripcion);
 		$('#rutaArchivoInput').val(this.modeloEdicion.rutaArchivo);
 		if(this.modeloEdicion.estatus==1)
 			$("#estatusRadio").prop('checked', true);
@@ -153,9 +153,7 @@ class ProcesosVista extends CatalogoVista
 		 {		
 			 empresaId:$('#empresaIdSelect').val(),
 			 sedeId:$('#sedeIdSelect').val(),
-			 codigo:$('#codigoInput').val(),
 			 nombre:$('#nombreInput').val(),
-			 descripcion:$('#descripcionInput').val(),
 			 rutaArchivo:$('#rutaArchivoInput').val(),
 			 estatus:$('#estatusRadio').is(':checked')?1:0
 		 };

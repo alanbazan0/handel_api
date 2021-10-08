@@ -10,7 +10,7 @@ header('Access-Control-Allow-Credentials: true');
   <div class='modal-dialog modal-lg' role='document'> 
       <div class='modal-content'>
           <div class='modal-header'>
-              <h5 class='modal-title' id='scrollmodalLabel'>Asignar procedimiento a usuario</h5>
+              <h5 class='modal-title' id='scrollmodalLabel'>Asignar evidencia a usuario</h5>
               <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
                   <span aria-hidden='true'>&times;</span>
               </button>
@@ -38,7 +38,7 @@ header('Access-Control-Allow-Credentials: true');
                       </div>
                   </div>
                     <hr style='border-top: 1px solid #3c8dbc;'>
-                   <label class="control-label text-primary" style='text-align:center'><i class="fa fa-file-text-o"></i> PROCEDIMIENTO</label>
+                   <label class="control-label text-primary" style='text-align:center'><i class="fa fa-file-text-o"></i> EVIDENCIA</label>
                    <div class='form-group'>
                       <div>
                           <label class='control-label mb-1'>Sede</label>
@@ -47,7 +47,7 @@ header('Access-Control-Allow-Credentials: true');
                   </div>
                     <div class='form-group'>
                       <div>
-                          <label class='control-label mb-1'>Procedimiento</label>
+                          <label class='control-label mb-1'>Evidencia</label>
                           <select id='procedimientoIdSelect' name='procedimientoIdSelect'  class='form-control'></select>
                       </div>
                   </div>

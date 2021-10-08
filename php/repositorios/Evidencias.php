@@ -8,6 +8,7 @@ use php\clases\AdministradorArchivos;
 use php\clases\AdministradorCorreo;
 use php\repositorios\UsuariosProcedimientosRepositorio;
 use php\repositorios\UsuariosRepositorio;
+use php\clases\CodigoError;
 
 
 error_reporting(E_ALL);

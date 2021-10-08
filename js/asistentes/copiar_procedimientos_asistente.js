@@ -91,7 +91,7 @@ class CopiarProcedimientosAsistente
 		html+="	<div class='modal-dialog modal-dialog-scrollable modal-lg' role='document' >";
 		html+="		<div class='modal-content'>";
 		html+="			<div class='modal-header'>";
-		html+="				<h5 class='modal-title' id='"+this._modal +"Titulo'>Copiar procedimientos</h5>";
+		html+="				<h5 class='modal-title' id='"+this._modal +"Titulo'>Copiar evidencias</h5>";
 		html+="				<button type='button' class='close' data-dismiss='modal' aria-label='Close'>";
 		html+="					<span aria-hidden='true'>&times;</span>";
 		html+="				</button>";
@@ -206,7 +206,7 @@ class CopiarProcedimientosAsistente
 			{
 				swal({
     	            title: "Error",
-    	            text: "No hay procedimientos seleccionados, seleccione al menos uno para continuar",
+    	            text: "No hay evidencias seleccionadas, seleccione al menos uno para continuar",
     	            type: "warning",
     	            confirmButtonColor: "#DD6B55",
     	            confirmButtonText: "Cerrar",
@@ -301,7 +301,7 @@ class CopiarProcedimientosAsistente
 		{
 			swal({
 	            title: "Error",
-	            text: "No exiten procedimientos en esta sede, seleccione una sede diferente",
+	            text: "No exiten evidencias en esta sede, seleccione una sede diferente",
 	            type: "warning",
 	            confirmButtonColor: "#DD6B55",
 	            confirmButtonText: "Cerrar",
@@ -385,8 +385,8 @@ class CopiarProcedimientosAsistente
 		html+="	<li>";
 		html+="	  <a id='"+this._modal +"step2' href='#step-2'>";
 		html+="		<span class='step_no'>2</span>";
-		html+="		<span class='step_descr'>Procedimientos<br />";
-		html+="	    <small>Seleccione los procedimientos que desea copiar</small>";
+		html+="		<span class='step_descr'>Evidencias<br />";
+		html+="	    <small>Seleccione las evidencias que desea copiar</small>";
 		html+="		</span>";
 		
 		html+="	  </a>";

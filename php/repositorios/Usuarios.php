@@ -427,7 +427,11 @@ try
                 $empresaId = REQUEST('empresaId');
                 $resultado = $repositorio->consultarEstructura($empresaId);
             break;
-            case 'importar':
+            case 'importar': 
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
                 $empresaId = REQUEST('empresaId');
                 $sedeId = REQUEST('sedeId');
                 $departamentoId = REQUEST('departamentoId');
@@ -442,7 +446,7 @@ try
                 $resultado=$adminstradorArchivos->subirArchivo($carpeta,$archivo,$nombreArchivo);
                 if($resultado->correcto())
                 {
-                    $resultado = $repositorio->importar($empresaId,$sedeId,$departamentoId,$perfilId,$supervisor1Id,$carpeta, $nombreArchivo);
+                    $resultado = $repositorio->importar($usuario,$empresaId,$sedeId,$departamentoId,$perfilId,$supervisor1Id,$carpeta, $nombreArchivo);
                     if($resultado->correcto())
                     {
                         

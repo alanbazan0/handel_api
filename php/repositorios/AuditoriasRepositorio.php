@@ -4563,7 +4563,7 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                                 INNER JOIN empresas E ON E.id = RP.empresa_id
                                 INNER JOIN sedes S ON S.id = RP.sede_id
                                 INNER JOIN auditorias A ON A.id = R.auditoria_id
-                            WHERE responsable_id = ? $filtroAuditoria),
+                            WHERE A.seguimiento_finalizado != 1 AND responsable_id = ? $filtroAuditoria),
                          (SELECT count(*)
                             FROM recomendaciones R
                             	INNER JOIN usuarios RP ON RP.id = R.responsable_id

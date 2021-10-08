@@ -1375,7 +1375,8 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         " WHERE U.estatus = 1  
             AND (U.tipo_usuario_id = 2 OR U.tipo_usuario_id = 3 OR U.tipo_usuario_id = 4 OR  U.tipo_usuario_id = 5)
             AND U.empresa_id = ? 
-            AND U.sede_id = ? ";
+            AND U.sede_id = ? 
+        ORDER BY U.nombre, U.apellido";
         
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -1949,7 +1950,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         }
     }
     
-    public function importar($empresaId, $sedeId, $departamentoId,$perfilId,$supervisor1Id, $carpeta, $nombreArchivo)
+    public function importar($usuarioImportacion,$empresaId, $sedeId, $departamentoId,$perfilId,$supervisor1Id, $carpeta, $nombreArchivo)
     {
         $resultado = new Resultado();
         ini_set('max_execution_time', 300);
@@ -2021,7 +2022,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                             $usuarioEntrontrados  = $resultado->valor;
                             if(count($usuarioEntrontrados)==0)
                             {
-                                $resultado = $this->insertar($usuario);
+                                $resultado = $this->insertar($usuarioImportacion,$usuario);
                                 if($resultado->correcto())
                                     $registros++;
                                 else

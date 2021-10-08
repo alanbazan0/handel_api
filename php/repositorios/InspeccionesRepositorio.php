@@ -1226,11 +1226,11 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
        
         $resultado = new Resultado();
         $puntos = array();
-        $consulta = "SELECT punto_inspeccion_id, RTRIM(PI.descripcion)descripcion, RTRIM(resultado) resultado, IFNULL(RTRIM(observaciones),'') observaciones " .
-            "FROM inspecciones_puntos IP " .
-            "   INNER JOIN puntos_inspeccion PI ON IP.punto_inspeccion_id = PI.id " .
-            " WHERE inspeccion_id  = ? ".
-            "ORDER BY punto_inspeccion_id";
+        $consulta = "SELECT punto_inspeccion_id, RTRIM(PI.descripcion)descripcion, RTRIM(resultado) resultado, IFNULL(RTRIM(observaciones),'') observaciones 
+            FROM inspecciones_puntos IP 
+               INNER JOIN puntos_inspeccion PI ON IP.punto_inspeccion_id = PI.id 
+             WHERE inspeccion_id  = ?
+            ORDER BY punto_inspeccion_id";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param("i",$inspeccionId))

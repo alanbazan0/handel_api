@@ -29,17 +29,38 @@ header('Access-Control-Allow-Credentials: true');
                           <select id='sedeIdSelect' name='sedeIdSelect' class='form-control'></select>
                       </div>
                   </div>
-                  <div class='form-group'>
-                      <div>
-                          <label class='control-label mb-1'>Código</label>
-                          <input  id='codigoInput' name='codigoInput' type='text' class='form-control'>
-                      </div>
-                  </div>
+                 
                   <div class='form-group'>
                       <div>
                           <label class='control-label mb-1'>Nombre</label>
                           <input  id='nombreInput' name='nombreInput' type='text' class='form-control'>
                       </div>
+                  </div>
+                  
+                  <div class='form-group'>
+                      <div>
+                          <label class='control-label mb-1'>Aplica en certificación</label>
+                           <div class="checkbox">
+                              <label>
+                                <input type="checkbox"> OEA
+                              </label>
+                            </div>
+                            <div class="checkbox">
+                              <label>
+                                <input type="checkbox"> CTPAT
+                              </label>
+                            </div>
+                            <div class="checkbox">
+                              <label>
+                                <input type="checkbox"> WRAP
+                              </label>
+                            </div>
+                            <div class="checkbox">
+                              <label>
+                                <input type="checkbox"> IPM
+                              </label>
+                            </div>
+                         </div>
                   </div>
 <!--                   <div class='form-group'> -->
 <!--                       <div> -->

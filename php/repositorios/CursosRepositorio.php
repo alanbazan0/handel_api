@@ -2308,6 +2308,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 if($sentencia->execute())
                 {
                     $sentencia->close();
+                    
                 }
                 else
                 {
@@ -2468,87 +2469,87 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             "VALUE(?, ?, ?, ?, ?,  NOW())";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-//            Logger::log("guardarPreguntaUsuario",  "enlazando parametros: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId, preguntaId: $preguntaId, respuestaId: $respuestaId;");
+            Logger::log("guardarPreguntaUsuario",  "enlazando parametros: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId, preguntaId: $preguntaId, respuestaId: $respuestaId;");
             if($sentencia->bind_param("iiiii",$usuario->id,$cursoId,$leccionId,$preguntaId,$respuestaId))
             {
-//                 Logger::log("guardarPreguntaUsuario",  "parametros enlazados: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId, preguntaId: $preguntaId, respuestaId: $respuestaId;");
-//                 Logger::log("guardarPreguntaUsuario",  "insertando pregunta: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId, preguntaId: $preguntaId, respuestaId: $respuestaId;");
+                 Logger::log("guardarPreguntaUsuario",  "parametros enlazados: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId, preguntaId: $preguntaId, respuestaId: $respuestaId;");
+                 Logger::log("guardarPreguntaUsuario",  "insertando pregunta: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId, preguntaId: $preguntaId, respuestaId: $respuestaId;");
                 if($sentencia->execute())
                 {
-//                     Logger::log("guardarPreguntaUsuario",  "inserto pregunta");
+                     Logger::log("guardarPreguntaUsuario",  "inserto pregunta");
                     $sentencia->close();
                     
-//                     Logger::log("guardarPreguntaUsuario",  "insertando pregunta: usuarioId: $usuario->id; cursoId: $cursoId");
+                     Logger::log("guardarPreguntaUsuario",  "insertando pregunta: usuarioId: $usuario->id; cursoId: $cursoId");
                     $resultado = $this->actualizarCurso($usuario->id,$cursoId);
                     if($resultado->correcto())
                     {
-//                         Logger::log("guardarPreguntaUsuario",  "actualizo curso");
-//                         Logger::log("guardarPreguntaUsuario",  "calculando numero de preguntas restantes: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId");
+                         Logger::log("guardarPreguntaUsuario",  "actualizo curso");
+                         Logger::log("guardarPreguntaUsuario",  "calculando numero de preguntas restantes: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId");
                         $resultado = $this->calcularNumeroPreguntasRestantes($usuario->id,$cursoId,$leccionId);
                         if($resultado->correcto())
                         {
                             $numeroPreguntasRestantes= $resultado->valor;
-//                             Logger::log("guardarPreguntaUsuario",  "numero de preguntas restantes = $numeroPreguntasRestantes");
+                             Logger::log("guardarPreguntaUsuario",  "numero de preguntas restantes = $numeroPreguntasRestantes");
                             if($numeroPreguntasRestantes<=0)
                             {
-//                                 Logger::log("guardarPreguntaUsuario",  "terminando leccion: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId");
+                                 Logger::log("guardarPreguntaUsuario",  "terminando leccion: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId");
                                 $resultado = $this->terminarLeccion($usuario->id, $cursoId, $leccionId);
                                 if($resultado->correcto())
                                 {
-//                                     Logger::log("guardarPreguntaUsuario",  "LECCION TERMINADA: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId");
-//                                     Logger::log("guardarPreguntaUsuario",  "calculando numero de lecciones restantes: usuarioId: $usuario->id; cursoId: $cursoId");
+                                     Logger::log("guardarPreguntaUsuario",  "LECCION TERMINADA: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId");
+                                     Logger::log("guardarPreguntaUsuario",  "calculando numero de lecciones restantes: usuarioId: $usuario->id; cursoId: $cursoId");
                                     $resultado = $this->calcularNumeroLeccionesRestantes($usuario->id,$cursoId);
                                     if($resultado->correcto())
                                     {
                                         $numeroLeccionesRestantes= $resultado->valor;
-//                                         Logger::log("guardarPreguntaUsuario",  "numero de lecciones restantes = $numeroLeccionesRestantes");
+                                         Logger::log("guardarPreguntaUsuario",  "numero de lecciones restantes = $numeroLeccionesRestantes");
                                         if($numeroLeccionesRestantes<=0)
                                         {
-//                                             Logger::log("guardarPreguntaUsuario",  "terminando curso: usuarioId: $usuario->id; cursoId: $cursoId");
+                                             Logger::log("guardarPreguntaUsuario",  "terminando curso: usuarioId: $usuario->id; cursoId: $cursoId");
                                             $resultado = $this->terminarCurso($usuario->id, $cursoId);
                                             if($resultado->correcto())
                                             {
-//                                                 Logger::log("guardarPreguntaUsuario",  "CURSO TERMINADO: usuarioId: $usuario->id; cursoId: $cursoId");
+                                                 Logger::log("guardarPreguntaUsuario",  "CURSO TERMINADO: usuarioId: $usuario->id; cursoId: $cursoId");
                                                 
                                             }
                                             else
                                             {
-//                                                 Logger::log("guardarPreguntaUsuario",  "ERROR: No termino el curso: $resultado->mensajeError");
+                                                 Logger::log("guardarPreguntaUsuario",  "ERROR: No termino el curso: $resultado->mensajeError");
                                             }
                                                 
                                         }
                                         else 
                                         {
-//                                             Logger::log("guardarPreguntaUsuario",  "Curso aun no termina, quedan lecciones, numero de lecciones restantes = $numeroLeccionesRestantes");
+                                             Logger::log("guardarPreguntaUsuario",  "Curso aun no termina, quedan lecciones, numero de lecciones restantes = $numeroLeccionesRestantes");
                                             
                                         }
                                     }
                                     else
                                     {
-//                                         Logger::log("guardarPreguntaUsuario",  "ERROR: No se pudo calcular el numero de lecciones restantes: $resultado->mensajeError");
+                                         Logger::log("guardarPreguntaUsuario",  "ERROR: No se pudo calcular el numero de lecciones restantes: $resultado->mensajeError");
                                     }
                                 }
                                  else
                                  {
-//                                      Logger::log("guardarPreguntaUsuario",  "ERROR: No termino la leccion: $resultado->mensajeError");
+                                      Logger::log("guardarPreguntaUsuario",  "ERROR: No termino la leccion: $resultado->mensajeError");
                                  }
                                      
                                 
                             }
                             else
                             {
-//                                 Logger::log("guardarPreguntaUsuario",  "Leccion aun no termina, quedan preguntas, numero de preguntas restantes = $numeroPreguntasRestantes");
+                                 Logger::log("guardarPreguntaUsuario",  "Leccion aun no termina, quedan preguntas, numero de preguntas restantes = $numeroPreguntasRestantes");
                                 
                             }
                         }
                         else
                         {
-//                             Logger::log("guardarPreguntaUsuario",  "ERROR: No se pudo calcular el numero de preguntas restantes: $resultado->mensajeError");
+                             Logger::log("guardarPreguntaUsuario",  "ERROR: No se pudo calcular el numero de preguntas restantes: $resultado->mensajeError");
                         }
                     }
                     else
                     {
-//                         Logger::log("guardarPreguntaUsuario",  "ERROR: No se actualizo el curso: $resultado->mensajeError");
+                        Logger::log("guardarPreguntaUsuario",  "ERROR: No se actualizo el curso: $resultado->mensajeError");
                     }
                     
                 }
@@ -2556,13 +2557,13 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 {
                     $resultado->codigoError = $this->conexion->errno;
                     $resultado->mensajeError = __FUNCTION__ . " Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
-//                     Logger::log("guardarPreguntaUsuario",  "ERROR: $resultado->mensajeError");
+                     Logger::log("guardarPreguntaUsuario",  "ERROR: $resultado->mensajeError");
                 }
             }
             else
             {
                 $resultado->mensajeError = __FUNCTION__ . "Falló el enlace de parámetros";
-//                 Logger::log("guardarPreguntaUsuario",  "ERROR: $resultado->mensajeError");
+                Logger::log("guardarPreguntaUsuario",  "ERROR: $resultado->mensajeError");
                 
             }
         }
@@ -2570,19 +2571,19 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         {
             $resultado->codigoError = $this->conexion->errno;
             $resultado->mensajeError = __FUNCTION__ . "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-//             Logger::log("guardarPreguntaUsuario",  "ERROR: $resultado->mensajeError");
+             Logger::log("guardarPreguntaUsuario",  "ERROR: $resultado->mensajeError");
             
         }
         
         if($resultado->correcto())
         {
             $this->conexion->commit();
-//             Logger::log("guardarPreguntaUsuario",  "commit pregunta: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId, preguntaId: $preguntaId, respuestaId: $respuestaId;");
+             Logger::log("guardarPreguntaUsuario",  "commit pregunta: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId, preguntaId: $preguntaId, respuestaId: $respuestaId;");
         }
         else
         {
             $this->conexion->rollback();
-//             Logger::log("guardarPreguntaUsuario",  "rollback pregunta: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId, preguntaId: $preguntaId, respuestaId: $respuestaId;");
+             Logger::log("guardarPreguntaUsuario",  "rollback pregunta: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId, preguntaId: $preguntaId, respuestaId: $respuestaId;");
             
         }
         return  $resultado;
@@ -2735,94 +2736,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             return $resultado;
     }
     
-//     public function guardarPregunta($usuario, $cursoId, $leccionId, $preguntaId, $respuestaId)
-//     {
-//         $this->conexion->autocommit(FALSE);
-//         $resultado = $this->guardarLeccion($usuario, $cursoId, $leccionId);
-//         if($resultado->correcto())
-//         {
-            
-//         }
-//         if($resultado->correcto())
-//             $this->conexion->commit();
-//         else
-//             $this->conexion->rollback();
-//     }
-    
-//     public function guardarLeccion($usuario, $cursoId, $leccionId)
-//     {
-//         $consulta = "UPDATE usuarios_cursos_lecciones " .
-//             "SET valor = ?,  puntos = ?, puntos_total = ?, porcentaje = ? ".
-//             "WHERE usuario_id=? AND curso_id = ? AND leccion_id";
-        
-            
-//         if($sentencia = $this->conexion->prepare($consulta))
-//         {
-//             if($sentencia->bind_param("siisiiii",$pregunta->valor,$pregunta->puntos, $pregunta->puntosTotal, $pregunta->porcentaje,$auditoriaId,$plantillaId,$seccionId, $pregunta->id))
-//             {
-//                 if($sentencia->execute())
-//                 {
-                    
-//                     //$count = $sentencia->affected_rows;
-//                     $sentencia->close();
-                    
-//                     $resultado = $this->numeroRegistros($plantillaId,$auditoriaId,$seccionId, $pregunta->id);
-//                     if($resultado->mensajeError=="")
-//                     {
-//                         $count = $resultado->valor;
-                        
-                        
-//                         if($count==0)
-//                         {
-//                             $consulta = "INSERT INTO auditoria_preguntas(auditoria_id, plantilla_id, seccion_id, pregunta_id, valor, puntos, puntos_total, porcentaje) " .
-//                                 "VALUE(?, ?, ?, ?, ?, ?, ?, ?)";
-//                             if($sentencia = $this->conexion->prepare($consulta))
-//                             {
-//                                 if($sentencia->bind_param("iiiisiis",$auditoriaId,$plantillaId,$seccionId, $pregunta->id, $pregunta->valor,$pregunta->puntos, $pregunta->puntosTotal, $pregunta->porcentaje))
-//                                 {
-//                                     if($sentencia->execute())
-//                                     {
-//                                         $sentencia->close();
-//                                     }
-//                                     else
-//                                     {
-//                                         $resultado->codigoError = $this->conexion->errno;
-//                                         $resultado->mensajeError = "Falló la ejecución insertarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
-//                                         break;
-//                                     }
-//                                 }
-//                                 else
-//                                 {
-//                                     $resultado->mensajeError = "Falló el enlace de parámetros";
-//                                 }
-//                             }
-//                             else
-//                             {
-//                                 $resultado->codigoError = $this->conexion->errno;
-//                                 $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-//                             }
-//                         }
-//                     }
-                    
-//                 }
-//                 else
-//                 {
-//                     $resultado->codigoError = $this->conexion->errno;
-//                     $resultado->mensajeError = "Falló la ejecución update insertarPreguntas(" . $this->conexion->errno . ") " . $this->conexion->error;
-//                 }
-//             }
-//             else
-//             {
-//                 $resultado->mensajeError = "Falló el enlace de parámetros update";
-//             }
-//         }
-//         else
-//         {
-//             $resultado->codigoError = $this->conexion->errno;
-//             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-//         }
-            
-//     }
+//     
 
     public function actualizarDuracionLeccion($usuario, $cursoId, $leccionId, $duracion)
     {
@@ -4455,6 +4369,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     
     public function consultarResumenCapacitaciones($usuario,$criteriosSeleccion)
     {
+        //var_dump($criteriosSeleccion);
         $resultado = new Resultado();
         $registros = array();
         $filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
@@ -4467,9 +4382,9 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         
         $filtroEmpresaSede="";
         if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
-            $filtroEmpresaSede =" AND U.empresa_id = $criteriosSeleccion->empresaId";
+            $filtroEmpresaSede =" AND U1.empresa_id = $criteriosSeleccion->empresaId";
         if(isset($criteriosSeleccion->sedeId) && $criteriosSeleccion->sedeId!="")
-            $filtroEmpresaSede =" AND U.sede_id = $criteriosSeleccion->sedeId";
+            $filtroEmpresaSede =" AND U1.sede_id = $criteriosSeleccion->sedeId";
             
 //         $consulta = "SELECT C.id, C.titulo,
 //                     (
@@ -4551,7 +4466,9 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                          FROM usuarios U1
                          WHERE U1.permiso_cavi = 1 AND U1.estatus =1 AND U1.perfil_id IN(SELECT perfil_id
              				FROM cursos_perfiles CP
-             				WHERE curso_id = C.id) AND U1.empresa_id = U.empresa_id AND U1.sede_id = U.sede_id) usuariosInscritos
+             				WHERE curso_id = C.id) 
+                            $filtroEmpresaSede
+                    ) usuariosInscritos
                     FROM usuarios_cursos_lecciones_preguntas P
                     	INNER JOIN cursos C on C.id = P.curso_id
                     	INNER JOIN usuarios_cursos UC ON UC.curso_id = C.id AND UC.usuario_id= P.usuario_id
@@ -4562,6 +4479,9 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                         $filtroFechas
                     GROUP BY C.id, C.titulo
                     ORDER BY C.titulo";
+        
+                        //var_dump($consulta);
+                    
             
         if($sentencia = $this->conexion->prepare($consulta))
         {

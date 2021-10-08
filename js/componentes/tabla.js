@@ -238,7 +238,7 @@ class Tabla
 					"sLengthMenu":     "Mostrar _MENU_ registros",
 					"sZeroRecords":    this._textoSinRegistros,
 					"sEmptyTable":     this._textoTablaVacia,
-					"sInfo":           "Del _START_ al _END_ de  _TOTAL_ registrots",
+					"sInfo":           "Del _START_ al _END_ de  _TOTAL_ registros",
 					"sInfoEmpty":      "Del 0 al 0 de 0 registros",
 					"sInfoFiltered":   "(filtrado de un total de _MAX_ registros)",
 					"sInfoPostFix":    "",
