@@ -1,8 +1,8 @@
-class ProcesosPresentador extends CatalogoPresentador
+class UsuariosProcesosPresentador extends CatalogoPresentador
 { 
 	 constructor(vista)
 	 {
-		 super(vista,new ProcesosRepositorio());
+		 super(vista,new UsuariosProcesosRepositorio());
 	 }
 	 
 
@@ -22,7 +22,7 @@ class ProcesosPresentador extends CatalogoPresentador
 			
 		}
 		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			this.vista.mostrarMensaje("Error",resultado.mensajeError);
 		
 	 }
 	 
@@ -72,10 +72,46 @@ class ProcesosPresentador extends CatalogoPresentador
 	 {
 		if(resultado.mensajeError=="")
 		{
-			this.vista.sedes = resultado.valor;				
+			this.vista.sedes = resultado.valor;		
+			this.vista.cambiarSede();
+			this.vista.cambiarSedeProcedimiento();
 		}
 		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			this.vista.mostrarMensaje("Error",resultado.mensajeError);
+		
+	 }
+	 
+	 consultarUsuarios()	
+	 {
+		 var repositorio = new UsuariosRepositorio(this);		
+		 repositorio.consultarPorEmpresaSede(this,this.consultarUsuariosResultado,this.vista.modelo.empresaId,this.vista.modelo.sedeIdUsuario);
+	 }
+	 
+	 consultarUsuariosResultado(resultado)
+	 {
+		if(resultado.mensajeError=="")
+		{
+			this.vista.usuarios = resultado.valor;				
+		}
+		else
+			this.vista.mostrarMensaje("Error",resultado.mensajeError);
+		
+	 }
+	 
+	 consultarProcesos()	
+	 {
+		 var repositorio = new ProcesosRepositorio(this);		
+		 repositorio.consultarPorEmpresaSede(this,this.consultarProcedimientosResultado,this.vista.modelo.empresaId,this.vista.modelo.sedeIdProcedimiento);
+	 }
+	 
+	 consultarProcedimientosResultado(resultado)
+	 {
+		if(resultado.mensajeError=="")
+		{
+			this.vista.procedimientos = resultado.valor;				
+		}
+		else
+			this.vista.mostrarMensaje("Error",resultado.mensajeError);
 		
 	 }
 	 

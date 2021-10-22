@@ -17,7 +17,7 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = "SELECT P.id, RTRIM(codigo) as codigo, RTRIM(P.nombre) as nombre, RTRIM(P.descripcion) as descripcion, RTRIM(ruta_archivo) as ruta_archivo, P.empresa_id, E.nombre, P.sede_id,S.nombre,IFNULL(DATE_FORMAT(P.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(P.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, P.estatus 
+        $this->consultaBase = "SELECT P.id, RTRIM(codigo) as codigo, RTRIM(P.nombre) as nombre, RTRIM(P.descripcion) as descripcion, RTRIM(ruta_archivo) as ruta_archivo, P.empresa_id, E.nombre, P.sede_id,S.nombre,IFNULL(DATE_FORMAT(P.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(P.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, P.estatus, oea, ctpat, wrap, ipm 
                             FROM procesos P
                                 LEFT JOIN empresas E ON E.id = P.empresa_id
                                 LEFT JOIN sedes S ON S.id = P.sede_id";
@@ -29,10 +29,10 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
         if($resultado->mensajeError=='')
         {
             $id = $resultado->valor;
-            $consulta = "INSERT INTO procesos(id, codigo, nombre, descripcion, ruta_archivo, empresa_id, sede_id, fecha_alta, fecha_modificacion, estatus)VALUES(?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?)";
+            $consulta = "INSERT INTO procesos(id, codigo, nombre, descripcion, ruta_archivo, empresa_id, sede_id, fecha_alta, fecha_modificacion, estatus, oea, ctpat, wrap, ipm)VALUES(?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?,?,?,?,?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param('issssiii', $id, $modelo->codigo, $modelo->nombre, $modelo->descripcion, $modelo->rutaArchivo, $modelo->empresaId, $modelo->sedeId, $modelo->estatus))
+                if($sentencia->bind_param('issssiiiiiii', $id, $modelo->codigo, $modelo->nombre, $modelo->descripcion, $modelo->rutaArchivo, $modelo->empresaId, $modelo->sedeId, $modelo->estatus, $modelo->oea, $modelo->ctpat, $modelo->wrap, $modelo->ipm))
                 {
                     if(!$sentencia->execute())
                         $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
@@ -104,11 +104,15 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
                          empresa_id = ?,
                          sede_id = ?,
                          fecha_modificacion = NOW(),
-                         estatus = ?
+                         estatus = ?,
+                        oea = ?,
+                        ctpat = ?,
+                        wrap = ?,
+                        ipm = ?
                      WHERE id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param('ssssiiii',$modelo->codigo, $modelo->nombre, $modelo->descripcion, $modelo->rutaArchivo, $modelo->empresaId, $modelo->sedeId ,$modelo->estatus,$modelo->id  ))
+            if($sentencia->bind_param('ssssiiiiiiii',$modelo->codigo, $modelo->nombre, $modelo->descripcion, $modelo->rutaArchivo, $modelo->empresaId, $modelo->sedeId ,$modelo->estatus,$modelo->oea, $modelo->ctpat, $modelo->wrap, $modelo->ipm,$modelo->id  ))
             {
                 if($sentencia->execute())
                 {
@@ -155,11 +159,11 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus))
+                    if($sentencia->bind_result($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus, $oea, $ctpat, $wrap, $ipm))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre,$fechaAlta, $fechaModificacion, $estatus);
+                            $registro = $this->crearRegistro($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre,$fechaAlta, $fechaModificacion, $estatus, $oea, $ctpat, $wrap, $ipm);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -194,11 +198,11 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus)  )
+                    if ($sentencia->bind_result($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus, $oea, $ctpat, $wrap, $ipm)  )
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus);
+                            $registro = $this->crearRegistro($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus, $oea, $ctpat, $wrap, $ipm);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -228,11 +232,11 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus))
+                    if($sentencia->bind_result($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus, $oea, $ctpat, $wrap, $ipm))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus);
+                            $registro = $this->crearRegistro($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus, $oea, $ctpat, $wrap, $ipm);
                             $resultado->valor = $registro;
                         }
                         else
@@ -281,7 +285,7 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
         return $resultado;
     }
 
-    private function crearRegistro($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus)
+    private function crearRegistro($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus, $oea, $ctpat, $wrap, $ipm)
     {
         $registro= (object) 
         [
@@ -296,8 +300,15 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
             'sedeNombre' => $sedeNombre,
             'fechaAlta' => $fechaAlta,
             'fechaModificacion' => $fechaModificacion,
-            'estatus' => $estatus
+            'estatus' => $estatus,
+            'oea' => $oea,
+            'ctpat' => $ctpat,
+            'wrap' => $wrap,
+            'ipm' => $ipm
         ];
         return $registro;
     }
+    
+   
+    
 }

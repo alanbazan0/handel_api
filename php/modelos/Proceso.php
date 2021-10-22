@@ -11,4 +11,9 @@ class Proceso
   public $empresaId;
   public $sedeId;
   public $estatus;
+  public $oea;
+  public $ctpat;
+  public $wrap;
+  public $ipm;
+  
 }

@@ -36,28 +36,34 @@ header('Access-Control-Allow-Credentials: true');
                           <input  id='nombreInput' name='nombreInput' type='text' class='form-control'>
                       </div>
                   </div>
+                  <div class='form-group'>
+                      <div>
+                          <label class='control-label mb-1'>Sección en manual</label>
+                          <input  id='rutaArchivoInput' placeholder="" name='rutaArchivoInput' type='text' class='form-control'>
+                      </div>
+                  </div>
                   
                   <div class='form-group'>
                       <div>
                           <label class='control-label mb-1'>Aplica en certificación</label>
                            <div class="checkbox">
                               <label>
-                                <input type="checkbox"> OEA
+                                <input type="checkbox" id="oeaCheck"> OEA
                               </label>
                             </div>
                             <div class="checkbox">
                               <label>
-                                <input type="checkbox"> CTPAT
+                                <input type="checkbox" id="ctpatCheck"> CTPAT
                               </label>
                             </div>
                             <div class="checkbox">
                               <label>
-                                <input type="checkbox"> WRAP
+                                <input type="checkbox" id="wrapCheck"> WRAP
                               </label>
                             </div>
                             <div class="checkbox">
                               <label>
-                                <input type="checkbox"> IPM
+                                <input type="checkbox" id="ipmCheck"> IPM
                               </label>
                             </div>
                          </div>

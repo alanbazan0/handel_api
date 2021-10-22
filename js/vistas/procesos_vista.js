@@ -34,12 +34,12 @@ class ProcesosVista extends CatalogoVista
 	{
 		this.tabla.columnas = [
 			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
-			{longitud:200, 	titulo:"Código",   alias:"codigo", alineacion:"I"}, 
+			//{longitud:200, 	titulo:"Código",   alias:"codigo", alineacion:"I"}, 
 			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I", class: "desc" }, 
 			//{longitud:200, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I"}, 
 			{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },		
 			{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" },		
-			//{longitud:200, 	titulo:"Ruta",alias:"rutaArchivo", alineacion:"I", itemRenderer : this.renderArchivo },		
+			{longitud:200, 	titulo:"Sección en manual",alias:"rutaArchivo", alineacion:"I"},		
 			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
 			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
 			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
@@ -54,6 +54,7 @@ class ProcesosVista extends CatalogoVista
 	renderArchivo(renglon, type, set)
 	{    
 		var contenido = "";
+		if(renglon.rutaArchivo!=null)
 		contenido += "<a href='"+renglon.rutaArchivo+"' target='_blank'>"+renglon.rutaArchivo+"</a>";
 	    return contenido;
 	}
@@ -144,6 +145,27 @@ class ProcesosVista extends CatalogoVista
 			$("#estatusRadio").prop('checked', true);
 		else
 			$("#estatusRadio").prop('checked', false);
+		
+		if(this.modeloEdicion.oea==1)
+			$("#oeaCheck").prop('checked', true);
+		else
+			$("#oeaCheck").prop('checked', false);	
+		
+		if(this.modeloEdicion.ctpat==1)
+			$("#ctpatCheck").prop('checked', true);
+		else
+			$("#ctpatCheck").prop('checked', false);	
+			
+		if(this.modeloEdicion.wrap==1)
+			$("#wrapCheck").prop('checked', true);
+		else
+			$("#wrapCheck").prop('checked', false);	
+			
+		if(this.modeloEdicion.ipm==1)
+			$("#ipmCheck").prop('checked', true);
+		else
+			$("#ipmCheck").prop('checked', false);	
+			
 		this.consultarCombos();
 	}
 	
@@ -154,7 +176,11 @@ class ProcesosVista extends CatalogoVista
 			 empresaId:$('#empresaIdSelect').val(),
 			 sedeId:$('#sedeIdSelect').val(),
 			 nombre:$('#nombreInput').val(),
-			 rutaArchivo:$('#rutaArchivoInput').val(),
+			 rutaArchivo: $('#rutaArchivoInput').val(),
+			 oea: $('#oeaCheck').is(':checked')?1:0,
+			 ctpat: $('#ctpatCheck').is(':checked')?1:0,
+			 wrap: $('#wrapCheck').is(':checked')?1:0,
+			 ipm: $('#ipmCheck').is(':checked')?1:0,
 			 estatus:$('#estatusRadio').is(':checked')?1:0
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)

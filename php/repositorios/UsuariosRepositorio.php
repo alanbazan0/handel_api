@@ -893,15 +893,15 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                         }
                         if($opcional=="true")
                         {
-                            if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
-                            {
+                            //if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
+                            //{
                                 $registro = (object)[
                                     "id" => "",
                                     "nombreCompleto" => "Todos los usuarios",
                                     "apellido" => ""
                                 ];
                                 array_unshift($registros, $registro);
-                            }
+                            //}
                         }
                         $resultado->valor = $registros;
                     }
