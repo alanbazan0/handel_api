@@ -1,4 +1,61 @@
 <?php
+use php\clases\Logger;
+require_once("../clases/Logger.php");
+//const EXPORT_HIGHCHARTS_SERVER= "http://13.57.25.243:8080/";
+//const EXPORT_HIGHCHARTS_SERVER= "https://export.apps-handel.com/";
+//const EXPORT_HIGHCHARTS_SERVER= "http://export.apps-handel.com:8080/";
+//const EXPORT_HIGHCHARTS_SERVER= "https://export.apps-handel.com/";
+//const EXPORT_HIGHCHARTS_SERVER = "https://export.highcharts.com/";
+const EXPORT_HIGHCHARTS_SERVER = "http://export.highcharts.com/";
+
+
+function getHighchartsOptions($highchart)
+{
+    $data= (object) [
+        'async' =>  true,
+        'type' => 'image/jpeg',
+        'width' => 1080,
+        'options' => $highchart
+    ];
+    
+    $options = array(
+        'http' => array(
+            'method'  => 'POST',
+            'content' => json_encode( $data ),
+            'header'=>  "Content-Type: application/json\r\n" .
+            "Accept: application/json\r\n"
+        ),
+        "ssl"=>array(
+            "verify_peer"=>false,
+            "verify_peer_name"=>false,
+        )
+    );
+    return $options;
+}
+
+function getHightchartsURL($highchart)
+{
+    $options = getHighchartsOptions($highchart);
+    
+    $url = EXPORT_HIGHCHARTS_SERVER;
+    
+    $context  = stream_context_create( $options );
+    
+    $result = file_get_contents( $url, false, $context );
+    
+    $charturl='';
+    if ($result === FALSE)
+    {
+        
+    }
+    else
+    {
+        $charturl = $url . $result;
+    }
+    Logger::log("highcharts",$charturl);
+    return $charturl;
+}
+
 function getMes($mes)
 {
   $nombre ="";
@@ -79,25 +136,8 @@ function getChartImage($type, $title, $yTitle, $serieTitle, $categories, $data)
       )
     );
 
-    $url = 'https://export.highcharts.com/';
-
-    $context  = stream_context_create( $options );
-	
-	
-	
-    $result = file_get_contents( $url, false, $context );
-
-    $charturl='';
-    if ($result === FALSE)
-    {
-
-    }
-    else
-    {
-      $charturl = $url . $result;
-
-    }
-    return $charturl;
+      $chartURL = getHightchartsURL($highchart);
+      return $chartURL;
 
 //  return 'ok';
 
@@ -187,41 +227,8 @@ function toColumnChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$co
         )
     ];
     
-    $data= (object) [
-        'async' =>  true,
-        'type' => 'image/jpeg',
-        'width' => 1080,
-        'options' => $highchart
-    ];
-    
-    $options = array(
-        'http' => array(
-            'method'  => 'POST',
-            'content' => json_encode( $data ),
-            'header'=>  "Content-Type: application/json\r\n" .
-            "Accept: application/json\r\n"
-        )
-    );
-    
-    $url = 'https://export.highcharts.com/';
-    
-    $context  = stream_context_create( $options );
-    
-    
-    
-    $result = file_get_contents( $url, false, $context );
-    
-    $charturl='';
-    if ($result === FALSE)
-    {
-        
-    }
-    else
-    {
-        $charturl = $url . $result;
-        
-    }
-    return $charturl;
+    $chartURL = getHightchartsURL($highchart);
+    return $chartURL;
     
     //  return 'ok';
     
@@ -328,41 +335,8 @@ function toColumnChartSerieColors($title, $yTitle, $serieTitle, $rows, $xField, 
         )
     ];
     
-    $data= (object) [
-        'async' =>  true,
-        'type' => 'image/jpeg',
-        'width' => 1080,
-        'options' => $highchart
-    ];
-    
-    $options = array(
-        'http' => array(
-            'method'  => 'POST',
-            'content' => json_encode( $data ),
-            'header'=>  "Content-Type: application/json\r\n" .
-            "Accept: application/json\r\n"
-        )
-    );
-    
-    $url = 'https://export.highcharts.com/';
-    
-    $context  = stream_context_create( $options );
-    
-    
-    
-    $result = file_get_contents( $url, false, $context );
-    
-    $charturl='';
-    if ($result === FALSE)
-    {
-        
-    }
-    else
-    {
-        $charturl = $url . $result;
-        
-    }
-    return $charturl;
+    $chartURL = getHightchartsURL($highchart);
+    return $chartURL;
     
     //  return 'ok';
     
@@ -456,41 +430,8 @@ function toColumnChartColors($title, $yTitle, $serieTitle, $rows, $xField, $yFie
             //array(            (object) ['name' => $serieTitle, 'data' => $data,  'showInLegend' => $showInLegend]        )
     ];
     
-    $data= (object) [
-        'async' =>  true,
-        'type' => 'image/jpeg',
-        'width' => 1080,
-        'options' => $highchart
-    ];
-    
-    $options = array(
-        'http' => array(
-            'method'  => 'POST',
-            'content' => json_encode( $data ),
-            'header'=>  "Content-Type: application/json\r\n" .
-            "Accept: application/json\r\n"
-        )
-    );
-    
-    $url = 'https://export.highcharts.com/';
-    
-    $context  = stream_context_create( $options );
-    
-    
-    
-    $result = file_get_contents( $url, false, $context );
-    
-    $charturl='';
-    if ($result === FALSE)
-    {
-        
-    }
-    else
-    {
-        $charturl = $url . $result;
-        
-    }
-    return $charturl;
+    $chartURL = getHightchartsURL($highchart);
+    return $chartURL;
     
     //  return 'ok';
     
@@ -611,41 +552,8 @@ function toLineChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colo
         )
     ];
     
-    $data= (object) [
-        'async' =>  true,
-        'type' => 'image/jpeg',
-        'width' => 1080,
-        'options' => $highchart
-    ];
-    
-    $options = array(
-        'http' => array(
-            'method'  => 'POST',
-            'content' => json_encode( $data ),
-            'header'=>  "Content-Type: application/json\r\n" .
-            "Accept: application/json\r\n"
-        )
-    );
-    
-    $url = 'https://export.highcharts.com/';
-    
-    $context  = stream_context_create( $options );
-    
-    
-    
-    $result = file_get_contents( $url, false, $context );
-    
-    $charturl='';
-    if ($result === FALSE)
-    {
-        
-    }
-    else
-    {
-        $charturl = $url . $result;
-        
-    }
-    return $charturl;
+    $chartURL = getHightchartsURL($highchart);
+    return $chartURL;
     
     //  return 'ok';
     
@@ -704,41 +612,8 @@ function toPieChart( $title, $yTitle, $serieTitle, $rows, $xField, $yField, $col
         )
     ];
     
-    $data= (object) [
-        'async' =>  true,
-        'type' => 'image/jpeg',
-        'width' => 1080,
-        'options' => $highchart
-    ];
-    
-    $options = array(
-        'http' => array(
-            'method'  => 'POST',
-            'content' => json_encode( $data ),
-            'header'=>  "Content-Type: application/json\r\n" .
-            "Accept: application/json\r\n"
-        )
-    );
-    
-    $url = 'https://export.highcharts.com/';
-    
-    $context  = stream_context_create( $options );
-    
-    
-    
-    $result = file_get_contents( $url, false, $context );
-    
-    $charturl='';
-    if ($result === FALSE)
-    {
-        
-    }
-    else
-    {
-        $charturl = $url . $result;
-        
-    }
-    return $charturl;
+    $chartURL = getHightchartsURL($highchart);
+    return $chartURL;
     
     //  return 'ok';
     
@@ -798,41 +673,8 @@ function toPieChartWithLabels( $title, $yTitle, $serieTitle, $rows, $xField, $yF
         )
     ];
     
-    $data= (object) [
-        'async' =>  true,
-        'type' => 'image/jpeg',
-        'width' => 1080,
-        'options' => $highchart
-    ];
-    
-    $options = array(
-        'http' => array(
-            'method'  => 'POST',
-            'content' => json_encode( $data ),
-            'header'=>  "Content-Type: application/json\r\n" .
-            "Accept: application/json\r\n"
-        )
-    );
-    
-    $url = 'https://export.highcharts.com/';
-    
-    $context  = stream_context_create( $options );
-    
-    
-    
-    $result = file_get_contents( $url, false, $context );
-    
-    $charturl='';
-    if ($result === FALSE)
-    {
-        
-    }
-    else
-    {
-        $charturl = $url . $result;
-        
-    }
-    return $charturl;
+    $chartURL = getHightchartsURL($highchart);
+    return $chartURL;
     
     //  return 'ok';
     
@@ -858,7 +700,7 @@ function getImage($highchart)
   
  
 
-  $url = 'https://export.highcharts.com/';
+  $url = EXPORT_HIGHCHARTS_SERVER;
 
   $context  = stream_context_create( $options );
   $result = file_get_contents( $url, false, $context );

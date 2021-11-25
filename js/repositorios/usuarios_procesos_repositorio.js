@@ -6,7 +6,7 @@ class UsuariosProcesosRepositorio extends Repositorio
 	}
 	
 	
-	consultarProcedimientosPendientesMesActual(contexto,funcion)
+	/*consultarProcedimientosPendientesMesActual(contexto,funcion)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;
 		   $.ajax({
@@ -27,14 +27,14 @@ class UsuariosProcesosRepositorio extends Repositorio
 	       }
 	   });
 	}
-	
-	consultarProcedimientosPendientes(contexto,funcion, criteriosSeleccion)
+	*/
+	consultarProcesosPendientes(contexto,funcion, criteriosSeleccion)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;
 		   $.ajax({
 	       url: url,
 	       type: 'POST',
-	       data: {accion : "consultarProcedimientosPendientes",  criteriosSeleccion: JSON.stringify(criteriosSeleccion)},
+	       data: {accion : "consultarProcesosPendientes",  criteriosSeleccion: JSON.stringify(criteriosSeleccion)},
 	       success: function( data, textStatus, jQxhr )
 	       {
 	           funcion.call(contexto,data);

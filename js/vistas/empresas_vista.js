@@ -373,7 +373,8 @@ class EmpresasVista extends CatalogoVista
 		$('#nombreInput').val(this.modeloEdicion.nombre);
 		$('#nombreCortoInput').val(this.modeloEdicion.nombreCorto);
 		$('#direccionInput').val(this.modeloEdicion.direccion);
-		$('#telefonoInput').val(this.modeloEdicion.telefono);		
+		$('#telefonoInput').val(this.modeloEdicion.telefono);	
+		$('#mesRevisionProcesosSelect').val(this.modeloEdicion.mesRevisionProcesos);		
 		//$("input[name=estatus][value=" + this.modeloEdicion.estatus + "]").prop('checked', true);
 		
 		if(this.modeloEdicion.estatus==1)
@@ -401,6 +402,7 @@ class EmpresasVista extends CatalogoVista
 			 corporativoId:$('#corporativoSelect').val(),
 			 administradorId:$('#administradorSelect').val(),
 		 	 administradorIdSIVAH:$('#administradorSIVAHSelect').val(),
+	 		 mesRevisionProcesos:$('#mesRevisionProcesosSelect').val(),
 			 perfilId:$('#perfilSelect').val(),
 			 estatus:$('#estatusRadio').is(':checked')?1:0
 		 };

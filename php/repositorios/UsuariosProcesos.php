@@ -65,13 +65,13 @@ try
                 $resultado = $repositorio->consultarProcedimientosPendientesMesActual($usuario,$criteriosSeleccion);
             break;
            
-            case 'consultarProcedimientosPendientes':
+            case 'consultarProcesosPendientes':
                 session_start();
                 $usuario = null;
                 if(isset($_SESSION['usuario']))
                     $usuario = $_SESSION['usuario'];
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                    $resultado = $repositorio->consultarProcedimientosPendientes($usuario,$criteriosSeleccion);
+                    $resultado = $repositorio->consultarProcesosPendientes($usuario,$criteriosSeleccion);
                     break;
             default:
                 $resultado->mensajeError = 'Acción no válida';

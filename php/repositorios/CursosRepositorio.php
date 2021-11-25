@@ -1824,7 +1824,8 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                             $filtroFechasTerminado
                         )preguntasContestadas" ;
         
-        
+//         var_dump($consulta);
+//         var_dump($usuario);
         
         if($sentencia = $this->conexion->prepare($consulta))
         {

@@ -86,11 +86,34 @@
                       	 	<label for="administradorSIVAHSelect" class="control-label mb-1">Resposable de validación de evidencias (SIVAH)</label>
                       	 	<select name="administradorSIVAHSelect" id="administradorSIVAHSelect" class="form-control"></select>
                       	 </div> 
-                      </div>  
+                      </div> 
+                      
+                      
                        <div class="form-group">   
                       	<div>
                       	 	<label for="perfilSelect" class="control-label mb-1">Capacitación para importaciones</label>
                       	 	<select name="perfilSelect" id="perfilSelect" class="form-control"></select>
+                      	 </div> 
+                      </div>  
+                      
+                      <div class="form-group">   
+                      	<div>
+                      	 	<label for="mesRevisionProcesosSelect" class="control-label mb-1">Mes en que inicia revisión de procesos</label>
+                      	 	 <select id="mesRevisionProcesosSelect" class="form-control" name="mesRevisionProcesosSelect" tabindex="-1" aria-hidden="true" >
+                      	 	  <option value="">--Seleccione</option>
+                               <option value="1">Enero</option>
+                                <option value="2">Febrero</option>
+                                <option value="3">Marzo</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Mayo</option>
+                                <option value="6">Junio</option>
+                                <option value="7">Julio</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Septiembre</option>
+                                <option value="10">Octubre</option>
+                                <option value="11">Noviembre</option>
+                                <option value="12">Diciembre</option>
+                            </select>
                       	 </div> 
                       </div>  
                       <div class="form-group">

@@ -845,39 +845,8 @@ abstract class PDF extends FPDF
             )
         ];
         
-        $data= (object) [
-            'async' =>  true,
-            'type' => 'image/jpeg',
-            'width' => 1080,
-            'options' => $highchart
-        ];
-        
-        $options = array(
-            'http' => array(
-                'method'  => 'POST',
-                'content' => json_encode( $data ),
-                'header'=>  "Content-Type: application/json\r\n" .
-                "Accept: application/json\r\n"
-            )
-        );
-        
-        $url = 'https://export.highcharts.com/';
-        
-        $context  = stream_context_create( $options );
-        
-        $result = file_get_contents( $url, false, $context );
-        
-        $charturl='';
-        if ($result === FALSE)
-        {
-            
-        }
-        else
-        {
-            $charturl = $url . $result;
-            
-        }
-        return $charturl;
+        $chartURL = getHightchartsURL($highchart);
+        return $chartURL;
         
         //  return 'ok';
         
@@ -1013,41 +982,8 @@ abstract class PDF extends FPDF
             )
         ];
         
-        $data= (object) [
-            'async' =>  true,
-            'type' => 'image/jpeg',
-            'width' => 1080,
-            'options' => $highchart
-        ];
-        
-        $options = array(
-            'http' => array(
-                'method'  => 'POST',
-                'content' => json_encode( $data ),
-                'header'=>  "Content-Type: application/json\r\n" .
-                "Accept: application/json\r\n"
-            )
-        );
-        
-        $url = 'https://export.highcharts.com/';
-        
-        $context  = stream_context_create( $options );
-        
-        
-        
-        $result = file_get_contents( $url, false, $context );
-        
-        $charturl='';
-        if ($result === FALSE)
-        {
-            
-        }
-        else
-        {
-            $charturl = $url . $result;
-            
-        }
-        return $charturl;
+        $chartURL = getHightchartsURL($highchart);
+        return $chartURL;
         
         //  return 'ok';
         
