@@ -232,13 +232,47 @@ class SolicitudRevisionProcesosPresentador extends CatalogoPresentador
 			 if(resultado.mensajeError=="")
 			 {
 				 this.vista.mostrarMensaje("Notificación","Guardado.");
-				 this.vista.reportadoSinCambios(usuarioProceso);
+				 this.vista.eliminarProceso(usuarioProceso);
 			 }
 			 else
 			 {
 				 this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
 			 }
 		 },usuarioProceso.id);
+	 }
+
+	guardarObservaciones(usuarioProceso, observaciones)
+	{
+		this.vista.mostrarIndicador();	
+		 this._repositorio.guardarObservaciones(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 //this.vista.cerrarConfirmacionEliminar();
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.cerrarModal("observacionesModal");
+				 this.vista.mostrarMensaje("Notificación","Guardado.");
+				 this.vista.eliminarProceso(usuarioProceso);
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
+			 }
+		 },usuarioProceso.id,observaciones);
+	}
+
+ 	consultarTiposObservacion()
+	 {
+		 this.vista.mostrarIndicador();
+		 var repositorio = new TiposObservacionRepositorio(this);		
+		 repositorio.consultar(this,function(resultado)
+		{
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.tiposObservacion = resultado.valor;
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		});
 	 }
 	 
 	 

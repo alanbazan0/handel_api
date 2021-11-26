@@ -298,6 +298,7 @@ class EmpresasVista extends CatalogoVista
 		this.consultarCorporativos();
 		this.consultarAdministradores();
 		this.consultarAdministradoresSIVAH();
+		this.consultarAdministradoresProcesos();
 		this.consultarPerfiles();
 	}
 	
@@ -403,6 +404,7 @@ class EmpresasVista extends CatalogoVista
 			 administradorId:$('#administradorSelect').val(),
 		 	 administradorIdSIVAH:$('#administradorSIVAHSelect').val(),
 	 		 mesRevisionProcesos:$('#mesRevisionProcesosSelect').val(),
+			 administradorIdProcesos:$('#administradorProcesosSelect').val(),
 			 perfilId:$('#perfilSelect').val(),
 			 estatus:$('#estatusRadio').is(':checked')?1:0
 		 };
@@ -440,6 +442,12 @@ class EmpresasVista extends CatalogoVista
 	{
 		this.cargandoOpciones("#administradorSIVAHSelect");
 		this.presentador.consultarAdministradoresSIVAH();
+	}
+	
+	consultarAdministradoresProcesos()
+	{
+		this.cargandoOpciones("#administradorProcesosSelect");
+		this.presentador.consultarAdministradoresProcesos();
 	}
 	
 	consultarPerfiles()
@@ -534,6 +542,11 @@ class EmpresasVista extends CatalogoVista
 	set administradoresSIVAH(registros)
 	{
 		this.cargarOpciones('#administradorSIVAHSelect', registros, this.modo, this.modeloEdicion, 'administradorIdSIVAH',"","nombreCompleto");
+	}
+	
+	set administradoresProcesos(registros)
+	{
+		this.cargarOpciones('#administradorProcesosSelect', registros, this.modo, this.modeloEdicion, 'administradorIdProcesos',"","nombreCompleto");
 	}
 	
 }

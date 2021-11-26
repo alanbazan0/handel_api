@@ -1368,6 +1368,26 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		 return modelo;
 	 }
 
+	get modeloObservacion()
+	{
+		 var modelo = 
+		 {		
+			 tipoObservacionNombre: $( "#tipoObservacionSelect option:selected" ).text(),
+			 tipoObservacionId:$('#tipoObservacionSelect').val(),
+		 	 seccion:$('#seccionObservacionInput').val(),
+			 descripcion : $("#descripcionObservacionInput").val(),
+			
+		 };
+		 return modelo;
+	 }
+
+	set modeloObservacion(observacion)
+	{
+		$('#seccionObservacionInput').val(observacion.seccion);
+		$('#descripcionObservacionInput').val(observacion.descripcion);
+	}
+
+
 	borrarEvidencia(id)
 	{
 		var row = $("#tabla").find("tr[data-id="+id+"]");
@@ -1492,12 +1512,12 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		      tr = $(tr).prev();  
 		    }
 
-			var usuarioProceso  = table.row( tr ).data();
-			if (usuarioProceso != undefined)
+			_this._usuarioProcesoSeleccionado  = table.row( tr ).data();
+			if (_this._usuarioProcesoSeleccionado != undefined)
 			{
 				_this.modo = Modo.ALTA;
-				usuarioProceso.usuarioProcedimientoId = usuarioProceso.id;
-				_this.mostrarFormularioObservaciones(usuarioProceso);
+				_this._usuarioProcesoSeleccionado.usuarioProcedimientoId = _this._usuarioProcesoSeleccionado.id;
+				_this.mostrarFormularioObservaciones(_this._usuarioProcesoSeleccionado);
 			
 			}
 		});
@@ -1510,12 +1530,12 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		      tr = $(tr).prev();  
 		    }
 
-			var usuarioProceso  = table.row( tr ).data();
-			if (usuarioProceso != undefined)
+			this._usuarioProcesoSeleccionado  = table.row( tr ).data();
+			if (this._usuarioProcesoSeleccionado != undefined)
 			{
 				//_this.modo = Modo.ALTA;
 				//usuarioProceso.usuarioProcesoId = usuarioProceso.id;
-				_this.reportarSinCambios(usuarioProceso);
+				_this.reportarSinCambios(this._usuarioProcesoSeleccionado);
 			
 			}
 		});
@@ -1533,7 +1553,7 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 			
 			$("#procesoLabel").html(usuarioProceso.nombre);
 			//_this._archivosAvance = [];
-			_this.archivos = [];
+			_this._observaciones = [];
 			_this._archivosEliminados = [];
 			
 			$("#agregarObservacionButton").click(function(){_this.mostrarObservacion(Modo.ALTA,usuarioProceso);});
@@ -1542,25 +1562,178 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 			
 		},null,"observacionesModal","","guardarObservacionesButton",function()
 		{
-			$("#formulario").submit();
+			//$("#formulario").submit();
+			_this.guardarObservaciones(usuarioProceso, this._observaciones);
 		});
 
 	}
 	
-	mostrarObservacion(modo,usuarioProceso)
+	guardarObservaciones(usuarioProceso, observaciones)
+	{
+		this.presentador.guardarObservaciones(usuarioProceso, observaciones);
+	}
+	
+	mostrarObservacion(modo,usuarioProceso, observacion)
 	{
 		var _this = this;
-		this.modoObservervacion = modo;
+		this.modoObservacion = modo;
 		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/proceso_revisado_observacion.php",this, null, function()
 		{
 			$("#procesoObservacionLabel").html(usuarioProceso.nombre);
+			if(modo==Modo.CAMBIO)
+				_this.modeloObservacion = observacion;
+			this.inicializarValidacionesObservacion();
 			_this.consultarTiposObservacion();
 			
 			
 		},null,"observacionModal","","guardarObservacionButton",function()
 		{
-			$("#formulario").submit();
+			$("#observacionFormulario").submit();
 		});	
+		
+	}
+	
+	inicializarValidacionesObservacion()
+	{
+		var _this = this;
+		jQuery("#observacionFormulario").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+                "tipoObservacionSelect": {
+                    required: !0
+                },
+                "seccionObservacionInput": {
+                    required: !0
+                },
+                "descripcionObservacionInput": {
+                    required: !0
+                }
+            },
+            messages: {
+                "tipoObservacionSelect": "Por favor seleccione un tipo",
+                "seccionObservacionInput": "Por favor ingrese una sección",
+                "descripcionObservacionInput": "Por favor ingrese una descripción"
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.guardarObservacion();
+            }
+        });
+	}
+	
+	guardarObservacion()
+	{	
+		var observacion = this.modeloObservacion;
+		if(this.modoObservacion==Modo.ALTA)
+		{
+			if(this._observaciones==null)
+				this._observaciones =[];
+			
+			this._observaciones.push(observacion);
+		}
+		else
+		{
+			this._observacionSeleccionada.tipoObservacionId = observacion.tipoObservacionId;
+			this._observacionSeleccionada.tipoObservacionNombre = observacion.tipoObservacionNombre;
+			this._observacionSeleccionada.seccion = observacion.seccion;
+			this._observacionSeleccionada.descripcion = observacion.descripcion;
+		}
+		this.observacionesTabla.registros = this._observaciones;
+		this.inicializarEventosBotonesTablaObservaciones("#" + this.observacionesTabla._id+"Table tbody",this.observacionesTabla.datatable.DataTable(),["id"]);
+		$("#observacionModal").modal("hide");
+	}
+	
+	inicializarEventosBotonesTablaObservaciones(tbody, table, nombresCamposLlave)
+	{
+		var _this = this;
+		$(tbody).on("click", "button.editar", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._observacionSeleccionada  = table.row( tr ).data();
+			if (_this._observacionSeleccionada != undefined)
+			{
+				_this.mostrarObservacion(Modo.CAMBIO, _this._usuarioProcesoSeleccionado, _this._observacionSeleccionada)
+				//usuarioProceso.usuarioProcedimientoId = usuarioProceso.id;
+				//_this.mostrarFormularioObservaciones(usuarioProceso);
+			
+			}
+		});
+		
+		$(tbody).on("click", "button.eliminar", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			this._observacionSeleccionada  = table.row( tr ).data();
+			var indice = table.row(tr).index();
+			if (this._observacionSeleccionada != undefined)
+			{
+				//_this.modo = Modo.ALTA;
+				//usuarioProceso.usuarioProcesoId = usuarioProceso.id;
+				_this.confirmarEliminarObservacion(this._observacionSeleccionada,tr,indice);
+			
+			}
+		});
+		
+	}
+	
+	confirmarEliminarObservacion(observacion, tr, indice)
+	{
+		var _this = this;
+		swal({
+	            title: "\u00bfEst\u00E1 seguro de eliminar?",
+	            text: "Se eliminar\u00e1 este registro !!",
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Si, eliminar!!",
+	            cancelButtonText: "No",
+	            closeOnConfirm: false,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+					_this._observaciones.slice(indice,1);
+					
+					swal.close();
+					tr.fadeOut();
+	            	 setTimeout(function()
+					{
+						
+						tr.remove();
+						
+	            		 //_this.presentador.eliminar();
+	 	            }, 1000);
+	            }
+	        });
+	}
+	
+	consultarTiposObservacion()
+	{
+		this.presentador.consultarTiposObservacion();
 	}
 	
 	adjuntarArchivo()
@@ -1633,17 +1806,16 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 	        });	
 	}
 	
-	reportadoSinCambios(usuarioProceso)
+	eliminarProceso(usuarioProceso)
 	{
 		var row = $("#procedimientosPendientesTabla").find("tr[data-id="+usuarioProceso.id+"]");
 		row.fadeOut();
 		setTimeout(function()
 		{
-			//$("#file" + _this._archivoSeleccionado.id).remove();
     		 row.remove();
-			//ArrayUtils.removeWithValues("id",[_this._archivoSeleccionado.id],_this._archivos);
          }, 1000);
 	}
+	
 	
 	mostrarFormularioEvidencia(procedimiento)
 	{
@@ -1728,28 +1900,36 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 	
 	crearTablaObservaciones()
 	{
-		this.archivosTabla = new Tabla("archivosTabla");
-		this.archivosTabla.alto = 300;
-		this.archivosTabla.buscar = false;
-		this.archivosTabla.paginacion = false;
-		this.archivosTabla.columnas = [
-			{longitud:50, 	titulo:"",   alias:"nombre", alineacion:"C", itemRenderer:this.renderArchivo},
-			{longitud:100, 	titulo:"",   alias:"nombre", alineacion:"I"},
-			{longitud:100, 	titulo:"",   alias:"tamano", alineacion:"C",itemRenderer:this.renderTamanoArchivo},
-			{longitud:100, 	titulo:"",   alias:"subido", alineacion:"C",itemRenderer:this.renderSubido}
+		this.observacionesTabla = new Tabla("observacionesTabla");
+		this.observacionesTabla.alto = 250;
+		this.observacionesTabla.buscar = false;
+		this.observacionesTabla.paginacion = false;
+		this.observacionesTabla.columnas = [
+			{longitud:100, 	titulo:"Tipo",   alias:"tipoObservacionNombre", alineacion:"I"},
+			{longitud:200, 	titulo:"Sección",   alias:"seccion", alineacion:"I"},
+			{longitud:300, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I"},
+			//{longitud:100, 	titulo:"",   alias:"tamano", alineacion:"C",itemRenderer:this.renderTamanoArchivo},
+			//{longitud:100, 	titulo:"",   alias:"subido", alineacion:"C",itemRenderer:this.renderSubido}
 		
 		]
-		if(this.modoAvance != Modo.CONSULTA)
-			this.archivosTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+		//if(this.modoAvance != Modo.CONSULTA)
+			this.observacionesTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-1 botones-icon btn btn-sm float-left btn-success active'><span  data-toggle='tooltip' class='fas fa-pencil-alt fa-lg'></span></button>"+
+													"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
 	
 		
-		this.archivosTabla.textoTablaVacia = "No hay observaciones";
-		this.archivosTabla.textoSinRegistros= "No hay observaciones";
-		this.archivosTabla.registros = [];
+		this.observacionesTabla.textoTablaVacia = "No hay observaciones";
+		this.observacionesTabla.textoSinRegistros= "No hay observaciones";
+		this.observacionesTabla.registros = [];
 		
 		
 		
+	}
+	
+	set tiposObservacion(registros)
+	{		
+		//this.cargarOpciones('#tipoObservacionSelect', registros);
+		this.cargarOpciones('#tipoObservacionSelect', registros, this.modoObservacion, this._observacionSeleccionada, 'tipoObservacionId',"");
 	}
 	
 }

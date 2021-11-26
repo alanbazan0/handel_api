@@ -51,7 +51,9 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
             {
                 if($sentencia->bind_param('iiii', $id, $modelo->usuarioProcesoId, $usuario->id, $modelo->estatusRevisionId))
                 {
-                    if(!$sentencia->execute())
+                    if($sentencia->execute())
+                         $resultado->valor = $id;
+                    else
                         $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 }
                 else
@@ -76,6 +78,69 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
         }
         return $resultado;
     }
+    
+    function guardarObservaciones($usuario,$usuarioProcesoId,$observaciones)
+    {
+        $procesoRevisado = new ProcesoRevisado();
+        $procesoRevisado->usuarioProcesoId = $usuarioProcesoId;
+        $procesoRevisado->estatusRevisionId = \EstatusRevision::OBSERVACIONES;
+        $this->conexion->autocommit(FALSE);
+        $resultado = $this->insertar($usuario,$procesoRevisado);
+        
+        if($resultado->correcto())
+        {
+            $procesoRevisadoId = $resultado->valor;
+            if($observaciones!=null)
+            {
+                for ($k = 0; $k< count($observaciones); $k++)
+                {
+                    $observacion = $observaciones[$k];
+                    $observacionId = $k + 1;
+                        
+//                     var_dump($procesoRevisadoId);
+//                     var_dump($observacion);
+                    $consulta = "INSERT INTO procesos_revisados_observaciones(proceso_revisado_id, id, tipo_observacion_id, seccion, descripcion) " .
+                        "VALUE(?, ?, ?, ?, ?)";
+                    if($sentencia = $this->conexion->prepare($consulta))
+                    {
+                        if($sentencia->bind_param("iiiss", $procesoRevisadoId, $observacionId, $observacion->tipoObservacionId, $observacion->seccion, $observacion->descripcion))
+                        {
+                            if($sentencia->execute())
+                            {
+                                $sentencia->close();
+                            }
+                            else
+                            {
+                                $resultado->codigoError = $this->conexion->errno;
+                                $resultado->mensajeError = "Falló la ejecución(" . $this->conexion->errno . ") " . $this->conexion->error;
+                                break;
+                            }
+                            
+                        }
+                        else
+                        {
+                            $resultado->mensajeError = "Falló el enlace de parámetros";
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        $resultado->codigoError = $this->conexion->errno;
+                        $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                        break;
+                    }
+                }
+            }
+        }
+        if($resultado->correcto())
+        {
+            $this->conexion->commit();
+        }
+        else
+            $this->conexion->rollback();
+        return $resultado;
+    }
+    
     
     
     

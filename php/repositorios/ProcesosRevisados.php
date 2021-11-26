@@ -61,6 +61,11 @@ try
                     $usuarioProcesoId = REQUEST('usuarioProcesoId');
                     $resultado = $repositorio->reportarSinCambios($usuario,$usuarioProcesoId);
                 break;
+                case 'guardarObservaciones':
+                    $usuarioProcesoId = REQUEST('usuarioProcesoId');
+                    $observaciones = json_decode(REQUEST('observaciones'));
+                    $resultado = $repositorio->guardarObservaciones($usuario,$usuarioProcesoId,$observaciones);
+                break;
                 case 'actualizar':
                     $json = json_decode(REQUEST('modelo'));
                     $mapper = new JsonMapper();

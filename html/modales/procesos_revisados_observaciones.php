@@ -35,7 +35,7 @@
                                    
         						</div>
         					</div>
-    					 <div id='archivosTabla'></div>
+    					 <div id='observacionesTabla'></div>
 					</div>
 				
 			</div>

@@ -18,7 +18,7 @@
 			<div class="modal-body">
 				
 			
-    			<form id="formulario" action="#"  method="post">
+    			<form id="observacionFormulario" action="#"  method="post">
     				<div class="form-group">
 						<div>
 							<label for="procesoObservacionLabel" class="control-label">Proceso</label>
@@ -42,8 +42,7 @@
     				 <div class="form-group">
     					 <div>
     					 	<label for="descripcionObservacionInput" class="control-label">Descripción</label>
-                            <textarea id="descripcionObservacionInput" name='descripcionObservacionInput' class="form-control" style="height: 150px;resize: none;" spellcheck="false">
-                            </textarea>
+                            <textarea id="descripcionObservacionInput" name='descripcionObservacionInput' class="form-control" style="height: 150px;resize: none;" spellcheck="false"></textarea>
                         </div>
                  	 </div>
 <!--                  	 <div class="form-group"> -->
@@ -56,7 +55,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-				 <button  id="guardarObservacionButton" type="button" class="btn btn-primary">Guardar</button>
+				 <button  id="guardarObservacionButton" type="button" class="btn btn-primary">Aceptar</button>
 <!-- 				<button id="guardarButton" type="submit" class="btn btn-primary" >Guardar</button> -->
 			</div>
 		</div>

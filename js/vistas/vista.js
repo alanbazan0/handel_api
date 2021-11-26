@@ -1076,4 +1076,9 @@ class Vista
 			return theme;
 		}
 		
+		cerrarModal(modal)
+		{
+			$("#"+modal).modal("hide");
+		}
+		
 }

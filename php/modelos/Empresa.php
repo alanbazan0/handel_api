@@ -18,5 +18,6 @@ class Empresa
     public $administradorIdSIVAH;
     public $perfilId;
     public $mesRevisionProcesos;
+    public $administradorIdProcesos;
 }
 

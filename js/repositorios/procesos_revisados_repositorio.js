@@ -5,6 +5,28 @@ class ProcesosRevisadosRepositorio extends Repositorio
 		super("php/repositorios/ProcesosRevisados.php");
 	}
 	
+	guardarObservaciones(contexto,funcion,id, observaciones)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "guardarObservaciones",usuarioProcesoId:id, observaciones: JSON.stringify(observaciones)},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : errorThrown + "." +jqXhr.responseText});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : errorThrown+ "." +jqXhr.responseText});
+	       }
+	   });
+	}
+	
 	reportarSinCambios(contexto,funcionResultado, id)
 	{		
 		var data = new FormData();

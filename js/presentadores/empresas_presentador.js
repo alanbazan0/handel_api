@@ -281,5 +281,20 @@ class EmpresasPresentador extends CatalogoPresentador
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		 });
 	 }
+
+
+ 	consultarAdministradoresProcesos()	
+	 {
+		 var repositorio = new UsuariosRepositorio(this);		
+		 repositorio.consultarAdministradores(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.administradoresProcesos = resultado.valor;		
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 });
+	 }
 	 
 }

@@ -116,6 +116,12 @@
                             </select>
                       	 </div> 
                       </div>  
+                      <div class="form-group">   
+                      	<div>
+                      	 	<label for="administradorProcesosSelect" class="control-label mb-1">Resposable de revisión de procesos</label>
+                      	 	<select name="administradorProcesosSelect" id="administradorProcesosSelect" class="form-control"></select>
+                      	 </div> 
+                      </div> 
                       <div class="form-group">
                       		<label class="control-label mb-1">Activo</label>
                      		<label class="switch switch-3d switch-success mr-3">
