@@ -56,14 +56,17 @@ class CapacitacionPresentador extends CatalogoPresentador
 	{
 		 this.vista.mostrarIndicador();	
 		 this._repositorio.consultarPreguntaAleatoria(this, function(resultado)
-				 {		
+		 {		
 			 this.vista.ocultarIndicador();	
 			 this.vista.guardando = false;
 			 if(resultado.mensajeError=="")
 			 {
 				
-				 if(this.vista.leccionIdSeleccionada == resultado.valor.leccionId)
-					 this.vista.mostrarPregunta(resultado.valor.leccionId,resultado.valor.pregunta, resultado.valor.numeroPreguntasRestantes,resultado.valor.numeroPreguntasContestadas);
+				if(this.vista.leccionIdSeleccionada == resultado.valor.leccionId)
+				{
+					this.vista.mostrarPregunta(resultado.valor.leccionId,resultado.valor.pregunta, resultado.valor.numeroPreguntasRestantes,resultado.valor.numeroPreguntasContestadas);
+					
+				}
 			 }
 			 else
 				 this.vista.mostrarMensajeError("Error",resultado.mensajeError);
@@ -71,6 +74,22 @@ class CapacitacionPresentador extends CatalogoPresentador
 		 ,this.vista.cursoId, seccionId, this.vista.modo);
 	}
 	
+	terminarLeccionCurso(leccionId)
+	{
+		this.vista.mostrarIndicador();	
+		 this._repositorio.terminarLeccionCurso(this, function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 this.vista.guardando = false;
+			 if(resultado.mensajeError=="")
+			 {
+				
+			 }
+			 else
+				 this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		 ,this.vista.cursoId, leccionId);
+	}
 	
 	actualizarDuracionLeccion(leccionId,duracion)
 	{

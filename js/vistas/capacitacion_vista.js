@@ -547,10 +547,10 @@ class CapacitacionVista extends CatalogoVista
 
 	seleccionarLeccion(event, leccionId)
 	{
-		this._leccionSeleccionada.preguntas = this.listaPreguntas.preguntas;
 		this._leccionSeleccionada = this.listaLecciones.getLeccion(leccionId);
 		if(this._leccionSeleccionada!=null)
 		{
+			this._leccionSeleccionada.preguntas = this.listaPreguntas.preguntas;
 			this.mostrarLeccion(this._leccionSeleccionada);
 			
 		}
@@ -690,10 +690,17 @@ class CapacitacionVista extends CatalogoVista
 			{
 				this.listaLecciones.terminarLeccion(leccionId);
 				html+=this.textoLeccionTerminada;
+				if(numeroPreguntasRestantes==0 && numeroPreguntasContestadas>0)
+					this.terminarLeccionCurso(leccionId)
 			}
 		 }
 		
 		 $("#divBotonesPreguntas").html(html);
+	}
+	
+	terminarLeccionCurso(leccionId)
+	{
+		this.presentador.terminarLeccionCurso(leccionId);
 	}
 
 	get textoLeccionTerminada()

@@ -100,6 +100,11 @@ try
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarCursosContestando($usuario,$criteriosSeleccion);
                 break;
+                case 'terminarLeccionCurso':
+                    $cursoId = REQUEST('cursoId');
+                    $leccionId = REQUEST('leccionId');
+                    $resultado = $repositorio->terminarLeccionCurso($usuario,$cursoId, $leccionId);
+                break;
                 case 'consultarCursosPendientes':
 //                     session_start();
 //                     $usuario = null;

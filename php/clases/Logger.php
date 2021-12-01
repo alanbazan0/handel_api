@@ -8,7 +8,7 @@ class Logger
     {
         $mensaje = date("j/n/Y h:i:s") .":".$texto;
         if(!file_exists($carpeta))
-            @mkdir($carpeta);
+            @mkdir($carpeta,0777, true);
         file_put_contents($carpeta.$archivo.'_'.date("j.n.Y").'.log',  utf8_decode("\n".$mensaje) , FILE_APPEND);
     }
     

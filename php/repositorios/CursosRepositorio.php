@@ -2457,6 +2457,60 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
        return  $resultado;
     }
     
+    public function terminarLeccionCurso($usuario, $cursoId, $leccionId)
+    {
+        $resultado = new Resultado();
+        $this->conexion->autocommit(FALSE);
+        $resultado = $this->terminarLeccion($usuario->id, $cursoId, $leccionId);
+        if($resultado->correcto())
+        {
+            Logger::log("terminarLeccionCurso",  "LECCION TERMINADA: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId",'logs/terminarLeccionCurso/');
+            Logger::log("terminarLeccionCurso",  "calculando numero de lecciones restantes: usuarioId: $usuario->id; cursoId: $cursoId",'logs/terminarLeccionCurso/');
+            $resultado = $this->calcularNumeroLeccionesRestantes($usuario->id,$cursoId);
+            if($resultado->correcto())
+            {
+                $numeroLeccionesRestantes= $resultado->valor;
+                Logger::log("terminarLeccionCurso",  "numero de lecciones restantes = $numeroLeccionesRestantes",'logs/terminarLeccionCurso/');
+                if($numeroLeccionesRestantes<=0)
+                {
+                    Logger::log("terminarLeccionCurso",  "terminando curso: usuarioId: $usuario->id; cursoId: $cursoId",'logs/terminarLeccionCurso/');
+                    $resultado = $this->terminarCurso($usuario->id, $cursoId);
+                    if($resultado->correcto())
+                    {
+                        Logger::log("terminarLeccionCurso",  "CURSO TERMINADO: usuarioId: $usuario->id; cursoId: $cursoId",'logs/terminarLeccionCurso/');
+                        
+                    }
+                    else
+                    {
+                        Logger::log("terminarLeccionCurso",  "ERROR: No termino el curso: $resultado->mensajeError",'logs/terminarLeccionCurso/');
+                    }
+                    
+                }
+                else
+                {
+                    Logger::log("terminarLeccionCurso",  "Curso aun no termina, quedan lecciones, numero de lecciones restantes = $numeroLeccionesRestantes",'logs/terminarLeccionCurso/');
+                    
+                }
+            }
+            else
+            {
+                Logger::log("terminarLeccionCurso",  "ERROR: No se pudo calcular el numero de lecciones restantes: $resultado->mensajeError",'logs/terminarLeccionCurso/');
+            }
+        }
+        if($resultado->correcto())
+        {
+            $this->conexion->commit();
+            Logger::log("terminarLeccionCurso",  "commit leccion: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId;",'logs/terminarLeccionCurso/');
+        }
+        else
+        {
+            $this->conexion->rollback();
+            Logger::log("guardarPreguntaUsuario",  "rollback leccion: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId;",'logs/terminarLeccionCurso/');
+            
+        }
+        return  $resultado;
+    }
+    
     public function guardarPreguntaUsuario($usuario, $cursoId, $leccionId, $preguntaId, $respuestaId)
     {
 //         Logger::log("guardarPreguntaUsuario",  "-----------------------------------------------------------------------");
