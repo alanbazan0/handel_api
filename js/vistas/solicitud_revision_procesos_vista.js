@@ -23,16 +23,37 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		
 
 		var _this = this;
+		$("#consultarButtonPendientes").click(function(){
+			_this.consultarProcesosPendientes();
+		});
+		
 		$("#consultarButton").click(function(){
-			_this.consultar();
+			_this.consultarProcesosEnviados();
 		});
 		
 		if($("#enviarMensajeLink").length>0)
 			$("#enviarMensajeLink").click(this.enviarMensajeLinkClick)
 		
-		this.consultoGrid = false;
+		this._consultoPendientes = false;
+		this._consultoEnviados = false;
 		this.consultarAnos();
 		
+		
+		$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+    	  var target = $(e.target).attr("href") // activated tab
+    	  switch(target)
+    	  {
+    	  	case "#pendientes":
+    	  		if(!_this._consultoPendientes)
+    	  			_this.consultar();	
+    		break;
+    	  	case "#enviados":
+    	  		if(!_this._consultoEnviados)
+    	  			_this.consultarProcesosEnviados();	
+    		break;
+			
+    	  }
+    	});
 		//this.consultar();
 		
 		
@@ -91,49 +112,32 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 			this.procedimientosCumplidosTabla.textoTablaVacia = "No hay procesos enviados a revision";
 			this.procedimientosCumplidosTabla.alto = 350;
 			
-			if(this.usuario.tipoUsuarioId == TipoUsuario.USUARIO)
-			{
-				this.procedimientosCumplidosTabla.columnas = [
-					{longitud:200, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I" },
-					{longitud:200, 	titulo:"Fecha",   	alias:"fecha", alineacion:"I" },
-					{longitud:30, 	titulo:"Justificada",   alias:"justificada", alineacion:"I", itemRenderer:this.renderJustificada},
-					{longitud:100, 	titulo:"Comentarios",   alias:"comentarios", alineacion:"I", itemRenderer:this.renderComentarios},
-					//{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"I" },
-					//{longitud:50, 	titulo:"Código",   	alias:"codigo", alineacion:"I" }
-					
-				];
-			}
-			else if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
-			{
-				this.procedimientosCumplidosTabla.columnas = [
-					{longitud:200, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I" },
-					{longitud:200, 	titulo:"Fecha",   	alias:"fecha", alineacion:"I" },
-					{longitud:30, 	titulo:"Justificada",   alias:"justificada", alineacion:"I", itemRenderer:this.renderJustificada},
-					{longitud:100, 	titulo:"Evidencia",   alias:"nombreArchivo", alineacion:"I", itemRenderer:this.renderArchivo},
-					{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoUsuario},
-					{longitud:100, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I"},
-					{longitud:100, 	titulo:"Comentarios",   alias:"comentarios", alineacion:"I", itemRenderer:this.renderComentarios},
-					//{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"I" },
-					//{longitud:50, 	titulo:"Código",   	alias:"codigo", alineacion:"I" }
-					
-				];
-			}
-			else
-			{
-				this.procedimientosCumplidosTabla.columnas = [
-					{longitud:200, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I" },
-					{longitud:200, 	titulo:"Fecha",   	alias:"fecha", alineacion:"I" },
-					{longitud:30, 	titulo:"Justificada",   alias:"justificada", alineacion:"I", itemRenderer:this.renderJustificada},
-					{longitud:100, 	titulo:"Evidencia",   alias:"nombreArchivo", alineacion:"I", itemRenderer:this.renderArchivo},
-					{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoUsuario},
-					{longitud:100, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I"},
-					{longitud:100, 	titulo:"Comentarios",   alias:"comentarios", alineacion:"I", itemRenderer:this.renderComentarios},
-					//{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"I" },
-					//{longitud:50, 	titulo:"Código",   	alias:"codigo", alineacion:"I" }
-					
-					
-				];
-			}
+			this.procedimientosCumplidosTabla.columnas = [
+			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"I" },
+			{longitud:300, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I" },
+			{longitud:200, 	titulo:"Fecha de envío",   	alias:"fecha", alineacion:"I" },
+			{longitud:30, 	titulo:"Tipo solicitud",   alias:"estatusRevisionNombre", alineacion:"C", itemRenderer:this.renderEstatusRevision},
+			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoUsuario},
+			{longitud:100, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I"},
+			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderLogoEmpresa},
+			{longitud:100, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I"},
+			{longitud:30, 	titulo:"Estado de solicitud",   alias:"estatusValidacionNombre", alineacion:"C", itemRenderer:this.renderEstatusValidacion},
+			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoValidador},
+			{longitud:100, 	titulo:"Usuario que validó",   alias:"validadorNombreCompleto", alineacion:"I",itemRenderer:this.renderNombreValidador},
+			{longitud:200, 	titulo:"Fecha de validación",   	alias:"fechaValidacion", alineacion:"I" },
+			
+			//{longitud:100, 	titulo:"Comentarios",   alias:"comentarios", alineacion:"I", itemRenderer:this.renderComentarios},
+			//{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"I" },
+			//{longitud:50, 	titulo:"Código",   	alias:"codigo", alineacion:"I" }
+			
+		];
+		
+		this.procedimientosCumplidosTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderObservacionEnviado});
+	
+		
+//		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
+//									"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+
 //			if(this.usuario.tipoUsuarioId == TipoUsuario.USUARIO)
 //				this.procedimientosCumplidosTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-1 botones-icon btn btn-sm float-left btn-success active'><span  data-toggle='tooltip' class='fas fa-pencil-alt fa-lg'></span></button>";
 		
@@ -168,6 +172,19 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		}
 	    return contenido;
 	}
+	
+	renderObservacionEnviado(renglon, type, set)
+	{    
+		var contenido = "";
+		if(renglon.estatusRevisionId == EstatusRevision.OBSERVACIONES)
+		{
+			var fecha = new Date();
+			if($("#anoSelectCriterio").val() ==fecha.getFullYear() )
+				contenido += "<button data-toggle='tooltip' data-placemen='bottom' title='Observaciones'  type='button' class='observaciones btn-circle mr-0 botones-icon btn btn-sm float-right btn-info active'><span  data-toggle='tooltip' class='fa fa-info-circle fa-lg'></span></button>";
+		}
+	    return contenido;
+	}
+	
 	
 	crearColumnasGrid()
 	{
@@ -398,6 +415,9 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 			anos.push({id:fecha.getFullYear(), nombre:fecha.getFullYear()})
 			
 		}
+		this.cargarOpciones('#anoSelectCriterioPendiente', anos);
+		$("#anoSelectCriterioPendiente").val(fecha.getFullYear());
+		
 		this.cargarOpciones('#anoSelectCriterio', anos);
 		
 		$("#mesSelectCriterio").val(fecha.getMonth()+1);
@@ -456,13 +476,15 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		//this.cargarOpciones('#administradorSelectCriterio', registros,"nombreCompleto");
 		this.cargarOpciones('#administradorSelectCriterio', registros, null, null, null, null,  "nombreCompleto");
 		$("#administradorSelectCriterio").val(this.usuario.id);
-		if(this.consultoGrid==false)
-		{
-			this.consultar();
-			this.consultoGrid=true;
-		}
+		this.consultarEstatusValidacionProcesos();
+		
 	}
 
+	consultarProcesosEnviados()
+	{
+		this._consultoEnviados = true;
+		this.presentador.consultarProcesosEnviados();
+	}
 	
 	
 	set empresasCriterio(registros)
@@ -650,11 +672,10 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 			$("#validarJustificadasButton").attr("disabled",false);
 	}
 	
-	inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave)
+	inicializarEventosBotonesTablaEnviados(tbody, table, nombresCamposLlave)
 	{
 		var _this = this;
-		super.inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave);
-		$(tbody).on("click", "span.archivo", function()
+		$(tbody).on("click", "button.observaciones", function()
 		{			
 			 var tr = $(this).closest('tr');
 			    
@@ -662,22 +683,13 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		      tr = $(tr).prev();  
 		    }
 
-			_this._evidenciaSeleccionada  = table.row( tr ).data();
+			_this._procesoSeleccionado  = table.row( tr ).data();
 			
 			
-			if (_this._evidenciaSeleccionada != undefined)
+			if (_this._procesoSeleccionado != undefined)
 			{
-				_this._llaves = _this.copiarPropiedadesObjeto(_this._evidenciaSeleccionada, ["id"]);
-				if(_this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR)
-				{
-					_this.mostrarFormularioValidacionEvidencia();
-				}
-				/*else if(_this.usuario.tipoUsuarioId==TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId==TipoUsuario.SUPERVISOR)
-				{
-					_this.modo = Modo.CONSULTA
-					_this.mostrarFormularioEvidencia(_this._evidenciaSeleccionada);
-				}*/
-			
+					_this._llavesProceso = _this.copiarPropiedadesObjeto(_this._procesoSeleccionado, ["id"]);
+					_this.mostrarFormularioRevision();
 			}
 		});
 		
@@ -1549,8 +1561,8 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/procesos_revisados_observaciones.php",this, null, function()
 		{
 			//this.inicializarValidacionesFormularioAvance();
-			this.crearTablaObservaciones();
-			
+			this.crearTablaObservaciones(true);
+			$("#guardarObservacionesButton").fadeIn();
 			$("#procesoLabel").html(usuarioProceso.nombre);
 			//_this._archivosAvance = [];
 			_this._observaciones = [];
@@ -1636,23 +1648,37 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 	guardarObservacion()
 	{	
 		var observacion = this.modeloObservacion;
-		if(this.modoObservacion==Modo.ALTA)
+		if(this.modo==Modo.CAMBIO)
 		{
-			if(this._observaciones==null)
-				this._observaciones =[];
-			
-			this._observaciones.push(observacion);
+			//$("#observacionModal").modal("hide");
+			this.guardarObservacionNueva(observacion);
 		}
 		else
 		{
-			this._observacionSeleccionada.tipoObservacionId = observacion.tipoObservacionId;
-			this._observacionSeleccionada.tipoObservacionNombre = observacion.tipoObservacionNombre;
-			this._observacionSeleccionada.seccion = observacion.seccion;
-			this._observacionSeleccionada.descripcion = observacion.descripcion;
+			if(this.modoObservacion==Modo.ALTA)
+			{
+				if(this._observaciones==null)
+					this._observaciones =[];
+					
+				observacion.fechaAlta =  moment().format("DD/MM/YYYY hh:mm:ss");
+				this._observaciones.push(observacion);
+			}
+			else
+			{
+				this._observacionSeleccionada.tipoObservacionId = observacion.tipoObservacionId;
+				this._observacionSeleccionada.tipoObservacionNombre = observacion.tipoObservacionNombre;
+				this._observacionSeleccionada.seccion = observacion.seccion;
+				this._observacionSeleccionada.descripcion = observacion.descripcion;
+			}
+			this.observacionesTabla.registros = this._observaciones;
+			this.inicializarEventosBotonesTablaObservaciones("#" + this.observacionesTabla._id+"Table tbody",this.observacionesTabla.datatable.DataTable(),["id"]);
+			$("#observacionModal").modal("hide");
 		}
-		this.observacionesTabla.registros = this._observaciones;
-		this.inicializarEventosBotonesTablaObservaciones("#" + this.observacionesTabla._id+"Table tbody",this.observacionesTabla.datatable.DataTable(),["id"]);
-		$("#observacionModal").modal("hide");
+	}
+	
+	guardarObservacionNueva(observacion)
+	{
+		this.presentador.guardarObservacionNueva(observacion);
 	}
 	
 	inicializarEventosBotonesTablaObservaciones(tbody, table, nombresCamposLlave)
@@ -1670,8 +1696,6 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 			if (_this._observacionSeleccionada != undefined)
 			{
 				_this.mostrarObservacion(Modo.CAMBIO, _this._usuarioProcesoSeleccionado, _this._observacionSeleccionada)
-				//usuarioProceso.usuarioProcedimientoId = usuarioProceso.id;
-				//_this.mostrarFormularioObservaciones(usuarioProceso);
 			
 			}
 		});
@@ -1898,7 +1922,7 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		}
 	}
 	
-	crearTablaObservaciones()
+	crearTablaObservaciones(editar)
 	{
 		this.observacionesTabla = new Tabla("observacionesTabla");
 		this.observacionesTabla.alto = 250;
@@ -1907,12 +1931,13 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		this.observacionesTabla.columnas = [
 			{longitud:100, 	titulo:"Tipo",   alias:"tipoObservacionNombre", alineacion:"I"},
 			{longitud:200, 	titulo:"Sección",   alias:"seccion", alineacion:"I"},
+			{longitud:200, 	titulo:"Fecha",   alias:"fechaAlta", alineacion:"I"},
 			{longitud:300, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I"},
 			//{longitud:100, 	titulo:"",   alias:"tamano", alineacion:"C",itemRenderer:this.renderTamanoArchivo},
 			//{longitud:100, 	titulo:"",   alias:"subido", alineacion:"C",itemRenderer:this.renderSubido}
 		
 		]
-		//if(this.modoAvance != Modo.CONSULTA)
+		if(editar)
 			this.observacionesTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-1 botones-icon btn btn-sm float-left btn-success active'><span  data-toggle='tooltip' class='fas fa-pencil-alt fa-lg'></span></button>"+
 													"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
@@ -1930,6 +1955,120 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 	{		
 		//this.cargarOpciones('#tipoObservacionSelect', registros);
 		this.cargarOpciones('#tipoObservacionSelect', registros, this.modoObservacion, this._observacionSeleccionada, 'tipoObservacionId',"");
+	}
+	
+	set procesosEnviados(procesosEnviados)
+	{
+		this.procedimientosCumplidosTabla.registros = procesosEnviados;
+		this.inicializarEventosBotonesTablaEnviados("#" + this.procedimientosCumplidosTabla._id+"Table tbody",this.procedimientosCumplidosTabla.datatable.DataTable(),["id"]);
+
+	}
+	
+	renderEstatusValidacion(renglon, type, set)
+	{    
+		return "<div id='estatusValidacionTabla"+renglon.id+"'>" + vista.getEstatusValidacion(renglon) + "</div>";
+	}
+	
+	
+	renderEstatusRevision(renglon, type, set)
+	{    
+		return "<div id='estatusRevisionTabla"+renglon.id+"'>" + vista.getEstatusRevision(renglon) + "</div>";
+	}
+	
+	getEstatusValidacion(renglon)
+	{
+		var contenido ="";
+		if(renglon.estatusValidacionId!=0)
+		{
+			contenido += "<center><span data-toggle='tooltip' data-placemen='bottom' title='"+renglon.estatusValidacionDescripcion+"'  class='"+renglon.estatusValidacionIcono+" fa-lg "+renglon.estatusValidacionColor+"' ></span></center>";
+		
+		}
+		return contenido;
+	}
+	
+	getEstatusRevision(renglon)
+	{
+		var contenido ="";
+		if(renglon.estatusRevisionId!=0)
+		{
+			contenido += "<center><span data-toggle='tooltip' data-placemen='bottom' title='"+renglon.estatusRevisionDescripcion+"'  class='"+renglon.estatusRevisionIcono+" fa-lg "+renglon.estatusRevisionColor+"' ></span></center>";
+		
+		}
+		return contenido;
+	}
+	
+	consultarEstatusValidacionProcesos()
+	{
+		this.presentador.consultarEstatusValidacionProcesos();
+	}	
+	
+	set estatusValidacionProcesos(registros)
+	{
+		ArrayUtils.removeWithValues("id",[EstatusValidacionProceso.PENDIENTE], registros);
+		this.cargarOpciones('#estadoValidacionSelectCriterio', registros);
+		//$("#estadoValidacionSelectCriterio").val(EstatusValidacionProceso.EN_PROCESO_DE_ANALISIS);
+		if(!this._consultoPendientes)
+		{
+			this.consultarProcesosPendientes();
+			//this.consultarProcesosEnviados();
+			
+		}
+	}
+	
+	consultarProcesosPendientes()
+	{
+		this._consultoPendientes=true;
+		this.consultar();	
+	}
+	
+	mostrarFormularioRevision()
+	{
+		var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/procesos_revisados_observaciones.php",this, null, function()
+		{
+			//this.inicializarValidacionesFormularioValidacion();
+			_this.modo = Modo.CAMBIO;
+			$("#procesoLabel").html(_this._procesoSeleccionado.nombre);
+			this.crearTablaObservaciones(false);
+			//this.crearEventosBotonesValidacion();
+			this.consultarProcesoRevisadoPorLlaves();
+			
+			$("#agregarObservacionButton").click(function(){_this.mostrarObservacion(Modo.ALTA,_this._procesoSeleccionado);});
+			
+		},null,"observacionesModal","","guardarObservacionesButton",function()
+		{
+			$("#formularioValidacion").submit();
+		});
+	}
+	
+	
+	consultarProcesoRevisadoPorLlaves()
+	{
+		this.presentador.consultarProcesoRevisadoPorLlaves();
+	}
+	
+	set modeloProceso(modeloProceso)
+	{
+		this._modeloProceso = modeloProceso;
+		$("#estatusValidacionIcono").attr("class","");
+		$("#estatusValidacionIcono").addClass(this._modeloProceso.estatusValidacionIcono);
+		$("#estatusValidacionIcono").addClass(this._modeloProceso.estatusValidacionColor);
+		$("#estatusValidacionLabel").html(this._modeloProceso.estatusValidacionNombre);
+		
+		this._procesoSeleccionado.estatusValidacionIcono = this._modeloProceso.estatusValidacionIcono;
+		this._procesoSeleccionado.estatusValidacionColor = this._modeloProceso.estatusValidacionColor;
+		this._procesoSeleccionado.estatusValidacionDescripcion = this._modeloProceso.estatusValidacionDescripcion;
+		
+	}
+	
+	set observaciones(observaciones)
+	{
+		this.observacionesTabla.registros = observaciones;
+	}
+	
+	get llavesProceso()
+	{
+		return this._llavesProceso;	
 	}
 	
 }

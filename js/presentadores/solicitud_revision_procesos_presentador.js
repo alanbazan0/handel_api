@@ -275,7 +275,88 @@ class SolicitudRevisionProcesosPresentador extends CatalogoPresentador
 		});
 	 }
 	 
-	 
+	 consultarProcesosEnviados()
+	{
+		 this.vista.mostrarIndicador();
+		 var repositorio = new ProcesosRevisadosRepositorio(this);		
+		 repositorio.consultarProcesosEnviados(this,function(resultado)
+		{
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.procesosEnviados = resultado.valor;
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		}
+		,this.vista.criteriosSeleccion);
+	}
 	
+	consultarEstatusValidacionProcesos()
+	 {
+		 this.vista.mostrarIndicador();
+		 var repositorio = new EstatusValidacionProcesosRepositorio(this);		
+		 repositorio.consultar(this,function(resultado)
+		 {
+			 this.vista.ocultarIndicador();	
+				if(resultado.mensajeError=="")
+					this.vista.estatusValidacionProcesos = resultado.valor;
+				else
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },{},true);
+	 }
+
+ 	consultarProcesoRevisadoPorLlaves()
+	{
+		this.vista.mostrarIndicador();	
+		 this._repositorio.consultarPorLlaves(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.modeloProceso = resultado.valor;
+				 this.consultarObservaciones();
+			 }
+			 else
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError, resultado.codigoError);
+		 },this.vista.llavesProceso);
+	}
+	
+	consultarObservaciones()
+	 {
+		 this.vista.mostrarIndicador();
+		var repositorio = new ProcesosRevisadosObservacionesRepositorio();
+		 repositorio.consultar(this,function(resultado)
+		 {
+			 this.vista.ocultarIndicador();	
+				if(resultado.mensajeError=="")
+					this.vista.observaciones = resultado.valor;
+				else
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },{procesoRevisadoId: this.vista._procesoSeleccionado.id});
+	 }
+	
+	 
+ 	guardarObservacionNueva(observacion)
+	 {
+		 this.vista.mostrarIndicador();	
+		 observacion.procesoRevisadoId = this.vista._procesoSeleccionado.id;
+		var repositorio = new ProcesosRevisadosObservacionesRepositorio();
+		 repositorio.insertar(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 //this.vista.cerrarConfirmacionEliminar();
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.cerrarModal("observacionModal");
+				 this.vista.mostrarMensaje("Notificación","Guardado.");
+				 this.consultarObservaciones();
+				 //this.vista.eliminarProceso(usuarioProceso);
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
+			 }
+		 },observacion);
+	 }
+
 	 
 }

@@ -25,5 +25,10 @@ class EstatusValidacionProceso
 		return  5;
 	}
 	
+	static get RESPONDIO()
+	{
+		return  6;
+	}
+	
 	
 }

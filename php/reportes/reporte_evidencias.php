@@ -562,7 +562,7 @@ class PDF extends ReporteBase
         }
         else 
         {
-            $chartWidth = 115;
+            $chartWidth = 100;
             $resultado = $repositorio->consultarPorcentajesEvidencias($this->usuario, $criteriosSeleccion);
             if($resultado->correcto())
             {

@@ -6,7 +6,7 @@
     header('Content-Type: text/html; charset=utf-8');
     header('Access-Control-Allow-Credentials: true');
 ?>
-<div class="modal fade" id="observacionesModal" tabindex="-1" role="dialog" aria-labelledby="scrollmodalLabel" aria-hidden="true">
+<div class="modal fade" id="procesoModal" tabindex="-1" role="dialog" aria-labelledby="scrollmodalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-lg" role="document" style='max-width: 85%;'> 
 		<div class="modal-content">
 			<div class="modal-header">
@@ -23,6 +23,9 @@
 							<span id="procesoLabel" class="" style='display:block;font-size:13px;'></span>
 						</div>
 					</div>
+					<div>
+					
+					</div>
     					
 					<div >
     					<div class="form-group">
@@ -31,7 +34,6 @@
         							<div id='archivosProgress' class="progress" style='display:none'>
                                       <div id='archivosProgressBar' class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
                                     </div>
-        							<button id='agregarObservacionButton' type="button" class='btn btn-primary pull-right'><i class='fas fa-plus'></i> Agregar</button>
                                    
         						</div>
         					</div>
@@ -41,7 +43,10 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-				<button id="guardarObservacionesButton" type="submit" style="display:none" class="btn btn-primary" >Guardar</button>
+				<button id="verificacionButton"  class='btn btn-warning float-right'><i class='far fa-pause-circle'></i> En verificación</button>
+					<button id="autorizadoButton"   class='btn btn-success float-right'><i class='far fa-check-circle'></i> Autorizado</button>
+					<button id="rechazadoButton"  class='btn btn-danger float-right'><i class='far fa-times-circle'></i> Rechazado</button>
+					<button id="respondioButton"   class='btn btn-primary float-right'><i class='far fa-smile-wink'></i> Respondió</button>
 			</div>
 		</div>
 	</div>

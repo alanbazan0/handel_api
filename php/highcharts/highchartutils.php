@@ -2,11 +2,17 @@
 use php\clases\Logger;
 require_once("../clases/Logger.php");
 //const EXPORT_HIGHCHARTS_SERVER= "http://13.57.25.243:8080/";
-//const EXPORT_HIGHCHARTS_SERVER= "https://export.apps-handel.com/";
 //const EXPORT_HIGHCHARTS_SERVER= "http://export.apps-handel.com:8080/";
 //const EXPORT_HIGHCHARTS_SERVER= "https://export.apps-handel.com/";
 //const EXPORT_HIGHCHARTS_SERVER = "https://export.highcharts.com/";
-const EXPORT_HIGHCHARTS_SERVER = "http://export.highcharts.com/";
+
+
+//FUNCIONAN:
+//const EXPORT_HIGHCHARTS_SERVER = "http://export.highcharts.com/";
+const EXPORT_HIGHCHARTS_SERVER= "http://export.apps-handel.com:8080/";
+
+const SERVERS =  array("http://export.highcharts.com/", 
+                    "http://export.apps-handel.com:8080"); 
 
 
 function getHighchartsOptions($highchart)
@@ -35,24 +41,34 @@ function getHighchartsOptions($highchart)
 
 function getHightchartsURL($highchart)
 {
-    $options = getHighchartsOptions($highchart);
-    
-    $url = EXPORT_HIGHCHARTS_SERVER;
-    
-    $context  = stream_context_create( $options );
-    
-    $result = file_get_contents( $url, false, $context );
-    
     $charturl='';
-    if ($result === FALSE)
+    try 
     {
+        $options = getHighchartsOptions($highchart);
         
-    }
-    else
+        $url = EXPORT_HIGHCHARTS_SERVER;
+        
+        $context  = stream_context_create( $options );
+        
+        $result = file_get_contents( $url, false, $context );
+        
+       
+        if ($result === FALSE)
+        {
+            
+        }
+        else
+        {
+            $charturl = $url . $result;
+        }
+        Logger::log("highcharts",$charturl);
+        
+    } 
+    catch (Exception $e)
     {
-        $charturl = $url . $result;
+        echo "error";
+        Logger::log("highcharts",$e->getMessage());
     }
-    Logger::log("highcharts",$charturl);
     return $charturl;
 }
 

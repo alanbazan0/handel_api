@@ -234,6 +234,9 @@ class Tabla
 				columnDefs: this.definicionColumnasDataTable,
 				fixedColumns: this._ajustarColumnas,
 			    "language": {	         	 
+				 	select: {
+				            rows: "%d registros seleccionados"
+				        },
 					"sProcessing":     "Procesando...",
 					"sLengthMenu":     "Mostrar _MENU_ registros",
 					"sZeroRecords":    this._textoSinRegistros,

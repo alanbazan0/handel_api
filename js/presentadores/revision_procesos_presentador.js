@@ -219,5 +219,35 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		 },{},true);
 	 }
+
+	consultarProcesoRevisadoPorLlaves()
+	{
+		this.vista.mostrarIndicador();	
+		 this._repositorio.consultarPorLlaves(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.modeloProceso = resultado.valor;
+				 this.consultarObservaciones();
+			 }
+			 else
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError, resultado.codigoError);
+		 },this.vista.llavesProceso);
+	}
+	
+	consultarObservaciones()
+	 {
+		 this.vista.mostrarIndicador();
+		var repositorio = new ProcesosRevisadosObservacionesRepositorio();
+		 repositorio.consultar(this,function(resultado)
+		 {
+			 this.vista.ocultarIndicador();	
+				if(resultado.mensajeError=="")
+					this.vista.observaciones = resultado.valor;
+				else
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },{procesoRevisadoId: this.vista._procesoSeleccionado.id});
+	 }
 	 
 }

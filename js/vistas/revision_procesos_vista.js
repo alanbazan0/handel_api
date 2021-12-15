@@ -24,6 +24,10 @@ class RevisionProcesosVista extends CatalogoVista
 
 		var _this = this;
 		$("#consultarButton").click(function(){
+			_this.consultarProcesosEnviados();
+		});
+		
+		$("#consultarButtonPendiente").click(function(){
 			_this.consultar();
 		});
 		
@@ -48,7 +52,8 @@ class RevisionProcesosVista extends CatalogoVista
 			{longitud:300, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I" },
 			//{longitud:200, 	titulo:"Código",   	alias:"codigo", alineacion:"I" },
 			{longitud:200, 	titulo:"Fecha",   	alias:"fecha", alineacion:"I" },
-			{longitud:30, 	titulo:"Estado de solicitud",   alias:"estatusValidacionNombre", alineacion:"C", itemRenderer:this.renderEstusValidacion},
+			{longitud:30, 	titulo:"Tipo solicitud",   alias:"estatusRevisionNombre", alineacion:"C", itemRenderer:this.renderEstatusRevision},
+			{longitud:30, 	titulo:"Estado de solicitud",   alias:"estatusValidacionNombre", alineacion:"C", itemRenderer:this.renderEstatusValidacion},
 			//{longitud:100, 	titulo:"Evidencia",   alias:"nombreArchivo", alineacion:"C", itemRenderer:this.renderArchivo},
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoUsuario},
 			{longitud:100, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I"},
@@ -59,18 +64,34 @@ class RevisionProcesosVista extends CatalogoVista
 			//	{longitud:100, 	titulo:"Administrador responsable",   alias:"administradorNombreCompleto", alineacion:"I",itemRenderer:this.renderNombreAdministrador},
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoValidador},
 			{longitud:100, 	titulo:"Usuario que validó",   alias:"validadorNombreCompleto", alineacion:"I",itemRenderer:this.renderNombreValidador},
+			
 			//{longitud:100, 	titulo:"Comentarios",   alias:"comentarios", alineacion:"I", itemRenderer:this.renderComentarios},
 			//{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"I" },
 			//{longitud:50, 	titulo:"Código",   	alias:"codigo", alineacion:"I" }
 			
 		];
 		
+		this.tabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderRevisar});
+	
 		
 //		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
 //									"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
 		this.tabla.registros = [];
 	}
+	
+	renderRevisar(renglon, type, set)
+	{    
+		var contenido = "";
+		if(renglon.usuarioId == vista.usuario.id)
+		{
+			var fecha = new Date();
+			if($("#anoSelectCriterio").val() ==fecha.getFullYear() )
+				contenido += "<button data-toggle='tooltip' data-placemen='bottom' title='Revisar'  type='button' class='revisar btn-circle mr-0 botones-icon btn btn-sm float-right btn-success'><span  data-toggle='tooltip' class='fa fa-check fa-lg'></span></button>";
+		}
+	    return contenido;
+	}
+	
 	
 	renderFotoAdministrador(renglon, type, set)
 	{    
@@ -128,10 +149,17 @@ class RevisionProcesosVista extends CatalogoVista
 	    return contenido;
 	}
 	
-	renderEstusValidacion(renglon, type, set)
+	renderEstatusValidacion(renglon, type, set)
 	{    
 		return "<div id='estatusValidacionTabla"+renglon.id+"'>" + vista.getEstatusValidacion(renglon) + "</div>";
 	}
+	
+	
+	renderEstatusRevision(renglon, type, set)
+	{    
+		return "<div id='estatusRevisionTabla"+renglon.id+"'>" + vista.getEstatusRevision(renglon) + "</div>";
+	}
+	
 	
 	/*renderComentarios(renglon, type, set)
 	{    
@@ -330,9 +358,9 @@ class RevisionProcesosVista extends CatalogoVista
 	
 	set administradoresCriterio(registros)
 	{
-		//this.cargarOpciones('#administradorSelectCriterio', registros,"nombreCompleto");
 		this.cargarOpciones('#administradorSelectCriterio', registros, null, null, null, null,  "nombreCompleto");
-		$("#administradorSelectCriterio").val(this.usuario.id);
+		//TODO: descomentar
+		//$("#administradorSelectCriterio").val(this.usuario.id);
 		this.consultarEstatusValidacionProcesos();
 		
 	}
@@ -543,7 +571,7 @@ class RevisionProcesosVista extends CatalogoVista
 	{
 		var _this = this;
 		super.inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave);
-		$(tbody).on("click", "span.archivo", function()
+		$(tbody).on("click", "button.revisar", function()
 		{			
 			 var tr = $(this).closest('tr');
 			    
@@ -551,15 +579,16 @@ class RevisionProcesosVista extends CatalogoVista
 		      tr = $(tr).prev();  
 		    }
 
-			_this._evidenciaSeleccionada  = table.row( tr ).data();
+			_this._procesoSeleccionado  = table.row( tr ).data();
 			
 			
-			if (_this._evidenciaSeleccionada != undefined)
+			if (_this._procesoSeleccionado != undefined)
 			{
-				_this._llaves = _this.copiarPropiedadesObjeto(_this._evidenciaSeleccionada, ["id"]);
+				//_this._llaves = _this.copiarPropiedadesObjeto(_this._procesoSeleccionado, ["id"]);
 				if(_this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR)
 				{
-					_this.mostrarFormularioValidacionEvidencia();
+					_this._llavesProceso = _this.copiarPropiedadesObjeto(_this._procesoSeleccionado, ["id"]);
+					_this.mostrarFormularioRevision();
 				}
 				/*else if(_this.usuario.tipoUsuarioId==TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId==TipoUsuario.SUPERVISOR)
 				{
@@ -586,6 +615,39 @@ class RevisionProcesosVista extends CatalogoVista
 
 				}
 			});
+	}
+	
+	get llavesProceso()
+	{
+		return this._llavesProceso;	
+	}
+	
+	mostrarFormularioRevision()
+	{
+		var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/proceso_revisado_validacion.php",this, null, function()
+		{
+			//this.inicializarValidacionesFormularioValidacion();
+			$("#procesoLabel").html(_this._procesoSeleccionado.nombre);
+			this.crearTablaObservaciones();
+			this.crearEventosBotonesValidacion();
+			this.consultarProcesoRevisadoPorLlaves();
+			
+		},null,"procesoModal","","guardarValidacionButton", function()
+		{
+			$("#formularioValidacion").submit();
+		});
+	}
+	
+	crearEventosBotonesValidacion()
+	{
+		//this.guardarObservaciones(this._observaciones);
+	}
+	
+	
+	validarObservaciones(observaciones, estatusValidacionId)
+	{
+		this.presentador.validarObservaciones(observaciones, estatusValidacionId);
 	}
 	
 	
@@ -639,6 +701,12 @@ class RevisionProcesosVista extends CatalogoVista
 			$("#modalAlta").modal({backdrop: 'static', keyboard: false});
 		}
 	}
+	
+	consultarProcesoRevisadoPorLlaves()
+	{
+		this.presentador.consultarProcesoRevisadoPorLlaves();
+	}
+	 
 	
 	
 	enviarComentarioEvidencia()
@@ -1282,11 +1350,23 @@ class RevisionProcesosVista extends CatalogoVista
 		var contenido ="";
 		if(renglon.estatusValidacionId!=0)
 		{
-			contenido += "<center><span data-toggle='tooltip' data-placemen='bottom' title='"+renglon.estatusValidacionNombre+"'  class='"+renglon.estatusValidacionIcono+" fa-lg "+renglon.estatusValidacionColor+"' ></span></center>";
+			contenido += "<center><span data-toggle='tooltip' data-placemen='bottom' title='"+renglon.estatusValidacionDescripcion+"'  class='"+renglon.estatusValidacionIcono+" fa-lg "+renglon.estatusValidacionColor+"' ></span></center>";
 		
 		}
 		return contenido;
 	}
+	
+	getEstatusRevision(renglon)
+	{
+		var contenido ="";
+		if(renglon.estatusRevisionId!=0)
+		{
+			contenido += "<center><span data-toggle='tooltip' data-placemen='bottom' title='"+renglon.estatusRevisionDescripcion+"'  class='"+renglon.estatusRevisionIcono+" fa-lg "+renglon.estatusRevisionColor+"' ></span></center>";
+		
+		}
+		return contenido;
+	}
+	
 	
 	
 	getArchivoEvidencia(modelo)
@@ -1338,39 +1418,52 @@ class RevisionProcesosVista extends CatalogoVista
 		return o;
 	}
 	
-	showPDF(pdf_url) 
+	
+	set modeloProceso(modeloProceso)
 	{
-		var _this = this;
-		$("#pdf-loader").show();
-
-		PDFJS.getDocument({ url: pdf_url }).then(function(pdf_doc) 
-		{
-			_this.__PDF_DOC = pdf_doc;
-			_this.__TOTAL_PAGES = _this.__PDF_DOC.numPages;
-			
-			$("#pdf").show();
-			
-			// Hide the pdf loader and show pdf container in HTML
-			$("#pdf-loader").hide();
-			$("#pdf-contents").show();
-			$("#pdf-total-pages").text(_this.__TOTAL_PAGES);
-
-			// Show the first page
-			_this.showPage(1);
-		}).catch(function(error) {
-			// If error re-show the upload button
-			$("#pdf-loader").hide();
-			$("#upload-button").show();
-			
-			$("#pdf").hide();
-			
-			 $('#evidenciaImage').show();
-			 $('#evidenciaImage').attr('src',HANDEL_API + "/images/tipos_archivo/pdf.png");
-			
-			_this.mostrarMensajeError("Error",error.message);
-		});;
+		this._modeloProceso = modeloProceso;
+		$("#estatusValidacionIcono").attr("class","");
+		$("#estatusValidacionIcono").addClass(this._modeloProceso.estatusValidacionIcono);
+		$("#estatusValidacionIcono").addClass(this._modeloProceso.estatusValidacionColor);
+		$("#estatusValidacionLabel").html(this._modeloProceso.estatusValidacionNombre);
+		
+		this._procesoSeleccionado.estatusValidacionIcono = this._modeloProceso.estatusValidacionIcono;
+		this._procesoSeleccionado.estatusValidacionColor = this._modeloProceso.estatusValidacionColor;
+		this._procesoSeleccionado.estatusValidacionDescripcion = this._modeloProceso.estatusValidacionDescripcion;
+		
 	}
 	
+	set observaciones(observaciones)
+	{
+		this.observacionesTabla.registros = observaciones;
+	}
+	
+	crearTablaObservaciones()
+	{
+		this.observacionesTabla = new Tabla("observacionesTabla");
+		this.observacionesTabla.alto = 250;
+		this.observacionesTabla.buscar = false;
+		this.observacionesTabla.paginacion = false;
+		this.observacionesTabla.columnas = [
+			{longitud:100, 	titulo:"Tipo",   alias:"tipoObservacionNombre", alineacion:"I"},
+			{longitud:200, 	titulo:"Sección",   alias:"seccion", alineacion:"I"},
+			{longitud:300, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I"},
+			//{longitud:100, 	titulo:"",   alias:"tamano", alineacion:"C",itemRenderer:this.renderTamanoArchivo},
+			//{longitud:100, 	titulo:"",   alias:"subido", alineacion:"C",itemRenderer:this.renderSubido}
+		
+		]
+/*			this.observacionesTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-1 botones-icon btn btn-sm float-left btn-success active'><span  data-toggle='tooltip' class='fas fa-pencil-alt fa-lg'></span></button>"+
+													"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+*/
+	
+		
+		this.observacionesTabla.textoTablaVacia = "No hay observaciones";
+		this.observacionesTabla.textoSinRegistros= "No hay observaciones";
+		this.observacionesTabla.registros = [];
+		
+		
+		
+	}
 	
 	
 }

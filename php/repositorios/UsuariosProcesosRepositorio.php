@@ -29,6 +29,33 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                                     LEFT JOIN areas A ON A.id = U.area_id
                                     LEFT JOIN departamentos D ON D.id = U.departamento_id
                                     INNER JOIN tipos_usuario TU ON TU.id = U.tipo_usuario_id ";
+        
+        $this->consultaBasePendientesRevisados = "SELECT * FROM(SELECT UP.id usuario_proceso_id,U.empresa_id,EM.nombre, U.sede_id, S.nombre, usuario_id ,U.nombre,U.apellido,
+                                                proceso_id, P.nombre, IFNULL(DATE_FORMAT(UP.fecha_alta,'%d/%m/%Y'),'')fecha_alta,IFNULL(DATE_FORMAT(UP.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,P.ruta_archivo,
+                                                null  
+                                                FROM usuarios_procesos UP
+                                                	LEFT JOIN usuarios U ON U.id = UP.usuario_id
+                                                	LEFT JOIN sedes S ON S.id = U.sede_id
+                                                	LEFT JOIN empresas EM ON U.empresa_id = EM.id
+                                                	LEFT JOIN procesos P ON P.id = UP.proceso_id
+                                                	LEFT JOIN areas A ON A.id = U.area_id
+                                                	LEFT JOIN departamentos D ON D.id = U.departamento_id
+                                                	INNER JOIN tipos_usuario TU ON TU.id = U.tipo_usuario_id 
+                                                UNION    
+                                SELECT usuario_proceso_id, U.empresa_id, EM.nombre, U.sede_id, S.nombre, U.id, U.nombre, U.apellido , 
+                                P.id, P.nombre, IFNULL(DATE_FORMAT(E.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha,IFNULL(DATE_FORMAT(E.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha, P.ruta_archivo,
+                                E.estatus_revision_id
+                                FROM procesos_revisados E
+                                	INNER JOIN  usuarios_procesos UP ON UP.id = E.usuario_proceso_id
+                                	INNER JOIN usuarios U ON U.id = UP.usuario_id
+                                	LEFT JOIN sedes S ON S.id = U.sede_id
+                                	LEFT JOIN empresas EM ON EM.id = S.empresa_id
+                                	INNER JOIN procesos P ON P.id = UP.proceso_id
+                                	LEFT JOIN usuarios V ON V.id = EM.administrador_id
+                                	LEFT JOIN usuarios VL ON VL.id = E.validacion_usuario_id
+                                    INNER JOIN estatus_validacion_procesos EV ON E.estatus_validacion_id = EV.id
+                                    INNER JOIN estatus_revision ER ON ER.id = E.estatus_revision_id
+                                )A";
     }
 
     public function insertar(UsuarioProceso $modelo)
@@ -396,6 +423,72 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
             $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
+    
+    public function consultarProcesosUsuarios($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        
+        $filtros = array();
+        
+        
+        
+        $procesosRepositorio = new ProcesosRepositorio($this->conexion);
+        $filtros = $procesosRepositorio->getFiltrosN($usuario,$criteriosSeleccion,false);
+        $and = $this->and($filtros);
+        
+        
+        $primerDiaAno = "$criteriosSeleccion->ano-1-1";
+        // $ultimoDiaMes = date("Y-m-t", strtotime($primerDiaMes));
+        $ultimoDiaAno = "$criteriosSeleccion->ano-12-31";
+        
+        $consulta = $this->consultaBase .
+        " WHERE UP.estatus = 1
+                AND U.estatus = 1
+                AND S.estatus = 1
+                AND EM.estatus = 1
+                AND A.estatus = 1
+                AND D.estatus = 1
+                AND U.permiso_saha = 1
+                AND P.estatus = 1
+                AND UP.estatus = 1
+                AND UP.id NOT IN(SELECT usuario_proceso_id FROM procesos_revisados E WHERE YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " ";
+        
+       
+            $consulta.=" ORDER BY FIELD(U.id,$usuario->id) DESC,U.nombre, P.nombre";
+            
+            
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($this->bind_param($sentencia, $filtros))
+                {
+                    if($sentencia->execute())
+                    {
+                        if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion, $rutaArchivo ))
+                        {
+                            while($sentencia->fetch())
+                            {
+                                $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion,$rutaArchivo );
+                                array_push($registros,$registro);
+                            }
+                            $resultado->valor = $registros;
+                        }
+                        else
+                            $resultado->mensajeError = 'Falló el enlace del resultado.';
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = 'Falló el enlace de parámetros';
+            }
+            else
+                $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                return $resultado;
+    }
+    
     
    
     

@@ -98,13 +98,13 @@ try
                     $llaves = json_decode(REQUEST('llaves'));
                     $resultado = $repositorio->eliminar($llaves);
                 break;
-                case 'consultarEvidenciasCumplidas':
+                case 'consultarProcesosEnviados':
     //                 session_start();
     //                 $usuario = null;
     //                 if(isset($_SESSION['usuario']))
     //                     $usuario = $_SESSION['usuario'];
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                    $resultado = $repositorio->consultarEvidenciasCumplidas($usuario,$criteriosSeleccion);
+                    $resultado = $repositorio->consultarProcesosEnviados($usuario,$criteriosSeleccion);
                 break;
                 case 'consultarEvidenciasJustificacion':
     //                 session_start();
@@ -207,6 +207,7 @@ try
                         
                     }
                     break;
+                 
                 default:
                     $resultado->mensajeError = 'Acción no implementada';
                 break;

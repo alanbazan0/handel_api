@@ -169,13 +169,13 @@ class ProcesosRevisadosRepositorio extends Repositorio
 	   });
 	}
 	
-	consultarEvidenciasCumplidas(contexto,funcion, criteriosSeleccion)
+	consultarProcesosEnviados(contexto,funcion, criteriosSeleccion)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;
 		   $.ajax({
 	       url: url,
 	       type: 'POST',
-	       data: {accion : "consultarEvidenciasCumplidas",criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
+	       data: {accion : "consultarProcesosEnviados",criteriosSeleccion:JSON.stringify(criteriosSeleccion)},
 	       success: function( data, textStatus, jQxhr )
 	       {
 	           funcion.call(contexto,data);
