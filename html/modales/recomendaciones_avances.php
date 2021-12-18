@@ -25,7 +25,9 @@
 							</div>
 					</div>
 					<div class="form-group">
+					
     						<div>
+    							
     							<i id='estatusValidacionIcono'></i>
     							<label id="estatusValidacionLabel" class="mb-2 " style='font-size:13px;'></label>
 							</div>

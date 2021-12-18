@@ -207,7 +207,11 @@ try
                         
                     }
                     break;
-                 
+                case 'actualizarEstatusValidacionProceso':
+                    $procesoRevisadoId = REQUEST('procesoRevisadoId');
+                    $estatusValidacionId = REQUEST('estatusValidacionId');
+                    $resultado = $repositorio->actualizarEstatusValidacionProceso($usuario,$procesoRevisadoId,$estatusValidacionId);
+                break;
                 default:
                     $resultado->mensajeError = 'Acción no implementada';
                 break;

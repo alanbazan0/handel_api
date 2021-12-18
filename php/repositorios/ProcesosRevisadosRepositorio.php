@@ -1755,6 +1755,45 @@ public function consultarProcesosEnviados($usuario,$criteriosSeleccion)
                 $this->conexion->rollback();
             return $resultado;
     }
+    
+    public function actualizarEstatusValidacionProceso($usuario, $procesoRevisadoId, $estatusValidacionId)
+    {
+        ini_set('max_execution_time', 0);
+        $this->conexion->autocommit(FALSE);
+        
+        $resultado = new Resultado();
+        $consulta = "UPDATE procesos_revisados
+                     SET
+                         estatus_validacion_id = ?,
+                         fecha_modificacion = NOW(),
+                         fecha_validacion = NOW(),
+                         validacion_usuario_id = ?
+                     WHERE id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param('iii',$estatusValidacionId, $usuario->id, $procesoRevisadoId))
+            {
+                if($sentencia->execute())
+                {
+                    
+                    $resultado = $this->consultarPorLlaves((object)["id"=>$procesoRevisadoId]);
+                    
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__ .' Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__ .' Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__ .' Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            
+        if($resultado->correcto())
+            $this->conexion->commit();
+        else
+            $this->conexion->rollback();
+        return $resultado;
+    }
 
     public function consultar($criteriosSeleccion)
     {

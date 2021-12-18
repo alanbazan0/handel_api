@@ -435,13 +435,13 @@ class ProcesosRevisadosRepositorio extends Repositorio
 	}
 	
 	
-	validarJustificadas(contexto,funcion,ids)
+	actualizarEstatusValidacionProceso(contexto,funcion,procesoRevisadoId, estatusValidacionId)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;
 		   $.ajax({
 	       url: url,
 	       type: 'POST',
-	       data: {accion : "validarJustificadas",ids:ids},
+	       data: {accion : "actualizarEstatusValidacionProceso",procesoRevisadoId:procesoRevisadoId, estatusValidacionId:estatusValidacionId },
 	       success: function( data, textStatus, jQxhr )
 	       {
 	           funcion.call(contexto,data);

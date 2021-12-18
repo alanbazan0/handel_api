@@ -7,7 +7,7 @@
     header('Access-Control-Allow-Credentials: true');
 ?>
 <div class="modal fade" id="procesoModal" tabindex="-1" role="dialog" aria-labelledby="scrollmodalLabel" aria-hidden="true">
-	<div class="modal-dialog modal-lg" role="document" style='max-width: 85%;'> 
+	<div class="modal-dialog modal-lg" role="document" style='width: 85%;'> 
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title" id="scrollmodalLabel">Observaciones</h5>
@@ -23,14 +23,27 @@
 							<span id="procesoLabel" class="" style='display:block;font-size:13px;'></span>
 						</div>
 					</div>
-					<div>
 					
+					<div class="form-group">
+    						<div>
+    							<label for="estatusRevisionIcono" class="control-label mb-1">Tipo de solicitud</label>
+    							<i id='estatusRevisionIcono'></i>
+    							<span id="estatusRevisionLabel" class="mb-2 " style='font-size:13px;'></span>
+							</div>
+					</div>
+    					
+					<div class="form-group">
+    						<div>
+    							<label for="accionAvanceLabel" class="control-label mb-1">Estado de solicitud</label>
+    							<i id='estatusValidacionIcono'></i>
+    							<span id="estatusValidacionLabel" class="mb-2 " style='font-size:13px;'></span>
+							</div>
 					</div>
     					
 					<div >
     					<div class="form-group">
         						<div>
-        							<label for="" class="control-label mb-1">Observaciones</label>
+        							<label id='observacionesLabel' for="" class="control-label mb-1" style='display:none;'>Observaciones</label>
         							<div id='archivosProgress' class="progress" style='display:none'>
                                       <div id='archivosProgressBar' class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
                                     </div>
