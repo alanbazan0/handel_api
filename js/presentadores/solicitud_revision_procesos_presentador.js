@@ -358,5 +358,53 @@ class SolicitudRevisionProcesosPresentador extends CatalogoPresentador
 		 },observacion);
 	 }
 
+	consultarComentariosObservacion()
+	 {
+		// this.vista.mostrarIndicador();
+		 var repositorio = new ObservacionesComentariosRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+			//this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.comentariosObservacion = resultado.valor;
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },{procesoRevisadoId: this.vista._procesoSeleccionado.id, observacionId: this.vista._observacionSeleccionada.id});
+	 }
+	
+	 
+	enviarComentarioObservacion()
+	 {
+		 if(this.vista.modeloComentarioObservacion.comentario!="" && this.vista.modeloComentarioObservacion.comentario!=undefined)
+		 {
+			 var repositorio = new ObservacionesComentariosRepositorio(this);		
+			 repositorio.insertar(this,	 function(resultado)
+			 {
+				this.vista.ocultarIndicador();	
+				if(resultado.mensajeError=="")
+					this.vista.consultarComentariosObservacion();
+				else
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				
+			 },this.vista.modeloComentarioObservacion);
+		}
+	 }
+
+	consultarObservacionPorLlaves()
+	{
+		this.vista.mostrarIndicador();
+		var repositorio = new ProcesosRevisadosObservacionesRepositorio();	
+		 repositorio.consultarPorLlaves(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.modeloObservacion = resultado.valor;
+			 }
+			 else
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError, resultado.codigoError);
+		 },this.vista.llavesObservacion);
+	}
 	 
 }

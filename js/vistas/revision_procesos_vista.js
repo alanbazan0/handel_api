@@ -43,6 +43,10 @@ class RevisionProcesosVista extends CatalogoVista
 			_this.validarJustificadas();
 		});
 		
+		if(this.procesoRevisadoIdParametro!=0 && this.observacionIdParametro!=0)
+			this.mostrarObservacionParametro();
+		
+		
 	}
 	
 	crearColumnasGrid()
@@ -1551,7 +1555,7 @@ class RevisionProcesosVista extends CatalogoVista
 			//{longitud:100, 	titulo:"",   alias:"subido", alineacion:"C",itemRenderer:this.renderSubido}
 		
 		];
-		this.observacionesTabla.columnas.push({longitud:30, 	titulo:"",   alias:"comentarios", alineacion:"I", itemRenderer:this.renderComentariosObservacion}),		
+		this.observacionesTabla.columnas.push({longitud:30, 	titulo:"",   alias:"comentarios", alineacion:"I", itemRenderer:this.renderComentariosObservacion});	
 	
 /*			this.observacionesTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-1 botones-icon btn btn-sm float-left btn-success active'><span  data-toggle='tooltip' class='fas fa-pencil-alt fa-lg'></span></button>"+
 													"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
@@ -1603,7 +1607,8 @@ class RevisionProcesosVista extends CatalogoVista
 				$("#modalAlta").on("show.bs.modal", function () 
 				{
 					//_this.inicializarValidacionesComentarioEvidencia();
-					$("#accionAvanceLabel").html(_this._observacionSeleccionada.descripcion);
+					if(_this._observacionSeleccionada!=null)
+						$("#accionAvanceLabel").html(_this._observacionSeleccionada.descripcion);
 					$("#enviarComentarioButton").click(function () 
 					{
 						var comentario = $("#comentarioEvidenciaInput").val().trim();
@@ -1620,6 +1625,7 @@ class RevisionProcesosVista extends CatalogoVista
 					    }
 					});
 					_this._comentariosObservacion = [];
+					_this.consultarObservacionPorLlaves(false);
 					_this.consultarComentariosObservacion();
 					_this.cometariosObservacionIntervalId = setInterval(_this.consultarComentariosAutomaticamente, 60000);
 						
@@ -1737,6 +1743,57 @@ class RevisionProcesosVista extends CatalogoVista
 			$("#validarRecomendacionButton").hide();
 		if(this._formularioRecomendacion)	
 			this.consultarResponsablesRecomendacion();*/
+			
+		$("#headerBox").fadeIn();
+		var html = `<div class="form-group">
+						<div>
+							<label class="control-label">Proceso</label>
+							<span  class="" style='display:block;font-size:13px;'>`+ modeloObservacion.procesoNombre +`</span>
+						</div>
+					</div>
+					<div class="form-group">
+						<div>
+							<label class="control-label">Observación</label>
+							<span  class="" style='display:block;font-size:13px;'>`+ modeloObservacion.descripcion +`</span>
+						</div>
+					</div>
+					`;
+		
+		//<div><label>" ++ "</label>";
+		$("#headerBox").html(html);
+			
+	}
+	
+	get procesoRevisadoIdParametro()
+	{
+		var id = $("body").attr("data-id");
+		var elementos = id.split("_");
+		if(elementos.length>0)
+		{
+			return elementos[0];
+		}
+		return 0;
+	}
+	
+	get observacionIdParametro()
+	{
+		var id = $("body").attr("data-id");
+		var elementos = id.split("_");
+		if(elementos.length==2)
+		{
+			return elementos[1];
+		}
+		return 0;
+	}
+	
+	mostrarObservacionParametro()
+	{
+		this._procesoSeleccionado = {id : this.procesoRevisadoIdParametro};
+		this._observacionSeleccionada = {id : this.observacionIdParametro};
+		this._llavesObservacion = {procesoRevisadoId:this.procesoRevisadoIdParametro, 
+									id : this.observacionIdParametro};
+							
+		this.mostrarComentariosObservacion();//this.editarTareaFormulario(this.listaTareas, this._registroSeleccionado.id, this.tareaIdParametro);
 	}
 	
 }

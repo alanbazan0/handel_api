@@ -17,7 +17,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 				this.vista.cambiarEmpresaCriterio();
 			}
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 			
 		 },{estatus:1},true);
 	 }
@@ -32,7 +32,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 				this.vista.administradoresCriterio = resultado.valor;
 			}
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 			
 		 },{estatus:1, tipoUsuarioId : TipoUsuario.ADMINISTRADOR},true);
 	 }
@@ -49,7 +49,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 			if(resultado.mensajeError=="")
 				this.vista.anos = resultado.valor;
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 		 });
 	 }
 	 
@@ -65,7 +65,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 				this.vista.cambiarSedeCriterio();
 			}
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 		 }
 		,this.vista.criteriosSeleccion.empresaId,true);
 	 }
@@ -80,7 +80,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 				this.vista.departamentosCriterio = resultado.valor;			
 			}
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 		 }
 		,null,true);
 	 }
@@ -96,7 +96,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 				this.vista.eliminarValidadas(ids);			
 			}
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 		 }
 		,ids);
 	}
@@ -111,7 +111,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 			if(resultado.mensajeError=="")
 				this.vista.comentariosEvidencia = resultado.valor;
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 			
 		 } ,{evidenciaId: this.vista.evidenciaSeleccionada.id});
 	 }
@@ -127,7 +127,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 				if(resultado.mensajeError=="")
 					this.vista.consultarComentariosEvidencia();
 				else
-					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 				
 			 },this.vista.modeloCometarioEvidencia);
 		}
@@ -158,7 +158,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 				if(resultado.mensajeError=="")
 					this.vista.comentariosPredefinidos = resultado.valor;
 				else
-					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 		 });
 	 }
 	 
@@ -193,7 +193,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 			}
 			else
 			{
-				this.vista.mostrarMensajeError("Error","No se guardo la información. " + resultado.mensajeError);	
+				this.vista.mostrarMensajeError("Error","No se guardo la información. " + resultado.mensajeError,resultado.codigoError);	
 					
 			}
 			
@@ -216,7 +216,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 				if(resultado.mensajeError=="")
 					this.vista.estatusValidacionProcesos = resultado.valor;
 				else
-					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 		 },{},true);
 	 }
 
@@ -247,7 +247,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 				if(resultado.mensajeError=="")
 					this.vista.observaciones = resultado.valor;
 				else
-					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 		 },{procesoRevisadoId: this.vista._procesoSeleccionado.id});
 	 }
 
@@ -279,7 +279,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 			if(resultado.mensajeError=="")
 				this.vista.comentariosObservacion = resultado.valor;
 			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 			
 		 },{procesoRevisadoId: this.vista._procesoSeleccionado.id, observacionId: this.vista._observacionSeleccionada.id});
 	 }
@@ -296,7 +296,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 				if(resultado.mensajeError=="")
 					this.vista.consultarComentariosObservacion();
 				else
-					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
 				
 			 },this.vista.modeloComentarioObservacion);
 		}

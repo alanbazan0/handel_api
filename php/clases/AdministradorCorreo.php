@@ -627,4 +627,49 @@ class AdministradorCorreo
      </div>";
     }
     
+    public function enviarNotificacionRevision($tipo,$usuario, $usuarios, $procesoRevisado, $contenido, $boton ,$asunto)
+    {
+        $resultado = new Resultado();
+        
+        
+        //$accion = " ha comentado en la conversación sobre la observacion: ";
+        
+        $asunto="=?UTF-8?B?".base64_encode($asunto)."?=";
+        
+       
+        $info = "";
+        $mensaje= file_get_contents('../plantillas_correo/notificacion_comentario_observacion.html');
+        
+        $ano = date("Y");
+        
+        
+        //         $mensaje=  str_replace("@nombreProcedimiento",$procesoRevisado->nombre,$mensaje);
+        //         $mensaje=  str_replace("@nombreUsuario",$nombreUsuario,$mensaje);
+        //         $mensaje=  str_replace("@texto",$observacion->comentario,$mensaje);
+        //         $mensaje = str_replace("@url", $url, $mensaje);
+        
+        $mensaje=  str_replace("@ano",$ano,$mensaje);
+        $mensaje = str_replace("@contenido", $contenido, $mensaje);
+        $mensaje = str_replace("@boton", $boton, $mensaje);
+        //$mensaje=  str_replace("@fotoPerfil",$fotoPerfil,$mensaje);
+        //$mensaje=  str_replace("@nombreMinuta",$tarea->minutaTitulo,$mensaje);
+        //$mensaje=  str_replace("@nombreTarea",$tarea->titulo,$mensaje);
+        //$mensaje=  str_replace("@fechaVencimiento",$tarea->fechaCompromiso,$mensaje);
+        
+        //$mensaje=  str_replace("@minutaId",$tarea->minutaId,$mensaje);
+        //$mensaje=  str_replace("@tareaId",$tarea->id,$mensaje);
+        
+        
+        //$mensaje=  str_replace("@frase",$frase->texto,$mensaje);
+        //$mensaje=  str_replace("@autor",$frase->autor,$mensaje);
+        
+        
+        
+        //$administrador_correo = new AdministradorCorreo();
+        $resultado = $this->enviarCorreoUsuarios($tipo,$usuarios,$asunto, $mensaje, $info, "SAHA: Revision de procesos");
+        //}
+        return $resultado;
+    }
+    
+    
 }

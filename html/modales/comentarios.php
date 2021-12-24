@@ -16,6 +16,10 @@
 				</button>
 			</div>
 			<div class="modal-body">
+				<div class="box-header with-border" id="headerBox" style='display:none'>
+						
+						<!-- /.box-tools -->
+				</div>
 				
 				<div class="box-body chat" id="chatbox">
 	

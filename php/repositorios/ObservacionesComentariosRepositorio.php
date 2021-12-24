@@ -9,6 +9,7 @@ use php\clases\AdministradorCorreo;
 include '../interfaces/IObservacionesComentariosRepositorio.php';
 include '../modelos/ObservacionComentario.php';
 require_once('RepositorioBase.php');
+require_once('ProcesosRevisadosRepositorio.php');
 require_once('MinutasRepositorio.php');
 require_once('../clases/Resultado.php');
 
@@ -40,48 +41,17 @@ class ObservacionesComentariosRepositorio extends RepositorioBase implements IOb
                     {
                         $llaves= (object)
                         [
-                            'procesoRevisadoId'=> $modelo->procesoRevisadoId,
-                            'observacionId'=> $modelo->observacionId
+                            'id'=> $modelo->procesoRevisadoId,
                         ];
                         $sentencia->close();
-//                         $repositorio = new MinutasRepositorio($this->conexion);
-//                         $resultado = $repositorio->consultarTareaPorLlaves($llaves);
-//                         if($resultado->correcto())
-//                         {
-//                             $tarea =  $resultado->valor;
-//                             $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
-//                             $resultado = $this->consultaUsuariosComentario($tarea->procesoRevisadoId,$tarea->id);
-//                             if($resultado->correcto())
-//                             {
-//                                 $usuarios = $resultado->valor;
-                                
-//                                 if(!$usuariosRepositorio->existeUsuarioArreglo($tarea->usuarioId,$usuarios))
-//                                 {
-//                                     $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$tarea->usuarioId]);
-//                                     if($resultado->correcto())
-//                                         array_push($usuarios, $resultado->valor);
-//                                 }
-                                
-//                                 if($usuario->supervisor1Id!=null)
-//                                 {
-//                                     if(!$usuariosRepositorio->existeUsuarioArreglo($usuario->supervisor1Id,$usuarios))
-//                                     {
-//                                         $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$usuario->supervisor1Id]);
-//                                         if($resultado->correcto())
-//                                             array_push($usuarios, $resultado->valor);
-//                                     }
-//                                 }
-                                
-                                
-//                                 $usuariosRepositorio->eliminarUsuarioArreglo($usuario->id,$usuarios);
-                                
-//                                 $resultado = $this->enviarNotificacionComentario($usuario,$usuarios,$tarea, $modelo->comentario);
-//                                 if($resultado->correcto())
-//                                 { 
-//                                     $resultado->valor = $modelo->id;
-//                                 }
-//                             }
-//                         }
+                        $repositorio = new ProcesosRevisadosRepositorio($this->conexion);
+                        $resultado = $repositorio->consultarPorLlaves($llaves);
+                        if($resultado->correcto())
+                        {
+                            $procesoRevisado =  $resultado->valor;
+                            //$resultado = $repositorio->consultar
+                            $resultado = $this->enviarNotificacionComentario($procesoRevisado,$usuario, $modelo);
+                        }
                     }
                     else
                         $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
@@ -100,54 +70,77 @@ class ObservacionesComentariosRepositorio extends RepositorioBase implements IOb
         return $resultado;
     }
     
-    public function enviarNotificacionComentario($usuario,$usuarios, $tarea, $comentario)
+    
+    public function enviarNotificacionComentario($procesoRevisado,$usuario, $modelo)
     {
         $resultado = new Resultado();
+        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+        $resultado = $this->consultaUsuariosComentario($procesoRevisado->id, $modelo->observacionId);
         
-        $frasesRepositorio = new FrasesRepositorio($this->conexion);
-        $resultado = $frasesRepositorio->consultarAleatorio();
+        
         if($resultado->correcto())
         {
+            $usuarios = $resultado->valor;
             
-            $frase = $resultado->valor;
+            if($procesoRevisado->usuarioId!=null)
+            {
+                if(!$usuariosRepositorio->existeUsuarioArreglo($procesoRevisado->usuarioId,$usuarios))
+                {
+                    $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$procesoRevisado->usuarioId]);
+                    if($resultado->correcto())
+                        array_push($usuarios, $resultado->valor);
+                }
+            }
+            if($procesoRevisado->administradorId!=null)
+            {
+                if(!$usuariosRepositorio->existeUsuarioArreglo($procesoRevisado->administradorId,$usuarios))
+                {
+                    $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$procesoRevisado->administradorId]);
+                    if($resultado->correcto())
+                        array_push($usuarios, $resultado->valor);
+                }
+            }
             
-            $nombreUsuario = $usuario->nombreCompleto;
-            $fotoPerfil = "https://api.apps-handel.com/" . $usuario->fotoPerfil;
-            $asunto  = $usuario->nombreCompleto . " hizo un comentario en tarea: " . $tarea->titulo;
-            $accion = " ha comentado en la conversación sobre la tarea: ";
+            $usuariosRepositorio->eliminarUsuarioArreglo($usuario->id,$usuarios);
             
-            $asunto="=?UTF-8?B?".base64_encode($asunto)."?=";
-            
-            $tipo = "minuta" .$tarea->procesoRevisadoId ."tarea" . $tarea->id;
-            $info = "";
-            $mensaje= file_get_contents('../plantillas_correo/notificacion_comentario_tarea.html');
-            
-            
-            $mensaje=  str_replace("@nombreUsuario",$nombreUsuario,$mensaje);
-            $mensaje=  str_replace("@accion",$accion,$mensaje);
-            $mensaje=  str_replace("@fotoPerfil",$fotoPerfil,$mensaje);
-            $mensaje=  str_replace("@nombreMinuta",$tarea->minutaTitulo,$mensaje);
-            $mensaje=  str_replace("@nombreTarea",$tarea->titulo,$mensaje);
-            $mensaje=  str_replace("@fechaVencimiento",$tarea->fechaCompromiso,$mensaje);
-            
-            $mensaje=  str_replace("@procesoRevisadoId",$tarea->procesoRevisadoId,$mensaje);
-            $mensaje=  str_replace("@observacionId",$tarea->id,$mensaje);
-            $mensaje=  str_replace("@texto",$comentario,$mensaje);
-            
-            
-            $mensaje=  str_replace("@frase",$frase->texto,$mensaje);
-            $mensaje=  str_replace("@autor",$frase->autor,$mensaje);
+            //TEST
+            //$usuarios = array();
+            //array_push($usuarios, (object)["nombreUsuario"=>"alanbazan@apps-handel.com","nombre"=>"Alan"]);
             
             
+            $contenido = "<p style='font-size: 14px; line-height: 140%;'>¡Tienes un nuevo mensaje en SAHA!,
+                        Es en referencia al proceso de revisión de procedimientos, en particular a tus observaciones o dudas del procedimiento:</p>
+                        <p style='font-size: 14px; line-height: 140%;'>&nbsp;</p>
+                        <p style='font-size: 14px; line-height: 140%;'><strong>$procesoRevisado->nombre</strong></p>
+                        <p style='font-size: 14px; line-height: 140%;'>&nbsp;</p>
+                        <p style='font-size: 14px; line-height: 140%;'>El mensaje redactado por <strong>$usuario->nombreCompleto</strong> es:</p>
+                        <p style='font-size: 14px; line-height: 140%;'>&nbsp;</p>
+                        <p style='font-size: 14px; line-height: 140%;'>$modelo->comentario</p>
+                        <p style='font-size: 14px; line-height: 140%;'>&nbsp;</p>
+                        <p style='font-size: 14px; line-height: 140%;'>Si consideras que esta respuesta es satisfactoria, este es el final de la conversación sobre este proceso. Si necesitas información adicional puedes responder desde el botón que aparece un poco más abajo.</p>";
             
-            $administrador_correo = new AdministradorCorreo();
-            $resultado = $administrador_correo->enviarCorreoUsuarios($tipo,$usuarios,$asunto, $mensaje, $info, "SAHA: Tareas");
-            //}
+            $url = "https://saha.apps-handel.com/revision.php?id=$modelo->procesoRevisadoId"."_".$modelo->observacionId;
+            
+            $boton = "<a href='$url' target='_blank' style='box-sizing: border-box;display: inline-block;font-family:arial,helvetica,sans-serif;text-decoration: none;-webkit-text-size-adjust: none;text-align: center;color: #ffffff; background-color: #0396a6; border-radius: 4px;-webkit-border-radius: 4px; -moz-border-radius: 4px; width:auto; max-width:100%; overflow-wrap: break-word; word-break: break-word; word-wrap:break-word; mso-border-alt: none;'>
+            <span style='display:block;padding:10px 20px;line-height:120%;'><strong>Responder</strong></span>
+            </a>";
+            
+            //$nombreUsuario = $usuario->nombreCompleto;
+            $asunto  = $usuario->nombreCompleto . " hizo un comentario en el proceso: " . $procesoRevisado->nombre;
+            $tipo = "procesoRevisado" .$modelo->procesoRevisadoId ."observacion" . $modelo->observacionId;
+            
+            $administradorCorreo = new  AdministradorCorreo();
+            $resultado = $administradorCorreo->enviarNotificacionRevision($tipo,$usuario,$usuarios,$procesoRevisado,$contenido,$boton, $asunto);
+            if($resultado->correcto())
+            {
+                $resultado->valor = $modelo->observacionId;
+            }
         }
         return $resultado;
     }
     
-
+    
+    
     public function actualizar(ObservacionComentario $modelo)
     {
         $resultado = new Resultado();

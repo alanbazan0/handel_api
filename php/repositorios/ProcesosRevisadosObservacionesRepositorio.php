@@ -19,10 +19,13 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
     {
         $this->conexion = $conexion;
         $this->consultaBase = " SELECT PRO.id, tipo_observacion_id, TOB.descripcion, PRO.descripcion, archivo, seccion, IFNULL(DATE_FORMAT(PRO.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta,IFNULL(DATE_FORMAT(PRO.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, IFNULL(DATE_FORMAT(PRO.fecha_validacion,'%d/%m/%Y %H:%i:%s'),'')fecha_validacion, usuario_validador_id,U.nombre, U.apellido, comentario_validacion,
-                                (SELECT count(*) FROM procesos_revisados_observaciones_comentarios PROC WHERE PROC.proceso_revisado_id = PRO.proceso_revisado_id AND PROC.observacion_id = PRO.id)numeroComentarios
+                                (SELECT count(*) FROM procesos_revisados_observaciones_comentarios PROC WHERE PROC.proceso_revisado_id = PRO.proceso_revisado_id AND PROC.observacion_id = PRO.id)numeroComentarios, P.nombre
                             FROM procesos_revisados_observaciones PRO
                             	INNER JOIN tipos_observacion TOB ON PRO.tipo_observacion_id = TOB.id 
-                                LEFT JOIN usuarios U ON U.id = PRO.usuario_validador_id ";
+                                LEFT JOIN usuarios U ON U.id = PRO.usuario_validador_id
+                                INNER JOIN procesos_revisados PR ON PRO.proceso_revisado_id = PR.id
+                                INNER JOIN usuarios_procesos UP ON UP.id = PR.usuario_proceso_id 
+                                INNER JOIN procesos P ON P.id = UP.proceso_id ";
     }
     
     public function insertar(ProcesoRevisadoObservacion $modelo)
@@ -105,11 +108,11 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios))
+                    if ($sentencia->bind_result($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios,$procesoNombre))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios );
+                            $registro = $this->crearRegistro($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios,$procesoNombre);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -141,11 +144,11 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios))
+                    if ($sentencia->bind_result($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios,$procesoNombre))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios);
+                            $registro = $this->crearRegistro($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios,$procesoNombre);
                             $resultado->valor = $registro;
                         }
                         else
@@ -165,7 +168,7 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
             return $resultado;
     }
     
-    private function crearRegistro($id, $tipoObservacionId, $tipoObservacionNombre, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion, $numeroComentarios)
+    private function crearRegistro($id, $tipoObservacionId, $tipoObservacionNombre, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion, $numeroComentarios, $procesoNombre)
     {
         $registro= (object) [
             'id' =>  $id,
@@ -181,7 +184,8 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
             'validadorNombre' => $validadorNombre,
             'validadorApellido' => $validadorApellido,
             'comentarioValidacion' => $comentarioValidacion,
-            'numeroComentarios' => $numeroComentarios
+            'numeroComentarios' => $numeroComentarios,
+            'procesoNombre' => $procesoNombre
         ];
         return $registro;
     }
@@ -221,67 +225,67 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
             return $resultado;
     }
     
-    public function consultarPorEmpresaSede($empresaId, $sedeId,$opcional,$usuario)
-    {
-        $resultado = new Resultado();
-        $registros = array();
-        $filtros = array();
-        $where="";
-//         if($usuario->tipoUsuarioId == \TipoUsuario::SUPERUSUARIO)
-//         {
-            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'A','campo'=>'empresa_id','valor'=>$empresaId]);
-            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'A','campo'=>'sede_id','valor'=>$sedeId]);
-//         }
-//         else  if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR_CORPORATIVO)
-//             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$empresaId]);
-//         else  if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
-//         {
-//             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'A','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
-//             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'A','campo'=>'sede_id','valor'=>$usuario->sedeId]);
-//             //array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'A','campo'=>'id','valor'=>$usuario->areaId]);
-//         }
+//     public function consultarPorEmpresaSede($empresaId, $sedeId,$opcional,$usuario)
+//     {
+//         $resultado = new Resultado();
+//         $registros = array();
+//         $filtros = array();
+//         $where="";
+// //         if($usuario->tipoUsuarioId == \TipoUsuario::SUPERUSUARIO)
+// //         {
+//             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'A','campo'=>'empresa_id','valor'=>$empresaId]);
+//             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'A','campo'=>'sede_id','valor'=>$sedeId]);
+// //         }
+// //         else  if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR_CORPORATIVO)
+// //             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$empresaId]);
+// //         else  if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
+// //         {
+// //             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'A','campo'=>'empresa_id','valor'=>$usuario->empresaId]);
+// //             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'A','campo'=>'sede_id','valor'=>$usuario->sedeId]);
+// //             //array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'A','campo'=>'id','valor'=>$usuario->areaId]);
+// //         }
             
-        $where = $this->where($filtros);
+//         $where = $this->where($filtros);
         
-        $consulta = $this->consultaBase .
-        $where . " order by A.nombre";
+//         $consulta = $this->consultaBase .
+//         $where . " order by A.nombre";
         
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if($this->bind_param($sentencia, $filtros))
-            {
-                if($sentencia->execute())
-                {
-                    if ($sentencia->bind_result($id, $nombre, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus, $tipoAreaId))
-                    {
-                        while($row = $sentencia->fetch())
-                        {
-                            $registro = $this->crearRegistro($id, $nombre,$empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus,$tipoAreaId);
-                            array_push($registros,$registro);
-                        }
-                        if($opcional=="true")
-                        {
-                            //if($usuario->tipoUsuarioId == \TipoUsuario::SUPERUSUARIO || $usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR_CORPORATIVO  )
-                            //{
-                            $registro = $this->crearRegistro("", "Todas las areas",null, null,null, null, null, null, null,null);
-                                array_unshift($registros, $registro);
-                            //}
-                        }
-                        $resultado->valor = $registros;
-                    }
-                    else
-                        $resultado->mensajeError = "Falló el enlace del resultado";
-                }
-                else
-                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
-            }
-            else
-                $resultado->mensajeError = "Falló el enlace de parámetros";
-        }
-        else
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-            return $resultado;
-    }
+//         if($sentencia = $this->conexion->prepare($consulta))
+//         {
+//             if($this->bind_param($sentencia, $filtros))
+//             {
+//                 if($sentencia->execute())
+//                 {
+//                     if ($sentencia->bind_result($id, $nombre, $empresaId, $empresaNombre, $sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus, $tipoAreaId))
+//                     {
+//                         while($row = $sentencia->fetch())
+//                         {
+//                             $registro = $this->crearRegistro($id, $nombre,$empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus,$tipoAreaId);
+//                             array_push($registros,$registro);
+//                         }
+//                         if($opcional=="true")
+//                         {
+//                             //if($usuario->tipoUsuarioId == \TipoUsuario::SUPERUSUARIO || $usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR_CORPORATIVO  )
+//                             //{
+//                             $registro = $this->crearRegistro("", "Todas las areas",null, null,null, null, null, null, null,null);
+//                                 array_unshift($registros, $registro);
+//                             //}
+//                         }
+//                         $resultado->valor = $registros;
+//                     }
+//                     else
+//                         $resultado->mensajeError = "Falló el enlace del resultado";
+//                 }
+//                 else
+//                     $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+//             }
+//             else
+//                 $resultado->mensajeError = "Falló el enlace de parámetros";
+//         }
+//         else
+//             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+//             return $resultado;
+//     }
     
     public function eliminar($llaves)
     {

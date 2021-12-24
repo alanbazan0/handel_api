@@ -1,7 +1,7 @@
 <?php
 namespace php\repositorios;
 
-use TipoReporteEvidencias;
+use php\clases\AdministradorCorreo;
 use php\clases\Porcentaje;
 use php\interfaces\IProcesosRevisadosRepositorio;
 use php\modelos\Evidencia;
@@ -20,6 +20,7 @@ require_once("../clases/EstatusValidacionProceso.php");
 require_once("../clases/TipoReporteEvidencias.php");
 require_once('../clases/Resultado.php');
 require_once('../clases/Porcentaje.php');
+require_once('../repositorios/EstatusValidacionProcesosRepositorio.php');
 require_once('../repositorios/EvidenciasComentariosRepositorio.php');
 
 class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosRevisadosRepositorio
@@ -146,6 +147,49 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
         }
         else
             $this->conexion->rollback();
+        return $resultado;
+    }
+    
+    
+    public function enviarNotificacionCambioEstatus($procesoRevisado,$usuario, $estatusValidacion)
+    {
+        $resultado = new Resultado();
+       
+                
+        //TEST
+        //$usuarios = array();
+        //array_push($usuarios, (object)["nombreUsuario"=>"alanbazan@apps-handel.com","nombre"=>"Alan"]);
+        
+        
+        $contenido = "<p style='font-size: 14px; line-height: 140%;'><strong>¡Actualización importante!</strong></p>
+                    <p style='font-size: 14px; line-height: 140%;'>&nbsp;</p>
+                    <p style='font-size: 14px; line-height: 140%;'>¡Tienes un nuevo mensaje en SAHA!,
+                    Es en referencia al proceso de revisión de procedimientos, en particular a tus observaciones o dudas del procedimiento:</p>
+                    <p style='font-size: 14px; line-height: 140%;'>&nbsp;</p>
+                    <p style='font-size: 14px; line-height: 140%;'><strong>$procesoRevisado->nombre</strong></p>
+                    <p style='font-size: 14px; line-height: 140%;'>&nbsp;</p>
+                    <p style='font-size: 14px; line-height: 140%;'>El estado actual de tu solicitud es: </p>
+                    <p style='font-size: 14px; line-height: 140%;'>&nbsp;</p>
+                    <p style='font-size: 14px; line-height: 140%;'><strong>$estatusValidacion->nombre</strong></p>
+                    <p style='font-size: 14px; line-height: 140%;'>&nbsp;</p>
+                    <p style='font-size: 14px; line-height: 140%;'>Si consideras que esta respuesta es satisfactoria, este es el final de la conversación sobre este proceso. Si necesitas información adicional puedes responder desde el botón que aparece un poco más abajo.</p>";
+        
+        $url = "https://saha.apps-handel.com/revision.php?id=$procesoRevisado->id";
+        
+        $boton = "<a href='$url' target='_blank' style='box-sizing: border-box;display: inline-block;font-family:arial,helvetica,sans-serif;text-decoration: none;-webkit-text-size-adjust: none;text-align: center;color: #ffffff; background-color: #0396a6; border-radius: 4px;-webkit-border-radius: 4px; -moz-border-radius: 4px; width:auto; max-width:100%; overflow-wrap: break-word; word-break: break-word; word-wrap:break-word; mso-border-alt: none;'>
+        <span style='display:block;padding:10px 20px;line-height:120%;'><strong>Responder</strong></span>
+        </a>";
+        
+        //$nombreUsuario = $usuario->nombreCompleto;
+        $asunto  = "Cambio el estado de tu solicitud: " . $estatusValidacion->nombre;
+        $tipo = "procesoRevisadoEstatus" .$procesoRevisado->id;
+        
+        $administradorCorreo = new  AdministradorCorreo();
+        $resultado = $administradorCorreo->enviarNotificacionRevision($tipo,$usuario,$usuarios,$procesoRevisado,$contenido,$boton, $asunto);
+        if($resultado->correcto())
+        {
+            $resultado->valor = $procesoRevisado->id;
+        }
         return $resultado;
     }
     
@@ -1775,8 +1819,19 @@ public function consultarProcesosEnviados($usuario,$criteriosSeleccion)
             {
                 if($sentencia->execute())
                 {
-                    
                     $resultado = $this->consultarPorLlaves((object)["id"=>$procesoRevisadoId]);
+                    if($resultado->correcto())
+                    {
+                        $procesoRevisado = $resultado->valor;
+                        $repositorio = new EstatusValidacionProcesosRepositorio($this->conexion);
+                        $resultado = $repositorio->consultarPorLlaves((object)["id" => $estatusValidacionId]);
+                        if($resultado->correcto())
+                        {
+                            $estatusValidacion = $resultado->valor;
+                            $this->enviarNotificacionCambioEstatus($procesoRevisado, $usuario, $estatusValidacion);
+                            
+                        }
+                    }
                     
                 }
                 else
