@@ -43,7 +43,6 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
     	  var target = $(e.target).attr("href") // activated tab
     	  switch(target)
     	  {
-	
     	  	case "#pendientes":
     	  		if(!_this._consultoPendientes)
     	  			_this.consultar();	
