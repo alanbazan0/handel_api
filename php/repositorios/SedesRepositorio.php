@@ -314,6 +314,9 @@ class SedesRepositorio extends RepositorioBase implements ISedesRepositorio
         }
         else if($usuario->recursosHumanos==1)
             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$empresaId]);
+       else 
+           array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$empresaId]);
+           
         $where = $this->where($filtros);
         
 //         $consulta = $this->consultaBase .

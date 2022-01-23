@@ -220,7 +220,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 		 },{},true);
 	 }
 
-	consultarProcesoRevisadoPorLlaves()
+	consultarProcesoRevisadoPorLlaves(llaves)
 	{
 		this.vista.mostrarIndicador();	
 		 this._repositorio.consultarPorLlaves(this,function(resultado)
@@ -229,12 +229,13 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 			 if(resultado.mensajeError=="")
 			 {
 				 this.vista.modeloProceso = resultado.valor;
-				if(this.vista._procesoSeleccionado.estatusRevisionId == EstatusRevision.OBSERVACIONES)
+                 this.vista.mostrarFormularioRevision(resultado.valor);					
+				if(resultado.valor.estatusRevisionId == EstatusRevision.OBSERVACIONES)
 				 	this.consultarObservaciones();
 			 }
 			 else
 				 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError, resultado.codigoError);
-		 },this.vista.llavesProceso);
+		 },llaves);
 	}
 	
 	consultarObservaciones()

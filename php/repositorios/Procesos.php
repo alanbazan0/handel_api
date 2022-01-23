@@ -46,7 +46,7 @@ try
                 $json = json_decode(REQUEST('procedimientos'));
                 $mapper = new JsonMapper();
                 $procedimientos = $mapper->mapArray($json, array());
-                $resultado = $repositorio->copiarProcedimientos($empresaIdOrigen, $sedeIdOrigen, $procedimientos, $empresaIdDestino,$sedeIdDestino);
+                $resultado = $repositorio->copiarProcesos($empresaIdOrigen, $sedeIdOrigen, $procedimientos, $empresaIdDestino,$sedeIdDestino);
             break;
             case 'actualizar':
                 $json = json_decode(REQUEST('modelo'));

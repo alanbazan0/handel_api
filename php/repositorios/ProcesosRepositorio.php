@@ -189,7 +189,7 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
         
         $consulta =   $this->consultaBase .
         " WHERE P.empresa_id = ? " .
-        " AND P.sede_id = ? ";
+        " AND P.sede_id = ? ORDER BY P.nombre";
         
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -316,56 +316,52 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
         {
             case \TipoUsuario::USUARIO:
                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','operador'=>'IN','valor'=>$usuario->id]);
-                break;
+            break;
             case \TipoUsuario::SUPERVISOR:
                 if(isset($criteriosSeleccion->usuarioId) && $criteriosSeleccion->usuarioId!="")
                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','valor'=>$criteriosSeleccion->usuarioId]);
-                    else
+                else
+                {
+                    $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                    $resultado = $usuariosRepositorio->consultarIdsUsuarios($usuario);
+                    if($resultado->correcto())
                     {
-                        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
-                        $resultado = $usuariosRepositorio->consultarIdsUsuarios($usuario);
-                        if($resultado->correcto())
-                        {
-                            $usuariosIds = implode(",", $resultado->valor);
-                            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','operador'=>'IN','valor'=>$usuariosIds]);
-                        }
+                        $usuariosIds = implode(",", $resultado->valor);
+                        array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','operador'=>'IN','valor'=>$usuariosIds]);
                     }
-                    break;
+                }
+                break;
             case \TipoUsuario::COORDINADOR:
                 if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'EM', 'campo'=>'id','valor'=>$criteriosSeleccion->empresaId]);
-                    else
+                else
+                {
+                    $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                    $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+                    if($resultado->correcto())
                     {
-                        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
-                        $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
-                        if($resultado->correcto())
-                        {
-                            $empresasIds = implode(",", $resultado->valor);
-                            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'EM', 'campo'=>'id','operador'=>'IN','valor'=>$empresasIds]);
-                        }
+                        $empresasIds = implode(",", $resultado->valor);
+                        array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'EM', 'campo'=>'id','operador'=>'IN','valor'=>$empresasIds]);
                     }
-                    break;
+                }
+            break;
             case \TipoUsuario::ADMINISTRADOR:
                 if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'EM', 'campo'=>'id','valor'=>$criteriosSeleccion->empresaId]);
                     
-                    break;
+            break;
         }
         if(isset($criteriosSeleccion->sedeId) && $criteriosSeleccion->sedeId!="")
             array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'S', 'campo'=>'id','valor'=> $criteriosSeleccion->sedeId]);
-            if(isset($criteriosSeleccion->departamentoId) && $criteriosSeleccion->departamentoId!="")
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'D', 'campo'=>'id','valor'=> $criteriosSeleccion->departamentoId]);
-                if($agregarFiltrosFecha)
-                {
-                    if(isset($criteriosSeleccion->ano)  && $criteriosSeleccion->ano!="")
-                        array_push($filtros,(object)['tipoDato'=>'int','campo'=>'YEAR(E.fecha_alta)','valor'=>$criteriosSeleccion->ano]);
-                        if(isset($criteriosSeleccion->mes)  && $criteriosSeleccion->mes!="")
-                            array_push($filtros,(object)['tipoDato'=>'int','campo'=>'MONTH(E.fecha_alta)','valor'=>$criteriosSeleccion->mes]);
-                }
-                
-                return $filtros;
+        if(isset($criteriosSeleccion->departamentoId) && $criteriosSeleccion->departamentoId!="")
+            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'D', 'campo'=>'id','valor'=> $criteriosSeleccion->departamentoId]);
+        if($agregarFiltrosFecha)
+        {
+            if(isset($criteriosSeleccion->ano)  && $criteriosSeleccion->ano!="")
+                array_push($filtros,(object)['tipoDato'=>'int','campo'=>'YEAR(E.fecha_alta)','valor'=>$criteriosSeleccion->ano]);
+            if(isset($criteriosSeleccion->mes)  && $criteriosSeleccion->mes!="")
+                array_push($filtros,(object)['tipoDato'=>'int','campo'=>'MONTH(E.fecha_alta)','valor'=>$criteriosSeleccion->mes]);
+        }
+        return $filtros;
     }
-    
-   
-    
 }

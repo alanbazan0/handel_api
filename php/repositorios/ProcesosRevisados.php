@@ -114,6 +114,10 @@ try
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarEvidenciasJustificacion($usuario,$criteriosSeleccion);
                 break;
+                case 'consultarProcesosAgrupados':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarProcesosAgrupados($usuario,$criteriosSeleccion);
+                break;
                 case 'consultarComentariosEvidencia':
                     $evidenciaId = REQUEST('evidenciaId');
                     $resultado = $repositorio->consultarComentariosEvidencia($evidenciaId);

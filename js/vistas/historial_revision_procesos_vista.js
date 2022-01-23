@@ -1,9 +1,9 @@
-class RevisionProcesosVista extends CatalogoVista
+class HistorialRevisionProcesosVista extends CatalogoVista
 {		
 	constructor()
 	{	
 		super();
-		this.presentador = new RevisionProcesosPresentador(this);
+		this.presentador = new HistorialRevisionProcesosPresentador(this);
 		var fecha = new Date();
 		this._time = fecha.getTime();
 	}
@@ -48,61 +48,38 @@ class RevisionProcesosVista extends CatalogoVista
 		else if(this.procesoRevisadoIdParametro!=0)
 			this.mostrarProcesoRevisadoParametro();
 			
-		$("#historialButton").click(function(){
-			var submitForm = _this.getNewSubmitForm("historial_revision_procesos.php");
-	   		submitForm.target= "_blank";
-	    	submitForm.submit();
-		});
 		
 		
 	}
 	
-	
 	crearColumnasGrid()
 	{
 		this.tabla.columnas = [
-			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"I" },
-			{longitud:300, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I" },
-			//{longitud:200, 	titulo:"Código",   	alias:"codigo", alineacion:"I" },
-			{longitud:200, 	titulo:"Fecha",   	alias:"fecha", alineacion:"I" },
-			{longitud:30, 	titulo:"Tipo solicitud",   alias:"estatusRevisionNombre", alineacion:"C", itemRenderer:this.renderEstatusRevision},
-			{longitud:30, 	titulo:"Estado de solicitud",   alias:"estatusValidacionNombre", alineacion:"C", itemRenderer:this.renderEstatusValidacion},
-			//{longitud:100, 	titulo:"Evidencia",   alias:"nombreArchivo", alineacion:"C", itemRenderer:this.renderArchivo},
-			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoUsuario},
-			{longitud:100, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I"},
-			//{longitud:100, 	titulo:"Comentarios",   alias:"comentarios", alineacion:"I", itemRenderer:this.renderComentarios},
-			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderLogoEmpresa},
-			{longitud:100, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I"},
-			//{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoAdministrador},
-			//	{longitud:100, 	titulo:"Administrador responsable",   alias:"administradorNombreCompleto", alineacion:"I",itemRenderer:this.renderNombreAdministrador},
-			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoValidador},
-			{longitud:100, 	titulo:"Usuario que validó",   alias:"validadorNombreCompleto", alineacion:"I",itemRenderer:this.renderNombreValidador},
-			{longitud:200, 	titulo:"Fecha validación",   	alias:"fechaValidacion", alineacion:"I", itemRenderer: this.renderFechaValidacion },
-			//{longitud:100, 	titulo:"Comentarios",   alias:"comentarios", alineacion:"I", itemRenderer:this.renderComentarios},
-			//{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"I" },
-			//{longitud:50, 	titulo:"Código",   	alias:"codigo", alineacion:"I" }
-			
+			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
+			//{longitud:200, 	titulo:"Código",   alias:"codigo", alineacion:"I"}, 
+			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I", class: "desc" }, 
+			//{longitud:200, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I"}, 
+			//{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },		
+			//{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" },		
+			{longitud:200, 	titulo:"Sección en manual",alias:"rutaArchivo", alineacion:"I"},
+			{longitud:200, 	titulo:"Usuarios",   alias:"usuarios", alineacion:"I", class: "desc" }, 		
 		];
 		
-		this.tabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderRevisar});
+		this.tabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderReporte});
 	
 		
 //		this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
 //									"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
 
 		this.tabla.registros = [];
-		
-		
-	
 	}
 	
-	renderRevisar(renglon, type, set)
+	renderReporte(renglon, type, set)
 	{    
 		var contenido = "";
 		//if(renglon.usuarioId == vista.usuario.id)
 		//{
-			var fecha = new Date();
-				contenido += "<button data-toggle='tooltip' data-placemen='bottom' title='Revisar'  type='button' class='revisar btn-circle mr-0 botones-icon btn btn-sm float-right btn-success'><span  data-toggle='tooltip' class='fa fa-check fa-lg'></span></button>";
+				contenido += "<button data-toggle='tooltip' data-placemen='bottom' title='Generar reporte'  type='button' class='imprimir btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active' style='background-color:#d62929'><span  data-toggle='tooltip' class='fa fa-file-pdf-o fa-lg'></span></button>";
 		//<}
 	    return contenido;
 	}
@@ -358,8 +335,8 @@ class RevisionProcesosVista extends CatalogoVista
 		
 		this.cargarOpciones('#anoSelectCriterio', anos);
 		
-		$("#mesSelectCriterio").val(fecha.getMonth()+1);
-		$("#anoSelectCriterio").val(fecha.getFullYear());
+		//$("#mesSelectCriterio").val(fecha.getMonth()+1);
+	//	$("#anoSelectCriterio").val(fecha.getFullYear());
 		
 		
 		this.consultarEmpresasCriterio();
@@ -376,7 +353,7 @@ class RevisionProcesosVista extends CatalogoVista
 
 	cambiarSedeCriterio()
 	{
-		
+		this.consultarDepartamentosCriterio();
 	}
 
 	
@@ -396,6 +373,17 @@ class RevisionProcesosVista extends CatalogoVista
 	{
 		this.cargandoOpciones("#departamentoSelectCriterio");
 		this.presentador.consultarDepartamentosCriterio();
+	}
+	
+	consultarUsuariosCriterio()
+	{
+		this.cargandoOpciones("#usuarioSelectCriterio");
+		this.presentador.consultarUsuariosCriterio();
+	}
+	
+	set usuariosCriterio(registros)
+	{		
+		this.cargarOpciones('#usuarioSelectCriterio', registros, null, null, null, null,  "nombreCompleto");
 	}
 	
 	set sedesCriterio(registros)
@@ -440,7 +428,7 @@ class RevisionProcesosVista extends CatalogoVista
 	set empresasCriterio(registros)
 	{		
 		this.cargarOpciones('#empresaSelectCriterio', registros);
-		this.consultarDepartamentosCriterio();
+		//this.consultarDepartamentosCriterio();
 	}
 	
 	get criteriosSeleccion()
@@ -464,113 +452,7 @@ class RevisionProcesosVista extends CatalogoVista
 		return criteriosSeleccion;
 	}
 
-	set porcentajesUsuarios(porcentajesAreas)
-	{
-		am4core.ready(function() {
-
-			// Themes begin
-			//am4core.useTheme(am4themes_kelly);
-			am4core.useTheme(am4themes_animated);
-			// Themes end
-
-			// Create chart instance
-			var chart = am4core.create("empresasChart", am4charts.XYChart);
-			chart.scrollbarX = new am4core.Scrollbar();
-			chart.data = porcentajesAreas;
-
-			// Create axes
-			var categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
-			categoryAxis.dataFields.category = "nombreId";
-			categoryAxis.renderer.grid.template.location = 0;
-			categoryAxis.renderer.minGridDistance = 30;
-			categoryAxis.renderer.labels.template.horizontalCenter = "middle";
-			categoryAxis.renderer.labels.template.verticalCenter = "middle";
-			categoryAxis.renderer.labels.template.rotation = 315;
-			categoryAxis.tooltip.disabled = true;
-			categoryAxis.renderer.minHeight = 110;
-			categoryAxis.renderer.labels.template.adapter.add("textOutput", function(text) {
-				  return text.replace(/ \(.*/, "");
-				});
-			
-			let label = categoryAxis.renderer.labels.template;
-			label.wrap = true;
-
-		
-			
-
-			var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-			valueAxis.renderer.minWidth = 50;
-			valueAxis.min = 0;
-			valueAxis.max = 100;
-
-			// Create series
-			var series = chart.series.push(new am4charts.ColumnSeries());
-			series.sequencedInterpolation = true;
-			series.dataFields.valueY = "porcentajeCumplimiento";
-			series.dataFields.categoryX = "nombreId";
-			series.tooltipText = "{nombreCompleto} ({nombreUsuario}) : {valueY}% ({cumplidas}/{total})";
-			series.columns.template.strokeWidth = 0;
-
-			series.tooltip.pointerOrientation = "vertical";
-
-			series.columns.template.column.cornerRadiusTopLeft = 10;
-			series.columns.template.column.cornerRadiusTopRight = 10;
-			series.columns.template.column.fillOpacity = 0.8;
-			
-			
-			
-
-			// on hover, make corner radiuses bigger
-			var hoverState = series.columns.template.column.states.create("hover");
-			hoverState.properties.cornerRadiusTopLeft = 0;
-			hoverState.properties.cornerRadiusTopRight = 0;
-			hoverState.properties.fillOpacity = 1;
-
-			series.columns.template.adapter.add("fill", function(fill, target) 
-			{
-				if (target.dataItem.valueY >= 0 && target.dataItem.valueY < 51) 
-				    return am4core.color("#dd4b39");
-				else if (target.dataItem.valueY >= 51 && target.dataItem.valueY < 100)
-					 return am4core.color("#f39c12");
-				else if (target.dataItem.valueY >= 100)
-					return am4core.color("#00a65a");
-				else
-					return fill;
-			});
-			
-			
-
-			// Cursor
-			chart.cursor = new am4charts.XYCursor();
-			
-			chart.scrollbarX = new am4core.Scrollbar();
-			chart.events.on("ready", function (e) 
-				{
-					try
-					{
-						var zoom = 6;
-						//if(_this.porcentajesAreas.lengh>=zoom)
-						//categoryAxis.zoomToIndexes(0, zoom);
-					}
-					catch(e)
-					{
-						
-					}
-					
-				});
-
-			}); // end am4core.ready()
-
-
-		
-
-	}
 	
-	cambiarEstado()
-	{
-		
-		
-	}
 	
 	set datos(datos)
 	{
@@ -1822,9 +1704,14 @@ class RevisionProcesosVista extends CatalogoVista
 		this.consultarProcesoRevisadoPorLlaves(this._llavesProceso);
 	}
 	
+	cambiarDepartamentoCriterio()
+	{
+		this.consultarUsuariosCriterio();
+	}
+	
 }
 
-var vista = new RevisionProcesosVista(this);	
+var vista = new HistorialRevisionProcesosVista(this);	
 $(document).ready(function() 
 {
 	vista.inicializar();

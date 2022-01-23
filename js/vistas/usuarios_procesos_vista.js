@@ -21,7 +21,8 @@ class UsuariosProcesosVista extends CatalogoVista
 	{
 		this.tabla.columnas = [
 			{longitud:200, 	titulo:"Id",   alias:"id", alineacion:"I", class: "desc" }, 
-			{longitud:200, 	titulo:"Usuario",   alias:"usuarioNombre", alineacion:"I", class: "desc" }, 
+			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoPerfil},
+			{longitud:200, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I", class: "desc" }, 
 			{longitud:200, 	titulo:"Id proceso",   alias:"procedimientoId", alineacion:"D", class: "desc" }, 
 			{longitud:200, 	titulo:"Proceso",   alias:"nombre", alineacion:"I"}, 
 			{longitud:200, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I",  },		
@@ -40,6 +41,15 @@ class UsuariosProcesosVista extends CatalogoVista
 
 
 		this.tabla.registros = [];		
+	}
+	
+	renderFotoPerfil(renglon, type, set)
+	{    
+		var fecha = new Date();
+		var contenido = "";
+		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+vista.time;
+		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
+	    return contenido;
 	}
 	
 	inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave)
@@ -266,6 +276,11 @@ class UsuariosProcesosVista extends CatalogoVista
 	set empresas(registros)
 	{		
 		this.cargarOpciones('#empresaIdSelect', registros, this.modo, this.modeloEdicion, 'empresaId',"");
+		if(this.modo==Modo.ALTA)
+		{
+			if(this.criteriosSeleccion.empresaId!="")
+				$("#empresaIdSelect").val(this.criteriosSeleccion.empresaId);
+		}
 	}
 	
 	consultarEmpresasCriterio()

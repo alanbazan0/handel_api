@@ -188,7 +188,7 @@ a[x-apple-data-detectors='true'] {
       <td style="overflow-wrap:break-word;word-break:break-word;padding:10px 10px 0px;font-family:arial,helvetica,sans-serif;" align="left">
         
   <h1 class="v-text-align" style="margin: 0px; color: #f01414; line-height: 140%; text-align: center; word-wrap: break-word; font-weight: normal; font-family: arial black,avant garde,arial; font-size: 22px;">
-    &iexcl;Hola Usuario!
+    &iexcl;Hola @usuarioNombre!
   </h1>
 
       </td>
@@ -201,7 +201,7 @@ a[x-apple-data-detectors='true'] {
     <tr>
       <td style="overflow-wrap:break-word;word-break:break-word;padding:0px 10px 10px;font-family:arial,helvetica,sans-serif;" align="left">
         
-  <h1 class="v-text-align" style="margin: 0px; color: #e67e23; line-height: 140%; text-align: left; word-wrap: break-word; font-weight: normal; font-family: arial black,avant garde,arial; font-size: 22px;">
+  <h1 class="v-text-align" style="margin: 0px; color: #e67e23; line-height: 140%; text-align: center; word-wrap: break-word; font-weight: normal; font-family: arial black,avant garde,arial; font-size: 22px;">
     &iexcl;Terminamos la revisi&oacute;n de procedimientos!
   </h1>
 
@@ -320,7 +320,7 @@ a[x-apple-data-detectors='true'] {
       <td style="overflow-wrap:break-word;word-break:break-word;padding:0px 10px 10px;font-family:arial,helvetica,sans-serif;" align="left">
         
   <div class="v-text-align" style="line-height: 140%; text-align: center; word-wrap: break-word;">
-    <p style="font-size: 14px; line-height: 140%;">Considerando a todos los involucrados se tuvo un avance global de x%, esta gr&aacute;fica muestra el avance final por departamentos.</p>
+    <p style="font-size: 14px; line-height: 140%;">Considerando a todos los involucrados se tuvo un avance global de <strong>@porcentaje%</strong>, esta gr&aacute;fica muestra el avance final por departamentos.</p>
   </div>
 
       </td>
@@ -337,7 +337,7 @@ a[x-apple-data-detectors='true'] {
   <tr>
     <td class="v-text-align" style="padding-right: 0px;padding-left: 0px;" align="center">
       
-      <img align="center" border="0" src="images/image-5.png" alt="" title="" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;width: 100%;max-width: 534px;" width="534" class="v-src-width v-src-max-width"/>
+      <img align="center" border="0" src="@avanceDepartamentos" alt="" title="" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;width: 100%;max-width: 534px;" width="534" class="v-src-width v-src-max-width"/>
       
     </td>
   </tr>
@@ -371,7 +371,7 @@ a[x-apple-data-detectors='true'] {
   <tr>
     <td class="v-text-align" style="padding-right: 0px;padding-left: 0px;" align="center">
       
-      <img align="center" border="0" src="images/image-2.png" alt="" title="" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;width: 100%;max-width: 534px;" width="534" class="v-src-width v-src-max-width"/>
+      <img align="center" border="0" src="@avanceUsuarios" alt="" title="" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;width: 100%;max-width: 534px;" width="534" class="v-src-width v-src-max-width"/>
       
     </td>
   </tr>
@@ -454,7 +454,7 @@ a[x-apple-data-detectors='true'] {
     <p style="font-size: 14px; line-height: 140%; text-align: justify;">El sistema de revisi&oacute;n de procesos se activa anualmente en el mes de Mes, sin embargo, recuerda que puedes revisarlos y en caso necesario solicitar ajustes en cualquier momento del a&ntilde;o con tu especialista asignado en Handel.</p>
 <p style="font-size: 14px; line-height: 140%; text-align: justify;">&nbsp;</p>
 <p style="font-size: 14px; line-height: 140%; text-align: justify;">&iexcl;Descansa tranquilo! &nbsp;la pr&oacute;xima revisi&oacute;n de procesos inicia en:</p>
-  </div>
+   </div>
 
       </td>
     </tr>
@@ -466,12 +466,10 @@ a[x-apple-data-detectors='true'] {
     <tr>
       <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:arial,helvetica,sans-serif;" align="left">
         
-<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style='background-color:#04947b'>
   <tr>
-    <td style="padding-right: 0px;padding-left: 0px;" align="center">
-      
-      <img align="center" border="0" src="https://api.apps-handel.com/images/revision/countdown.gif" alt="Countdown" title="Countdown" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: block !important;border: none;height: auto;float: none;width: 100%;max-width: 100%;" width="100" class="v-src-width v-src-max-width"/>
-      
+      <td style="font-size:20px;color:white;overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:arial,helvetica,sans-serif;" align="center">
+ @dias
     </td>
   </tr>
 </table>
@@ -479,7 +477,8 @@ a[x-apple-data-detectors='true'] {
       </td>
     </tr>
   </tbody>
-</table>
+</table> 
+
 
 <table style="font-family:arial,helvetica,sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
   <tbody>
@@ -690,14 +689,14 @@ a[x-apple-data-detectors='true'] {
       <td style="overflow-wrap:break-word;word-break:break-word;padding:10px 10px 0px;font-family:arial,helvetica,sans-serif;" align="left">
         
   <div class="v-text-align" style="color: #ffffff; line-height: 140%; text-align: center; word-wrap: break-word;">
-    <p style="font-size: 14px; line-height: 140%;">&copy; 20XX Handel - Derechos reservados</p>
+    <p style="font-size: 14px; line-height: 140%;">&copy; @ano Handel - Derechos reservados</p>
   </div>
 
       </td>
     </tr>
   </tbody>
 </table>
-
+<!-- 
 <table style="font-family:arial,helvetica,sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
   <tbody>
     <tr>
@@ -711,7 +710,7 @@ a[x-apple-data-detectors='true'] {
     </tr>
   </tbody>
 </table>
-
+ -->
   <!--[if (!mso)&(!IE)]><!--></div><!--<![endif]-->
   </div>
 </div>

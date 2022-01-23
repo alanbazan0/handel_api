@@ -21,7 +21,7 @@ class ProcesosVista extends CatalogoVista
 	
 	iniciarCopia()
 	{
-		this._copiarProcedimientosModal = new CopiarProcedimientosAsistente();
+		this._copiarProcedimientosModal = new CopiarProcesosAsistente();
 		this._copiarProcedimientosModal.mostrar(this, this.copiar);
 	}
 	

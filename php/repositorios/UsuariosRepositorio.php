@@ -576,8 +576,8 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 }
                 else
                 {
-                    $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
-                    $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+                    //$usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                    $resultado = $this->consultarIdsEmpresas($usuario->empresaId);
                     if($resultado->correcto())
                     {
                         $empresasIds = implode(",", $resultado->valor);
@@ -590,8 +590,8 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 switch ($usuario->tipoUsuarioId)
                 {
                     case \TipoUsuario::SUPERVISOR:
-                        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
-                        $resultado = $usuariosRepositorio->consultarIdsUsuarios($usuario);
+                        //$usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                        $resultado = $this->consultarIdsUsuarios($usuario);
                         if($resultado->correcto())
                         {
                             $usuariosIds = implode(",", $resultado->valor);
@@ -606,8 +606,8 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                         }
                         else
                         {
-                            $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
-                            $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+                            //$usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                            $resultado = $this->consultarIdsEmpresas($usuario->empresaId);
                             if($resultado->correcto())
                             {
                                 $empresasIds = implode(",", $resultado->valor);
@@ -1325,8 +1325,9 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         $registros = array();
         
         $consulta =   $this->consultaBase .
-        " WHERE U.empresa_id = ? " .
-        " AND U.sede_id = ? ";
+        " WHERE U.empresa_id = ? 
+        AND U.sede_id = ?
+        ORDER BY U.nombre, U.apellido";
        
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -1579,9 +1580,12 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         $filtros = array();
         $where="";
         
-        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'E','campo'=>'id','valor'=>$empresaId]);
-        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'id','valor'=>$sedeId]);
-        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'D','campo'=>'id','valor'=>$departamentoId]);
+        //if($empresaId!="")
+            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'E','campo'=>'id','valor'=>$empresaId]);
+        if($sedeId!="")
+            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'id','valor'=>$sedeId]);
+        if($departamentoId!="")
+            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'D','campo'=>'id','valor'=>$departamentoId]);
         
         
         
@@ -1716,27 +1720,14 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 }
                 else
                 {
-                    array_push($ids, -1);
+                    array_push($ids, $nodeId);
                     $resultado->valor = $ids;
                 }
-                //echo $nodo->id;
-//                 $raiz = $this->getRaiz($nodo);
-//                 if($raiz!=null)
-//                 {
-//                     array_push($ids, $raiz->nodeId);
-//                     $this->agregarEmpresasId($ids,$raiz);
-//                     $resultado->valor = $ids;
-//                 }
-//                 else
-//                 {
-//                     $resultado->mensajeError="No se encontró la raiz de la empresa $nodo->text";
-//                     $resultado->valor = null;
-//                 }
             }
         }
         else
         {
-            $resultado->mensajeError="No se encontró la empresa $nodoId";
+            $resultado->mensajeError="No se encontró el registro $nodeId";
             $resultado->valor = null;
         }
         return $resultado;

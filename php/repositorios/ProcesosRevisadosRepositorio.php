@@ -157,7 +157,7 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
        
                 
         //TEST
-        //$usuarios = array();
+        $usuarios = array();
         //array_push($usuarios, (object)["nombreUsuario"=>"alanbazan@apps-handel.com","nombre"=>"Alan"]);
         
         
@@ -1819,17 +1819,49 @@ public function consultarProcesosEnviados($usuario,$criteriosSeleccion)
             {
                 if($sentencia->execute())
                 {
-                    $resultado = $this->consultarPorLlaves((object)["id"=>$procesoRevisadoId]);
+                    $sentencia->close();
+                    $resultado = $this->calcularId('id','historial_procesos_revisados');
                     if($resultado->correcto())
                     {
-                        $procesoRevisado = $resultado->valor;
-                        $repositorio = new EstatusValidacionProcesosRepositorio($this->conexion);
-                        $resultado = $repositorio->consultarPorLlaves((object)["id" => $estatusValidacionId]);
-                        if($resultado->correcto())
+                        $id = $resultado->valor;
+                        $consulta = "INSERT INTO historial_procesos_revisados(id, proceso_revisado_id, fecha_validacion, estatus_revision_id, usuario_validador_id) " .
+                            "VALUE(?, ?, NOW(), ?, ?)";
+                        if($sentencia = $this->conexion->prepare($consulta))
                         {
-                            $estatusValidacion = $resultado->valor;
-                            $this->enviarNotificacionCambioEstatus($procesoRevisado, $usuario, $estatusValidacion);
-                            
+                            if($sentencia->bind_param("iiii", $id, $procesoRevisadoId, $estatusValidacionId, $usuario->id))
+                            {
+                                if($sentencia->execute())
+                                {
+                                    $resultado = $this->consultarPorLlaves((object)["id"=>$procesoRevisadoId]);
+                                    if($resultado->correcto())
+                                    {
+                                        $procesoRevisado = $resultado->valor;
+                                        $repositorio = new EstatusValidacionProcesosRepositorio($this->conexion);
+                                        $resultado = $repositorio->consultarPorLlaves((object)["id" => $estatusValidacionId]);
+                                        if($resultado->correcto())
+                                        {
+                                            $estatusValidacion = $resultado->valor;
+                                            $this->enviarNotificacionCambioEstatus($procesoRevisado, $usuario, $estatusValidacion);
+                                            
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    $resultado->codigoError = $this->conexion->errno;
+                                    $resultado->mensajeError = __FUNCTION__ . "Falló la ejecución(" . $this->conexion->errno . ") " . $this->conexion->error;
+                                }
+                                
+                            }
+                            else
+                            {
+                                $resultado->mensajeError = __FUNCTION__ ."Falló el enlace de parámetros";
+                            }
+                        }
+                        else
+                        {
+                            $resultado->codigoError = $this->conexion->errno;
+                            $resultado->mensajeError = __FUNCTION__ ."Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
                         }
                     }
                     
@@ -1939,6 +1971,100 @@ public function consultarProcesosEnviados($usuario,$criteriosSeleccion)
           return $resultado;
         
 
+    }
+    
+    public function consultarProcesosAgrupados($usuario,$criteriosSeleccion)
+    {
+        
+        $resultado = new Resultado();
+        
+        $registros = array();
+        
+        $filtros = array();
+        
+        
+        $where="";
+        if($criteriosSeleccion!=null)
+        {
+            
+            if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+            if(isset($criteriosSeleccion->sedeId) && $criteriosSeleccion->sedeId!="")
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+            if(isset($criteriosSeleccion->usuarioId) && $criteriosSeleccion->usuarioId!="")
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'UP', 'campo'=>'usuario_id','valor'=>$criteriosSeleccion->usuarioId]);
+            if(isset($criteriosSeleccion->administradorId)  && $criteriosSeleccion->administradorId!="")
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'EM', 'campo'=>'administrador_id','valor'=>$criteriosSeleccion->administradorId]);
+            if(isset($criteriosSeleccion->mes)  && $criteriosSeleccion->mes!="")
+                array_push($filtros,(object)['tipoDato'=>'int','campo'=>'MONTH(PR.fecha_alta)','valor'=> $criteriosSeleccion->mes]);
+            if(isset($criteriosSeleccion->ano)  && $criteriosSeleccion->ano!="")
+                array_push($filtros,(object)['tipoDato'=>'int','campo'=>'YEAR(PR.fecha_alta)','valor'=> $criteriosSeleccion->ano]);
+            if(isset($criteriosSeleccion->departamentoId) && $criteriosSeleccion->departamentoId!="")
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'departamento_id','valor'=>$criteriosSeleccion->departamentoId]);
+            if(isset($criteriosSeleccion->estatusValidacionId) && $criteriosSeleccion->estatusValidacionId!="")
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'estatus_validacion_id','valor'=>$criteriosSeleccion->estatusValidacionId]);
+                                                        
+        }
+        
+        
+        $where = $this->where($filtros);
+        
+        $consulta = "SELECT EM.id empresaId, EM.nombre empresaNombre, P.id procesoId, P.nombre procesoNombre, P.ruta_archivo carpeta,
+                    (
+                    	SELECT GROUP_CONCAT(DISTINCT CONCAT(U1.nombre,' ',U1.apellido)  SEPARATOR ', ')
+                        FROM usuarios_procesos UP1
+                    		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                    	WHERE UP1.proceso_id = P.id
+                    ) usuarios
+                    FROM appshand_saha.procesos_revisados PR
+                    	INNER JOIN usuarios_procesos UP ON UP.id = PR.usuario_proceso_id
+                        INNER JOIN procesos P ON P.id = UP.proceso_id
+                        INNER JOIN empresas EM ON EM.id = P.empresa_id
+                        INNER JOIN sedes S ON S.id = P.sede_id
+                        INNER JOIN usuarios U ON U.id = UP.usuario_id
+                        INNER JOIN departamentos D ON D.id = U.departamento_id
+                    $where
+                    GROUP BY P.id, P.nombre
+                    ORDER BY P.nombre";
+           
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($empresaId, $empresaNombre, $id, $nombre, $rutaArchivo, $usuarios))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro = (object)
+                            [
+                                "empresaId"=> $empresaId,
+                                "empresaNombre" => $empresaNombre,
+                                "id" => $id,
+                                "nombre" => $nombre,
+                                "rutaArchivo" => $rutaArchivo,
+                                "usuarios" => $usuarios
+                                              
+                            ];
+                            //$registro = $this->crearRegistro($empresaId, $empresaNombre, $procesoId, $procesoNombre, $carpeta, $usuarios);
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        return $resultado;
     }
 
     public function consultarPorLlaves($llaves)

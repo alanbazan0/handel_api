@@ -58,7 +58,14 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		
 		if(this.procesoRevisadoIdParametro!=0 && this.observacionIdParametro!=0)
 			this.mostrarObservacionParametro();
-		
+		else if(this.procesoRevisadoIdParametro!=0)
+			this.mostrarProcesoRevisadoParametro();
+			
+		$("#historialButton").click(function(){
+			var submitForm = _this.getNewSubmitForm("historial_revision_procesos.php");
+	   		submitForm.target= "_blank";
+	    	submitForm.submit();
+		});
 		
 	}
 	
@@ -413,11 +420,13 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 	{
 		var fecha = new Date();
 		
-		if(anos.length==0)
+		
+		if(ArrayUtils.searchWithValues("id",[fecha.getFullYear()],anos)==null)
 		{
 			anos.push({id:fecha.getFullYear(), nombre:fecha.getFullYear()})
 			
 		}
+		anos.unshift({id:"", nombre:"Todos los años"})
 		this.cargarOpciones('#anoSelectCriterioPendiente', anos);
 		$("#anoSelectCriterioPendiente").val(fecha.getFullYear());
 		
@@ -502,14 +511,14 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		
 		var criteriosSeleccion = 
 		{
-			empresaId:  $('#empresaSelectCriterio').val(),
-			sedeId:  $('#sedeSelectCriterio').val(),
-			departamentoId:  $('#departamentoSelectCriterio').val(),
-			mes:  $('#mesSelectCriterio').val(),
-			ano: $('#anoSelectCriterio').val(),
-			administradorId : $('#administradorSelectCriterio').val(),
-			validada : $('#estadoValidacionSelectCriterio').val(),
-			justificada : $('#estadoJustificacionSelectCriterio').val()
+			//empresaId:  $('#empresaSelectCriterio').val(),
+			//sedeId:  $('#sedeSelectCriterio').val(),
+			//departamentoId:  $('#departamentoSelectCriterio').val(),
+			//mes:  $('#mesSelectCriterio').val(),
+			ano: $('#anoSelectCriterioPendiente').val(),
+			//administradorId : $('#administradorSelectCriterio').val(),
+			//validada : $('#estadoValidacionSelectCriterio').val(),
+			//justificada : $('#estadoJustificacionSelectCriterio').val()
 			
 		};
 		
@@ -517,6 +526,28 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		
 		return criteriosSeleccion;
 	}
+	
+	get criteriosSeleccionEnviados()
+	{
+		
+		
+		var criteriosSeleccion = 
+		{
+			empresaId:  $('#empresaSelectCriterio').val(),
+			sedeId:  $('#sedeSelectCriterio').val(),
+			departamentoId:  $('#departamentoSelectCriterio').val(),
+			mes:  $('#mesSelectCriterio').val(),
+			ano: $('#anoSelectCriterio').val(),
+			administradorId : $('#administradorSelectCriterio').val(),
+			estatusValidacionId : $('#estadoValidacionSelectCriterio').val()
+			
+		};
+		
+		
+		
+		return criteriosSeleccion;
+	}
+	
 
 	set porcentajesUsuarios(porcentajesAreas)
 	{
@@ -692,7 +723,8 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 			if (_this._procesoSeleccionado != undefined)
 			{
 					_this._llavesProceso = _this.copiarPropiedadesObjeto(_this._procesoSeleccionado, ["id"]);
-					_this.mostrarFormularioObservaciones();
+					_this.consultarProcesoRevisadoPorLlaves(_this._llavesProceso);
+					//_this.mostrarFormularioObservaciones();
 			}
 		});
 		
@@ -1690,9 +1722,9 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 				this._observacionSeleccionada.seccion = observacion.seccion;
 				this._observacionSeleccionada.descripcion = observacion.descripcion;
 			}
-			this.observacionesTabla.registros = this._observaciones;
-			this.inicializarEventosBotonesTablaObservaciones("#" + this.observacionesTabla._id+"Table tbody",this.observacionesTabla.datatable.DataTable(),["id"]);
 			$("#observacionModal").modal("hide");
+			this.observacionesTabla.registros = this._observaciones;
+			this.inicializarEventosBotonesTablaObservaciones("#" + this.observacionesTabla._id+"Table tbody",this.observacionesTabla.datatable.DataTable());
 		}
 	}
 	
@@ -2044,17 +2076,17 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		this.consultar();	
 	}
 	
-	mostrarFormularioObservaciones()
+	mostrarFormularioObservaciones(proceso)
 	{
 		var _this = this;
 		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/procesos_revisados_observaciones.php",this, null, function()
 		{
 			//this.inicializarValidacionesFormularioValidacion();
 			_this.modo = Modo.CAMBIO;
-			$("#procesoLabel").html(_this._procesoSeleccionado.nombre);
+			$("#procesoLabel").html(proceso.nombre);
 			this.crearTablaObservaciones(false);
 			//this.crearEventosBotonesValidacion();
-			this.consultarProcesoRevisadoPorLlaves();
+			//this.consultarProcesoRevisadoPorLlaves();
 			
 			$("#agregarObservacionButton").click(function(){_this.mostrarObservacion(Modo.ALTA,_this._procesoSeleccionado);});
 			
@@ -2065,10 +2097,12 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 	}
 	
 	
-	consultarProcesoRevisadoPorLlaves()
+	consultarProcesoRevisadoPorLlaves(llaves)
 	{
-		this.presentador.consultarProcesoRevisadoPorLlaves();
+		this.presentador.consultarProcesoRevisadoPorLlaves(llaves);
 	}
+	 
+	
 	
 	set modeloProceso(modeloProceso)
 	{
@@ -2091,6 +2125,7 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 	
 	}
 	
+	/*
 	inicializarEventosBotonesTablaObservaciones(tbody, table)
 	{
 		var _this = this;
@@ -2111,7 +2146,7 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 
 			}
 		});
-	}
+	}*/
 	
 	get llavesProceso()
 	{
@@ -2294,6 +2329,12 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		this.mostrarComentariosObservacion();//this.editarTareaFormulario(this.listaTareas, this._registroSeleccionado.id, this.tareaIdParametro);
 	}
 	
+	mostrarProcesoRevisadoParametro()
+	{
+		this._procesoSeleccionado = {id : this.procesoRevisadoIdParametro};
+		this._llavesProceso = {id : this.procesoRevisadoIdParametro};
+		this.consultarProcesoRevisadoPorLlaves(this._llavesProceso);
+	}
 }
 
 var vista = new SolicitudRevisionProcesosVista(this);	
