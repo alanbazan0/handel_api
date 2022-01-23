@@ -57,7 +57,7 @@ class HistorialRevisionProcesosPresentador extends CatalogoPresentador
 	 consultarSedesCriterio()	
 	 {
 		 var repositorio = new SedesRepositorio(this);		
-		 repositorio.consultarPorEmpresa(this, function(resultado)
+		 repositorio.consultarPorEmpresaUsuario(this, function(resultado)
 		 {
 			if(resultado.mensajeError=="")
 			{

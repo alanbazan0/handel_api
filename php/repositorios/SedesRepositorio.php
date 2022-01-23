@@ -262,7 +262,7 @@ class SedesRepositorio extends RepositorioBase implements ISedesRepositorio
                                 }
                                 if($opcional=="true")
                                 {
-                                    if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR  )
+                                    if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR  || $usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR  )
                                     {
                                         $registro = $this->crearRegistro("", "Todas las sedes",null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
                                         array_unshift($registros, $registro);

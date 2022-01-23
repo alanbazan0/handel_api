@@ -196,11 +196,11 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
                         }
                         if($opcional=="true")
                         {
-                            //if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
-                            //{
+                            if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR || $usuario->recursosHumanos==1)
+                            {
                                 $registro = $this->crearRegistro("", "Todas las empresas","",null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,null,null,null,null,null,null,null,null,null,null,null);
                                 array_unshift($registros, $registro);
-                            //}
+                            }
                         }
                         $resultado->valor = $registros; 
                     }           
