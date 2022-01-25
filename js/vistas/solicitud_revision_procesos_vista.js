@@ -1764,7 +1764,7 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 			if (this._observacionSeleccionada != undefined)
 			{
 				//_this.modo = Modo.ALTA;
-				//usuarioProceso.usuarioProcesoId = usuarioProceso.id;
+				//usuarioProceso.usuarioProcesoId = usuarioProceso.id; 
 				_this.confirmarEliminarObservacion(this._observacionSeleccionada,tr,indice);
 			
 			}

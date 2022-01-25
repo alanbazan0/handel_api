@@ -150,54 +150,95 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
         return $resultado;
     }
     
-    
-    function guardarObservacion($usuario,$usuarioProcesoId,$observacion)
+    public function calcularObservacionId($usuarioProcesoId)
     {
-        $procesoRevisado = new ProcesoRevisado();
-        $procesoRevisado->usuarioProcesoId = $usuarioProcesoId;
-        $procesoRevisado->estatusRevisionId = \EstatusRevision::OBSERVACIONES;
-        $procesoRevisado->estatusValidacionId = \EstatusValidacionProceso::EN_PROCESO_DE_ANALISIS;
-        $this->conexion->autocommit(FALSE);
-        $resultado = $this->insertar($usuario,$procesoRevisado);
+        $resultado = new Resultado();
+        $consulta =  "SELECT IFNULL(MAX(id),0)+1 AS id FROM procesos_revisados_observaciones WHERE proceso_revisado_id = $usuarioProcesoId";
         
-        if($resultado->correcto())
+        if($sentencia = $this->conexion->prepare($consulta))
         {
-            $procesoRevisadoId = $resultado->valor;
-            $observacionId = $this->calcularObservacionId("","");
+            if($sentencia->execute())
+            {
+                if ($sentencia->bind_result($id))
+                {
+                    if($sentencia->fetch())
+                    {
+                        $resultado->valor = $id;
+                    }
+                    else
+                        $resultado->mensajeError =  __FUNCTION__. " No se encontró ningún resultado";
+                }
+                else
+                    $resultado->mensajeError =  __FUNCTION__. " Falló el enlace del resultado";
+            }
+            else
+                $resultado->mensajeError =  __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+        }
+        else
+            $resultado->mensajeError =  __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            return $resultado;
+    }
+    
+    function guardarObservacion($usuario,$usuarioProcesoId,$observacion,$procesoRevisadoId)
+    {
+        $this->conexion->autocommit(FALSE);
+        $continuar = true;
+        if($procesoRevisadoId=="")
+        {
+            $procesoRevisado = new ProcesoRevisado();
+            $procesoRevisado->usuarioProcesoId = $usuarioProcesoId;
+            $procesoRevisado->estatusRevisionId = \EstatusRevision::OBSERVACIONES;
+            $procesoRevisado->estatusValidacionId = \EstatusValidacionProceso::EN_PROCESO_DE_ANALISIS;
             
+            $resultado = $this->insertar($usuario,$procesoRevisado);
+            if($resultado->correcto())
+                $procesoRevisadoId = $resultado->valor;
+            else
+                $continuar = false;
+        }
+        
+        if($continuar)
+        {
+           
+            $resultado = $this->calcularObservacionId($usuarioProcesoId);
+            if($resultado->correcto())
+            {
+                $observacionId = $resultado->valor;
             //                     var_dump($procesoRevisadoId);
             //                     var_dump($observacion);
-            $consulta = "INSERT INTO procesos_revisados_observaciones(proceso_revisado_id, id, tipo_observacion_id, seccion, descripcion, fecha_alta, fecha_modificacion) " .
-                "VALUE(?, ?, ?, ?, ?, NOW(), NOW())";
-            if($sentencia = $this->conexion->prepare($consulta))
-            {
-                if($sentencia->bind_param("iiiss", $procesoRevisadoId, $observacionId, $observacion->tipoObservacionId, $observacion->seccion, $observacion->descripcion))
+                $consulta = "INSERT INTO procesos_revisados_observaciones(proceso_revisado_id, id, tipo_observacion_id, seccion, descripcion, fecha_alta, fecha_modificacion) " .
+                    "VALUE(?, ?, ?, ?, ?, NOW(), NOW())";
+                if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    if($sentencia->execute())
+                    if($sentencia->bind_param("iiiss", $procesoRevisadoId, $observacionId, $observacion->tipoObservacionId, $observacion->seccion, $observacion->descripcion))
                     {
-                        $sentencia->close();
+                        if($sentencia->execute())
+                        {
+                            $sentencia->close();
+                        }
+                        else
+                        {
+                            $resultado->codigoError = $this->conexion->errno;
+                            $resultado->mensajeError = "Falló la ejecución(" . $this->conexion->errno . ") " . $this->conexion->error;
+                        }
+                        
                     }
                     else
                     {
-                        $resultado->codigoError = $this->conexion->errno;
-                        $resultado->mensajeError = "Falló la ejecución(" . $this->conexion->errno . ") " . $this->conexion->error;
+                        $resultado->mensajeError = "Falló el enlace de parámetros";
                     }
-                    
                 }
                 else
                 {
-                    $resultado->mensajeError = "Falló el enlace de parámetros";
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
                 }
-            }
-            else
-            {
-                $resultado->codigoError = $this->conexion->errno;
-                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             }
         }
         if($resultado->correcto())
         {
             $this->conexion->commit();
+            $resultado->valor = $procesoRevisadoId;
         }
         else
             $this->conexion->rollback();
