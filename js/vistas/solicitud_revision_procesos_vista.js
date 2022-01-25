@@ -165,7 +165,7 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		if(renglon.usuarioId == vista.usuario.id)
 		{
 			var fecha = new Date();
-			if($("#anoSelectCriterio").val() ==fecha.getFullYear() )
+			if($("#anoSelectCriterioPendiente").val() ==fecha.getFullYear() )
 				contenido += "<button data-toggle='tooltip' data-placemen='bottom' title='Revisé el procedimiento y no hubo cambios'  type='button' class='sinCambios btn-circle mr-0 botones-icon btn btn-sm float-right btn-success'><span  data-toggle='tooltip' class='fa fa-check fa-lg'></span></button>";
 		}
 	    return contenido;
@@ -177,7 +177,7 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		if(renglon.usuarioId == vista.usuario.id)
 		{
 			var fecha = new Date();
-			if($("#anoSelectCriterio").val() ==fecha.getFullYear() )
+			if($("#anoSelectCriterioPendiente").val() ==fecha.getFullYear() )
 				contenido += "<button data-toggle='tooltip' data-placemen='bottom' title='Reportar una observación'  type='button' class='observaciones btn-circle mr-0 botones-icon btn btn-sm float-right btn-info active'><span  data-toggle='tooltip' class='fa fa-info-circle fa-lg'></span></button>";
 		}
 	    return contenido;
@@ -426,14 +426,13 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 			anos.push({id:fecha.getFullYear(), nombre:fecha.getFullYear()})
 			
 		}
-		anos.unshift({id:"", nombre:"Todos los años"})
+		
 		this.cargarOpciones('#anoSelectCriterioPendiente', anos);
+		anos.unshift({id:"", nombre:"Todos los años"})
 		$("#anoSelectCriterioPendiente").val(fecha.getFullYear());
 		
 		this.cargarOpciones('#anoSelectCriterio', anos);
 		
-		$("#mesSelectCriterio").val(fecha.getMonth()+1);
-		$("#anoSelectCriterio").val(fecha.getFullYear());
 		
 		
 		this.consultarEmpresasCriterio();

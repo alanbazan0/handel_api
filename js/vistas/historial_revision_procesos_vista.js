@@ -507,7 +507,7 @@ class HistorialRevisionProcesosVista extends CatalogoVista
 	{
 		var _this = this;
 		super.inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave);
-		$(tbody).on("click", "button.revisar", function()
+		$(tbody).on("click", "button.imprimir", function()
 		{			
 			 var tr = $(this).closest('tr');
 			    
@@ -515,43 +515,22 @@ class HistorialRevisionProcesosVista extends CatalogoVista
 		      tr = $(tr).prev();  
 		    }
 
-			_this._procesoSeleccionado  = table.row( tr ).data();
-			
-			
-			if (_this._procesoSeleccionado != undefined)
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
 			{
-				//_this._llaves = _this.copiarPropiedadesObjeto(_this._procesoSeleccionado, ["id"]);
-				if(_this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR)
-				{
-					_this._llavesProceso = _this.copiarPropiedadesObjeto(_this._procesoSeleccionado, ["id"]);
-					_this.consultarProcesoRevisadoPorLlaves(_this._llavesProceso);
-					//_this.mostrarFormularioRevision();
-				}
-				/*else if(_this.usuario.tipoUsuarioId==TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId==TipoUsuario.SUPERVISOR)
-				{
-					_this.modo = Modo.CONSULTA
-					_this.mostrarFormularioEvidencia(_this._evidenciaSeleccionada);
-				}*/
-			
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.imprimirReporte();
 			}
 		});
-		
-		$(tbody).on("click", "span.comentarios", function()
-			{			
-				 var tr = $(this).closest('tr');
-				    
-			    if ( $(tr).hasClass('child') ) {
-			      tr = $(tr).prev();  
-			    }
-				
-				_this._evidenciaSeleccionada  = table.row( tr ).data();
-				if (_this._evidenciaSeleccionada != undefined)
-				{
-					_this._llaves = _this.copiarPropiedadesObjeto(_this._evidenciaSeleccionada, ["id"]);
-					_this.mostrarComentariosEvidencia();
-
-				}
-			});
+	}
+	
+	
+	imprimirReporte()
+	{
+		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_historial_revision_procesos.php");
+		this.createNewFormElement(submitForm, "procesoId", this._llaves.id);	 
+	    submitForm.target= "_blank";
+	    submitForm.submit();
 	}
 	
 	get llavesProceso()

@@ -398,7 +398,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
 //         else
             $consulta.=" ORDER BY FIELD(U.id,$usuario->id) DESC,U.nombre, P.nombre";
         
-        //var_dump($criteriosSeleccion);
+       // var_dump($consulta);
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
