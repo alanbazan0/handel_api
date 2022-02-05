@@ -9,7 +9,7 @@ require_once("../clases/Logger.php");
 
 //FUNCIONAN:
 //const EXPORT_HIGHCHARTS_SERVER = "http://export.highcharts.com/";
-const EXPORT_HIGHCHARTS_SERVER= "http://export.apps-handel.com:8080/";
+const EXPORT_HIGHCHARTS_SERVER= "http://18.144.27.6:8080/";
 
 const SERVERS =  array("http://export.highcharts.com/", 
                     "http://export.apps-handel.com:8080"); 

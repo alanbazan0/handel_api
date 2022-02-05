@@ -11,7 +11,7 @@
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title" id="scrollmodalLabel">Observaciones</h5>
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<button id="closeButton" type="button" class="close"  aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
 			</div>
@@ -40,7 +40,7 @@
 				
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+				<button id="cancelarButton" type="button" class="btn btn-secondary">Cerrar</button>
 				<button id="guardarObservacionesButton" type="submit" style="display:none" class="btn btn-primary" >Guardar</button>
 			</div>
 		</div>

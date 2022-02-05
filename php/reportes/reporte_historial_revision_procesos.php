@@ -395,7 +395,7 @@ abstract class PDF extends FPDF
         //$this->SetLeftMargin(5);
         $this->SetFont($this->font,'B',12);
         $this->SetTextColor(0, 0, 0);
-        $this->Cell(0,4,$this->texto("Registro de cambios solicitados y estado:"),0,2,'L');
+        $this->Cell(0,4,$this->texto("Registro de cambios autorizados:"),0,2,'L');
         $repositorio = new ProcesosRevisadosObservacionesRepositorio($this->conexion);
         $resultado = $repositorio->consultar((object)["procesoId" => $this->proceso->id,"estatusValidacionId"=>EstatusValidacionProceso::AUTORIZADO]);
         if($resultado->correcto())
@@ -542,7 +542,7 @@ abstract class PDF extends FPDF
         $this->SetTextColor(0, 0, 0);
         $this->Cell(0,4,$this->texto("Empresa: " . $this->proceso->empresaNombre),0,2,'L');
         $this->Ln();
-        $this->Cell(0,4,$this->texto("Sed: " .$this->proceso->sedeNombre),0,2,'L');
+        $this->Cell(0,4,$this->texto("Sede: " .$this->proceso->sedeNombre),0,2,'L');
     }
     
     function proceso()

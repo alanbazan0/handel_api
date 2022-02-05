@@ -95,7 +95,7 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 				this.procedimientosPendientesTabla.columnas = [
 					{longitud:100, 	titulo:"Id",   	alias:"id", alineacion:"I" },
 					{longitud:200, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I" },
-					{longitud:200, 	titulo:"Carpeta en cloud",   	alias:"rutaArchivo", alineacion:"I" },
+					{longitud:200, 	titulo:"Sección en manual",   	alias:"rutaArchivo", alineacion:"I" },
 					{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoUsuario},
 					{longitud:100, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I"},
 					//{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"I" },
@@ -1620,7 +1620,10 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 			_this._archivosEliminados = [];
 			
 			$("#agregarObservacionButton").click(function(){_this.mostrarObservacion(Modo.ALTA,usuarioProceso);});
-			
+			$("#closeButton").click(function(){_this.mostrarAdvertenciaObservaciones();});
+			$("#cancelarButton").click(function(){_this.mostrarAdvertenciaObservaciones();});
+			$("#cancelarButton").html("Cancelar");
+			_this.cambiosObservaciones = false;
 			
 			
 		},null,"observacionesModal","","guardarObservacionesButton",function()
@@ -1630,6 +1633,39 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		});
 
 	}
+	
+	mostrarAdvertenciaObservaciones()
+	{
+		var _this = this;
+		if(_this.cambiosObservaciones)
+		{
+			swal({
+		            title: "\u00bfEst\u00E1 seguro de cerrar sin guardar?",
+		            text: "Hay cambios sin guardar",
+		            type: "warning",
+		            showCancelButton: true,
+		            confirmButtonColor: "#DD6B55",
+		            confirmButtonText: "Si, cerrar!!",
+		            cancelButtonText: "No",
+		            closeOnConfirm: false,
+		            closeOnCancel: true,
+		            showLoaderOnConfirm: true,
+		        },
+		        function(isConfirm)
+		        {
+		            if (isConfirm) 
+		            {
+						$("#observacionesModal").modal("hide");
+						_this.cambiosObservaciones = false;
+						swal.close();
+		            	
+		            }
+		        });
+		}
+		else
+			$("#observacionesModal").modal("hide");
+	}
+	
 	
 	guardarObservaciones(usuarioProceso, observaciones)
 	{
@@ -1724,7 +1760,9 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 			$("#observacionModal").modal("hide");
 			this.observacionesTabla.registros = this._observaciones;
 			this.inicializarEventosBotonesTablaObservaciones("#" + this.observacionesTabla._id+"Table tbody",this.observacionesTabla.datatable.DataTable());
+			this.cambiosObservaciones = true;
 		}
+		
 	}
 	
 	guardarObservacionNueva(observacion)

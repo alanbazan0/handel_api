@@ -1919,6 +1919,7 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
                     if($resultado->correcto())
                     {
                         $id = $resultado->valor;
+                        echo $id;
                         $consulta = "INSERT INTO historial_procesos_revisados(id, proceso_revisado_id, fecha_validacion, estatus_validacion_id, usuario_validador_id) " .
                             "VALUE(?, ?, NOW(), ?, ?)";
                         if($sentencia = $this->conexion->prepare($consulta))

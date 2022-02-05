@@ -1488,9 +1488,11 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
 
     public function consultarUsuario($nombreUsuario,$contrasena)
     {
+        $nombreUsuario = trim($nombreUsuario);
+        $contrasena = trim($contrasena);
         $resultado = new Resultado();       
         $consulta =   $this->consultaBase .
-                    " WHERE U.nombre_usuario = ? AND U.contrasena = ? ";
+                    " WHERE TRIM(U.nombre_usuario) = ? AND TRIM(U.contrasena) = ? ";
         
         
         if($sentencia = $this->conexion->prepare($consulta))

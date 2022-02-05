@@ -559,7 +559,7 @@ class CopiarProcesosAsistente
 			mensajeError =  "Por favor ingrese una empresa destino";
 		else if($("#sedeIdDestinoSelect").val()=="")
 			mensajeError = "Por favor ingrese una sede destino";
-		else if($("#empresaIdOrigenSelect").val()==$("#sedeIdDestinoSelect").val())
+		else if($("#sedeIdOrigenSelect").val()==$("#sedeIdDestinoSelect").val())
 			mensajeError = "Debe seleccionar sedes distintas para el origen y destino";
     	
 		if(mensajeError!="")
