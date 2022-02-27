@@ -14,7 +14,6 @@ class Vista
 		this.toastrData = null;
 		this.actualizarSesion();	
 		
-		
 		//this.inicializarSesion();
 		
 
@@ -1080,5 +1079,7 @@ class Vista
 		{
 			$("#"+modal).modal("hide");
 		}
+		
+	
 		
 }

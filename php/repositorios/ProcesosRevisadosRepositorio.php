@@ -31,8 +31,9 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
     {
         $this->conexion = $conexion;
         $this->consultaBase = "SELECT E.id, usuario_proceso_id, IFNULL(DATE_FORMAT(E.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha, P.nombre, P.codigo,
-                                (SELECT count(C.id) FROM evidencias_comentarios C WHERE C.evidencia_id = E.id) numeroComentarios, U.nombre, U.apellido, S.id, S.nombre, EM.id, EM.nombre, U.id, validada, comentarios_validacion, EM.administrador_id, V.nombre administradorNombre, V.apellido administradorApellido,E.validacion_usuario_id validadorId, VL.nombre validadorNombre, VL.apellido validadorApellido, UP.proceso_id,
-                                E.estatus_validacion_id, EV.descripcion, EV.icono, EV.color, E.estatus_revision_id, ER.descripcion, ER.icono, ER.color,  IFNULL(DATE_FORMAT( E.fecha_validacion,'%d/%m/%Y %H:%i:%s'),'') as fechaValidacion 
+                                0 numeroComentarios, U.nombre, U.apellido, S.id, S.nombre, EM.id, EM.nombre, U.id, validada, comentarios_validacion, EM.administrador_id, V.nombre administradorNombre, V.apellido administradorApellido,E.validacion_usuario_id validadorId, VL.nombre validadorNombre, VL.apellido validadorApellido, UP.proceso_id,
+                                E.estatus_validacion_id, EV.descripcion, EV.icono, EV.color, E.estatus_revision_id, ER.descripcion, ER.icono, ER.color,  IFNULL(DATE_FORMAT( E.fecha_validacion,'%d/%m/%Y %H:%i:%s'),'') as fechaValidacion,
+                                (SELECT count(O.id) FROM procesos_revisados_observaciones O WHERE O.proceso_revisado_id = E.id) numeroObservaciones, U.nombre_usuario
                                 FROM procesos_revisados E
                                 	INNER JOIN  usuarios_procesos UP ON UP.id = E.usuario_proceso_id
                                 	INNER JOIN usuarios U ON U.id = UP.usuario_id
@@ -254,7 +255,7 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
         //TEST
         $usuarios = array();
         //array_push($usuarios, (object)["nombreUsuario"=>"alanbazan@apps-handel.com","nombre"=>"Alan"]);
-        
+        array_push($usuarios, (object)["nombreUsuario"=>$procesoRevisado->nombreUsuario,"nombre"=>$procesoRevisado->usuarioNombre]);
         
         $contenido = "<p style='font-size: 14px; line-height: 140%;'><strong>¡Actualización importante!</strong></p>
                     <p style='font-size: 14px; line-height: 140%;'>&nbsp;</p>
@@ -476,11 +477,11 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $fecha,$nombre,$codigo,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procesoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion))
+                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $fecha,$nombre,$codigo,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procesoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion,$numeroObservaciones, $nombreUsuario))
                     {
                         while($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $fecha,$nombre,$codigo,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procesoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion);
+                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $fecha,$nombre,$codigo,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procesoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion,$numeroObservaciones, $nombreUsuario);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -619,11 +620,11 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procedimientoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion))
+                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procedimientoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion,$numeroObservaciones, $nombreUsuario))
                     {
                         while($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procedimientoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion);
+                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procedimientoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion,$numeroObservaciones, $nombreUsuario);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -1847,19 +1848,24 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
         return $resultado;
     }
     
-    public function validarJustificadas($usuario, $ids)
+    public function validarSinCambios($usuario, $ids)
     {
         ini_set('max_execution_time', 0);
         $this->conexion->autocommit(FALSE);
         
             $resultado = new Resultado();
-            $consulta = "UPDATE evidencias
+            $estatusId= \EstatusValidacionProceso::AUTORIZADO;
+            $consulta = "UPDATE procesos_revisados
                      SET
-                         validada = 1,
+                         estatus_validacion_id = $estatusId,
                          comentarios_validacion = '',
                          fecha_modificacion = NOW(),
+                         fecha_validacion = NOW(),
                          validacion_usuario_id = ?
                      WHERE id IN ($ids)";
+            
+            //var_dump($consulta);
+            
             if($sentencia = $this->conexion->prepare($consulta))
             {
                 if($sentencia->bind_param('i',$usuario->id))
@@ -1919,7 +1925,7 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
                     if($resultado->correcto())
                     {
                         $id = $resultado->valor;
-                        echo $id;
+                        //echo $id;
                         $consulta = "INSERT INTO historial_procesos_revisados(id, proceso_revisado_id, fecha_validacion, estatus_validacion_id, usuario_validador_id) " .
                             "VALUE(?, ?, NOW(), ?, ?)";
                         if($sentencia = $this->conexion->prepare($consulta))
@@ -1937,7 +1943,7 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
                                         if($resultado->correcto())
                                         {
                                             $estatusValidacion = $resultado->valor;
-                                            $this->enviarNotificacionCambioEstatus($procesoRevisado, $usuario, $estatusValidacion);
+                                            $resultado = $this->enviarNotificacionCambioEstatus($procesoRevisado, $usuario, $estatusValidacion);
                                             
                                         }
                                     }
@@ -2044,11 +2050,11 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
                 {
                     if($sentencia->execute())
                     {
-                        if($sentencia->bind_result($id, $usuarioProcedimientoId, $fecha,$nombre,$codigo,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procesoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion))
+                        if($sentencia->bind_result($id, $usuarioProcedimientoId, $fecha,$nombre,$codigo,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procesoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion,$numeroObservaciones, $nombreUsuario))
                         {
                             while($sentencia->fetch())
                             {
-                                $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $fecha,$nombre,$codigo,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procesoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion);
+                                $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $fecha,$nombre,$codigo,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procesoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion,$numeroObservaciones, $nombreUsuario);
                                 array_push($registros,$registro);
                             }
                             $resultado->valor = $registros;
@@ -2174,11 +2180,11 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $fecha,$nombre,$codigo,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procesoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion))
+                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $fecha,$nombre,$codigo,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procesoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion,$numeroObservaciones, $nombreUsuario))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $fecha,$nombre,$codigo,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procesoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion);
+                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $fecha,$nombre,$codigo,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procesoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion,$numeroObservaciones, $nombreUsuario);
                             $resultado->valor = $registro;
                         }
                         else
@@ -2227,7 +2233,7 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
         return $resultado;
     }
 
-    private function crearRegistro($id, $usuarioProcedimientoId, $fecha,$nombre,$codigo,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procesoId, $estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor, $estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion)
+    private function crearRegistro($id, $usuarioProcedimientoId, $fecha,$nombre,$codigo,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procesoId, $estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor, $estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion, $numeroObservaciones, $nombreUsuario)
     {
         $registro= (object) 
         [
@@ -2244,6 +2250,7 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
            // 'nombreArchivo' => $nombreArchivo,
             'codigo' => $codigo,
             'numeroComentarios' => $numeroComentarios,
+            'nombreUsuario' => $nombreUsuario,
             'usuarioNombre' => $usuarioNombre,
             'usuarioApellido' => $usuarioApellido,
             'sedeId' => $sedeId,
@@ -2268,7 +2275,8 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
             'estatusRevisionDescripcion' => $estatusRevisionDescripcion,
             'estatusRevisionIcono' => $estatusRevisionIcono,
             'estatusRevisionColor' => $estatusRevisionColor,
-            'fechaValidacion' => $fechaValidacion
+            'fechaValidacion' => $fechaValidacion,
+            'numeroObservaciones' => $numeroObservaciones
             
         ];
         

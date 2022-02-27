@@ -39,8 +39,8 @@ class RevisionProcesosVista extends CatalogoVista
 		
 		
 		//$("#estadoJusSelectCriterio").val(0)
-		$("#validarJustificadasButton").click(function(){
-			_this.validarJustificadas();
+		$("#validarSinCambiosButton").click(function(){
+			_this.validarSinCambios();
 		});
 		
 		if(this.procesoRevisadoIdParametro!=0 && this.observacionIdParametro!=0)
@@ -99,13 +99,37 @@ class RevisionProcesosVista extends CatalogoVista
 	renderRevisar(renglon, type, set)
 	{    
 		var contenido = "";
-		//if(renglon.usuarioId == vista.usuario.id)
-		//{
-			var fecha = new Date();
-				contenido += "<button data-toggle='tooltip' data-placemen='bottom' title='Revisar'  type='button' class='revisar btn-circle mr-0 botones-icon btn btn-sm float-right btn-success'><span  data-toggle='tooltip' class='fa fa-check fa-lg'></span></button>";
-		//<}
+		var color ="btn-success";
+		var titulo = "Revisar ";
+		if(renglon.estatusRevisionId == EstatusRevision.NO_HUBO_CAMBIOS)
+		{
+			color="btn-warning";
+			titulo+=", no hubo cambios";
+		}	
+		else
+		{
+			if(renglon.numeroObservaciones==1)
+				titulo+=" 1 observación";
+			else 
+			 titulo+=" "+ renglon.numeroObservaciones + " observaciones";
+		}
+		//contenido += "<button data-toggle='tooltip' data-placemen='bottom' title='"+titulo+"'  type='button' class='revisar btn-circle mr-0 botones-icon btn btn-sm float-right "+color+"'><span  data-toggle='tooltip' class='fa fa-check fa-lg'></span></button>";
+		
+		//var contenido = "";
+		var observaciones ="";
+		if(renglon.numeroObservaciones>0)
+			observaciones = "<span class='label-warning notificacion'>"+renglon.numeroObservaciones+"</span>";
+		contenido = "<button style='width:40px;' data-toggle='tooltip' data-placemen='bottom' title='"+titulo+"'  type='button' class='revisar btn-circle mr-0 botones-icon btn btn-sm float-right "+color+"'><i  class='fas fa-check fa-lg'></i>"+observaciones+"</button>";;	
 	    return contenido;
 	}
+	
+	renderRevisarObservacion(renglon, type, set)
+	{    
+		var contenido = "";
+		contenido += "<button data-toggle='tooltip' data-placemen='bottom' title='Revisar'  type='button' class='revisar btn-circle mr-0 botones-icon btn btn-sm float-right btn-success'><span  data-toggle='tooltip' class='fa fa-check fa-lg'></span></button>";
+	    return contenido;
+	}
+	
 	
 	
 	renderFotoAdministrador(renglon, type, set)
@@ -201,6 +225,11 @@ class RevisionProcesosVista extends CatalogoVista
 	renderEstatusValidacion(renglon, type, set)
 	{    
 		return "<div id='estatusValidacionTabla"+renglon.id+"'>" + vista.getEstatusValidacion(renglon) + "</div>";
+	}
+	
+	renderEstatusValidacionObservacion(renglon, type, set)
+	{    
+		return "<div id='estatusValidacionTablaObservacion"+renglon.id+"'>" + vista.getEstatusValidacion(renglon) + "</div>";
 	}
 	
 	
@@ -358,7 +387,7 @@ class RevisionProcesosVista extends CatalogoVista
 		
 		this.cargarOpciones('#anoSelectCriterio', anos);
 		
-		$("#mesSelectCriterio").val(fecha.getMonth()+1);
+		//$("#mesSelectCriterio").val(fecha.getMonth()+1);
 		$("#anoSelectCriterio").val(fecha.getFullYear());
 		
 		
@@ -575,22 +604,22 @@ class RevisionProcesosVista extends CatalogoVista
 	set datos(datos)
 	{
 		super.datos = datos;
-		var justificadasSinValidar = ArrayUtils.filterWithValues("validada,justificada",[0,1],datos);
-		if(justificadasSinValidar.length>0)
+		var sinCambiosSinValidar = ArrayUtils.filterWithValues("estatusValidacionId,estatusRevisionId",[EstatusValidacionProceso.EN_PROCESO_DE_ANALISIS,EstatusRevision.NO_HUBO_CAMBIOS],datos);
+		if(sinCambiosSinValidar.length>0)
 		{
-			$("#justificadasSpan").html("("+justificadasSinValidar.length+")");
-			$("#validarJustificadasButton").fadeIn();
+			$("#sinCambiosSpan").html("("+sinCambiosSinValidar.length+")");
+			$("#validarSinCambiosButton").fadeIn();
 		}
 		else
-			$("#validarJustificadasButton").fadeOut();
+			$("#validarSinCambiosButton").fadeOut();
 		this._criteriosSeleccionValidada = this.criteriosSeleccion.validada;
 	}
 	
-	validarJustificadas()
+	validarSinCambios()
 	{
-		var justificadasSinValidar = ArrayUtils.filterWithValues("validada,justificada",[0,1],this.tabla.registros);
-		var ids = ArrayUtils.join(justificadasSinValidar,"id");
-		this.presentador.validarJustificadas(ids);
+		var sinCambiosSinValidar = ArrayUtils.filterWithValues("estatusValidacionId,estatusRevisionId",[EstatusValidacionProceso.EN_PROCESO_DE_ANALISIS,EstatusRevision.NO_HUBO_CAMBIOS],this.tabla.registros);
+		var ids = ArrayUtils.join(sinCambiosSinValidar,"id");
+		this.presentador.validarSinCambios(ids);
 	}
 	
 	eliminarValidadas(ids)
@@ -603,22 +632,22 @@ class RevisionProcesosVista extends CatalogoVista
 			if(row!=null)
 				row.remove();
 		}
-		$("#validarJustificadasButton").fadeOut();
+		$("#validarSinCambiosButton").fadeOut();
 		var texto = "";
 		if(registros.length==1)
-			texto = "validó 1 evidencia";
+			texto = "validó 1 proceso";
 		else
-			texto = "validaron "+registros.length+" evidencias";
-		this.mostrarMensaje("","Se "+ texto +" justificadas correctamente")
+			texto = "validaron "+registros.length+" procesos";
+		this.mostrarMensaje("","Se "+ texto +" marcados sin cambios correctamente")
 	}
 	
 	set cargando(cargando)
 	{
 		super.cargando = cargando;
 		if(cargando)
-			$("#validarJustificadasButton").attr("disabled",true);
+			$("#validarSinCambiosButton").attr("disabled",true);
 		else
-			$("#validarJustificadasButton").attr("disabled",false);
+			$("#validarSinCambiosButton").attr("disabled",false);
 	}
 	
 	inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave)
@@ -696,6 +725,13 @@ class RevisionProcesosVista extends CatalogoVista
 				$("#observacionesLabel").fadeIn();				
 				this.crearTablaObservaciones();
 			}
+			else
+			{
+				$("#validacionFooter").fadeIn();	
+				$("#estatusValidacionDiv").fadeIn();	
+				
+			}
+				
 			this.crearEventosBotonesValidacion();
 			
 			
@@ -731,6 +767,32 @@ class RevisionProcesosVista extends CatalogoVista
 	actualizarEstatusValidacionProceso(estatusValidacionId)
 	{
 		this.presentador.actualizarEstatusValidacionProceso(estatusValidacionId);
+	}
+	
+	crearEventosBotonesValidacionObservacion()
+	{
+		var _this = this;
+		$("#verificacionObservacionButton").click(function () 
+		{
+			_this.actualizarEstatusValidacionObservacion(EstatusValidacionProceso.EN_VERIFICACION);
+		});
+		$("#autorizadoObservacionButton").click(function () 
+		{
+			_this.actualizarEstatusValidacionObservacion(EstatusValidacionProceso.AUTORIZADO);
+		});
+		$("#rechazadoObservacionButton").click(function () 
+		{
+			_this.actualizarEstatusValidacionObservacion(EstatusValidacionProceso.RECHAZADO);
+		});
+		$("#respondioObservacionButton").click(function () 
+		{
+			_this.actualizarEstatusValidacionObservacion(EstatusValidacionProceso.RESPONDIO);
+		});
+	}
+	
+	actualizarEstatusValidacionObservacion(estatusValidacionId)
+	{
+		this.presentador.actualizarEstatusValidacionObservacion(estatusValidacionId);
 	}
 	
 	
@@ -796,7 +858,13 @@ class RevisionProcesosVista extends CatalogoVista
 	{
 		this.presentador.consultarProcesoRevisadoPorLlaves(llaves);
 	}
+	
+	consultarObservacionPorLlavesValidacion(llaves)
+	{
+		this.presentador.consultarObservacionPorLlavesValidacion(llaves);
+	}
 	 
+
 	
 	
 	enviarComentarioEvidencia()
@@ -874,35 +942,6 @@ class RevisionProcesosVista extends CatalogoVista
 	}
 	
 	
-	set modeloEvidencia(modeloEvidencia)
-	{
-		this._modeloEvidencia = modeloEvidencia;
-		//$('#cumplimientoObservacionTabla'+this._modeloEvidencia.id).html(this.getCumplimiento(this._modeloEvidencia));
-		//$('#fotoUsuarioObservacionTabla'+this._modeloEvidencia.id).html(this.getFotoUsuario(this._modeloEvidencia));
-		//$('#nombreUsuarioObservacionTabla'+this._modeloEvidencia.id).html(this.getTexto(this._modeloEvidencia.usuarioNombreCompleto));
-		//$('#estatusValidacionObservacionTabla'+this._modeloEvidencia.id).html(this.getEstatusValidacionObservacion(this._modeloEvidencia));
-		$('#comentariosEvidenciaTabla'+this._modeloEvidencia.id).html(this.getComentariosEvidencia(this._modeloEvidencia));
-		//$("#estatusValidacionIcono").attr("class","");
-		//$("#estatusValidacionIcono").addClass(this._modeloEvidencia.estatusValidacionIcono);
-		//$("#estatusValidacionIcono").addClass(this._modeloEvidencia.estatusValidacionColor);
-		//$("#estatusValidacionLabel").html(this._modeloEvidencia.estatusValidacionDescripcion);
-		
-		/*this._evidenciaSeleccionada.cumplimiento = modeloEvidencia.cumplimiento;
-		this._evidenciaSeleccionada.estatusValidacionIcono = modeloEvidencia.estatusValidacionIcono;
-		this._evidenciaSeleccionada.estatusValidacionColor = modeloEvidencia.estatusValidacionColor;
-		this._evidenciaSeleccionada.estatusValidacionDescripcion = modeloEvidencia.estatusValidacionDescripcion;
-		this._evidenciaSeleccionada.usuarioId = modeloEvidencia.usuarioId;
-		this._evidenciaSeleccionada.usuarioNombre = modeloEvidencia.usuarioNombre;
-		this._evidenciaSeleccionada.usuarioApellido = modeloEvidencia.usuarioApellido;
-		this._evidenciaSeleccionada.usuarioNombreCompleto = modeloEvidencia.usuarioNombreCompleto;
-		
-		if(this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR && this._evidenciaSeleccionada.cumplimiento==100)
-			$("#validarObservacionButton").show();
-		else
-			$("#validarObservacionButton").hide();
-		if(this._formularioObservacion)	
-			this.consultarResponsablesObservacion();*/
-	}
 	
 	getComentariosEvidencia(renglon)
 	{    
@@ -915,131 +954,6 @@ class RevisionProcesosVista extends CatalogoVista
 	}
 	
 	
-	mostrarFormularioEvidencia(procedimiento)
-	{
-		if($("#modalAlta").length ==0)
-		{
-			var url = HANDEL_API + "/html/formularios/validacion_evidencia_saha.php";
-			this.mostrarIndicador();
-			var _this = this;
-			$.post(url,{}, function(html) 
-			{
-				_this.ocultarIndicador();
-				$("body").append(html);
-				$("#modalAlta").on("hidden.bs.modal", function () {
-					$("#modalAlta").remove();
-				});
-				
-				$("#modalAlta").on("show.bs.modal", function () 
-				{
-					
-					_this.__PAGE_RENDERING_IN_PROGRESS = 0;
-					_this.__CANVAS = $('#pdf-canvas').get(0);
-					_this.__CANVAS_CTX = _this.__CANVAS.getContext('2d');
-					
-					// Previous page of the PDF
-					$("#pdf-prev").on('click', function() {
-						if(_this.__CURRENT_PAGE != 1)
-							_this.showPage(--_this.__CURRENT_PAGE);
-					});
-
-					// Next page of the PDF
-					$("#pdf-next").on('click', function() {
-						if(_this.__CURRENT_PAGE != _this.__TOTAL_PAGES)
-							_this.showPage(++_this.__CURRENT_PAGE);
-					});
-					
-					if(_this.modo == Modo.CAMBIO ||_this.modo == Modo.CONSULTA)
-					{	
-						if(_this.presentador!=null)
-							_this.presentador.consultarPorLlaves();
-					}
-					else
-						_this.consultarCamposEvidencia(procedimiento);
-					
-						
-				});
-				
-				if(_this.modo == Modo.CONSULTA)
-				{
-					$("#tituloModalAlta").html("Evidencia");
-					$("#realizoActividadCheck").attr("disabled",true);
-					$("#botonesDiv").hide();
-					$("#justificacionSelect").attr("disabled",true);
-					$("#comentariosInput").attr("disabled",true);
-					$("#guardarButton").hide();
-					$("#guardarButton").hide();
-				}
-			
-				
-				_this.inicializarValidacionesEvidencia();
-				
-				
-				$("#guardarButton").click(function () 
-				{
-					
-					 $("#formulario").submit();
-				});
-				
-				//$("#borrarArchivoEvidenciaButton").click(function(){
-				//	_this.borrarArchivoEvidencia();
-				//});
-				
-				
-				$("#modalAlta").modal({backdrop: 'static', keyboard: false});
-			});
-		}
-		else
-		{
-			$("#modalAlta").modal({backdrop: 'static', keyboard: false});
-		}
-	}
-	
-	showPage(page_no) {
-		this.__PAGE_RENDERING_IN_PROGRESS = 1;
-		this.__CURRENT_PAGE = page_no;
-		
-		var _this = this;
-
-		// Disable Prev & Next buttons while page is being loaded
-		$("#pdf-next, #pdf-prev").attr('disabled', 'disabled');
-
-		// While page is being rendered hide the canvas and show a loading message
-		$("#pdf-canvas").hide();
-		$("#page-loader").show();
-
-		// Update current page in HTML
-		$("#pdf-current-page").text(page_no);
-		
-		// Fetch the page
-		this.__PDF_DOC.getPage(page_no).then(function(page) {
-			// As the canvas is of a fixed width we need to set the scale of the viewport accordingly
-			var scale_required = _this.__CANVAS.width / page.getViewport(1).width;
-
-			// Get viewport of the page at required scale
-			var viewport = page.getViewport(scale_required);
-
-			// Set canvas height
-			_this.__CANVAS.height = viewport.height;
-
-			var renderContext = {
-				canvasContext: _this.__CANVAS_CTX,
-				viewport: viewport
-			};
-			
-			// Render the page contents in the canvas
-			page.render(renderContext).then(function() {
-				_this.__PAGE_RENDERING_IN_PROGRESS = 0;
-
-				// Re-enable Prev & Next buttons
-				$("#pdf-next, #pdf-prev").removeAttr('disabled');
-
-				// Show the canvas and hide the page loader
-				$("#pdf-canvas").show();
-				$("#page-loader").hide();
-			});
-		});
-	}
 	
 	inicializarValidacionesEvidencia()
 	{
@@ -1557,24 +1471,56 @@ class RevisionProcesosVista extends CatalogoVista
 
 			}
 		});
+		
+		$(tbody).on("click", "button.revisar", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._observacionSeleccionada  = table.row( tr ).data();
+			
+			
+			if (_this._observacionSeleccionada != undefined)
+			{
+				//_this._llaves = _this.copiarPropiedadesObjeto(_this._procesoSeleccionado, ["id"]);
+				//if(_this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR)
+				//{
+				_this._llavesObservacion = _this.copiarPropiedadesObjeto(_this._observacionSeleccionada, ["id"]);
+				_this._llavesObservacion.procesoRevisadoId = _this._procesoSeleccionado.id;
+				_this.consultarObservacionPorLlavesValidacion(_this._llavesObservacion);
+					//_this.mostrarFormularioRevision();
+				//}
+				/*else if(_this.usuario.tipoUsuarioId==TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId==TipoUsuario.SUPERVISOR)
+				{
+					_this.modo = Modo.CONSULTA
+					_this.mostrarFormularioEvidencia(_this._evidenciaSeleccionada);
+				}*/
+			
+			}
+		});
 	}
 	
 	crearTablaObservaciones()
 	{
 		this.observacionesTabla = new Tabla("observacionesTabla");
-		this.observacionesTabla.alto = 250;
+		this.observacionesTabla.alto = 240;
 		this.observacionesTabla.buscar = false;
 		this.observacionesTabla.paginacion = false;
 		this.observacionesTabla.columnas = [
 			{longitud:100, 	titulo:"Tipo",   alias:"tipoObservacionNombre", alineacion:"I"},
 			{longitud:200, 	titulo:"Sección",   alias:"seccion", alineacion:"I"},
 			{longitud:300, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I"},
+			{longitud:30, 	titulo:"Estado de solicitud",   alias:"estatusValidacionNombre", alineacion:"C", itemRenderer:this.renderEstatusValidacionObservacion},
 			
 			//{longitud:100, 	titulo:"",   alias:"tamano", alineacion:"C",itemRenderer:this.renderTamanoArchivo},
 			//{longitud:100, 	titulo:"",   alias:"subido", alineacion:"C",itemRenderer:this.renderSubido}
 		
 		];
 		this.observacionesTabla.columnas.push({longitud:30, 	titulo:"",   alias:"comentarios", alineacion:"I", itemRenderer:this.renderComentariosObservacion});	
+		this.observacionesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderRevisarObservacion});
 	
 /*			this.observacionesTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-1 botones-icon btn btn-sm float-left btn-success active'><span  data-toggle='tooltip' class='fas fa-pencil-alt fa-lg'></span></button>"+
 													"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
@@ -1602,6 +1548,29 @@ class RevisionProcesosVista extends CatalogoVista
 			comentarios = "<span class='label-warning notificacion'>"+renglon.numeroComentarios+"</span>";
 		contenido = "<span style='cursor:pointer;margin-left:15px;width:50px;height:30px;color:gray;' data-toggle='tooltip' data-placemen='bottom' title='Comentarios' type='button' class='comentarios text-blue'><span  data-toggle='tooltip' class='fas fa-comments fa-lg'>"+comentarios+"</span>";;
 	    return contenido;
+	}
+	
+	mostrarFormularioRevisionObservacion(observacion)
+	{
+		var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/revisar_observacion.php",this, null, function()
+		{
+			//this.inicializarValidacionesFormularioValidacion();
+			$("#procesoObservacionLabel").html(_this._modeloProceso.nombre);
+			$("#observacionLabel").html(observacion.descripcion);
+			$("#estatusValidacionObservacionIcono").addClass(observacion.estatusValidacionIcono);
+			$("#estatusValidacionObservacionIcono").addClass(observacion.estatusValidacionColor);
+			//$("#estatusRevisionObservacionLabel").html(observacion.estatusRevisionDescripcion);
+			$("#estatusValidacionObservacionLabel").html(observacion.estatusValidacionDescripcion);
+			
+				
+			this.crearEventosBotonesValidacionObservacion();
+			
+			
+		},null,"observacionModal","","guardarValidacionButton", function()
+		{
+			//$("#formularioValidacion").submit();
+		});
 	}
 	
 	mostrarComentariosObservacion()
@@ -1742,26 +1711,12 @@ class RevisionProcesosVista extends CatalogoVista
 		//$('#nombreUsuarioRecomendacionTabla'+this._modeloObservacion.id).html(this.getTexto(this._modeloRecomendacion.usuarioNombreCompleto));
 		//$('#estatusValidacionRecomendacionTabla'+this._modeloObservacion.id).html(this.getEstatusValidacionRecomendacion(this._modeloRecomendacion));
 		$('#comentariosObservacionTabla'+this._modeloObservacion.id).html(this.getComentariosObservacion(this._modeloObservacion));
-		/*$("#estatusValidacionIcono").attr("class","");
-		$("#estatusValidacionIcono").addClass(this._modeloObservacion.estatusValidacionIcono);
-		$("#estatusValidacionIcono").addClass(this._modeloObservacion.estatusValidacionColor);
-		$("#estatusValidacionLabel").html(this._modeloObservacion.estatusValidacionDescripcion);
 		
-		this._recomendacionSeleccionada.cumplimiento = modeloRecomendacion.cumplimiento;
-		this._recomendacionSeleccionada.estatusValidacionIcono = modeloRecomendacion.estatusValidacionIcono;
-		this._recomendacionSeleccionada.estatusValidacionColor = modeloRecomendacion.estatusValidacionColor;
-		this._recomendacionSeleccionada.estatusValidacionDescripcion = modeloRecomendacion.estatusValidacionDescripcion;
-		this._recomendacionSeleccionada.usuarioId = modeloRecomendacion.usuarioId;
-		this._recomendacionSeleccionada.usuarioNombre = modeloRecomendacion.usuarioNombre;
-		this._recomendacionSeleccionada.usuarioApellido = modeloRecomendacion.usuarioApellido;
-		this._recomendacionSeleccionada.usuarioNombreCompleto = modeloRecomendacion.usuarioNombreCompleto;
-		*/
-		/*if(this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR && this._recomendacionSeleccionada.cumplimiento==100)
-			$("#validarRecomendacionButton").show();
-		else
-			$("#validarRecomendacionButton").hide();
-		if(this._formularioRecomendacion)	
-			this.consultarResponsablesRecomendacion();*/
+		this._observacionSeleccionada.estatusValidacionIcono = this._modeloObservacion.estatusValidacionIcono;
+		this._observacionSeleccionada.estatusValidacionColor = this._modeloObservacion.estatusValidacionColor;
+		this._observacionSeleccionada.estatusValidacionDescripcion = this._modeloObservacion.estatusValidacionDescripcion;
+		
+		$("#estatusValidacionTablaObservacion"+this._modeloObservacion.id).html(this.getEstatusValidacion(this._modeloObservacion ));
 			
 		$("#headerBox").fadeIn();
 		var html = `<div class="form-group">

@@ -5,6 +5,7 @@ use php\interfaces\IPlantillasRepositorio;
 use php\modelos\Plantilla;
 use php\modelos\Resultado;
 use php\clases\AdministradorConexion;
+use php\clases\Logger;
 
 include "../interfaces/IPlantillasRepositorio.php";
 include "../modelos/Plantilla.php";
@@ -2274,7 +2275,10 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
                     else
                     {
                         $resultado->codigoError = $this->conexion->errno;
-                        $resultado->mensajeError = "Falló la ejecución insertarRespuestasSiPregunta(" . $this->conexion->errno . ") " . $this->conexion->error;
+                        $texto = "plantillaId $plantillaId,seccionId $seccionId, preguntaId $preguntaId";
+                        $resultado->mensajeError =  __FUNCTION__ ." .Falló la ejecución (" . $texto . ") " . $this->conexion->error;
+                        
+                        //Logger::log("PlantillasRepositorio_insertarRespuestasSiPregunta", $texto);
                         break;
                     }
                     

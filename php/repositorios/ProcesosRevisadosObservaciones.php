@@ -73,6 +73,16 @@ try
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);
             break;
+            case 'actualizarEstatusValidacion':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $procesoRevisadoId = REQUEST('procesoRevisadoId');
+                $observacionId = REQUEST('observacionId');
+                $estatusValidacionId = REQUEST('estatusValidacionId');
+                $resultado = $repositorio->actualizarEstatusValidacion($usuario,$procesoRevisadoId,$observacionId,$estatusValidacionId);
+            break;
             default:
                 $resultado->mensajeError = "Acción no válida";
             break;

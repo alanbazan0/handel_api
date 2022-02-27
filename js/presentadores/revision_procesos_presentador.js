@@ -85,10 +85,10 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 		,null,true);
 	 }
 
-	validarJustificadas(ids)
+	validarSinCambios(ids)
 	{
 		vista.cargando = true;
-		 this._repositorio.validarJustificadas(this, function(resultado)
+		 this._repositorio.validarSinCambios(this, function(resultado)
 		 {
 			vista.cargando = false;
 			if(resultado.mensajeError=="")
@@ -133,21 +133,6 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 		}
 	 }
 	
-	consultarEvidenciaPorLlaves()
-	{
-		this.vista.mostrarIndicador();	
-		 this._repositorio.consultarPorLlaves(this,function(resultado)
-		 {		
-			 this.vista.ocultarIndicador();	
-			 if(resultado.mensajeError=="")
-			 {
-				 this.vista.modeloEvidencia = resultado.valor;
-			 }
-			 else
-				 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError, resultado.codigoError);
-		 },this.vista.llaves);
-	}
-	 
 	consultarComentariosPredefinidos()
 	 {
 		 this.vista.mostrarIndicador();
@@ -238,6 +223,23 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 		 },llaves);
 	}
 	
+	consultarObservacionPorLlavesValidacion(llaves)
+	{
+		this.vista.mostrarIndicador();	
+		var repositorio = new ProcesosRevisadosObservacionesRepositorio();
+		 repositorio.consultarPorLlaves(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.modeloObservacion = resultado.valor;
+                 this.vista.mostrarFormularioRevisionObservacion(resultado.valor);					
+			 }
+			 else
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError, resultado.codigoError);
+		 },llaves);
+	}
+	
 	consultarObservaciones()
 	 {
 		 this.vista.mostrarIndicador();
@@ -268,6 +270,24 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 			 else
 				 this.vista.mostrarMensajeError(resultado.mensajeError, resultado.codigoError);
 		 },this.vista._procesoSeleccionado.id, estatusValidacionId);
+	}
+	
+	actualizarEstatusValidacionObservacion(estatusValidacionId)
+	{
+		this.vista.mostrarIndicador();	
+		var repositorio = new ProcesosRevisadosObservacionesRepositorio();
+		 repositorio.actualizarEstatusValidacion(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.cerrarModal("observacionModal");
+				 this.vista.mostrarMensaje("Notificación","Guardado");
+				 this.vista.modeloObservacion = resultado.valor;
+			 }
+			 else
+				 this.vista.mostrarMensajeError(resultado.mensajeError, resultado.codigoError);
+		 },this.vista._procesoSeleccionado.id,this.vista._observacionSeleccionada.id, estatusValidacionId);
 	}
 	
 	consultarComentariosObservacion()

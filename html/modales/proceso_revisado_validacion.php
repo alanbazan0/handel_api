@@ -32,9 +32,9 @@
 							</div>
 					</div>
     					
-					<div class="form-group">
+					<div class="form-group" id="estatusValidacionDiv" style='display:none;'>
     						<div>
-    							<label for="accionAvanceLabel" class="control-label mb-1">Estado de solicitud</label>
+    							<label for="estatusValidacionIcono" class="control-label mb-1">Estado de solicitud</label>
     							<i id='estatusValidacionIcono'></i>
     							<span id="estatusValidacionLabel" class="mb-2 " style='font-size:13px;'></span>
 							</div>
@@ -54,12 +54,14 @@
 					</div>
 				
 			</div>
-			<div class="modal-footer">
+			<div i class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+				<div id="validacionFooter" style='display:none'>
 				<button id="verificacionButton"  class='btn btn-warning float-right'><i class='far fa-pause-circle'></i> En verificación</button>
-					<button id="autorizadoButton"   class='btn btn-success float-right'><i class='far fa-check-circle'></i> Autorizado</button>
-					<button id="rechazadoButton"  class='btn btn-danger float-right'><i class='far fa-times-circle'></i> Rechazado</button>
-					<button id="respondioButton"   class='btn btn-primary float-right'><i class='far fa-smile-wink'></i> Respondió</button>
+				<button id="autorizadoButton"   class='btn btn-success float-right'><i class='far fa-check-circle'></i> Autorizado</button>
+				<button id="rechazadoButton"  class='btn btn-danger float-right'><i class='far fa-times-circle'></i> Rechazado</button>
+				<button id="respondioButton"   class='btn btn-primary float-right'><i class='far fa-smile-wink'></i> Respondió</button>
+				</div>
 			</div>
 		</div>
 	</div>
