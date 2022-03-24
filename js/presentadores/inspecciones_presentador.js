@@ -21,6 +21,31 @@ class InspeccionesPresentador extends CatalogoPresentador
 //			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 //		
 //	 }
+
+	consultar()
+	{
+		if($("#aleatoriasCheckBox").is(':checked'))
+		{
+			$("#porcentajeAleatoriasLabel").show();
+			$("#porcentajeAleatoriasLabel").html("");
+			this.consultarPorcentajeAleatorias();
+		}
+		super.consultar();
+	}
+	
+	consultarPorcentajeAleatorias()
+	{
+		this._repositorio.consultarPorcentajeAleatorias(this,function(resultado)
+		{
+			if(resultado.mensajeError=="")
+			{
+				this.vista.porcentajeAleatorias = resultado.valor + "%";
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		},this.vista.criteriosSeleccion);
+	}
 	 
 	 consultarEmpresas()	
 	 {

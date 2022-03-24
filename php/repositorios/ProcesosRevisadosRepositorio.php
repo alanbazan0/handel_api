@@ -42,7 +42,7 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
                                 	INNER JOIN procesos P ON P.id = UP.proceso_id
                                 	LEFT JOIN usuarios V ON V.id = EM.administrador_id
                                 	LEFT JOIN usuarios VL ON VL.id = E.validacion_usuario_id
-                                    INNER JOIN estatus_validacion_procesos EV ON E.estatus_validacion_id = EV.id
+                                    LEFT JOIN estatus_validacion_procesos EV ON E.estatus_validacion_id = EV.id
                                     INNER JOIN estatus_revision ER ON ER.id = E.estatus_revision_id
                                 ";
     }
@@ -584,132 +584,35 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
             return $resultado;
     }
     
-    public function consultarEvidencias($criteriosSeleccion)
-    {
-        $resultado = new Resultado();
+//     public function consultarEvidencias($criteriosSeleccion)
+//     {
+//         $resultado = new Resultado();
         
-        $registros = array();
+//         $registros = array();
         
-        $filtros = array();
-        
-        
-        
-        $and="";
-        if($criteriosSeleccion!=null)
-        {
-            if(isset($criteriosSeleccion->administradorId))
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'EM', 'campo'=>'administrador_id','valor'=>$criteriosSeleccion->administradorId]);
-            if(isset($criteriosSeleccion->validada))
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'validada','valor'=> $criteriosSeleccion->validada]);
-            if(isset($criteriosSeleccion->usuarioId))
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'usuario_id','valor'=> $criteriosSeleccion->usuarioId]);
-        }
-        
-     
-      
-        
-        $and = $this->and($filtros);
-        
-        $consulta =  $this->consultaBase .
-        " WHERE  MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano " . $and ." " .
-        "ORDER BY codigo";
-        
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if($this->bind_param($sentencia, $filtros))
-            {
-                if($sentencia->execute())
-                {
-                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procedimientoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion,$numeroObservaciones, $nombreUsuario))
-                    {
-                        while($sentencia->fetch())
-                        {
-                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procedimientoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion,$numeroObservaciones, $nombreUsuario);
-                            array_push($registros,$registro);
-                        }
-                        $resultado->valor = $registros;
-                    }
-                    else
-                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
-                }
-                else
-                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
-            }
-            else
-                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
-        }
-        else
-            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
-            return $resultado;
-    }
-    
-    public function consultarEvidenciasAnualUsuario($usuario,$criteriosSeleccion)
-    {
-        $resultado = new Resultado();
-        
-        $meses = array();
-        
-        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
-        $resultado = $usuariosRepositorio->consultarPorLLaves( (object) ['id' => $criteriosSeleccion->usuarioId]);
-        if($resultado->correcto())
-        {
-            $usuario = $resultado->valor;
-            $usuariosProcedimientosRepositorio = new UsuariosProcedimientosRepositorio($this->conexion);
-            for ($i = 1; $i <= 12; $i++)
-            {
-                $criteriosSeleccionMes= (object) [
-                    'ano' =>  $criteriosSeleccion->ano,
-                    'mes' =>  $i
-                ];
-                
-                $resultadoCumplidasMes = $this->consultarEvidenciasCumplidas($usuario, $criteriosSeleccionMes);
-                if($resultadoCumplidasMes->correcto())
-                {
-                    $resultadoPendientesMes = $usuariosProcedimientosRepositorio->consultarProcedimientosPendientes($usuario, $criteriosSeleccionMes);
-                    if($resultadoPendientesMes->correcto())
-                    {
-                        $mes= (object) [
-                            'mes' =>  $i,
-                            'usuarioId' => $usuario->id,
-                            'cumplidas' =>  $resultadoCumplidasMes->valor,
-                            'pendientes' =>  $resultadoPendientesMes->valor
-                        ];
-                        array_push($meses,$mes);
-                    }
-                }
-            }
-            $resultado->valor = $meses;
-        }
-        
-       
+//         $filtros = array();
         
         
-        
-        
-       // $filtros = array();
         
 //         $and="";
 //         if($criteriosSeleccion!=null)
 //         {
+//             if(isset($criteriosSeleccion->administradorId))
+//                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'EM', 'campo'=>'administrador_id','valor'=>$criteriosSeleccion->administradorId]);
+//             if(isset($criteriosSeleccion->validada))
+//                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'validada','valor'=> $criteriosSeleccion->validada]);
 //             if(isset($criteriosSeleccion->usuarioId))
-//                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','valor'=> $criteriosSeleccion->usuarioId]);
-//         }
-//         $where = $this->where($filtros);
-        
-        
-//         $columnasMeses ="";
-//         for ($i = 1; $i <= 12; $i++) 
-//         {
-//             $columnasMeses
+//                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'usuario_id','valor'=> $criteriosSeleccion->usuarioId]);
 //         }
         
+     
+      
         
-//         $consulta = "SELECT P.id, P.nombre, $columnasMeses
-//                     FROM usuarios_procedimientos UP
-//                     	INNER JOIN usuarios U ON U.id = UP.usuario_id
-//                     	INNER JOIN procedimientos P ON P.id = UP.procedimiento_id" .
-//                 $where .
-//                 "  ORDER BY P.nombre";
+//         $and = $this->and($filtros);
+        
+//         $consulta =  $this->consultaBase .
+//         " WHERE  MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano " . $and ." " .
+//         "ORDER BY codigo";
         
 //         if($sentencia = $this->conexion->prepare($consulta))
 //         {
@@ -717,14 +620,11 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
 //             {
 //                 if($sentencia->execute())
 //                 {
-//                     if($sentencia->bind_result($id, $nombre))
+//                     if($sentencia->bind_result($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procedimientoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion,$numeroObservaciones, $nombreUsuario))
 //                     {
 //                         while($sentencia->fetch())
 //                         {
-//                             $registro= (object) [
-//                                 'id' =>  $id,
-//                                 'nombre' =>  $nombre
-//                             ];
+//                             $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $realizoActividad, $justificacionId, $comentarios, $fecha,$nombre,$nombreArchivo,$codigo,$justificacionNombre,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId, $validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procedimientoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion,$numeroObservaciones, $nombreUsuario);
 //                             array_push($registros,$registro);
 //                         }
 //                         $resultado->valor = $registros;
@@ -740,54 +640,154 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
 //         }
 //         else
 //             $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
-            return $resultado;
-    }
+//             return $resultado;
+//     }
     
-    
-    public function consultarPorcentajesEvidencias($usuario,$criteriosSeleccion)
-    {
+//     public function consultarEvidenciasAnualUsuario($usuario,$criteriosSeleccion)
+//     {
+//         $resultado = new Resultado();
         
-        $resultado = new Resultado();
-        $filtros = $this->getFiltrosN($usuario,$criteriosSeleccion,false);
-        $and = $this->and($filtros);
-        $consulta = "SELECT SUM(justificadas)justificadas, SUM(enviadas)enviadas, SUM(pendientes)pendientes ".
-            "\nFROM(" .
-            $this->getConsultaEvidenciasBase($usuario,$criteriosSeleccion,$and)  .
-            "\n) AS A ";
+//         $meses = array();
+        
+//         $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+//         $resultado = $usuariosRepositorio->consultarPorLLaves( (object) ['id' => $criteriosSeleccion->usuarioId]);
+//         if($resultado->correcto())
+//         {
+//             $usuario = $resultado->valor;
+//             $usuariosProcedimientosRepositorio = new UsuariosProcedimientosRepositorio($this->conexion);
+//             for ($i = 1; $i <= 12; $i++)
+//             {
+//                 $criteriosSeleccionMes= (object) [
+//                     'ano' =>  $criteriosSeleccion->ano,
+//                     'mes' =>  $i
+//                 ];
+                
+//                 $resultadoCumplidasMes = $this->consultarEvidenciasCumplidas($usuario, $criteriosSeleccionMes);
+//                 if($resultadoCumplidasMes->correcto())
+//                 {
+//                     $resultadoPendientesMes = $usuariosProcedimientosRepositorio->consultarProcedimientosPendientes($usuario, $criteriosSeleccionMes);
+//                     if($resultadoPendientesMes->correcto())
+//                     {
+//                         $mes= (object) [
+//                             'mes' =>  $i,
+//                             'usuarioId' => $usuario->id,
+//                             'cumplidas' =>  $resultadoCumplidasMes->valor,
+//                             'pendientes' =>  $resultadoPendientesMes->valor
+//                         ];
+//                         array_push($meses,$mes);
+//                     }
+//                 }
+//             }
+//             $resultado->valor = $meses;
+//         }
+        
+       
+        
+        
+        
+        
+//        // $filtros = array();
+        
+// //         $and="";
+// //         if($criteriosSeleccion!=null)
+// //         {
+// //             if(isset($criteriosSeleccion->usuarioId))
+// //                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','valor'=> $criteriosSeleccion->usuarioId]);
+// //         }
+// //         $where = $this->where($filtros);
+        
+        
+// //         $columnasMeses ="";
+// //         for ($i = 1; $i <= 12; $i++) 
+// //         {
+// //             $columnasMeses
+// //         }
+        
+        
+// //         $consulta = "SELECT P.id, P.nombre, $columnasMeses
+// //                     FROM usuarios_procedimientos UP
+// //                     	INNER JOIN usuarios U ON U.id = UP.usuario_id
+// //                     	INNER JOIN procedimientos P ON P.id = UP.procedimiento_id" .
+// //                 $where .
+// //                 "  ORDER BY P.nombre";
+        
+// //         if($sentencia = $this->conexion->prepare($consulta))
+// //         {
+// //             if($this->bind_param($sentencia, $filtros))
+// //             {
+// //                 if($sentencia->execute())
+// //                 {
+// //                     if($sentencia->bind_result($id, $nombre))
+// //                     {
+// //                         while($sentencia->fetch())
+// //                         {
+// //                             $registro= (object) [
+// //                                 'id' =>  $id,
+// //                                 'nombre' =>  $nombre
+// //                             ];
+// //                             array_push($registros,$registro);
+// //                         }
+// //                         $resultado->valor = $registros;
+// //                     }
+// //                     else
+// //                         $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
+// //                 }
+// //                 else
+// //                     $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+// //             }
+// //             else
+// //                 $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
+// //         }
+// //         else
+// //             $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+//             return $resultado;
+//     }
+    
+    
+//     public function consultarPorcentajesEvidencias($usuario,$criteriosSeleccion)
+//     {
+        
+//         $resultado = new Resultado();
+//         $filtros = $this->getFiltrosN($usuario,$criteriosSeleccion,false);
+//         $and = $this->and($filtros);
+//         $consulta = "SELECT SUM(justificadas)justificadas, SUM(enviadas)enviadas, SUM(pendientes)pendientes ".
+//             "\nFROM(" .
+//             $this->getConsultaEvidenciasBase($usuario,$criteriosSeleccion,$and)  .
+//             "\n) AS A ";
       
             
             
-            if($sentencia = $this->conexion->prepare($consulta))
-            {
-                if($this->bind_param($sentencia, $filtros))
-                {
-                    if($sentencia->execute())
-                    {
-                        if($sentencia->bind_result($justificadas, $enviadas, $pendientes))
-                        {
-                            if($sentencia->fetch())
-                            {
-                                $porcentajes = array();
-                                array_push($porcentajes,(object)['nombre'=>'Enviadas','valor'=>intval($enviadas)]);
-                                array_push($porcentajes,(object)['nombre'=>'Pendientes','valor'=>intval($pendientes)]);
-                                array_push($porcentajes,(object)['nombre'=>'Justificadas','valor'=>intval($justificadas)]);
+//             if($sentencia = $this->conexion->prepare($consulta))
+//             {
+//                 if($this->bind_param($sentencia, $filtros))
+//                 {
+//                     if($sentencia->execute())
+//                     {
+//                         if($sentencia->bind_result($justificadas, $enviadas, $pendientes))
+//                         {
+//                             if($sentencia->fetch())
+//                             {
+//                                 $porcentajes = array();
+//                                 array_push($porcentajes,(object)['nombre'=>'Enviadas','valor'=>intval($enviadas)]);
+//                                 array_push($porcentajes,(object)['nombre'=>'Pendientes','valor'=>intval($pendientes)]);
+//                                 array_push($porcentajes,(object)['nombre'=>'Justificadas','valor'=>intval($justificadas)]);
                                 
-                                $resultado->valor = $porcentajes;
-                            }
-                        }
-                        else
-                            $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
-                    }
-                    else
-                        $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
-                }
-                else
-                    $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
-            }
-            else
-                $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
-                return $resultado;
-    }
+//                                 $resultado->valor = $porcentajes;
+//                             }
+//                         }
+//                         else
+//                             $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
+//                     }
+//                     else
+//                         $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+//                 }
+//                 else
+//                     $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
+//             }
+//             else
+//                 $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+//                 return $resultado;
+//     }
     
     
     public function consultarPorcentajesEmpresas($usuario,$criteriosSeleccion)
@@ -2029,8 +2029,8 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
                 if(isset($criteriosSeleccion->departamentoId) && $criteriosSeleccion->departamentoId!="")
                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'departamento_id','valor'=>$criteriosSeleccion->departamentoId]);
                 if(isset($criteriosSeleccion->estatusValidacionId) && $criteriosSeleccion->estatusValidacionId!="")
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'estatus_validacion_id','valor'=>$criteriosSeleccion->estatusValidacionId]);
-                        
+                    //array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'estatus_validacion_id','valor'=>$criteriosSeleccion->estatusValidacionId]);
+                    array_push($filtros,(object)['tipo'=>'estatico','texto'=>"(estatus_validacion_id = $criteriosSeleccion->estatusValidacionId OR EXISTS(SELECT * FROM procesos_revisados_observaciones PRO1 WHERE PRO1.proceso_revisado_id = E.id AND PRO1.estatus_validacion_id = $criteriosSeleccion->estatusValidacionId))"]);
                
             }
             
@@ -2043,6 +2043,8 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
             
             $consulta =  $this->consultaBase . $where .
             " order by UNIX_TIMESTAMP(E.fecha_alta) desc";
+            
+             //var_dump($consulta);
             
             if($sentencia = $this->conexion->prepare($consulta))
             {
@@ -2532,9 +2534,9 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
         
         
         $consulta =  "SELECT IFNULL(DATE_FORMAT(HPR.fecha_validacion,'%d/%m/%Y %H:%i:%s'),'') as fecha, U.nombre, U.apellido,PRO.seccion, TOB.descripcion tipo, ER.descripcion estado, V.id, V.nombre, V.apellido
-                    FROM historial_procesos_revisados HPR
+                    FROM historial_procesos_revisados_observaciones HPR
                     	INNER JOIN procesos_revisados PR ON PR.id = HPR.proceso_revisado_id
-                        INNER JOIN procesos_revisados_observaciones PRO ON PRO.proceso_revisado_id = PR.id
+                        INNER JOIN procesos_revisados_observaciones PRO ON PRO.proceso_revisado_id = PR.id AND PRO.id = HPR.observacion_id
                         INNER JOIN usuarios_procesos UP ON UP.id = PR.usuario_proceso_id 
                     	INNER JOIN procesos P ON P.id = UP.proceso_id
                         INNER JOIN usuarios U ON U.id = UP.usuario_id

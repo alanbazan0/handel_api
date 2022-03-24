@@ -1649,6 +1649,9 @@ class Reporte7 extends PDF
         $profundidad = $this->inspeccion->profundidad;
         $selloColocado = $this->inspeccion->selloColocado;
         
+        if($this->inspeccion->selloViajero=="")
+            $this->inspeccion->selloViajero="Sin sello viajero";
+        
         if($alto=="")
             $alto = "-";
             
@@ -1735,7 +1738,11 @@ class Reporte7 extends PDF
         $libreContaminantes = $this->inspeccion->cajaLibreObjetosOrganicos;
         if($this->inspeccion->cajaLibreObjetosOrganicos=="NO")
             $libreContaminantes.=", ".$this->inspeccion->cajaLibreObjetosOrganicosJustificacion;
-        $this->Cell(55, 8, $this->texto($libreContaminantes), $borde, 0, 'L');
+        $this->Cell(10, 8, $this->texto($libreContaminantes), $borde, 0, 'L');
+        $this->SetFont($this->font, 'B', 10);
+        $this->Cell(40, 8, "Sello viajero:", $borde, 0, 'L');
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(45, 8, $this->texto($this->inspeccion->selloViajero), $borde, 0, 'L');
         
         $this->SetLeftMargin(10);
         $this->SetFont($this->font, 'B', 13);

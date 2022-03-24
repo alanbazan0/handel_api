@@ -47,7 +47,7 @@
         							<div id='archivosProgress' class="progress" style='display:none'>
                                       <div id='archivosProgressBar' class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
                                     </div>
-                                   
+                                   <button id='agregarObservacionButton' type="button" class='btn btn-primary pull-right'><i class='fas fa-plus'></i> Agregar</button>
         						</div>
         					</div>
     					 <div id='observacionesTabla'></div>

@@ -5,6 +5,7 @@ use php\interfaces\IInspeccionesRepositorio;
 use php\modelos\Inspeccion;
 use php\modelos\Resultado;
 use php\clases\Logger;
+use php\clases\Porcentaje;
 
 include "../interfaces/IInspeccionesReporitorio.php";
 include "../modelos/Inspeccion.php";
@@ -23,7 +24,7 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
     {
         
         $this->conexion = $conexion;
-        $this->consultaBase = " SELECT I.id, E.id empresaId, E.nombre empresaNombre, I.id sedeId, S.nombre sedeNombre, usuario_id usuarioId, US.nombre usuarioNombre, inspector_id inspectorId, CONCAT(INS.nombre,' ', INS.apellido) inspectorNombre, IFNULL(DATE_FORMAT(fecha_inspeccion ,'%d/%m/%Y %H:%i:%s'),'')fechaInspeccion, I.area_id, A.nombre, numero_caja numeroCaja, E.nombre_corto, S.nombre_corto, A.tipo_area_id, TA.nombre, IFNULL(DATE_FORMAT(fecha_finalizacion ,'%d/%m/%Y %H:%i:%s'),'')fechaFinalizacion, transportista, chofer, numero_tractor, placas_tractor, placas_caja, color_tractor, color_caja, numero_contenedor, tipo_caja, sello, sello_viajero, alto,  ancho, profundidad,  entrada_salida, TI.id, TI.descripcion,destino, numero_orden,piezas, bultos, peso, otras_mercancias, turno_inicio, turno_fin, fecha_subida, manifiesto, inspector_termina, CONCAT(INST.nombre,' ', INST.apellido) , sello_colocado, tiene_impreso_sello, caja_libre_objetos_organicos,factura, inspector_aleatorio_id, CONCAT(INSA.nombre,' ', INSA.apellido)aleatorioNombre, caja_libre_objetos_organicos_justificacion,unidad_libre_objetos_organicos,unidad_libre_objetos_organicos_justificacion,chofer_no_firma,chofer_no_firma_justificacion, sello_vvtt  
+        $this->consultaBase = " SELECT I.id, E.id empresaId, E.nombre empresaNombre, I.id sedeId, S.nombre sedeNombre, usuario_id usuarioId, US.nombre usuarioNombre, inspector_id inspectorId, CONCAT(INS.nombre,' ', INS.apellido) inspectorNombre, IFNULL(DATE_FORMAT(fecha_inspeccion ,'%d/%m/%Y %H:%i:%s'),'')fechaInspeccion, I.area_id, A.nombre areaNombre, numero_caja numeroCaja, E.nombre_corto empresaNombreCorto, S.nombre_corto, A.tipo_area_id, TA.nombre tipoAreaNombre, IFNULL(DATE_FORMAT(fecha_finalizacion ,'%d/%m/%Y %H:%i:%s'),'')fechaFinalizacion, transportista, chofer, numero_tractor, placas_tractor, placas_caja, color_tractor, color_caja, numero_contenedor, tipo_caja, sello, sello_viajero, alto,  ancho, profundidad,  entrada_salida, TI.id tipoInspeccionId, TI.descripcion tipoInspeccionDescripcion,destino, numero_orden,piezas, bultos, peso, otras_mercancias, turno_inicio, turno_fin, fecha_subida, manifiesto, inspector_termina, CONCAT(INST.nombre,' ', INST.apellido) , sello_colocado, tiene_impreso_sello, caja_libre_objetos_organicos,factura, inspector_aleatorio_id, CONCAT(INSA.nombre,' ', INSA.apellido)aleatorioNombre, caja_libre_objetos_organicos_justificacion,unidad_libre_objetos_organicos,unidad_libre_objetos_organicos_justificacion,chofer_no_firma,chofer_no_firma_justificacion, sello_vvtt  
              FROM inspecciones I 
                LEFT JOIN sedes S ON S.id = I.sede_id 
                LEFT JOIN empresas E ON E.id = S.empresa_id 
@@ -40,6 +41,9 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
     {
         $this->conexion->autocommit(FALSE);
         $modeloJson =  json_encode($modelo, JSON_UNESCAPED_UNICODE);
+        
+        if($modelo->inspectorAleatorioId==0 || $modelo->inspectorAleatorioId=="")
+            $modelo->inspectorAleatorioId = null;
        
         $resultado =  $this->calcularId("id","inspecciones");
      
@@ -93,11 +97,12 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
         if($resultado->correcto())
         {
             $this->conexion->commit();
+            $modelo->fotos = array();
            Logger::log("InspeccionesRepositorio_insertar_$modelo->id"."_CORRECTO.log", $modeloJson);
         }
         else 
         {
-            
+            $modelo->fotos = array();
             $this->conexion->rollback();
             Logger::log("InspeccionesRepositorio_insertar_$modelo->id"."_INCORRECTO.log", $resultado->mensajeError);
             Logger::log("InspeccionesRepositorio_insertar_$modelo->id"."_INCORRECTO.log", $modeloJson);
@@ -191,13 +196,28 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
                 {
                     $path = $carpeta . $archivo;
                     if(file_exists($path))
-                        unlink($path);
+                        $this->rrmdir($path);
                 }
             }
             
         }
         
 
+    }
+    
+    function rrmdir($dir) {
+        if (is_dir($dir)) {
+            $objects = scandir($dir);
+            foreach ($objects as $object) {
+                if ($object != "." && $object != "..") {
+                    if (is_dir($dir. DIRECTORY_SEPARATOR .$object) && !is_link($dir."/".$object))
+                        rrmdir($dir. DIRECTORY_SEPARATOR .$object);
+                        else
+                            unlink($dir. DIRECTORY_SEPARATOR .$object);
+                }
+            }
+            rmdir($dir);
+        }
     }
     
     private function insertarPuntosInspeccion($inspeccion)
@@ -327,6 +347,11 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
                 if($criteriosSeleccion->numeroCaja!="" && $criteriosSeleccion->numeroCaja!=null)
                     array_push($filtros,(object)['tipoDato'=>'varchar','tabla' => 'I', 'campo'=>'numero_caja','valor'=>$criteriosSeleccion->numeroCaja]);
             }
+            if(isset($criteriosSeleccion->aleatoria))
+            {
+                if($criteriosSeleccion->aleatoria==1)
+                    array_push($filtros,(object)['tipo'=>'estatico','texto'=>'inspector_aleatorio_id!=0']);
+            }
             $where = $this->where($filtros);
         }
         $consulta = $this->consultaBase .
@@ -363,6 +388,140 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             
             
             return $resultado;
+    }
+    
+    public function consultarPorcentajeAleatorias($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = array();
+        $where="";
+        if($criteriosSeleccion!=null)
+        {
+            if(isset($criteriosSeleccion->empresaId))
+            {
+                if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+                    else
+                    {
+                        if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR)
+                        {
+                            $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                            $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+                            if($resultado->correcto())
+                            {
+                                $empresasIds = implode(",", $resultado->valor);
+                                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','operador'=>'IN','valor'=>$empresasIds]);
+                            }
+                        }
+                    }
+            }
+            if(isset($criteriosSeleccion->sedeId))
+            {
+                if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+            }
+            if(isset($criteriosSeleccion->areaId))
+            {
+                if($criteriosSeleccion->areaId!="" && $criteriosSeleccion->areaId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'area_id','valor'=>$criteriosSeleccion->areaId]);
+            }
+            if(isset($criteriosSeleccion->fechaInicial))
+            {
+                if($criteriosSeleccion->fechaInicial!="" && $criteriosSeleccion->fechaInicial!=null)
+                    array_push($filtros,(object)['tipoDato'=>'date','operador'=>'>=','tabla'=>'I','campo'=>'fecha_inspeccion','valor'=>$criteriosSeleccion->fechaInicial]);
+            }
+            if(isset($criteriosSeleccion->fechaFinal))
+            {
+                if($criteriosSeleccion->fechaFinal!="" && $criteriosSeleccion->fechaFinal!=null)
+                    array_push($filtros,(object)['tipoDato'=>'date','operador'=>'<=','tabla'=>'I','campo'=>'fecha_inspeccion','valor'=>$criteriosSeleccion->fechaFinal]);
+            }
+            if(isset($criteriosSeleccion->numeroCaja))
+            {
+                if($criteriosSeleccion->numeroCaja!="" && $criteriosSeleccion->numeroCaja!=null)
+                    array_push($filtros,(object)['tipoDato'=>'varchar','tabla' => 'I', 'campo'=>'numero_caja','valor'=>$criteriosSeleccion->numeroCaja]);
+            }
+            
+            //array_push($filtros,(object)['tipo'=>'estatico','texto'=>'inspector_aleatorio_id!=0']);
+            $where = $this->where($filtros);
+        }
+        $consulta = "SELECT count(*) FROM ($this->consultaBase 
+                  $where 
+                )A";
+        
+        //echo $consulta;
+        
+        $totales = 0;
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($totales))
+                    {
+                        if($row = $sentencia->fetch())
+                        {
+                            $sentencia->close();
+                            //$totales = $porcentaje;
+                        }
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado.";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        array_push($filtros,(object)['tipo'=>'estatico','texto'=>'inspector_aleatorio_id!=0']);
+        $where = $this->where($filtros);
+        
+        
+        $consulta = "SELECT count(*) FROM ($this->consultaBase
+                  $where
+                )A";
+                  
+                  //echo $consulta;
+                  
+          $aleatorias = 0;
+          if($sentencia = $this->conexion->prepare($consulta))
+          {
+              if($this->bind_param($sentencia, $filtros))
+              {
+                  if($sentencia->execute())
+                  {
+                      if ($sentencia->bind_result($aleatorias))
+                      {
+                          if($row = $sentencia->fetch())
+                          {
+                              //$totales = $porcentaje;
+                          }
+                      }
+                      else
+                          $resultado->mensajeError = "Falló el enlace del resultado.";
+                  }
+                  else
+                      $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+              }
+              else
+                  $resultado->mensajeError = "Falló el enlace de parámetros";
+          }
+          else
+              $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        
+        $porcentaje = 0;
+          if($totales!=0)
+        $porcentaje = $aleatorias / $totales * 100;    
+          
+        
+       $resultado->valor = Porcentaje::formatear($porcentaje,2);
+              
+        return $resultado;
     }
     
     public function consultarPorLlaves($llaves)

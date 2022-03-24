@@ -57,7 +57,7 @@ abstract class PDF extends FPDF
         $this->SetTextColor(0,0,0);
         $this->SetY(-10);
         $this->SetX(0);
-        $this->SetLeftMargin(5);
+        $this->SetLeftMargin($this->margen);
         $borde = 0;
         $anchoColumna = ($this->w - ($this->margen * 2)) / 3;
         $this->SetFont($this->font, 'I', 9);
@@ -267,8 +267,8 @@ abstract class PDF extends FPDF
         {
             $this->AddPage($this->CurOrientation);
             $this->SetY(15);
-            $this->SetX(0);
-            $this->SetLeftMargin(10);
+            //$this->SetX($this->margen);
+            $this->SetLeftMargin($this->margen);
         }
     }
     
@@ -391,8 +391,6 @@ abstract class PDF extends FPDF
     {
         $this->Ln();
         $this->Ln();
-        //$this->SetY(16);
-        //$this->SetLeftMargin(5);
         $this->SetFont($this->font,'B',12);
         $this->SetTextColor(0, 0, 0);
         $this->Cell(0,4,$this->texto("Registro de cambios autorizados:"),0,2,'L');
@@ -431,10 +429,8 @@ abstract class PDF extends FPDF
     
     private function historialCambios()
     {
-        $this->Ln();
-        $this->Ln();
-        //$this->SetY(16);
-        //$this->SetLeftMargin(5);
+        $this->AddPage();
+        $this->SetLeftMargin(10);
         $this->SetFont($this->font,'B',12);
         $this->SetTextColor(0, 0, 0);
         $this->Cell(0,4,$this->texto("Histórico de revisiones y cambios:"),0,2,'L');
@@ -445,10 +441,11 @@ abstract class PDF extends FPDF
             $observaciones = $resultado->valor;
             $this->Ln();
             $borde = 1;
+            //277
             $this->fontSizes = array(11, 11, 11, 11, 11, 11, 11);
             $this->fontWeights = array("","","","","","","");
             $this->aligns = array("C","C","C","C","C","C","C");
-            $this->widths = array(30, 30, 30, 40, 27, 40, 40);
+            $this->widths = array(50, 30, 30, 40, 47, 40, 40);
             $this->textColors = array("#000000","#000000","#000000","#000000","#000000","#000000","#000000");
             $this->borders = array(1,1,1,1,1,1,1);
             $this->borderColors = array("#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0");
@@ -463,7 +460,8 @@ abstract class PDF extends FPDF
                 //$this->borders = array(1,1,1,1,1,1,1,1);
                 //$this->backgroundColors = array($color,$color,$color,$color,$color);
                 //$this->fontWeights = array("","","","","");
-                $fecha = substr($observacion->fecha, 0,10);
+               // $fecha = substr($observacion->fecha, 0,10);
+                $fecha = $observacion->fecha;
                 $this->Row2(array($fecha,$this->texto($observacion->usuarioNombre),$this->texto($observacion->usuarioApellido),$this->texto($observacion->seccion),$this->texto($observacion->tipoObservacionNombre),$this->texto($observacion->estatusValidacionDescripcion),$this->texto($observacion->validadorNombreCompleto)),8);
                 
             }
@@ -511,17 +509,6 @@ abstract class PDF extends FPDF
         }
     }
     
-    function avance()
-    {
-        $borde = 0;
-        $avance = $this->proceso->porcentaje;
-        $this->SetTextColor(0,0,0);
-        $this->SetFont($this->font,'I',9);
-        $this->Ln();
-        $this->SetX(0);
-        $this->SetMargins(5,5,5);
-        $this->Cell(0, 8, "Avance: $avance%", $borde, 0, 'R');
-    }
     
     function titulo()
     {
@@ -574,25 +561,7 @@ abstract class PDF extends FPDF
         $this->linea($this->GetY() + 6, 0, 0, 0, 0.3);
        
     }
-    
-    function campo($ancho,$texto,$valor)
-    {
-        /*$this->Ln();
-         $this->SetFont($this->font,'B',14);
-         $this->SetTextColor(0, 0, 0);
-         $this->Cell(0,0,$this->texto($texto),0,2);
-         $y = $this->GetY();
-         $this->linea($y + 3, 0, 0, 0, 0.5);*/
-        $borde = 0  ;
-        $this->SetLeftMargin(5);
-        $this->SetFont($this->font,'',11);
-        $this->SetTextColor(0, 0, 0);
-        $this->Cell($ancho, 6, $this->texto($texto), $borde, 0, 'L');
-        $this->Cell($this->w - $ancho - ($this->margen *  2), 6, $this->texto($valor), $borde, 0, 'L');
-        
-        
-    }
-    
+  
     function formatoFecha($fecha)
     {
         $f = substr($fecha,0,10);
@@ -603,295 +572,13 @@ abstract class PDF extends FPDF
     }
     
     
-    function imprimirInspector()
-    {
-        $inspectorNombre = strtoupper($this->proceso->inspectorNombre);
-        //$fechaInicio = $this->formatoFecha($this->proceso->fechaproceso);
-        //$fechaFinalizacion= $this->formatoFecha($this->proceso->fechaFinalizacion);
-        
-        $fechaInicio = $this->proceso->fechaproceso;
-        $fechaFinalizacion= $this->proceso->fechaFinalizacion;
-        
-        $borde = 0;
-        $this->SetLeftMargin(10);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 6, "Montacarguista /", $borde, 0, 'L');
-        $this->Cell(100, 6, "", $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(15, 6, "Inicio:", $borde, 0, 'R');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 6, $fechaInicio, $borde, 0, 'R');
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 6, $this->texto("Inspector"), $borde, 0, 'L');
-        $this->SetFont($this->font,'',10);
-        $this->Cell(100, 6, $this->texto($inspectorNombre), $borde, 0, 'C');
-        $this->SetFont($this->font,'B',10);
-        $this->Cell(15, 6, "Fin:", $borde, 0, 'R');
-        $this->SetFont($this->font  ,'', 10);
-        $this->Cell(45, 6, $fechaFinalizacion, $borde, 0, 'R');
-        
-    }
-    
-
-    
-    
-    function imprimirFotos()
-    {
-      
-        
-        $seccionesFotos = array();
-        for($i = 0 ; $i < count($this->proceso->puntos); $i++)
-        {
-            $punto = $this->proceso->puntos[$i];;
-            $seccion = $this->crearSeccionFotos($this->proceso->id,$punto);
-            if(count($seccion->fotos)>0)
-                array_push($seccionesFotos,$seccion);
-        }
-        
-//         for($i = 0 ; $i < count($this->proceso->puntos2); $i++)
-//         {
-//             $punto = $this->proceso->puntos2[$i];;
-//             $seccion = $this->crearSeccionFotos($this->proceso->id,$punto);
-//             if(count($seccion->fotos)>0)
-//                 array_push($seccionesFotos,$seccion);
-//         }
-        
-        if(count($seccionesFotos)>0)
-            $this->AddPage();
-        
-        $borde = 0;
-        
-        
-        
-        $anchoFoto = 50;
-        //$altoFoto = $anchoFoto * 40 / 30;
-        $altoFoto = $anchoFoto * 0.75;
-        $separacionX =  5;
-        $separacionY = 20;
-        
-        $yFotos = $separacionY + 15;
-        
-        for($i = 0 ; $i < count($seccionesFotos); $i++)
-        {
-            $seccion = $seccionesFotos[$i];
-            $titulo = $seccion->id .". ".$seccion->descripcion;
-            
-            $this->SetXY(0, $yFotos - $separacionY);
-            $this->SetLeftMargin(10);
-            $this->SetFont($this->font, 'B', 13);
-            $this->Ln();
-            $this->SetFillColor(242, 242, 242);
-            $this->Cell(0,8,$this->texto($titulo),$borde,2,'C',0);
-            
-            
-            $numeroFotos = count($seccion->fotos);
-            $anchoTotal = (($numeroFotos-1) * $separacionX) + $numeroFotos * $anchoFoto;
-            $xFoto = 10 + (95 - $anchoTotal/2);
-            for($j = 0 ; $j < $numeroFotos; $j++)
-            {
-                $foto = $seccion->fotos[$j];
-                
-                $this->correctImageOrientation($foto);
-                
-                $this->Image($foto,$xFoto,$yFotos,$anchoFoto,$altoFoto);
-                $xFoto = $xFoto + $anchoFoto +  $separacionX;
-            }
-            $yFotos = $yFotos + $separacionY + $altoFoto;
-            if(($i+1) % 3 ==0 && $i<count($seccionesFotos)-1)
-            {
-                $yFotos = $separacionY + 15;
-                $this->AddPage();
-            }
-        }
-        
-        
-        
-    }
-    
-    function agregarFoto($procesoId, $nombreArchivo ,$titulo,&$fotos)
-    {
-        $archivo = "../fotos_procesoes/".$procesoId ."_" . $nombreArchivo.".jpg";
-        if (file_exists($archivo))
-        {
-            $foto= (object) [
-                'titulo' => $titulo,
-                'archivo' => $archivo
-            ];
-            array_push($fotos,$foto);
-        }
-    }
-    
-    function imprimirFotosHallazgos()
-    {
-      
-        
-        $fotos = array();
-        $this->agregarFoto($this->proceso->id,"sello","SELLO",$fotos);
-        $this->agregarFoto($this->proceso->id,"sellocaja","SELLO CAJA",$fotos);
-        $this->agregarFoto($this->proceso->id,"placatractor","PLACA TRACTOR",$fotos);
-        $this->agregarFoto($this->proceso->id,"placacontenedor","PLACA CONTENEDOR",$fotos);
-        $this->agregarFoto($this->proceso->id,"licchofer","LICENCIA CHOFER",$fotos);
-        
-        $this->agregarFoto($this->proceso->id,"cajavacia","CAJA VACIA",$fotos);
-        $this->agregarFoto($this->proceso->id,"cajafinal","CAJA FINAL",$fotos);
-        $this->agregarFoto($this->proceso->id,"cajacerrada","CAJA CERRADA",$fotos);
-        
-        if(count($fotos)>0)
-        {
-            $this->AddPage();
-          
-            
-            //var_dump($fotos);
-            
-            
-            $borde = 0;
-            
-            $anchoFoto = 50;
-           // $altoFoto = $anchoFoto * 40 / 30;
-            $altoFoto = $anchoFoto * 0.75;  
-            $separacionX =  5;
-            $separacionY = 20;
-            
-            $yFotos = $separacionY + 15;
-            
-            $xFoto = 25;
-            
-           
-            
-          
-            for($i = 0 ; $i < count($fotos); $i++)
-            {
-                $foto = $fotos[$i];
-                 $this->SetXY($xFoto, $yFotos - $separacionY);
-                 $this->SetLeftMargin(10);
-                 $this->SetFont($this->font, 'B', 13);
-                 $this->Ln();
-                 $this->SetXY($xFoto, $yFotos - $separacionY +10);
-                 $this->SetFillColor(242, 242, 242);
-                 $this->Cell($anchoFoto,8,$this->texto($foto->titulo),$borde,2,'C');
-                 $this->correctImageOrientation($foto->archivo);
-                 $this->Image($foto->archivo,$xFoto,$yFotos,$anchoFoto,$altoFoto);
-                 $xFoto+=$separacionX + $anchoFoto;
-                 if(($i+1)%3==0)
-                 {
-                     $xFoto = 25;
-                     $yFotos+=$altoFoto +15;
-                 }
-            }
-        }
-        
-       
-//         $borde = 0;
-        
-//         $anchoFoto = 60;
-//         //$altoFoto = $anchoFoto * 40 / 30;
-//         $altoFoto = $anchoFoto * 0.75;  
-//         $separacionX =  25;
-//         $separacionY = 20;
-        
-//         $yFotos = $separacionY + 15;
-        
-//         $xFoto = 25;
-        
-        //$this->AddPage();
-        
-        $fotos = array();
-        $this->agregarFoto($this->proceso->id,"firma_chofer","FIRMA CHOFER",$fotos);
-        $this->agregarFoto($this->proceso->id,"firma_inspector","FIRMA INSPECTOR",$fotos);
-        if($this->proceso->inspectorAleatorioId!=null)
-        {
-            //$nombre = $this->proceso->inspectorAleatorioNombre;
-            $nombre="";
-            $this->agregarFoto($this->proceso->id,"firma_aleatoria","INSPECTOR ALEATORIO " .$nombre ,$fotos);
-        }
-        if(count($fotos)>0)
-        {
-            $this->AddPage();
-            
-            $borde = 0;
-            
-            $anchoFoto = 50;
-            // $altoFoto = $anchoFoto * 40 / 30;
-            $altoFoto = $anchoFoto * 0.75;
-            $separacionX =  5;
-            $separacionY = 20;
-            
-            $yFotos = $separacionY + 15;
-            
-            $xFoto = 25;
-            
-            for($i = 0 ; $i < count($fotos); $i++)
-            {
-    //             $foto = $fotos[$i];
-    //             $this->SetXY($xFoto, $yFotos - $separacionY);
-    //             $this->SetLeftMargin(10);
-    //             $this->SetFont($this->font, 'B', 13);
-    //             $this->Ln();
-    //             $this->SetXY($xFoto, $yFotos - $separacionY +10);
-    //             $this->SetFillColor(242, 242, 242);
-    //             $this->Cell($anchoFoto,8,$this->texto($foto->titulo),$borde,2,'C');
-    //             $this->correctImageOrientation($foto->archivo);
-    //             $this->Image($foto->archivo,$xFoto,$yFotos,$anchoFoto,$altoFoto);
-    //             $xFoto+=$separacionX + $anchoFoto;
-    //             if(($i+1)%3==0)
-    //             {
-    //                 $xFoto = 25;
-    //                 $yFotos+=$altoFoto +15;
-    //             }
-                $foto = $fotos[$i];
-                $this->SetXY($xFoto, $yFotos - $separacionY);
-                $this->SetLeftMargin(10);
-                $this->SetFont($this->font, 'B', 13);
-                $this->Ln();
-                $this->SetXY($xFoto, $yFotos - $separacionY +$altoFoto + 20);
-                $this->SetFillColor(242, 242, 242);
-                $this->Cell($anchoFoto,8,$this->texto($foto->titulo),$borde,2,'C');
-                $this->correctImageOrientation($foto->archivo);
-                $this->Image($foto->archivo,$xFoto,$yFotos,$anchoFoto,$altoFoto);
-                
-                $this->SetLineWidth(0.5);
-                $this->SetDrawColor(0,0,0);
-                $y = $altoFoto + 30;
-                $this->Line($xFoto, $y, $xFoto + $anchoFoto, $y);
-                
-                $xFoto+=$separacionX + $anchoFoto;
-                if(($i+1)%3==0)
-                {
-                    $xFoto = 25;
-                    $yFotos+=$altoFoto +15;
-                }
-            }
-        }
-        
-    }
     
     public $tablewidths;
     public $aligns;
     public $columnFonts;
     public $footerset;
     
-    function calcularPorcentajesEncabezados()
-    {
-        $tareas = $this->proceso->tareas;
-        $indicesEncabezados = [];
-        for($i=0; $i < count($tareas); $i++)
-        {
-            $tarea = $tareas[$i];
-            if($tarea->tipo=="e")
-            {
-                array_push($indicesEncabezados,$i);
-            }
-        }
-        
-        for($i=0; $i < count($indicesEncabezados); $i++)
-        {
-            $indice = $indicesEncabezados[$i];
-            $this->calcularPorcenjateEncabezado($indice,$tareas);
-        }
-        
-    }
-   
+    
     
     
     function correctImageOrientation($filename) {
@@ -924,25 +611,7 @@ abstract class PDF extends FPDF
         } // if function exists
     }
     
-    function crearSeccionFotos($procesoId, $punto)
-    {
-        $fotos = array();
-        $foto = "../fotos_procesoes/".$procesoId ."_" . $punto->id ."_1.jpg";
-        if (file_exists($foto))
-            array_push($fotos,$foto);
-            $foto = "../fotos_procesoes/".$procesoId ."_" . $punto->id ."_2.jpg";
-            if (file_exists($foto))
-                array_push($fotos,$foto);
-                $foto = "../fotos_procesoes/".$procesoId ."_" . $punto->id ."_3.jpg";
-                if (file_exists($foto))
-                    array_push($fotos,$foto);
-                    $seccion= (object) [
-                        'id' =>  $punto->id,
-                        'descripcion' => $punto->descripcion,
-                        'fotos' => $fotos
-                    ];
-                    return $seccion;
-    }
+   
     
     function texto($texto)
     {
@@ -961,215 +630,14 @@ abstract class PDF extends FPDF
         return $texto;
     }
     
-    protected function getPuntos($puntosId)
-    {
-        $puntos = array();
-        for($i=0; $i < count($puntosId); $i++)
-        {
-            $id = $puntosId[$i];
-            $punto = $this->getPunto($id, $this->proceso->puntos);
-            if($punto!=null)
-                array_push($puntos, $punto);
-        }
-        return $puntos;
-    }
-    
-    protected function getPunto($id,$puntos)
-    {
-        for($i=0; $i < count($puntos); $i++)
-        {
-            $punto = $puntos[$i];
-            if($punto->id == $id )
-                return $punto;
-        }
-        return null;
-    }
+ 
 }
 
 
 
 class Reporteproceso extends PDF
 {
-    protected function imprimirContenido()
-    {
-        $transportista = strtoupper($this->proceso->transportista);
-        $chofer = strtoupper($this->proceso->chofer);
-        $numeroTractor = $this->proceso->numeroTractor;
-        $numeroCaja = $this->proceso->numeroCaja;
-        $colorTractor = strtoupper($this->proceso->colorTractor);
-        $colorCaja = strtoupper($this->proceso->colorCaja);
-        $numeroContenedor = $this->proceso->numeroContenedor;
-        $tipoCaja = strtoupper($this->proceso->tipoCaja);
-        $sello =  $this->proceso->sello;
-        $selloViajero =  $this->proceso->selloViajero;
-        $alto = $this->proceso->alto;
-        $ancho = $this->proceso->ancho;
-        $profundidad = $this->proceso->profundidad;
-        $placasTractor =  $this->proceso->placasTractor;
-        $placasCaja =  $this->proceso->placasCaja;
-        
-        if($alto=="")
-            $alto = "-";
-            
-        if($ancho=="")
-            $ancho = "-";
-        
-        if($profundidad=="")
-            $profundidad = "-";
-            
-        $borde = 0;
-        $this->SetLeftMargin(10);
-        $this->SetFont($this->font, 'B', 13);
-        $this->Ln();
-        $this->SetFillColor(242, 242, 242);
-        $this->Cell(0,8,$this->texto("INFORMACIÓN DE TRANSPORTE"),$borde,2,'C',1);
-        
-        $this->SetDrawColor(0,0,0);
-        $y = 82;
-        //$this->Line(10, $y, 210-10, $y);
-        
-        $this->SetLeftMargin(20);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 6, "Transportista", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 6, $this->texto($transportista), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(30, 6, "Chofer", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 6, $this->texto($chofer), $borde, 0, 'L');
-        
-        $this->SetLeftMargin(10);
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 11);
-        
-        $this->Cell(0,8,$this->texto("Vehículo"),$borde,1,'C');
-        $this->SetDrawColor(191,191,191);
-        $y = 87;
-        $this->Line(10, $y, 210-10, $y);
-        
-        
-        $this->SetLeftMargin(20);
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, "No. Tractor:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($numeroTractor), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, "No. Caja:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($numeroCaja), $borde, 0, 'L');
-        
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, "Placas Tractor:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($placasTractor), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, "Placas Caja:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($placasCaja), $borde, 0, 'L');
-        
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, "Color Tractor:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($colorTractor), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, "Color Caja:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($colorCaja), $borde, 0, 'L');
-        
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, "No. Contenedor:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($numeroContenedor), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, "Tipo Caja:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($tipoCaja), $borde, 0, 'L');
-        
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, "Sello:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($sello), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, "Sello viajero:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($selloViajero), $borde, 0, 'L');
-        
-        //ORDEN -FACTURA
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, $this->texto("Número de orden:"), $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($this->proceso->numeroOrden), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, "Factura:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($this->proceso->factura), $borde, 0, 'L');
-        
-        //INSPECION ALEATORIA - INSPECTORA LEAORIO
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, $this->texto("Inspección aleatoria:"), $borde, 0, 'L');
-        $procesoAleatorio = $this->proceso->inspectorAleatorioId==null?"NO":"SI";
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($procesoAleatorio), $borde, 0, 'L');
-      
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(40, 8, $this->texto("Inspector aleatorio:"), $borde, 0, 'L');
-        $inspectorAleatorio = $this->proceso->inspectorAleatorioNombre==""?"NA":$this->proceso->inspectorAleatorioNombre;
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(45, 8, $this->texto($inspectorAleatorio), $borde, 0, 'L');
-        
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(110, 8, $this->texto("La caja o contenedor está libre de contaminantes agrícolas:"), $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($this->proceso->tieneSelloImpreso), $borde, 0, 'L');
-        $this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(110, 8, $this->texto("La unidad está libre de contaminantes agrícolas:"), $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(55, 8, $this->texto($this->proceso->cajaLibreObjetosOrganicos), $borde, 0, 'L');
-        
-        $this->SetLeftMargin(10);
-        $this->SetFont($this->font, 'B', 13);
-        $this->Ln();
-        $this->SetFillColor(242, 242, 242);
-        $this->Cell(0,8,$this->texto("DIMENSIONES DEL CONTENEDOR"),$borde,2,'C',1);
-        
-        $this->SetLeftMargin(20);
-        //$this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(28.33, 8, "Alto:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(28.33, 8, $this->texto($alto), $borde, 0, 'L');
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(28.33, 8, "Ancho:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(28.33, 8, $this->texto($ancho), $borde, 0, 'L');
-        
-        //$this->Ln();
-        $this->SetFont($this->font, 'B', 10);
-        $this->Cell(28.33, 8, "Profundidad:", $borde, 0, 'L');
-        $this->SetFont($this->font, '', 10);
-        $this->Cell(28.33, 8, $this->texto($profundidad), $borde, 0, 'L');
-        
-        $this->SetDrawColor(0,0,0);
-        $y = 144;
-        //$this->Line(10, $y, 210-10, $y);
-        
-        $this->Ln();
-        $this->SetFont($this->font, 'I', 8);
-        $leyenda = "Las medidas interiores del contenedor no se muestran cuando el contenedor se encontraba sellado al momento de hacer la inspección";
-        $this->Cell(170, 8, $this->texto($leyenda), $borde, 0, 'C');
-        
-        $this->imprimirPuntosproceso();
-    }
-    
-    
+  
    
     
    

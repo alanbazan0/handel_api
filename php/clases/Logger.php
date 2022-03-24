@@ -6,6 +6,7 @@ class Logger
 {
     public static function log($archivo,$texto,$carpeta='logs/')
     {
+        $carpeta = $carpeta . date("j-n-Y") ."/"; 
         $mensaje = date("j/n/Y h:i:s") .":".$texto;
         if(!file_exists($carpeta))
             @mkdir($carpeta,0777, true);

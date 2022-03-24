@@ -21,6 +21,19 @@ class InspeccionesVista extends CatalogoVista
 			_this.agregar();
 		});
 		
+		$("#aleatoriasCheckBox").change(function(){
+			if($(this).is(":checked"))
+			{
+				$("#numeroCajaInputCriterio").prop("disabled",true);
+				$("#numeroCajaInputCriterio").html("");
+				//$("#porcentajeAleatoriasLabel").show();
+			}
+			else
+			{
+				$("#numeroCajaInputCriterio").prop("disabled",false);
+				//$("#porcentajeAleatoriasLabel").show();
+				}
+		});
 		
 		this.crearColumnasGrid();		
 		this.crearFechas();
@@ -214,7 +227,8 @@ class InspeccionesVista extends CatalogoVista
 			areaId: $('#areaSelectCriterio').val(),
 			fechaInicial: this.getFecha($('#fechaInicialInputCriterio').val()),
 			fechaFinal: this.getFecha($('#fechaFinalInputCriterio').val()),
-			numeroCaja: this.getFecha($('#numeroCajaInputCriterio').val())
+			numeroCaja: this.getFecha($('#numeroCajaInputCriterio').val()),
+			aleatoria : $('#aleatoriasCheckBox').is(':checked')?1:0
 		 }
 		 return criteriosSeleccion;
 	}		
@@ -475,6 +489,10 @@ class InspeccionesVista extends CatalogoVista
 	        });
 	}
 
+	set porcentajeAleatorias(porcentajeAleatorias)
+	{
+		$("#porcentajeAleatoriasLabel").html(porcentajeAleatorias);
+	}
 	
 }
 var vista = new InspeccionesVista(this);

@@ -5,6 +5,7 @@ use php\interfaces\IProcesosRevisadosObservacionesRepositorio;
 use php\modelos\ProcesoRevisadoObservacion;
 use php\modelos\Resultado;
 use php\clases\AdministradorCorreo;
+use php\modelos\ObservacionComentario;
 
 include "../interfaces/IProcesosRevisadosObservacionesRepositorio.php";
 include "../modelos/ProcesoRevisadoObservacion.php";
@@ -13,6 +14,11 @@ require_once( "RepositorioBase.php");
 require_once('../repositorios/EstatusValidacionProcesosRepositorio.php');
 require_once("../clases/Resultado.php");
 require_once("../clases/AdministradorCorreo.php");
+require_once("../clases/EstatusValidacionProceso.php");
+require_once("../repositorios/ProcesosRevisadosRepositorio.php");
+require_once("../modelos/ObservacionComentario.php");
+require_once("../repositorios/ObservacionesComentariosRepositorio.php");
+
 
 class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implements IProcesosRevisadosObservacionesRepositorio
 {
@@ -26,33 +32,48 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
                             FROM procesos_revisados_observaciones PRO
                             	INNER JOIN tipos_observacion TOB ON PRO.tipo_observacion_id = TOB.id 
                                 INNER JOIN procesos_revisados PR ON PRO.proceso_revisado_id = PR.id
-                                LEFT JOIN usuarios U ON U.id = PR.validacion_usuario_id
+                                LEFT JOIN usuarios U ON U.id = PRO.validacion_usuario_id
                                 INNER JOIN usuarios_procesos UP ON UP.id = PR.usuario_proceso_id 
                                 INNER JOIN procesos P ON P.id = UP.proceso_id
                                 LEFT JOIN estatus_validacion_procesos EV ON EV.id = PRO.estatus_validacion_id 
                                 INNER JOIN usuarios U1 ON U1.id = UP.usuario_id";
     }
     
-    public function insertar(ProcesoRevisadoObservacion $modelo)
+    public function insertar($usuario,ProcesoRevisadoObservacion $modelo)
     {
         $resultado =  $this->calcularIdObservacion($modelo->procesoRevisadoId);
         if($resultado->mensajeError=="")
         {
             $id = $resultado->valor;
+            $modelo->id = $id;
             $consulta = "INSERT INTO procesos_revisados_observaciones(proceso_revisado_id, id, tipo_observacion_id, descripcion, seccion, fecha_alta, fecha_modificacion,estatus_validacion_id) " .
                 "VALUE(?, ?, ?, ?, ?, NOW(), NOW(), ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if( $sentencia->bind_param("iiissi",$modelo->procesoRevisadoId,$id, $modelo->tipoObservacionId, $modelo->descripcion, $modelo->seccion, \EstatusValidacionProceso::EN_PROCESO_DE_ANALISIS))
+                $estatusId = \EstatusValidacionProceso::EN_PROCESO_DE_ANALISIS;
+                if( $sentencia->bind_param("iiissi",$modelo->procesoRevisadoId,$id, $modelo->tipoObservacionId, $modelo->descripcion, $modelo->seccion, $estatusId))
                 {
-                    if(!$sentencia->execute())
-                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    if($sentencia->execute())
+                    {
+                        if($usuario->tipoUsuarioId == \TipoUsuario::ADMINISTRADOR)
+                        {
+                            $repositorio = new ProcesosRevisadosRepositorio($this->conexion);
+                            $resultado = $repositorio->consultarPorLlaves((object)["id" => $modelo->procesoRevisadoId]);
+                            if($resultado->correcto())
+                            {
+                                $procesoRevisado = $resultado->valor;
+                                $resultado = $this->enviarNotificacionObservacionAgregada($procesoRevisado,$modelo, $usuario);
+                            }
+                        }
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__. ". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
                 }
                 else
-                    $resultado->mensajeError = "Falló el enlace de parámetros";
+                    $resultado->mensajeError = __FUNCTION__. ". Falló el enlace de parámetros";
             }
             else
-                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                $resultado->mensajeError = __FUNCTION__. ". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
         }
         return $resultado;
     }
@@ -78,12 +99,12 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
                     $resultado->valor=true;
                 }
                 else
-                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    $resultado->mensajeError = __FUNCTION__. ". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
             }
-            else  $resultado->mensajeError = "Falló el enlace de parámetros";
+            else  $resultado->mensajeError = __FUNCTION__. ". Falló el enlace de parámetros";
         }
         else
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            $resultado->mensajeError = __FUNCTION__. ". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             return $resultado;
     }
     
@@ -215,7 +236,11 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
         
         $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
         $registro->validadorNombreCompleto = $registro->validadorNombre . " " . $registro->validadorApellido;
-        
+        $registro->validadorFotoPerfil =  "../fotos/usuario". $registro->validadorId .".jpg";
+        if(file_exists($registro->validadorFotoPerfil))
+            $registro->validadorFotoPerfil =  "php/fotos/usuario". $registro->validadorId .".jpg";
+        else
+            $registro->validadorFotoPerfil =  "php/fotos/default.jpg";
         return $registro;
     }
     
@@ -315,7 +340,7 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
             return $resultado;
     }
     
-    public function actualizarEstatusValidacion($usuario, $procesoRevisadoId, $observacionId, $estatusValidacionId)
+    public function actualizarEstatusValidacion($usuario, $procesoRevisadoId, $observacionId, $estatusValidacionId, $comentario)
     {
         ini_set('max_execution_time', 0);
         $this->conexion->autocommit(FALSE);
@@ -348,19 +373,39 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
                             {
                                 if($sentencia->execute())
                                 {
-                                    $resultado = $this->consultarPorLlaves((object)["procesoRevisadoId"=>$procesoRevisadoId, "id" => $observacionId]);
+                                    if($comentario!="")
+                                    {
+                                        $repositorio = new ObservacionesComentariosRepositorio($this->conexion);
+                                        $modeloComentario = new ObservacionComentario();
+                                        $modeloComentario->comentario = $comentario;
+                                        $modeloComentario->procesoRevisadoId = $procesoRevisadoId;
+                                        $modeloComentario->observacionId = $observacionId;
+                                        $resultado = $repositorio->insertar($usuario, $modeloComentario);
+                                    }
+                                        
                                     if($resultado->correcto())
                                     {
-                                        $observacion = $resultado->valor;
-                                        $repositorio = new EstatusValidacionProcesosRepositorio($this->conexion);
-                                        $resultado = $repositorio->consultarPorLlaves((object)["id" => $estatusValidacionId]);
+                                        $resultado = $this->consultarPorLlaves((object)["procesoRevisadoId"=>$procesoRevisadoId, "id" => $observacionId]);
+                                    
                                         if($resultado->correcto())
                                         {
-                                            $estatusValidacion = $resultado->valor;
-                                            $resultado = $this->enviarNotificacionCambioEstatus($procesoRevisadoId,$observacion, $usuario, $estatusValidacion);
+                                            $observacion = $resultado->valor;
+                                            $repositorio = new EstatusValidacionProcesosRepositorio($this->conexion);
+                                            $resultado = $repositorio->consultarPorLlaves((object)["id" => $estatusValidacionId]);
+                                            if($resultado->correcto())
+                                            {
+                                                $estatusValidacion = $resultado->valor;
+                                                $resultado = $this->enviarNotificacionCambioEstatus($procesoRevisadoId,$observacion, $usuario, $estatusValidacion);
+                                                if($resultado->correcto())
+                                                {
+                                                   
+                                                       
+                                                }
+                                            }
                                            
                                         }
                                     }
+                                    
                                 }
                                 else
                                 {
@@ -392,9 +437,54 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
             $resultado->mensajeError = __FUNCTION__ .' Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             
         if($resultado->correcto())
+        {
+            $resultado->valor = $observacion;
             $this->conexion->commit();
+        }
         else
             $this->conexion->rollback();
+        return $resultado;
+    }
+    
+    public function enviarNotificacionObservacionAgregada($procesoRevisado,$observacion,$usuario)
+    {
+        $resultado = new Resultado();
+        
+        
+        $usuarios = array();
+        //TEST
+        array_push($usuarios, (object)["nombreUsuario"=>"alanbazan@apps-handel.com","nombre"=>"Alan"]);
+        
+        //array_push($usuarios, (object)["nombreUsuario"=>$procesoRevisado->nombreUsuario,"nombre"=>$procesoRevisado->usuarioNombre]);
+        
+        $contenido = "<p style='font-size: 14px; line-height: 140%;'><strong>¡Actualización importante!</strong></p>
+                    <p style='font-size: 14px; line-height: 140%;'>&nbsp;</p>
+                    <p style='font-size: 14px; line-height: 140%;'>¡Tienes un nuevo mensaje en SAHA!,
+                    Es en referencia al proceso de revisión de procedimientos, en particular a tus observaciones o dudas del procedimiento:</p>
+                    <p style='font-size: 14px; line-height: 140%;'>&nbsp;</p>
+                    <p style='font-size: 14px; line-height: 140%;'><strong>$procesoRevisado->procesoNombre</strong></p>
+                    $usuario->nombreCompleto agregó la observación:</p>
+                    <p style='font-size: 14px; line-height: 140%;'>&nbsp;</p>
+                    <p style='font-size: 14px; line-height: 140%;'><strong>$observacion->descripcion</strong></p>
+                    <p style='font-size: 14px; line-height: 140%;'>&nbsp;</p>
+                    <p style='font-size: 14px; line-height: 140%;'>Si necesitas información adicional puedes responder desde el botón que aparece un poco más abajo.</p>";
+        
+        $url = "https://saha.apps-handel.com/revision.php?id=$procesoRevisado->id"."_".$observacion->id;
+        
+        $boton = "<a href='$url' target='_blank' style='box-sizing: border-box;display: inline-block;font-family:arial,helvetica,sans-serif;text-decoration: none;-webkit-text-size-adjust: none;text-align: center;color: #ffffff; background-color: #0396a6; border-radius: 4px;-webkit-border-radius: 4px; -moz-border-radius: 4px; width:auto; max-width:100%; overflow-wrap: break-word; word-break: break-word; word-wrap:break-word; mso-border-alt: none;'>
+        <span style='display:block;padding:10px 20px;line-height:120%;'><strong>Responder</strong></span>
+        </a>";
+        
+        //$nombreUsuario = $usuario->nombreCompleto;
+        $asunto  = "Se agregó una observación ";
+        $tipo = "agregacionObservacion$procesoRevisado->id" ."_".$observacion->id;
+        
+        $administradorCorreo = new  AdministradorCorreo();
+        $resultado = $administradorCorreo->enviarNotificacionRevision($tipo,$usuario,$usuarios,$observacion,$contenido,$boton, $asunto);
+        if($resultado->correcto())
+        {
+            $resultado->valor = $observacion;
+        }
         return $resultado;
     }
     

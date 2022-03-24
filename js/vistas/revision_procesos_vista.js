@@ -151,6 +151,13 @@ class RevisionProcesosVista extends CatalogoVista
 		
 	}
 	
+	renderNombreValidadorObservacion(renglon, type, set)
+	{    
+		return "<div id='nombreValidadorObservacionTabla"+renglon.id+"'>" + vista.getNombreValidador(renglon) + "</div>";
+	
+		
+	}
+	
 	getNombreValidador(renglon)
 	{
 		var fecha = new Date();
@@ -165,6 +172,13 @@ class RevisionProcesosVista extends CatalogoVista
 	renderFechaValidacion(renglon, type, set)
 	{    
 		return "<div id='fechaValidacionTabla"+renglon.id+"'>" + vista.getFechaValidacion(renglon) + "</div>";
+	
+		
+	}
+	
+	renderFechaValidacionObservacion(renglon, type, set)
+	{    
+		return "<div id='fechaValidacionObservacionTabla"+renglon.id+"'>" + vista.getFechaValidacion(renglon) + "</div>";
 	
 		
 	}
@@ -217,7 +231,7 @@ class RevisionProcesosVista extends CatalogoVista
 	{    
 		var fecha = new Date();
 		var contenido = "";
-		var icono = HANDEL_API+ "/"+renglon.empresaLogo+"?"+fecha.getTime();
+		var icono = HANDEL_API+ "/"+renglon.empresaLogo+"?"+vista.time;
 		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;border-radius: 50%'></img></center>";
 	    return contenido;
 	}
@@ -722,17 +736,21 @@ class RevisionProcesosVista extends CatalogoVista
 			$("#estatusValidacionLabel").html(proceso.estatusValidacionDescripcion);
 			if(proceso.estatusRevisionId == EstatusRevision.OBSERVACIONES)
 			{
-				$("#observacionesLabel").fadeIn();				
+				$("#observacionesLabel").fadeIn();	
+				$("#agregarObservacionButton").fadeOut();			
 				this.crearTablaObservaciones();
 			}
 			else
 			{
+				$("#agregarObservacionButton").fadeIn();
 				$("#validacionFooter").fadeIn();	
 				$("#estatusValidacionDiv").fadeIn();	
 				
 			}
 				
 			this.crearEventosBotonesValidacion();
+			
+			$("#agregarObservacionButton").click(function(){_this.mostrarObservacion(Modo.ALTA,proceso);});
 			
 			
 		},null,"procesoModal","","guardarValidacionButton", function()
@@ -742,57 +760,166 @@ class RevisionProcesosVista extends CatalogoVista
 	}
 	
 	
+	mostrarObservacion(modo,usuarioProceso, observacion)
+	{
+		var _this = this;
+		this.modoObservacion = modo;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/proceso_revisado_observacion.php",this, null, function()
+		{
+			$("#procesoObservacionLabel").html(usuarioProceso.nombre);
+			if(modo==Modo.CAMBIO)
+				_this.modeloObservacion = observacion;
+			this.inicializarValidacionesObservacion();
+			_this.consultarTiposObservacion();
+			
+			
+		},null,"observacionModal","","guardarObservacionButton",function()
+		{
+			$("#observacionFormulario").submit();
+		});	
+		
+	}
+	
+	consultarTiposObservacion()
+	{
+		this.presentador.consultarTiposObservacion();
+	}
+	
+	set tiposObservacion(registros)
+	{		
+		//this.cargarOpciones('#tipoObservacionSelect', registros);
+		this.cargarOpciones('#tipoObservacionSelect', registros, this.modoObservacion, this._observacionSeleccionada, 'tipoObservacionId',"");
+	}
+	
+	inicializarValidacionesObservacion()
+	{
+		var _this = this;
+		jQuery("#observacionFormulario").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+                "tipoObservacionSelect": {
+                    required: !0
+                },
+                "seccionObservacionInput": {
+                    required: !0
+                },
+                "descripcionObservacionInput": {
+                    required: !0
+                }
+            },
+            messages: {
+                "tipoObservacionSelect": "Por favor seleccione un tipo",
+                "seccionObservacionInput": "Por favor ingrese una sección",
+                "descripcionObservacionInput": "Por favor ingrese una descripción"
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.guardarObservacion();
+            }
+        });
+	}
+	
+	
+	guardarObservacion()
+	{	
+		var observacion = this.modeloObservacion;
+		this.guardarObservacionNueva(observacion);
+		
+	}
+	
 	
 	crearEventosBotonesValidacion()
 	{
 		var _this = this;
 		$("#verificacionButton").click(function () 
 		{
-			_this.actualizarEstatusValidacionProceso(EstatusValidacionProceso.EN_VERIFICACION);
+			_this.actualizarEstatusValidacionProceso(this,EstatusValidacionProceso.EN_VERIFICACION);
 		});
 		$("#autorizadoButton").click(function () 
 		{
-			_this.actualizarEstatusValidacionProceso(EstatusValidacionProceso.AUTORIZADO);
+			_this.actualizarEstatusValidacionProceso(this,EstatusValidacionProceso.AUTORIZADO);
 		});
 		$("#rechazadoButton").click(function () 
 		{
-			_this.actualizarEstatusValidacionProceso(EstatusValidacionProceso.RECHAZADO);
+			_this.actualizarEstatusValidacionProceso(this,EstatusValidacionProceso.RECHAZADO);
 		});
 		$("#respondioButton").click(function () 
 		{
-			_this.actualizarEstatusValidacionProceso(EstatusValidacionProceso.RESPONDIO);
+			_this.actualizarEstatusValidacionProceso(this,EstatusValidacionProceso.RESPONDIO);
 		});
 	}
 	
-	actualizarEstatusValidacionProceso(estatusValidacionId)
-	{
-		this.presentador.actualizarEstatusValidacionProceso(estatusValidacionId);
-	}
+	
 	
 	crearEventosBotonesValidacionObservacion()
 	{
 		var _this = this;
 		$("#verificacionObservacionButton").click(function () 
 		{
-			_this.actualizarEstatusValidacionObservacion(EstatusValidacionProceso.EN_VERIFICACION);
+			_this.actualizarEstatusValidacionObservacion(this,EstatusValidacionProceso.EN_VERIFICACION);
 		});
 		$("#autorizadoObservacionButton").click(function () 
 		{
-			_this.actualizarEstatusValidacionObservacion(EstatusValidacionProceso.AUTORIZADO);
+			_this.actualizarEstatusValidacionObservacion(this,EstatusValidacionProceso.AUTORIZADO);
 		});
 		$("#rechazadoObservacionButton").click(function () 
 		{
-			_this.actualizarEstatusValidacionObservacion(EstatusValidacionProceso.RECHAZADO);
+			_this.actualizarEstatusValidacionObservacion(this,EstatusValidacionProceso.RECHAZADO);
 		});
 		$("#respondioObservacionButton").click(function () 
 		{
-			_this.actualizarEstatusValidacionObservacion(EstatusValidacionProceso.RESPONDIO);
+			_this.actualizarEstatusValidacionObservacion(this,EstatusValidacionProceso.RESPONDIO);
 		});
 	}
 	
-	actualizarEstatusValidacionObservacion(estatusValidacionId)
+	actualizarEstatusValidacionObservacion(boton,estatusValidacionId)
 	{
-		this.presentador.actualizarEstatusValidacionObservacion(estatusValidacionId);
+		var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/cambio_estatus_validacion.php",this, null, function()
+		{
+			$("#procesoValidacionLabel").html(_this._procesoSeleccionado.nombre);
+			if(estatusValidacionId==EstatusValidacionProceso.AUTORIZADO)
+			{
+				$("#seccionValidacionObservacionDiv").show();
+				$("#descripcionValidacionDiv").show();
+				$("#seccionValidacionObservacionInput").val(_this._observacionSeleccionada.seccion);
+				$("#descripcionValidacionInput").val(_this._observacionSeleccionada.descripcion);
+			}
+			$("#validacionComentarioButton").html($(boton).html());
+			$("#validacionComentarioButton").prop("style", $(boton).attr("style")).addClass($(boton).attr("class"));
+			
+		},null,"validacionComentarioModal","","validacionComentarioButton", function()
+		{
+			var comentario = $("#comentarioValidacionInput").val();
+			this.presentador.actualizarEstatusValidacionObservacion(estatusValidacionId,comentario);
+		});
+	}
+	
+	actualizarEstatusValidacionProceso(boton,estatusValidacionId)
+	{
+		/*this.mostrarFormularioHTML(HANDEL_API+"/html/modales/cambio_estatus_validacion.php",this, null, function()
+		{
+			$("#validacionComentarioButton").html($(boton).html());
+			$("#validacionComentarioButton").prop("style", $(boton).attr("style")).addClass($(boton).attr("class"));
+			
+		},null,"validacionComentarioModal","","validacionComentarioButton", function()
+		{
+			var comentario = $("#comentarioValidacionInput").val();*/
+			this.presentador.actualizarEstatusValidacionProceso(estatusValidacionId,comentario);
+		/*});*/
+		
 	}
 	
 	
@@ -1514,7 +1641,10 @@ class RevisionProcesosVista extends CatalogoVista
 			{longitud:200, 	titulo:"Sección",   alias:"seccion", alineacion:"I"},
 			{longitud:300, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I"},
 			{longitud:30, 	titulo:"Estado de solicitud",   alias:"estatusValidacionNombre", alineacion:"C", itemRenderer:this.renderEstatusValidacionObservacion},
-			
+			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoValidador},
+			{longitud:100, 	titulo:"Usuario que validó",   alias:"validadorNombreCompleto", alineacion:"I",itemRenderer:this.renderNombreValidadorObservacion},
+			{longitud:200, 	titulo:"Fecha validación",   	alias:"fechaValidacion", alineacion:"I", itemRenderer: this.renderFechaValidacionObservacion },
+	
 			//{longitud:100, 	titulo:"",   alias:"tamano", alineacion:"C",itemRenderer:this.renderTamanoArchivo},
 			//{longitud:100, 	titulo:"",   alias:"subido", alineacion:"C",itemRenderer:this.renderSubido}
 		
@@ -1703,6 +1833,19 @@ class RevisionProcesosVista extends CatalogoVista
 		return this._llavesObservacion;
 	}
 	
+	get modeloObservacion()
+	{
+		 var modelo = 
+		 {		
+			 tipoObservacionNombre: $( "#tipoObservacionSelect option:selected" ).text(),
+			 tipoObservacionId:$('#tipoObservacionSelect').val(),
+		 	 seccion:$('#seccionObservacionInput').val(),
+			 descripcion : $("#descripcionObservacionInput").val(),
+			
+		 };
+		 return modelo;
+	 }
+	
 	set modeloObservacion(modeloObservacion)
 	{
 		this._modeloObservacion = modeloObservacion;
@@ -1775,6 +1918,18 @@ class RevisionProcesosVista extends CatalogoVista
 		this._procesoSeleccionado = {id : this.procesoRevisadoIdParametro};
 		this._llavesProceso = {id : this.procesoRevisadoIdParametro};
 		this.consultarProcesoRevisadoPorLlaves(this._llavesProceso);
+	}
+	
+	guardarObservacionNueva(observacion)
+	{
+		this.presentador.guardarObservacionNueva(observacion);
+	}
+	
+	set guardando(guardando)
+	{
+		super.guardando = guardando;
+		$("#guardarObservacionButton").attr("disabled",guardando);
+		
 	}
 	
 }

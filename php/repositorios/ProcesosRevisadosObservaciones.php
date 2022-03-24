@@ -36,10 +36,14 @@ try
         switch ($accion)
         {           
             case 'insertar':               
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
                 $modelo = $mapper->map($json, new ProcesoRevisadoObservacion());                   
-                $resultado = $repositorio->insertar($modelo);                
+                $resultado = $repositorio->insertar($usuario,$modelo);                
             break;
             case 'actualizar':
                 $json = json_decode(REQUEST('modelo'));
@@ -81,7 +85,8 @@ try
                 $procesoRevisadoId = REQUEST('procesoRevisadoId');
                 $observacionId = REQUEST('observacionId');
                 $estatusValidacionId = REQUEST('estatusValidacionId');
-                $resultado = $repositorio->actualizarEstatusValidacion($usuario,$procesoRevisadoId,$observacionId,$estatusValidacionId);
+                $comentario = REQUEST('comentario');
+                $resultado = $repositorio->actualizarEstatusValidacion($usuario,$procesoRevisadoId,$observacionId,$estatusValidacionId,$comentario);
             break;
             default:
                 $resultado->mensajeError = "Acción no válida";

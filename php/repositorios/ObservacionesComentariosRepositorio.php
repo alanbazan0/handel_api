@@ -7,7 +7,7 @@ use php\modelos\Resultado;
 use php\clases\AdministradorCorreo;
 
 include '../interfaces/IObservacionesComentariosRepositorio.php';
-include '../modelos/ObservacionComentario.php';
+require_once('../modelos/ObservacionComentario.php');
 require_once('RepositorioBase.php');
 require_once('ProcesosRevisadosRepositorio.php');
 require_once('MinutasRepositorio.php');
@@ -35,7 +35,7 @@ class ObservacionesComentariosRepositorio extends RepositorioBase implements IOb
             $consulta = "INSERT INTO procesos_revisados_observaciones_comentarios(id, proceso_revisado_id, observacion_id, usuario_id, comentario, fecha)VALUES(?, ?, ?, ?, ?, NOW())";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if($sentencia->bind_param('iiiis', $id, $modelo->procesoRevisadoId, $modelo->observacionId, $modelo->usuarioId, $modelo->comentario))
+                if($sentencia->bind_param('iiiis', $id, $modelo->procesoRevisadoId, $modelo->observacionId, $usuario->id, $modelo->comentario))
                 {
                     if($sentencia->execute())
                     {

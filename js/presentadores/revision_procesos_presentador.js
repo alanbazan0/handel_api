@@ -254,7 +254,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 		 },{procesoRevisadoId: this.vista._procesoSeleccionado.id});
 	 }
 
-	actualizarEstatusValidacionProceso(estatusValidacionId)
+	actualizarEstatusValidacionProceso(estatusValidacionId, comentario)
 	{
 		this.vista.mostrarIndicador();	
 		 this._repositorio.actualizarEstatusValidacionProceso(this,function(resultado)
@@ -262,17 +262,17 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 			 this.vista.ocultarIndicador();	
 			 if(resultado.mensajeError=="")
 			 {
-				 //this.vista.modeloProceso = resultado.valor;
+				 this.vista.cerrarModal("validacionComentarioModal");
 				 this.vista.cerrarModal("procesoModal");
 				 this.vista.mostrarMensaje("Notificación","Guardado");
 				 this.vista.modeloProceso = resultado.valor;
 			 }
 			 else
 				 this.vista.mostrarMensajeError(resultado.mensajeError, resultado.codigoError);
-		 },this.vista._procesoSeleccionado.id, estatusValidacionId);
+		 },this.vista._procesoSeleccionado.id, estatusValidacionId, comentario);
 	}
 	
-	actualizarEstatusValidacionObservacion(estatusValidacionId)
+	actualizarEstatusValidacionObservacion(estatusValidacionId, comentario)
 	{
 		this.vista.mostrarIndicador();	
 		var repositorio = new ProcesosRevisadosObservacionesRepositorio();
@@ -281,13 +281,14 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 			 this.vista.ocultarIndicador();	
 			 if(resultado.mensajeError=="")
 			 {
+				this.vista.cerrarModal("validacionComentarioModal");
 				 this.vista.cerrarModal("observacionModal");
 				 this.vista.mostrarMensaje("Notificación","Guardado");
 				 this.vista.modeloObservacion = resultado.valor;
 			 }
 			 else
 				 this.vista.mostrarMensajeError(resultado.mensajeError, resultado.codigoError);
-		 },this.vista._procesoSeleccionado.id,this.vista._observacionSeleccionada.id, estatusValidacionId);
+		 },this.vista._procesoSeleccionado.id,this.vista._observacionSeleccionada.id, estatusValidacionId,comentario);
 	}
 	
 	consultarComentariosObservacion()
@@ -339,5 +340,45 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 		 },this.vista.llavesObservacion);
 	}
 	
+	consultarTiposObservacion()
+	 {
+		 this.vista.mostrarIndicador();
+		 var repositorio = new TiposObservacionRepositorio(this);		
+		 repositorio.consultar(this,function(resultado)
+		{
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+				this.vista.tiposObservacion = resultado.valor;
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		});
+	 }
+
+	guardarObservacionNueva(observacion)
+	 {
+		 this.vista.mostrarIndicador();	
+		this.vista.guardando = true;
+		 observacion.procesoRevisadoId = this.vista._procesoSeleccionado.id;
+		var repositorio = new ProcesosRevisadosObservacionesRepositorio();
+		 repositorio.insertar(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 //this.vista.cerrarConfirmacionEliminar();
+			 if(resultado.mensajeError=="")
+			 {
+				this.vista.guardando = false;
+				 this.vista.cerrarModal("observacionModal");
+				 this.vista.mostrarMensaje("Notificación","Guardado.");
+				 this.consultarObservaciones();
+				 //this.vista.eliminarProceso(usuarioProceso);
+			 }
+			 else
+			 {
+				 this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
+			 }
+		 },observacion);
+	 }
+
+	 
 	 
 }
