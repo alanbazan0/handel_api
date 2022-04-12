@@ -1171,7 +1171,7 @@ class PDF extends FPDF
                         'borderColor' => 'black',
                         'style'=> (object)
                         [
-                            'fontSize' => 10,
+                            'fontSize' => 6,
                             'textOutline' => '1px'
                         ]
                     ]

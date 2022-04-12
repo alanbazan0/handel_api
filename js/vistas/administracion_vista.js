@@ -483,6 +483,7 @@ class AdministracionVista extends CatalogoVista
 		$('#contrasenaInput').val(this.modeloEdicion.contrasena);
 		$('#nombreInput').val(this.modeloEdicion.nombre);
 		$('#apellidoInput').val(this.modeloEdicion.apellido);
+	
 		
 		if(this.modeloEdicion.estatus==1)
 			$("#estatusRadio").prop('checked', true);
@@ -552,6 +553,8 @@ class AdministracionVista extends CatalogoVista
 			 modelo.permisoCAVI=1;
 			 modelo.permiso10y7=0;
 		 }
+		if(modelo.tipoUsuarioId=="" || modelo.tipoUsuarioId==undefined)
+			modelo.tipoUsuarioId = this.modeloEdicion.tipoUsuarioId;
 		 return modelo;
 	 }
 	 

@@ -246,6 +246,16 @@ class RevisionProcesosVista extends CatalogoVista
 		return "<div id='estatusValidacionTablaObservacion"+renglon.id+"'>" + vista.getEstatusValidacion(renglon) + "</div>";
 	}
 	
+	renderSeccionValidacionObservacion(renglon, type, set)
+	{    
+		return "<div id='seccionValidacionObservacionTabla"+renglon.id+"'>" + vista.getSeccionValidacion(renglon) + "</div>";
+	}
+	
+	renderDescripcionValidacionObservacion(renglon, type, set)
+	{    
+		return "<div id='descripcionValidacionObservacionTabla"+renglon.id+"'>" + vista.getDescripcionValidacion(renglon) + "</div>";
+	}
+	
 	
 	renderEstatusRevision(renglon, type, set)
 	{    
@@ -892,10 +902,18 @@ class RevisionProcesosVista extends CatalogoVista
 			$("#procesoValidacionLabel").html(_this._procesoSeleccionado.nombre);
 			if(estatusValidacionId==EstatusValidacionProceso.AUTORIZADO)
 			{
-				$("#seccionValidacionObservacionDiv").show();
+				$("#seccionValidacionDiv").show();
 				$("#descripcionValidacionDiv").show();
-				$("#seccionValidacionObservacionInput").val(_this._observacionSeleccionada.seccion);
-				$("#descripcionValidacionInput").val(_this._observacionSeleccionada.descripcion);
+				
+				if(_this._observacionSeleccionada.seccionAdmin!="")
+					$("#seccionValidacionInput").val(_this._observacionSeleccionada.seccionAdmin);
+				else
+					$("#seccionValidacionInput").val(_this._observacionSeleccionada.seccion);
+					
+				if(_this._observacionSeleccionada.descripcionAdmin!="")	
+					$("#descripcionValidacionInput").val(_this._observacionSeleccionada.descripcionAdmin);
+				else
+					$("#descripcionValidacionInput").val(_this._observacionSeleccionada.descripcion);
 			}
 			$("#validacionComentarioButton").html($(boton).html());
 			$("#validacionComentarioButton").prop("style", $(boton).attr("style")).addClass($(boton).attr("class"));
@@ -903,7 +921,10 @@ class RevisionProcesosVista extends CatalogoVista
 		},null,"validacionComentarioModal","","validacionComentarioButton", function()
 		{
 			var comentario = $("#comentarioValidacionInput").val();
-			this.presentador.actualizarEstatusValidacionObservacion(estatusValidacionId,comentario);
+			var seccion = $("#seccionValidacionInput").val();
+			var descripcion = $("#descripcionValidacionInput").val();
+			
+			this.presentador.actualizarEstatusValidacionObservacion(estatusValidacionId,comentario,seccion, descripcion);
 		});
 	}
 	
@@ -1487,6 +1508,31 @@ class RevisionProcesosVista extends CatalogoVista
 		return contenido;
 	}
 	
+	getSeccionValidacion(renglon)
+	{
+		var contenido ="";
+		if(renglon.seccionAdmin=="")
+			contenido = renglon.seccion;
+		else if(renglon.seccion==renglon.seccionAdmin)
+			contenido = renglon.seccion;
+		else
+			contenido = renglon.seccion + " => " + renglon.seccionAdmin;
+		return contenido;
+	}
+	
+	getDescripcionValidacion(renglon)
+	{
+		var contenido ="";
+		
+		if(renglon.descripcionAdmin=="")
+			contenido = renglon.descripcion;
+		else if(renglon.descripcion==renglon.descripcionAdmin)
+			contenido = renglon.descripcion;
+		else
+			contenido = renglon.descripcion + " => " + renglon.descripcionAdmin;
+		return contenido;
+	}
+	
 	getEstatusRevision(renglon)
 	{
 		var contenido ="";
@@ -1638,8 +1684,8 @@ class RevisionProcesosVista extends CatalogoVista
 		this.observacionesTabla.paginacion = false;
 		this.observacionesTabla.columnas = [
 			{longitud:100, 	titulo:"Tipo",   alias:"tipoObservacionNombre", alineacion:"I"},
-			{longitud:200, 	titulo:"Sección",   alias:"seccion", alineacion:"I"},
-			{longitud:300, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I"},
+			{longitud:200, 	titulo:"Sección",   alias:"seccion", alineacion:"I", itemRenderer:this.renderSeccionValidacionObservacion},
+			{longitud:300, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I", itemRenderer:this.renderDescripcionValidacionObservacion},
 			{longitud:30, 	titulo:"Estado de solicitud",   alias:"estatusValidacionNombre", alineacion:"C", itemRenderer:this.renderEstatusValidacionObservacion},
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoValidador},
 			{longitud:100, 	titulo:"Usuario que validó",   alias:"validadorNombreCompleto", alineacion:"I",itemRenderer:this.renderNombreValidadorObservacion},
@@ -1854,6 +1900,13 @@ class RevisionProcesosVista extends CatalogoVista
 		//$('#nombreUsuarioRecomendacionTabla'+this._modeloObservacion.id).html(this.getTexto(this._modeloRecomendacion.usuarioNombreCompleto));
 		//$('#estatusValidacionRecomendacionTabla'+this._modeloObservacion.id).html(this.getEstatusValidacionRecomendacion(this._modeloRecomendacion));
 		$('#comentariosObservacionTabla'+this._modeloObservacion.id).html(this.getComentariosObservacion(this._modeloObservacion));
+		$('#fotoValidadorTabla'+this._modeloObservacion.id).html(this.getFotoValidador(this._modeloObservacion));
+		$('#nombreValidadorObservacionTabla'+this._modeloObservacion.id).html(this.getNombreValidador(this._modeloObservacion));
+		$('#fechaValidacionObservacionTabla'+this._modeloObservacion.id).html(this.getFechaValidacion(this._modeloObservacion));
+		$('#seccionValidacionObservacionTabla'+this._modeloObservacion.id).html(this.getSeccionValidacion(this._modeloObservacion));
+		$('#descripcionValidacionObservacionTabla'+this._modeloObservacion.id).html(this.getDescripcionValidacion(this._modeloObservacion));
+		
+	
 		
 		this._observacionSeleccionada.estatusValidacionIcono = this._modeloObservacion.estatusValidacionIcono;
 		this._observacionSeleccionada.estatusValidacionColor = this._modeloObservacion.estatusValidacionColor;

@@ -86,7 +86,9 @@ try
                 $observacionId = REQUEST('observacionId');
                 $estatusValidacionId = REQUEST('estatusValidacionId');
                 $comentario = REQUEST('comentario');
-                $resultado = $repositorio->actualizarEstatusValidacion($usuario,$procesoRevisadoId,$observacionId,$estatusValidacionId,$comentario);
+                $seccion = REQUEST('seccion');
+                $descripcion = REQUEST('descripcion');
+                $resultado = $repositorio->actualizarEstatusValidacion($usuario,$procesoRevisadoId,$observacionId,$estatusValidacionId,$comentario,$seccion,$descripcion);
             break;
             default:
                 $resultado->mensajeError = "Acción no válida";

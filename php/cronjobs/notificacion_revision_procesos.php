@@ -78,6 +78,10 @@ try
                  for ($i = 0; $i < count($usuarios); $i++)
                  {
                      $usuario = $usuarios[$i];
+                     $administrador = (object)[ "id" => $usuario->administradorId,
+                         "nombre" => $usuario->administradorNombre,
+                         "apellido" => $usuario->administradorApellido,
+                         "nombreUsuario" => $usuario->administradorNombreUsuario];
                      if($usuario->mesRevision!="")
                      {
                          if($usuario->mesRevision == $mes)
@@ -91,7 +95,7 @@ try
                              if($resultado->correcto())
                              {
                                  $procesos = $resultado->valor;
-                                 $resultado= $repositorio->enviarNotificacionRevision1($usuario,$procesos,$ano);
+                                 $resultado= $repositorio->enviarNotificacionRevision1($usuario,$procesos,$ano,$administrador);
                                  if($resultado->correcto())
                                      Logger::log("log_envio_procesos_pendientes_revision1","$i Correo enviado a ".$usuario->nombreUsuario);
                                  sleep($tiempoEspera);
@@ -126,6 +130,10 @@ try
                  for ($i = 0; $i < count($usuarios); $i++)
                  {
                      $usuario = $usuarios[$i];
+                     $administrador = (object)[ "id" => $usuario->administradorId,
+                                        "nombre" => $usuario->administradorNombre,
+                                        "apellido" => $usuario->administradorApellido,
+                                        "nombreUsuario" => $usuario->administradorNombreUsuario];
                      if($usuario->mesRevision!="")
                      {
                          if($usuario->mesRevision == $mes)
@@ -138,7 +146,7 @@ try
                              if($resultado->correcto())
                              {
                                  $procesos = $resultado->valor;
-                                 $resultado= $repositorio->enviarNotificacionRevision2($usuario,$procesos,$ano,$criteriosSeleccion);
+                                 $resultado= $repositorio->enviarNotificacionRevision2($usuario,$procesos,$ano,$criteriosSeleccion,$administrador);
                                  if($resultado->correcto())
                                      Logger::log("log_envio_procesos_pendientes_revision2","$i Correo enviado a ".$usuario->nombreUsuario);
                                  sleep($tiempoEspera);
@@ -173,6 +181,10 @@ try
                      for ($i = 0; $i < count($usuarios); $i++)
                      {
                          $usuario = $usuarios[$i];
+                         $administrador = (object)[ "id" => $usuario->administradorId,
+                             "nombre" => $usuario->administradorNombre,
+                             "apellido" => $usuario->administradorApellido,
+                             "nombreUsuario" => $usuario->administradorNombreUsuario];
                          if($usuario->mesRevision!="")
                          {
                              if($usuario->mesRevision == $mes)
@@ -185,7 +197,7 @@ try
                                  if($resultado->correcto())
                                  {
                                      $procesos = $resultado->valor;
-                                     $resultado= $repositorio->enviarNotificacionRevision3($usuario,$procesos,$ano,$criteriosSeleccion);
+                                     $resultado= $repositorio->enviarNotificacionRevision3($usuario,$procesos,$ano,$criteriosSeleccion,$administrador);
                                      if($resultado->correcto())
                                          Logger::log("log_envio_procesos_pendientes_revision3","$i Correo enviado a ".$usuario->nombreUsuario);
                                      sleep($tiempoEspera);

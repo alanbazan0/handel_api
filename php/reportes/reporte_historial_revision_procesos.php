@@ -420,7 +420,7 @@ abstract class PDF extends FPDF
                 //$this->backgroundColors = array($color,$color,$color,$color,$color);
                 //$this->fontWeights = array("","","","","");
                 $fecha = substr($observacion->fechaAlta, 0,10);
-                $this->Row2(array($fecha,$this->texto($observacion->usuarioNombre),$this->texto($observacion->usuarioApellido), $this->texto($observacion->descripcion),$this->texto($observacion->seccion),$this->texto($observacion->tipoObservacionNombre),$this->texto($observacion->estatusValidacionDescripcion),$this->texto($observacion->validadorNombreCompleto)),8);
+                $this->Row2(array($fecha,$this->texto($observacion->usuarioNombre),$this->texto($observacion->usuarioApellido), $this->texto($observacion->descripcionAdmin),$this->texto($observacion->seccionAdmin),$this->texto($observacion->tipoObservacionNombre),$this->texto($observacion->estatusValidacionDescripcion),$this->texto($observacion->validadorNombreCompleto)),8);
                 
             }
         }

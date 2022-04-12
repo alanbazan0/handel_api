@@ -2086,32 +2086,34 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
         
         $filtros = array();
         
-        
-        $where="";
-        if($criteriosSeleccion!=null)
-        {
-            
-            if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
-            if(isset($criteriosSeleccion->sedeId) && $criteriosSeleccion->sedeId!="")
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
-            if(isset($criteriosSeleccion->usuarioId) && $criteriosSeleccion->usuarioId!="")
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'UP', 'campo'=>'usuario_id','valor'=>$criteriosSeleccion->usuarioId]);
-            if(isset($criteriosSeleccion->administradorId)  && $criteriosSeleccion->administradorId!="")
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'EM', 'campo'=>'administrador_id','valor'=>$criteriosSeleccion->administradorId]);
-            if(isset($criteriosSeleccion->mes)  && $criteriosSeleccion->mes!="")
-                array_push($filtros,(object)['tipoDato'=>'int','campo'=>'MONTH(PR.fecha_alta)','valor'=> $criteriosSeleccion->mes]);
-            if(isset($criteriosSeleccion->ano)  && $criteriosSeleccion->ano!="")
-                array_push($filtros,(object)['tipoDato'=>'int','campo'=>'YEAR(PR.fecha_alta)','valor'=> $criteriosSeleccion->ano]);
-            if(isset($criteriosSeleccion->departamentoId) && $criteriosSeleccion->departamentoId!="")
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'departamento_id','valor'=>$criteriosSeleccion->departamentoId]);
-            if(isset($criteriosSeleccion->estatusValidacionId) && $criteriosSeleccion->estatusValidacionId!="")
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'estatus_validacion_id','valor'=>$criteriosSeleccion->estatusValidacionId]);
-                                                        
-        }
-        
-        
+        $filtros = $this->getFiltrosN($usuario,$criteriosSeleccion,true);
         $where = $this->where($filtros);
+        
+//         $where="";
+//         if($criteriosSeleccion!=null)
+//         {
+            
+//             if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+//                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+//             if(isset($criteriosSeleccion->sedeId) && $criteriosSeleccion->sedeId!="")
+//                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+//             if(isset($criteriosSeleccion->usuarioId) && $criteriosSeleccion->usuarioId!="")
+//                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'UP', 'campo'=>'usuario_id','valor'=>$criteriosSeleccion->usuarioId]);
+//             if(isset($criteriosSeleccion->administradorId)  && $criteriosSeleccion->administradorId!="")
+//                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'EM', 'campo'=>'administrador_id','valor'=>$criteriosSeleccion->administradorId]);
+//             if(isset($criteriosSeleccion->mes)  && $criteriosSeleccion->mes!="")
+//                 array_push($filtros,(object)['tipoDato'=>'int','campo'=>'MONTH(PR.fecha_alta)','valor'=> $criteriosSeleccion->mes]);
+//             if(isset($criteriosSeleccion->ano)  && $criteriosSeleccion->ano!="")
+//                 array_push($filtros,(object)['tipoDato'=>'int','campo'=>'YEAR(PR.fecha_alta)','valor'=> $criteriosSeleccion->ano]);
+//             if(isset($criteriosSeleccion->departamentoId) && $criteriosSeleccion->departamentoId!="")
+//                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'departamento_id','valor'=>$criteriosSeleccion->departamentoId]);
+//             if(isset($criteriosSeleccion->estatusValidacionId) && $criteriosSeleccion->estatusValidacionId!="")
+//                 array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'estatus_validacion_id','valor'=>$criteriosSeleccion->estatusValidacionId]);
+                                                        
+//         }
+        
+        
+//         $where = $this->where($filtros);
         
         $consulta = "SELECT EM.id empresaId, EM.nombre empresaNombre, P.id procesoId, P.nombre procesoNombre, P.ruta_archivo carpeta,
                     (

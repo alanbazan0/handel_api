@@ -72,7 +72,31 @@ try
                     $usuario = $_SESSION['usuario'];
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarProcesosPendientes($usuario,$criteriosSeleccion);
-                    break;
+            break;
+            case 'consultarAvanceUsuarios':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarAvanceUsuarios($usuario,$criteriosSeleccion);
+            break;    
+            case 'consultarAvanceDepartamentos':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarAvanceDepartamentos($usuario,$criteriosSeleccion);
+            break;    
+            case 'consultarAvanceEmpresas':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $resultado = $repositorio->consultarAvanceEmpresas($usuario,$criteriosSeleccion);
+            break;    
             default:
                 $resultado->mensajeError = 'Acción no válida';
             break;

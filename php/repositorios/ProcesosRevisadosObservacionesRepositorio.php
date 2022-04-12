@@ -28,7 +28,7 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
     {
         $this->conexion = $conexion;
         $this->consultaBase = " SELECT PRO.id, tipo_observacion_id, TOB.descripcion, PRO.descripcion, archivo, seccion, IFNULL(DATE_FORMAT(PRO.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta,IFNULL(DATE_FORMAT(PRO.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, IFNULL(DATE_FORMAT(PRO.fecha_validacion,'%d/%m/%Y %H:%i:%s'),'')fecha_validacion, PRO.validacion_usuario_id,U.nombre, U.apellido, comentario_validacion,
-                                (SELECT count(*) FROM procesos_revisados_observaciones_comentarios PROC WHERE PROC.proceso_revisado_id = PRO.proceso_revisado_id AND PROC.observacion_id = PRO.id)numeroComentarios, P.nombre, PRO.estatus_validacion_id, EV.descripcion, U1.nombre, U1.apellido, EV.icono, EV.color, U1.id, U1.nombre_usuario
+                                (SELECT count(*) FROM procesos_revisados_observaciones_comentarios PROC WHERE PROC.proceso_revisado_id = PRO.proceso_revisado_id AND PROC.observacion_id = PRO.id)numeroComentarios, P.nombre, PRO.estatus_validacion_id, EV.descripcion, U1.nombre, U1.apellido, EV.icono, EV.color, U1.id, U1.nombre_usuario, seccion_admin, descripcion_admin
                             FROM procesos_revisados_observaciones PRO
                             	INNER JOIN tipos_observacion TOB ON PRO.tipo_observacion_id = TOB.id 
                                 INNER JOIN procesos_revisados PR ON PRO.proceso_revisado_id = PR.id
@@ -146,11 +146,11 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios,$procesoNombre, $estatusValidacionId, $estatusValidacionDescripcion, $usuarioNombre, $usuarioApellido,$estatusValidacionIcono, $estatusValidacionColor, $usuarioId, $nombreUsuario))
+                    if ($sentencia->bind_result($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios,$procesoNombre, $estatusValidacionId, $estatusValidacionDescripcion, $usuarioNombre, $usuarioApellido,$estatusValidacionIcono, $estatusValidacionColor, $usuarioId, $nombreUsuario,$seccionAdmin, $descripcionAdmin))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios,$procesoNombre,$estatusValidacionId, $estatusValidacionDescripcion, $usuarioNombre, $usuarioApellido,$estatusValidacionIcono, $estatusValidacionColor, $usuarioId, $nombreUsuario);
+                            $registro = $this->crearRegistro($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios,$procesoNombre,$estatusValidacionId, $estatusValidacionDescripcion, $usuarioNombre, $usuarioApellido,$estatusValidacionIcono, $estatusValidacionColor, $usuarioId, $nombreUsuario,$seccionAdmin, $descripcionAdmin);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -182,11 +182,11 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios,$procesoNombre,$estatusValidacionId, $estatusValidacionDescripcion, $usuarioNombre, $usuarioApellido, $estatusValidacionIcono, $estatusValidacionColor, $usuarioId, $nombreUsuario))
+                    if ($sentencia->bind_result($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios,$procesoNombre,$estatusValidacionId, $estatusValidacionDescripcion, $usuarioNombre, $usuarioApellido, $estatusValidacionIcono, $estatusValidacionColor, $usuarioId, $nombreUsuario, $seccionAdmin, $descripcionAdmin))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios,$procesoNombre,$estatusValidacionId, $estatusValidacionDescripcion, $usuarioNombre, $usuarioApellido,$estatusValidacionIcono, $estatusValidacionColor, $usuarioId, $nombreUsuario);
+                            $registro = $this->crearRegistro($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios,$procesoNombre,$estatusValidacionId, $estatusValidacionDescripcion, $usuarioNombre, $usuarioApellido,$estatusValidacionIcono, $estatusValidacionColor, $usuarioId, $nombreUsuario,$seccionAdmin,$descripcionAdmin);
                             $resultado->valor = $registro;
                         }
                         else
@@ -206,7 +206,7 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
             return $resultado;
     }
     
-    private function crearRegistro($id, $tipoObservacionId, $tipoObservacionNombre, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion, $numeroComentarios, $procesoNombre,$estatusValidacionId, $estatusValidacionDescripcion, $usuarioNombre, $usuarioApellido, $estatusValidacionIcono, $estatusValidacionColor, $usuarioId, $nombreUsuario)
+    private function crearRegistro($id, $tipoObservacionId, $tipoObservacionNombre, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion, $numeroComentarios, $procesoNombre,$estatusValidacionId, $estatusValidacionDescripcion, $usuarioNombre, $usuarioApellido, $estatusValidacionIcono, $estatusValidacionColor, $usuarioId, $nombreUsuario, $seccionAdmin, $descripcionAdmin)
     {
         $registro= (object) [
             'id' =>  $id,
@@ -231,7 +231,9 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
             "usuarioNombre" => $usuarioNombre,
             "usuarioApellido" => $usuarioApellido,
             "estatusValidacionIcono" => $estatusValidacionIcono,
-            "estatusValidacionColor" => $estatusValidacionColor
+            "estatusValidacionColor" => $estatusValidacionColor,
+            "seccionAdmin" => $seccionAdmin,
+            "descripcionAdmin" => $descripcionAdmin
         ];
         
         $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
@@ -256,11 +258,11 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios,$estatusValidacionIcono, $estatusValidacionColor, $usuarioId, $nombreUsuario))
+                    if ($sentencia->bind_result($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios,$estatusValidacionIcono, $estatusValidacionColor, $usuarioId, $nombreUsuario,$seccionAdmin, $descripcionAdmin))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios,$estatusValidacionIcono, $estatusValidacionColor, $usuarioId, $nombreUsuario);
+                            $registro = $this->crearRegistro($id, $tipoObservacionId, $tipoObservacionDescripcion, $descripcion, $archivo, $seccion, $fechaAlta, $fechaModificacion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $comentarioValidacion,$numeroComentarios,$estatusValidacionIcono, $estatusValidacionColor, $usuarioId, $nombreUsuario,$seccionAdmin, $descripcionAdmin);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -340,7 +342,7 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
             return $resultado;
     }
     
-    public function actualizarEstatusValidacion($usuario, $procesoRevisadoId, $observacionId, $estatusValidacionId, $comentario)
+    public function actualizarEstatusValidacion($usuario, $procesoRevisadoId, $observacionId, $estatusValidacionId, $comentario, $seccion, $descripcion)
     {
         ini_set('max_execution_time', 0);
         $this->conexion->autocommit(FALSE);
@@ -351,12 +353,14 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
                          estatus_validacion_id = ?,
                          fecha_modificacion = NOW(),
                          fecha_validacion = NOW(),
-                         validacion_usuario_id = ?
+                         validacion_usuario_id = ?,
+                         seccion_admin = ?, 
+                         descripcion_admin = ?
                      WHERE proceso_revisado_id = ?
                             AND id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param('iiii',$estatusValidacionId, $usuario->id, $procesoRevisadoId, $observacionId))
+            if($sentencia->bind_param('iissii',$estatusValidacionId, $usuario->id, $seccion, $descripcion, $procesoRevisadoId, $observacionId))
             {
                 if($sentencia->execute())
                 {

@@ -26,7 +26,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = "SELECT UP.id, usuario_id usuarioId,U.nombre usuarioNombre, proceso_id, P.nombre, IFNULL(DATE_FORMAT(UP.fecha_alta,'%d/%m/%Y'),'')fecha_alta, IFNULL(DATE_FORMAT(UP.fecha_cancelacion,'%d/%m/%Y'),'')fecha_cancelacion, UP.estatus,codigo, U.apellido usuarioApellido, U.empresa_id empresaId, U.sede_id sedeId, P.sede_id procedimientoSedeId,IFNULL(DATE_FORMAT(UP.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,P.ruta_archivo, U.nombre_usuario nombreUsuario, U.tipo_usuario_id tipoUsuarioId,EM.mes_revision_procesos mesRevision 
+        $this->consultaBase = "SELECT UP.id, usuario_id usuarioId,U.nombre usuarioNombre, proceso_id, P.nombre, IFNULL(DATE_FORMAT(UP.fecha_alta,'%d/%m/%Y'),'')fecha_alta, IFNULL(DATE_FORMAT(UP.fecha_cancelacion,'%d/%m/%Y'),'')fecha_cancelacion, UP.estatus,codigo, U.apellido usuarioApellido, U.empresa_id empresaId, U.sede_id sedeId, P.sede_id procedimientoSedeId,IFNULL(DATE_FORMAT(UP.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,P.ruta_archivo, U.nombre_usuario nombreUsuario, U.tipo_usuario_id tipoUsuarioId,EM.mes_revision_procesos mesRevision, EM.administrador_procesos_id administradorId, UA.nombre administradorNombre, UA.apellido administradorApellido, UA.nombre_usuario administradorNombreUsuario 
                                 FROM usuarios_procesos UP
                                     LEFT JOIN usuarios U ON U.id = UP.usuario_id
                                     LEFT JOIN sedes S ON S.id = U.sede_id
@@ -34,7 +34,8 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                                     LEFT JOIN procesos P ON P.id = UP.proceso_id
                                     LEFT JOIN areas A ON A.id = U.area_id
                                     LEFT JOIN departamentos D ON D.id = U.departamento_id
-                                    INNER JOIN tipos_usuario TU ON TU.id = U.tipo_usuario_id ";
+                                    INNER JOIN tipos_usuario TU ON TU.id = U.tipo_usuario_id
+                                    INNER JOIN usuarios UA ON UA.id = EM.administrador_procesos_id ";
         
         $this->consultaBasePendientesRevisados = "SELECT * FROM(SELECT UP.id usuario_proceso_id,U.empresa_id,EM.nombre, U.sede_id, S.nombre, usuario_id ,U.nombre,U.apellido,
                                                 proceso_id, P.nombre, IFNULL(DATE_FORMAT(UP.fecha_alta,'%d/%m/%Y'),'')fecha_alta,IFNULL(DATE_FORMAT(UP.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,P.ruta_archivo,
@@ -170,11 +171,11 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $sedeId,$procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision ))
+                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $sedeId,$procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario ))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $sedeId, $procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision );
+                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $sedeId, $procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario );
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -397,8 +398,10 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
 //             $consulta.=" ORDER BY TU.orden, U.nombre, P.nombre";
 //         else
             $consulta.=" ORDER BY FIELD(U.id,$usuario->id) DESC,U.nombre, P.nombre";
+            
+            
         
-       // var_dump($consulta);
+       //var_dump($consulta);
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -406,11 +409,11 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion, $rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision ))
+                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion, $rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario ))
                     {
                         while($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision );
+                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario );
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -472,11 +475,11 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                 {
                     if($sentencia->execute())
                     {
-                        if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion, $rutaArchivo ,$nombreUsuario,$tipoUsuarioId,$mesRevision))
+                        if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion, $rutaArchivo ,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario))
                         {
                             while($sentencia->fetch())
                             {
-                                $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision);
+                                $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario);
                                 array_push($registros,$registro);
                             }
                             $resultado->valor = $registros;
@@ -575,7 +578,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                         LEFT JOIN procesos P1 ON P1.id = UP1.proceso_id
                         LEFT JOIN areas A1 ON A1.id = U1.area_id
                         LEFT JOIN departamentos D1 ON D1.id = U1.departamento_id
-                        INNER JOIN tipos_usuario TU1 ON TU1.id = U1.tipo_usuario_id
+                        LEFT JOIN tipos_usuario TU1 ON TU1.id = U1.tipo_usuario_id
                     WHERE U1.id = U.id
                             AND UP1.estatus = 1
                             AND U1.estatus = 1
@@ -620,7 +623,10 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                             $andEmpresa
                     GROUP BY U.nombre, U.apellido
                     ORDER BY U.nombre, U.apellido";
+                           // echo $consulta;
         return $consulta;
+        
+       
     }
             
     public function consultarAvanceUsuarios($usuario,$criteriosSeleccion)
@@ -632,11 +638,11 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         $filtros = array();
         
         
-        $tipoUsuarioId = $usuario->tipoUsuarioId;
-        $usuario->tipoUsuarioId = \TipoUsuario::COORDINADOR;
+        //$tipoUsuarioId = $usuario->tipoUsuarioId;
+        //$usuario->tipoUsuarioId = \TipoUsuario::COORDINADOR;
         $procesosRepositorio = new ProcesosRepositorio($this->conexion);
         $filtros = $procesosRepositorio->getFiltrosN($usuario,$criteriosSeleccion,false);
-        $usuario->tipoUsuarioId = $tipoUsuarioId;
+        //$usuario->tipoUsuarioId = $tipoUsuarioId;
         $andEmpresa = $this->and($filtros);
         
         
@@ -675,7 +681,9 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                                 "departamentoNombre" => $departamentoNombre
                                             
                             ];
+                            
                             $registro->nombreCompleto = $registro->nombre . " " .$registro->apellido;
+                            $registro->nombreId =  $registro->nombreCompleto ." (".$registro->id.")";
                             $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
                             if(file_exists($registro->fotoPerfil))
                                 $registro->fotoPerfil =  "php/fotos/usuario". $registro->id .".jpg";
@@ -698,6 +706,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
             $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
+   
     
     public function consultarAvanceDepartamentos($usuario,$criteriosSeleccion)
     {
@@ -708,11 +717,11 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         $filtros = array();
         
         
-        $tipoUsuarioId = $usuario->tipoUsuarioId;
-        $usuario->tipoUsuarioId = \TipoUsuario::COORDINADOR;
+        //$tipoUsuarioId = $usuario->tipoUsuarioId;
+        //$usuario->tipoUsuarioId = \TipoUsuario::COORDINADOR;
         $procesosRepositorio = new ProcesosRepositorio($this->conexion);
         $filtros = $procesosRepositorio->getFiltrosN($usuario,$criteriosSeleccion,false);
-        $usuario->tipoUsuarioId = $tipoUsuarioId;
+        //$usuario->tipoUsuarioId = $tipoUsuarioId;
         $andEmpresa = $this->and($filtros);
         
         
@@ -748,7 +757,75 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                                 "revisados" => $revisados
                                 
                             ];
+                            $registro->nombreId =  $registro->nombre." (".$registro->id.")";
                         array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
+    }
+    
+    public function consultarAvanceEmpresas($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        
+        $filtros = array();
+        
+        
+        //$tipoUsuarioId = $usuario->tipoUsuarioId;
+        //$usuario->tipoUsuarioId = \TipoUsuario::COORDINADOR;
+        $procesosRepositorio = new ProcesosRepositorio($this->conexion);
+        $filtros = $procesosRepositorio->getFiltrosN($usuario,$criteriosSeleccion,false);
+        //$usuario->tipoUsuarioId = $tipoUsuarioId;
+        $andEmpresa = $this->and($filtros);
+        
+        
+        $primerDiaAno = "$criteriosSeleccion->ano-1-1";
+        // $ultimoDiaMes = date("Y-m-t", strtotime($primerDiaMes));
+        $ultimoDiaAno = "$criteriosSeleccion->ano-12-31";
+        
+        
+        $consulta = "SELECT empresaId, empresaNombre, SUM(pendientes)pendientes, SUM(revisados )revisados
+                    FROM (". $this->getConsultarAvanceUsuarios($usuario,$criteriosSeleccion,$andEmpresa) .
+                    ")A
+                    GROUP BY empresaId, empresaNombre
+                    ORDER BY empresaNombre ";
+        
+        //var_dump($consulta);
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id, $nombre, $pendientes, $revisados))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro = (object)
+                            [
+                                "id" => $id,
+                                "nombre" => $nombre,
+                                "pendientes" => $pendientes,
+                                "revisados" => $revisados
+                                
+                            ];
+                            array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
                     }
@@ -783,11 +860,11 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion, $rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision ))
+                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion, $rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario ))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido, $empresaId, $usuarioSedeId,$procedimientoSedeId ,$fechaModificacion, $rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision);
+                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido, $empresaId, $usuarioSedeId,$procedimientoSedeId ,$fechaModificacion, $rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario);
                             $resultado->valor = $registro;
                         }
                         else
@@ -836,7 +913,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         return $resultado;
     }
 
-    private function crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus, $codigo, $usuarioApellido, $empresaId, $usuarioSedeId, $procedimientoSedeId, $fechaModificacion,$rutaArchivo ,$nombreUsuario, $tipoUsuarioId,  $mesRevision)
+    private function crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus, $codigo, $usuarioApellido, $empresaId, $usuarioSedeId, $procedimientoSedeId, $fechaModificacion,$rutaArchivo ,$nombreUsuario, $tipoUsuarioId,  $mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario)
     {
         $registro= (object) 
         [
@@ -859,7 +936,11 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
             'rutaArchivo' => $rutaArchivo,
             'nombreUsuario' => $nombreUsuario,
             'tipoUsuarioId' => $tipoUsuarioId,
-            'mesRevision' => $mesRevision
+            'mesRevision' => $mesRevision,
+            'administradorId' => $administradorId,
+            'administradorNombre' => $administradorNombre,
+            'administradorApellido' => $administradorApellido,
+            'administradorNombreUsuario' => $administradorNombreUsuario
         ];
         
         $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " .$registro->usuarioApellido;
@@ -888,7 +969,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         $ano = date("Y");
         
         
-        $consulta =  "SELECT usuarioId, usuarioNombre, usuarioApellido, nombreUsuario, tipoUsuarioId, mesRevision, empresaId, sedeId
+        $consulta =  "SELECT usuarioId, usuarioNombre, usuarioApellido, nombreUsuario, tipoUsuarioId, mesRevision, empresaId, sedeId, administradorId, administradorNombre, administradorApellido, administradorNombreUsuario
             FROM(
            $this->consultaBase 
          WHERE UP.estatus = 1
@@ -913,7 +994,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioNombre, $usuarioApellido, $nombreUsuario, $tipoUsuarioId,$mesRevision,$empresaId, $sedeId ))
+                    if($sentencia->bind_result($id, $usuarioNombre, $usuarioApellido, $nombreUsuario, $tipoUsuarioId,$mesRevision,$empresaId, $sedeId, $administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario ))
                     {
                         while($row = $sentencia->fetch())
                         {
@@ -925,7 +1006,11 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                                 'tipoUsuarioId' => $tipoUsuarioId,
                                 'mesRevision' => $mesRevision,
                                 'empresaId' => $empresaId,
-                                'sedeId' => $sedeId
+                                'sedeId' => $sedeId,
+                                'administradorId'=> $administradorId,
+                                'administradorNombre'=> $administradorNombre,
+                                'administradorApellido'=> $administradorApellido,
+                                'administradorNombreUsuario'=> $administradorNombreUsuario,
                             ];
                             $registro->usuarioNombreCompleto = $registro->nombre . " " . $registro->apellido;
                             $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
@@ -951,7 +1036,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         return $resultado;
     }
     
-    public function enviarNotificacionRevision1($usuario,$procesos,$ano)
+    public function enviarNotificacionRevision1($usuario,$procesos,$ano, $administrador)
     {
         $resultado = new Resultado();
         ini_set('max_execution_time', 0);
@@ -983,8 +1068,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         $mensaje=  str_replace("@fechaLimite",$fechaLimite,$mensaje);
         //$mensaje = str_replace("@contenido", $contenido, $mensaje);
         //$mensaje = str_replace("@boton", $boton, $mensaje);
-        $usuarios = array();
-        array_push($usuarios, $usuario);
+        $usuarios = $this->getUsuariosCorreo($usuario,$administrador);
         $administradorCorreo = new AdministradorCorreo();
         $asunto="=?UTF-8?B?".base64_encode("¡Iniciamos la revisión anual de procesos!")."?=";
         $de="=?UTF-8?B?".base64_encode("SAHA - Revisión de procesos")."?=";
@@ -997,7 +1081,18 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         return $resultado;
     }
     
-    public function enviarNotificacionRevision2($usuario,$procesos,$ano,$criteriosSeleccion)
+    private function getUsuariosCorreo($usuario, $administrador)
+    {
+        $usuarios = array();
+        array_push($usuarios, $usuario);
+        array_push($usuarios, $administrador);
+        array_push($usuarios, (object)["nombreUsuario" => "eduardo@handel-sce.com"]);
+        array_push($usuarios, (object)["nombreUsuario" => "noemi@handel-sce.com"]);
+        //array_push($usuarios, (object)["nombreUsuario" => "contact@alanbazan.com.mx"]);
+        return $usuarios;
+    }
+    
+    public function enviarNotificacionRevision2($usuario,$procesos,$ano,$criteriosSeleccion,$administrador)
     {
         $resultado = new Resultado();
         ini_set('max_execution_time', 0);
@@ -1030,7 +1125,10 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
        // else
           //  $mensaje= file_get_contents('../plantillas_correo/revision_procesos2.html');
         
+       $tipoUsuarioId = $usuario->tipoUsuarioId;
+       $usuario->tipoUsuarioId = \TipoUsuario::COORDINADOR;
        $resultado = $this->consultarAvanceUsuarios($usuario,$criteriosSeleccion);
+       $usuario->tipoUsuarioId = $tipoUsuarioId;
        if($resultado->correcto())
        {
            $usuarios = $resultado->valor;
@@ -1076,8 +1174,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         $mensaje = str_replace("@dias", $dias, $mensaje);
         //$mensaje = str_replace("@contenido", $contenido, $mensaje);
         //$mensaje = str_replace("@boton", $boton, $mensaje);
-        $usuarios = array();
-        array_push($usuarios, $usuario);
+        $usuarios = $this->getUsuariosCorreo($usuario,$administrador);
         $administradorCorreo = new AdministradorCorreo();
         $asunto="=?UTF-8?B?".base64_encode("Reporte de avance de revisión de procesos")."?=";
         $de="=?UTF-8?B?".base64_encode("SAHA - Revisión de procesos")."?=";
@@ -1223,7 +1320,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         return $listaProcesos;
     }
     
-    public function enviarNotificacionRevision3($usuario,$procesos,$ano,$criteriosSeleccion)
+    public function enviarNotificacionRevision3($usuario,$procesos,$ano,$criteriosSeleccion,$administrador)
     {
         $resultado = new Resultado();
         ini_set('max_execution_time', 0);
@@ -1255,8 +1352,10 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         }
         // else
         //  $mensaje= file_get_contents('../plantillas_correo/revision_procesos2.html');
-        
+        $tipoUsuarioId = $usuario->tipoUsuarioId;
+        $usuario->tipoUsuarioId = \TipoUsuario::COORDINADOR;
         $resultado = $this->consultarAvanceUsuarios($usuario,$criteriosSeleccion);
+        $usuario->tipoUsuarioId = $tipoUsuarioId;
         if($resultado->correcto())
         {
             $usuarios = $resultado->valor;
@@ -1326,8 +1425,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
             
             //$mensaje = str_replace("@contenido", $contenido, $mensaje);
             //$mensaje = str_replace("@boton", $boton, $mensaje);
-            $usuarios = array();
-            array_push($usuarios, $usuario);
+            $usuarios = $this->getUsuariosCorreo($usuario,$administrador);
             $administradorCorreo = new AdministradorCorreo();
             $asunto="=?UTF-8?B?".base64_encode("¿Cómo concluyó la revisión de procesos?")."?=";
             $de="=?UTF-8?B?".base64_encode("SAHA - Revisión de procesos")."?=";

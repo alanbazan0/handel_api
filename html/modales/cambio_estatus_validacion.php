@@ -29,10 +29,10 @@
 						</div>
 					</div>
 					
-					<div class="form-group" id="seccionValidacionObservacionDiv" style="display:none">
+					<div class="form-group" id="seccionValidacionDiv" style="display:none">
 						<div>
-							<label for="seccionValidacionObservacionInput" class="control-label">Sección</label>
-							<input id="seccionValidacionObservacionInput" class="form-control" placeholder="">
+							<label for="seccionValidacionInput" class="control-label">Sección</label>
+							<input id="seccionValidacionInput" name="seccionValidacionInput" class="form-control" placeholder="">
 						</div>
 					</div>
 					

@@ -272,7 +272,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 		 },this.vista._procesoSeleccionado.id, estatusValidacionId, comentario);
 	}
 	
-	actualizarEstatusValidacionObservacion(estatusValidacionId, comentario)
+	actualizarEstatusValidacionObservacion(estatusValidacionId, comentario, seccion, descripcion)
 	{
 		this.vista.mostrarIndicador();	
 		var repositorio = new ProcesosRevisadosObservacionesRepositorio();
@@ -288,7 +288,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 			 }
 			 else
 				 this.vista.mostrarMensajeError(resultado.mensajeError, resultado.codigoError);
-		 },this.vista._procesoSeleccionado.id,this.vista._observacionSeleccionada.id, estatusValidacionId,comentario);
+		 },this.vista._procesoSeleccionado.id,this.vista._observacionSeleccionada.id, estatusValidacionId,comentario, seccion, descripcion);
 	}
 	
 	consultarComentariosObservacion()

@@ -381,7 +381,7 @@ class AdministradorCorreo
         
         $error = error_get_last();
         
-        if ( $error["type"] == E_WARNING)
+        if ($error!=null && $error["type"] == E_WARNING)
         {
             $resultado->mensajeError="No se pudo enviar el correo electrónico." . htmlspecialchars_decode($error["message"]) ;
             $resultado->codigoError = 3;
@@ -428,7 +428,12 @@ class AdministradorCorreo
         
         $error = error_get_last();
         
-        if ( $error["type"] == E_WARNING)
+        if($error!=null)
+        {
+            
+        }
+        
+        if ($error!=null && $error["type"] == E_WARNING)
         {
             $resultado->mensajeError="No se pudo enviar el correo electrónico." . htmlspecialchars_decode($error["message"]) ;
             $resultado->codigoError = 3;
