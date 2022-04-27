@@ -213,12 +213,23 @@ class AuditoriaVista extends Vista
 	mostrarObservaciones()
 	{
 		var _this = this;
-		this.mostrarFormularioHTML(HANDEL_API+"/html/formularios/observaciones_seccion.php",this, null, function()
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/observaciones_seccion.php",this, null, function()
 		{
 			var seccionActual = _this.listaPreguntas.seccionActual;
-			$("#hallazgoInput").val(seccionActual.hallazgo);
+			if(seccionActual.observacionesSeccion==null)
+			 	seccionActual.observacionesSeccion = [];
+			$("#seccionLabel").html(seccionActual.texto);
+			this.crearTablaObservaciones(true);
+			this.observacionesTabla.registros = seccionActual.observacionesSeccion;
+			
+				this.inicializarEventosBotonesTablaObservaciones("#" + this.observacionesTabla._id+"Table tbody",this.observacionesTabla.datatable.DataTable());
+
+			$("#agregarObservacionButton").click(function(){_this.mostrarObservacion(Modo.ALTA,seccionActual);});
+	
+			
+			
+			/*$("#hallazgoInput").val(seccionActual.hallazgo);
 			$("#recomendacionInput").val(seccionActual.recomendacion);
-			//$("#responsableSelect").val(seccionActual.responsable);
 			
 				
 			var tipoAuditoriaId = this.tipoAuditoriaId;
@@ -239,7 +250,7 @@ class AuditoriaVista extends Vista
 					$("#notificacionCheck").prop('checked', false);
 			}
 			
-			_this.consultarUsuariosSeccion();
+			_this.consultarUsuariosSeccion();*/
 			 
 			
 		},null,"","","guardarButton",function()
@@ -250,8 +261,287 @@ class AuditoriaVista extends Vista
 			seccionActual.responsable = $("#responsableSelect").val();
 			seccionActual.reporte =  $("#reporteCheck").is(':checked')?1:0;
 			seccionActual.notificacion =  $("#notificacionCheck").is(':checked')?1:0;
+			//seccionActual.observaciones = _this.observacionesSeccion;
 			$("#modalAlta").modal('hide');
 		});
+	}
+	
+	mostrarObservacion(modo,seccionActual, observacion)
+	{
+		var _this = this;
+		this.modoObservacion = modo;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/observacion_seccion.php",this, null, function()
+		{
+			$("#seccionObservacionLabel").html(seccionActual.texto);
+			this.inicializarValidacionesObservacion();
+			if(modo==Modo.CAMBIO)
+				_this.modeloObservacion = observacion;
+			
+			
+			this.consultarUsuariosSeccion();
+		
+			
+			
+			
+			
+		},null,"observacionModal","","guardarObservacionButton",function()
+		{
+			$("#observacionFormulario").submit();
+		});	
+		
+	}
+	
+	inicializarValidacionesObservacion()
+	{
+		var _this = this;
+		jQuery("#observacionFormulario").validate({
+            ignore: [],
+            errorClass: "invalid-feedback animated fadeInDown",
+            errorElement: "div",
+            errorPlacement: function(e, a) {
+                jQuery(a).parents(".form-group > div").append(e)
+            },
+            highlight: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid").addClass("is-invalid")
+            },
+            success: function(e) {
+                jQuery(e).closest(".form-group").removeClass("is-invalid"), jQuery(e).remove()
+            },
+            rules: {
+                "hallazgoInput": {
+                    required: !0
+                },
+                "recomendacionInput": {
+                    required: !0
+                }
+                
+            },
+            messages: {
+                "hallazgoInput": "Por favor ingrese un hallazgo",
+                "recomendacionInput": "Por favor ingrese una recomendación"
+                	
+                
+            },
+            submitHandler:function (form) {
+            	 _this.guardarObservacion();
+            }
+        });
+	}
+	
+	set modeloObservacion(observacion)
+	{
+		this._modeloObservacion = observacion;
+		if(modo==Modo.ALTA)
+		{
+			var tipoAuditoriaId = this.tipoAuditoriaId;
+			if(tipoAuditoriaId=="AI")	
+			{
+				$("#notificacionCheck").prop('checked', true);
+				$("#reporteCheck").prop('checked', true);
+			}
+		}
+		else
+		{
+			 $("#hallazgoInput").val(observacion.hallazgo);
+		 	$("#recomendacionInput").val(observacion.recomendacion);
+			if(observacion.reporte)
+				$("#reporteCheck").prop('checked', true);
+			else
+				$("#reporteCheck").prop('checked', false);
+			if(observacion.notificacion)
+				$("#notificacionCheck").prop('checked', true);
+			else
+				$("#notificacionCheck").prop('checked', false);
+		}
+		
+	}
+	
+	get modeloObservacion()
+	{
+		 var modelo = 
+		 {		
+			hallazgo : $("#hallazgoInput").val(),
+			recomendacion:  $("#recomendacionInput").val(),
+			reporte :  $("#reporteCheck").is(':checked')?1:0,
+			notificacion :  $("#notificacionCheck").is(':checked')?1:0,
+		 };
+		var usuario = $( "#responsableSelect option:selected" ).data("data");
+		if(usuario!=null)
+		{
+			modelo.responsableId = usuario.id;
+			modelo.responsableNombreCompleto = usuario.nombreCompleto;
+			modelo.fotoPerfil = usuario.fotoPerfil;
+		}
+		else
+		{
+			modelo.responsableId = null;
+			modelo.responsableNombreCompleto = "";
+			modelo.fotoPerfil = null;
+		}
+		 return modelo;
+	 }
+	
+	guardarObservacion()
+	{	
+		var observacion = this.modeloObservacion;
+	
+		var seccionActual = this.listaPreguntas.seccionActual;
+		if(this.modoObservacion==Modo.ALTA)
+		{
+			if(seccionActual.observacionesSeccion==null)
+				seccionActual.observacionesSeccion =[];
+				
+			seccionActual.observacionesSeccion.push(observacion);
+		}
+		else
+		{
+			this._observacionSeleccionada.hallazgo = observacion.hallazgo;
+			this._observacionSeleccionada.recomendacion = observacion.recomendacion;
+			this._observacionSeleccionada.responsableId = observacion.responsableId;
+			this._observacionSeleccionada.responsableNombreCompleto = observacion.responsableNombreCompleto;
+			this._observacionSeleccionada.reporte = observacion.reporte;
+			this._observacionSeleccionada.notificacion = observacion.notificacion;
+		}
+		$("#observacionModal").modal("hide");
+		this.observacionesTabla.registros = seccionActual.observacionesSeccion;
+		this.inicializarEventosBotonesTablaObservaciones("#" + this.observacionesTabla._id+"Table tbody",this.observacionesTabla.datatable.DataTable());
+		this.cambiosObservaciones = true;
+		
+	}
+	
+	inicializarEventosBotonesTablaObservaciones(tbody, table, nombresCamposLlave)
+	{
+		var _this = this;
+		$(tbody).on("click", "button.editar", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._observacionSeleccionada  = table.row( tr ).data();
+			if (_this._observacionSeleccionada != undefined)
+			{
+				var seccionActual = _this.listaPreguntas.seccionActual;
+				_this.mostrarObservacion(Modo.CAMBIO, seccionActual, _this._observacionSeleccionada)
+			
+			}
+		});
+		
+		$(tbody).on("click", "button.eliminar", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			this._observacionSeleccionada  = table.row( tr ).data();
+			var indice = table.row(tr).index();
+			if (this._observacionSeleccionada != undefined)
+			{
+				_this.confirmarEliminarObservacion(this._observacionSeleccionada,tr,indice);
+			
+			}
+		});
+		
+	}
+	
+	crearTablaObservaciones()
+	{
+		this.observacionesTabla = new Tabla("observacionesTabla");
+		this.observacionesTabla.alto = 250;
+		this.observacionesTabla.buscar = false;
+		this.observacionesTabla.paginacion = false;
+		this.observacionesTabla.columnas = [
+			{longitud:200, 	titulo:"Hallazgo",   alias:"hallazgo", alineacion:"I"},
+			{longitud:200, 	titulo:"Recomendación",   alias:"recomendacion", alineacion:"I"},
+			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogoResponsable},
+			{longitud:200, 	titulo:"Responsable",   alias:"responsableNombreCompleto", alineacion:"I",class: "desc" }, 
+			{longitud:50, 	titulo:"Reporte",   alias:"reporte", alineacion:"C", itemRenderer:this.renderReporte},
+			{longitud:50, 	titulo:"Notificación",   alias:"notificacion", alineacion:"C", itemRenderer:this.renderNotificacion},
+		
+		]
+	
+		this.observacionesTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-1 botones-icon btn btn-sm float-left btn-success active'><span  data-toggle='tooltip' class='fas fa-pencil-alt fa-lg'></span></button>"+
+												"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+
+
+		
+		this.observacionesTabla.textoTablaVacia = "No hay observaciones";
+		this.observacionesTabla.textoSinRegistros= "No hay observaciones";
+		this.observacionesTabla.registros = [];
+		
+		
+		
+	}
+	
+	confirmarEliminarObservacion(observacion, tr, indice)
+	{
+		var _this = this;
+		swal({
+	            title: "\u00bfEst\u00E1 seguro de eliminar?",
+	            text: "Se eliminar\u00e1 este registro !!",
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Si, eliminar!!",
+	            cancelButtonText: "No",
+	            closeOnConfirm: false,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+					_this.listaPreguntas.seccionActual.observacionesSeccion.slice(indice,1);
+					
+					swal.close();
+					tr.fadeOut();
+	            	 setTimeout(function()
+					{
+						
+						tr.remove();
+						
+	            		 //_this.presentador.eliminar();
+	 	            }, 1000);
+	            }
+	        });
+	}
+	
+	renderLogoResponsable(renglon, type, set)
+	{    
+		var fecha = new Date();
+		var contenido = "";
+		if(renglon.responsableId!=undefined)
+		{
+		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+vista.time;
+		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
+			
+		}
+	    return contenido;
+	}
+	
+	renderNotificacion(renglon, type, set)
+	{    
+		var contenido = "";
+		if(renglon.notificacion==1)
+			contenido += "<center><i class='fa fa-check text-success'></i></center>";
+		else
+			contenido += "<center><i class='fa fa-times text-danger'></i></center>";
+	    return contenido;
+	}
+	
+	renderReporte(renglon, type, set)
+	{    
+		var contenido = "";
+		if(renglon.reporte==1)
+			contenido += "<center><i class='fa fa-check text-success'></i></center>";
+		else
+			contenido += "<center><i class='fa fa-times text-danger'></i></center>";
+	    return contenido;
 	}
 	
 	mostrarObservacionesGenerales()
@@ -420,6 +710,7 @@ class AuditoriaVista extends Vista
 			this.listaPreguntas.hora = modeloDatos.hora;*/
 			$("#referenciaLabel").html(modeloDatos.referencia);
 			this.listaPreguntas.seccionActual = modeloDatos.seccion;
+			this.listaPreguntas.seccionActual.observacionesSeccion = modeloDatos.observacionesSeccion;
 			if( modeloDatos.preguntas!=null)
 			{
 				for(var i=0; i < modeloDatos.preguntas.length; i++)
@@ -576,7 +867,8 @@ class AuditoriaVista extends Vista
 			puntos :  seccionActual.puntos,
 			puntosTotal :  seccionActual.puntosTotal,
 			porcentaje :  seccionActual.porcentaje,
-			preguntas : this.preguntasAuditoria
+			preguntas : this.preguntasAuditoria,
+			observaciones : seccionActual.observacionesSeccion
 		}
 		return seccion;
 	}
@@ -944,7 +1236,7 @@ class AuditoriaVista extends Vista
 	set usuariosSeccion(usuarios)
 	{
 		//this.cargarOpciones("#resposableSelect", usuarios,null,"usuarioId");	
-		this.cargarOpciones("#responsableSelect", usuarios,Modo.CAMBIO, this.listaPreguntas.seccionActual, "responsable", "", "nombreCompleto")
+		this.cargarOpciones("#responsableSelect", usuarios,Modo.CAMBIO, this._modeloObservacion, "responsableId", "", "nombreCompleto",true)
 //		var responsableId =this.listaPreguntas.seccionActual.responsable;
 //		if(responsableId!=null)
 //			if(responsableId!="")

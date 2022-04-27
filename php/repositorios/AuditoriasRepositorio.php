@@ -829,6 +829,63 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
         return $resultado;
     }
     
+    private function insertarObservaciones($auditoriaId,$plantillaId,$seccionId,$observaciones)
+    {
+        $resultado = new Resultado();
+        
+        //$administradorArchivos = new AdministradorArchivos();
+        
+        for ($i = 0; $i <  count($observaciones); $i++)
+        {
+            
+            $observacion = $observaciones[$i];
+            
+            if(isset($observacion->responsableId))
+            {
+                if($observacion->responsableId=="")
+                    $observacion->responsableId = null;
+            }
+            else
+                $observacion->responsableId = null;
+                
+             $resultado = $this->calcularId("id", "auditoria_seccion_observaciones");
+             if($resultado->correcto())
+             {
+                 $id = $resultado->valor;
+                $consulta = "INSERT INTO auditoria_seccion_observaciones(id, auditoria_id, plantilla_id, seccion_id, hallazgo, recomendacion, responsable, reporte, notificacion) " .
+                    "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if($sentencia->bind_param("iiiissiii",$id, $auditoriaId,$plantillaId,$seccionId, $observacion->hallazgo, $observacion->recomendacion,$observacion->responsableId, $observacion->reporte, $observacion->notificacion))
+                    {
+                        if($sentencia->execute())
+                        {
+                            $sentencia->close();
+                        }
+                        else
+                        {
+                            $resultado->codigoError = $this->conexion->errno;
+                            $resultado->mensajeError = __FUNCTION__.". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        $resultado->mensajeError = __FUNCTION__.". Falló el enlace de parámetros";
+                        break;
+                    }
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__.". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    break;
+                }
+            }
+        }
+        return $resultado;
+    }
+    
     private function insertarSeccion($auditoriaId,$plantillaId,$seccion)
     {
         $resultado = new Resultado();
@@ -944,6 +1001,38 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
         {
             $resultado->codigoError = $this->conexion->errno;
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
+    private function eliminarObservaciones($auditoriaId,$plantillaId,$seccionId)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM auditoria_seccion_observaciones WHERE auditoria_id = ? AND plantilla_id = ? AND seccion_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("iii",$auditoriaId,$plantillaId,$seccionId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                    
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__. ". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. ". Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__. ". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
         }
         return $resultado;
@@ -1479,7 +1568,15 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                             $resultado =  $this->insertarRespuestasNo($modelo->id,$modelo->plantillaId, $modelo->seccion->id,$modelo->seccion->preguntas);
                             if($resultado->mensajeError=="")
                             {
-                                
+                                $resultado =  $this->eliminarObservaciones($modelo->id,$modelo->plantillaId, $modelo->seccion->id);
+                                if($resultado->mensajeError=="")
+                                {
+                                    $resultado =  $this->insertarObservaciones($modelo->id,$modelo->plantillaId, $modelo->seccion->id,$modelo->seccion->observaciones);
+                                    if($resultado->mensajeError=="")
+                                    {
+                                        
+                                    }
+                                }
                             }
                         }
                     }
@@ -1605,13 +1702,23 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                 {
                     $resultado->valor->seccion = $resultadoSeccion->valor;
                     $resultado->valor->preguntas = $resultadoPreguntas->valor;
+                    
+                    
+                    $resultadoObservaciones = $this->consultarObservacionesSeccion($llaves->plantillaId, $llaves->auditoriaId, $llaves->seccionId);
+                    if($resultadoObservaciones->mensajeError=="")
+                    {
+                        $resultado->valor->observacionesSeccion = $resultadoObservaciones->valor;
+                    }
+                    else
+                    {
+                        $resultado->mensajeError = $resultadoObservaciones->mensajeError;
+                    }
                 }
             }
             else
                 $resultado->mensajeError = $resultadoPreguntas->mensajeError;
+                
         }
-        
-        
         return $resultado;
     }
     
@@ -1665,6 +1772,16 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                             else
                             {
                                 $resultado->mensajeError = $resultadoPreguntas->mensajeError;
+                                break;
+                            }
+                            $resultadoObservaciones = $this->consultarObservacionesSeccion($llaves->plantillaId, $llaves->auditoriaId, $seccion->id);
+                            if($resultadoObservaciones->mensajeError=="")
+                            {
+                                $seccion->observacionesSeccion = $resultadoObservaciones->valor;
+                            }
+                            else
+                            {
+                                $resultado->mensajeError = $resultadoObservaciones->mensajeError;
                                 break;
                             }
                         }
@@ -2129,6 +2246,70 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
         else
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
         
+        return $resultado;
+    }
+    
+    
+    private function consultarObservacionesSeccion($plantillaId,$auditoriaId,$seccionId)
+    {
+        
+        $resultado = new Resultado();
+        $registros = array();
+        $consulta = "SELECT O.id, auditoria_id, plantilla_id, seccion_id, hallazgo, recomendacion, responsable,U.nombre, U.apellido, notificacion, reporte, D.nombre departamentoNombre 
+                        FROM auditoria_seccion_observaciones O
+                            LEFT JOIN usuarios  U ON U.id = O.responsable
+                            LEFT JOIN departamentos D ON D.id = U.departamento_id
+                        WHERE auditoria_id = ?
+                        	AND plantilla_id = ?
+                            AND seccion_id = ?";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            
+            if($sentencia->bind_param("iii",$auditoriaId,$plantillaId, $seccionId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $auditoriaId, $plantillaId, $seccionId, $hallazgo, $recomendacion, $responsableId, $responsableNombre, $responsableApellido, $notificacion, $reporte, $departamentoNombre))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro= (object) [
+                                'id' => $id,
+                                'hallazgo' => $hallazgo,
+                                'recomendacion' => $recomendacion,
+                                'responsableId' => $responsableId,
+                                'responsableNombre' => $responsableNombre,
+                                'responsableApellido' => $responsableApellido,
+                                'notificacion' => $notificacion,
+                                'reporte' => $reporte,
+                                'departamentoNombre' => $departamentoNombre
+                            ];
+                            $registro->responsableNombreCompleto = $registro->responsableNombre . " " . $registro->responsableApellido;
+                            $registro->fotoPerfil =  "../fotos/usuario". $registro->responsableId .".jpg";
+                            if(file_exists($registro->fotoPerfil))
+                                $registro->fotoPerfil =  "php/fotos/usuario". $registro->responsableId .".jpg";
+                            else
+                                $registro->fotoPerfil =  "php/fotos/default.jpg";
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                        
+                        //$sentencia->close();
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__.". Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError =  __FUNCTION__.". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError =  __FUNCTION__.". Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError =  __FUNCTION__.". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
         return $resultado;
     }
     
@@ -2832,13 +3013,17 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
     {
         $resultado = new Resultado();
         $observaciones = array();
+        $criterio = "Información general";
         for ($s = 0; $s < count($secciones); $s++) 
         {
             $seccion = $secciones[$s];
             $elementos = explode(". ", $seccion->texto);
+          
             if(count($elementos)>1)
             {
+                
                 $criterio = $elementos[1];
+               
                 for ($p = 0; $p < count($seccion->preguntas); $p++)
                 {
                     $pregunta = $seccion->preguntas[$p];
@@ -2898,24 +3083,59 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                         }
                     }
                 }
-                if($seccion->$tipo==1 && $seccion->hallazgo!="")
-                 {
-                     $departamento = $seccion->departamentoNombre;
-                     if($seccion->responsable=="")
-                         $departamento = "No asignado";
-                     else if($departamento=="")
+                
+//                 if($seccion->$tipo==1 && $seccion->hallazgo!="")
+//                  {
+//                      $departamento = $seccion->departamentoNombre;
+//                      if($seccion->responsable=="")
+//                          $departamento = "No asignado";
+//                      else if($departamento=="")
+//                         $departamento = "Sin departamento";
+//                      $observacion = (object)['criterio' =>$criterio, 
+//                          'departamento' => $departamento, 
+//                          'responsableId' => $seccion->responsable,
+//                          'hallazgo' => $seccion->hallazgo,
+//                          'recomendacion' => $seccion->recomendacion,
+//                          'seccionId' => $seccion->id,
+//                          'preguntaId' => null,
+//                          'respuestaId' => null
+//                      ];
+//                      array_push($observaciones,$observacion);
+//                  }
+
+
+               
+                
+            
+            }
+            
+           // echo 'observaciones';
+            
+            //var_dump($seccion->observacionesSeccion);   
+            for ($o = 0; $o < count($seccion->observacionesSeccion); $o++)
+            {
+                $observacionSeccion = $seccion->observacionesSeccion[$o];
+                if($observacionSeccion->$tipo==1 && $observacionSeccion->hallazgo!="")
+                {
+                    $departamento = $observacionSeccion->departamentoNombre;
+                    if($observacionSeccion->responsableId=="")
+                        $departamento = "No asignado";
+                    else if($departamento=="")
                         $departamento = "Sin departamento";
-                     $observacion = (object)['criterio' =>$criterio, 
-                         'departamento' => $departamento, 
-                         'responsableId' => $seccion->responsable,
-                         'hallazgo' => $seccion->hallazgo,
-                         'recomendacion' => $seccion->recomendacion,
-                         'seccionId' => $seccion->id,
-                         'preguntaId' => null,
-                         'respuestaId' => null
-                     ];
-                     array_push($observaciones,$observacion);
-                 }
+                        
+                    $observacion = (object)['criterio' =>$criterio,
+                        'departamento' => $departamento,
+                        'responsableId' => $observacionSeccion->responsableId,
+                        'hallazgo' => $observacionSeccion->hallazgo,
+                        'recomendacion' => $observacionSeccion->recomendacion,
+                        'seccionId' => $seccion->id,
+                        'observacion' => $o + 1,
+                        'preguntaId' => null,
+                        'respuestaId' => null
+                    ];
+                    array_push($observaciones,$observacion);
+                }
+                
             }
             
         }
@@ -2945,6 +3165,7 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                     $resultado = $this->consultarValoresSecciones($llaves);
                     if($resultado->correcto())
                     {
+                        
                         $secciones = $resultado->valor;
                         $resultado = $this->getHallazgos($secciones,"notificacion");
                         if($resultado->correcto())
@@ -3488,6 +3709,9 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                     WHERE auditoria_id=? AND edt = ?";
             
             $edt = $auditoriaId ."." .$hallazgo->seccionId; 
+            
+            if($hallazgo->observacion!=null)
+                $edt.= ".o." . $hallazgo->observacion;
             
             if($hallazgo->preguntaId!=null)
                 $edt.= "." . $hallazgo->preguntaId;

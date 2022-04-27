@@ -6,8 +6,8 @@
     header('Content-Type: text/html; charset=utf-8');
     header('Access-Control-Allow-Credentials: true');
 ?>
-<div class="modal fade" id="modalAlta" tabindex="-1" role="dialog" aria-labelledby="scrollmodalLabel" aria-hidden="true">
-	<div class="modal-dialog" role="document"> 
+<div class="modal fade" id="observacionModal" tabindex="-1" role="dialog" aria-labelledby="scrollmodalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg" role="document" style='width: 75%;'> 
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title" id="scrollmodalLabel">Observaciones</h5>
@@ -16,7 +16,15 @@
 				</button>
 			</div>
 			<div class="modal-body">
-				<form id="formulario" action="#"  method="post">
+				<div class="form-group">
+						<div>
+							<label for="seccionObservacionLabel" class="control-label">Sección</label>
+							<span id="seccionObservacionLabel" class="" style='display:block;font-size:13px;'></span>
+						</div>
+				</div>
+    					
+					
+				<form id="observacionFormulario" action="#"  method="post">
 					<div class="form-group">
 						<div>
 							<label for="hallazgoInput" class="control-label mb-1">Hallazgo</label>
@@ -47,7 +55,7 @@
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-dismiss="modal" style="font-size:13px;">Cancelar</button>
-				<button id="guardarButton" type="submit" class="btn btn-primary"  style="font-size:13px;">Aceptar</button>
+				<button id="guardarObservacionButton" type="submit" class="btn btn-primary"  style="font-size:13px;">Aceptar</button>
 			</div>
 		</div>
 	</div>

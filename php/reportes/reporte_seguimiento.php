@@ -135,15 +135,18 @@ abstract class PDF extends FPDF
     {
         $this->SetLeftMargin($this->margen);
         $this->SetRightMargin($this->margen);
-        
-        $fecha = substr($this->auditoria->fecha,0,10);
-        list($dia, $mes, $ano) = explode("/", $fecha);
-        
-        setlocale(LC_TIME,"es_ES");
-        $tiempo = gmmktime(12,0,0,$mes,$dia,$ano);
-        
-        $fechaAuditoria = strftime("%A, %d de %B de %Y",$tiempo);
-        $fechaAuditoria = utf8_encode($fechaAuditoria);
+        $fechaAuditoria="";
+        if($this->auditoria->fecha!="")
+        {   
+            $fecha = substr($this->auditoria->fecha,0,10);
+            list($dia, $mes, $ano) = explode("/", $fecha);
+            
+            setlocale(LC_TIME,"es_ES");
+            $tiempo = gmmktime(12,0,0,$mes,$dia,$ano);
+            
+            $fechaAuditoria = strftime("%A, %d de %B de %Y",$tiempo);
+            $fechaAuditoria = utf8_encode($fechaAuditoria);
+        }
         //$fechaInicio.=$dia."/".$mes."/".$ano;
         
        
