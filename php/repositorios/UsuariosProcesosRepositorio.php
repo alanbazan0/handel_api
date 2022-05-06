@@ -397,7 +397,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
 //         if($usuario->tipoUsuarioId==\TipoUsuario::ADMINISTRADOR)
 //             $consulta.=" ORDER BY TU.orden, U.nombre, P.nombre";
 //         else
-            $consulta.=" ORDER BY FIELD(U.id,$usuario->id) DESC,U.nombre, P.nombre";
+            $consulta.=" ORDER BY FIELD(U.id,$usuario->id) DESC,U.nombre, P.ruta_archivo";
             
             
         
@@ -1102,6 +1102,10 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         $mensaje= file_get_contents('../plantillas_correo/revision_procesos2.html');
         $mensaje=  str_replace("@usuarioNombre",$usuario->nombre,$mensaje);
         $mensaje=  str_replace("@ano",$ano,$mensaje);
+        $ano = date("Y");
+        $fecha = \Mes::getUltimoDiaMesActual();
+        
+        $mensaje=  str_replace("@fecha",$fecha,$mensaje);
         //$procesos = array();
         if(count($procesos)>0)
         {

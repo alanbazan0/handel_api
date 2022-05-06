@@ -747,13 +747,16 @@ class RevisionProcesosVista extends CatalogoVista
 			if(proceso.estatusRevisionId == EstatusRevision.OBSERVACIONES)
 			{
 				$("#observacionesLabel").fadeIn();	
-				$("#agregarObservacionButton").fadeOut();			
+				$("#agregarObservacionButton").fadeIn();			
 				this.crearTablaObservaciones();
 			}
 			else
 			{
-				$("#agregarObservacionButton").fadeIn();
-				$("#validacionFooter").fadeIn();	
+				$("#agregarObservacionButton").fadeOut();
+				$("#verificacionButton").fadeIn();	
+				$("#autorizadoButton").fadeIn();	
+				$("#rechazadoButton").fadeIn();	
+				$("#respondioButton").fadeIn();	
 				$("#estatusValidacionDiv").fadeIn();	
 				
 			}

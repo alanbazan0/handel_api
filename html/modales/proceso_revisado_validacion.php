@@ -54,14 +54,13 @@
 					</div>
 				
 			</div>
-			<div i class="modal-footer">
+			<div  class="modal-footer">
+				
+				<button id="verificacionButton" style='display:none' class='btn btn-warning float-right'><i class='far fa-pause-circle'></i> En verificación</button>
+				<button id="autorizadoButton"  style='display:none' class='btn btn-success float-right'><i class='far fa-check-circle'></i> Autorizado</button>
+				<button id="rechazadoButton" style='display:none' class='btn btn-danger float-right'><i class='far fa-times-circle'></i> Rechazado</button>
+				<button id="respondioButton" style='display:none'  class='btn btn-primary float-right'><i class='far fa-smile-wink'></i> Respondió</button>
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-				<div id="validacionFooter" style='display:none'>
-				<button id="verificacionButton"  class='btn btn-warning float-right'><i class='far fa-pause-circle'></i> En verificación</button>
-				<button id="autorizadoButton"   class='btn btn-success float-right'><i class='far fa-check-circle'></i> Autorizado</button>
-				<button id="rechazadoButton"  class='btn btn-danger float-right'><i class='far fa-times-circle'></i> Rechazado</button>
-				<button id="respondioButton"   class='btn btn-primary float-right'><i class='far fa-smile-wink'></i> Respondió</button>
-				</div>
 			</div>
 		</div>
 	</div>

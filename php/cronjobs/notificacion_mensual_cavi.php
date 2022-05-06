@@ -40,11 +40,15 @@ $resultado = new Resultado();
 $conexion=null;
 try
 {
+    $mes = REQUEST("mes");
+    if($mes==null)
+        $mes =  intval(date("m"));
+    
     $dia = REQUEST("dia");
     if($dia==null)
         $dia = date("j");
         
-    $mes =  intval(date("m"));
+   
     $ano = intval(date("Y"));
     $ultimoDia = Mes::getUltimoDia($mes, $ano);
     if($dia == $ultimoDia)

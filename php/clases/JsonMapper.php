@@ -304,13 +304,23 @@ class JsonMapper
      */
     protected function getFullNamespace($type, $strNs)
     {
-        if ($type !== '' && $type{0} != '\\') {
-            //create a full qualified namespace
-            if ($strNs != '') {
-                $type = '\\' . $strNs . '\\' . $type;
-            }
+//         if ($type !== '' && $type{0} != '\\') {
+//             //create a full qualified namespace
+//             if ($strNs != '') {
+//                 $type = '\\' . $strNs . '\\' . $type;
+//             }
+//         }
+//         return $type;
+        if ($type === null || $type === '' || $type[0] === '\\' || $strNs === '') {
+            return $type;
         }
-        return $type;
+        list($first) = explode('[', $type, 2);
+        if ($first === 'mixed' || $this->isSimpleType($first)) {
+            return $type;
+        }
+        
+        //create a full qualified namespace
+        return '\\' . $strNs . '\\' . $type;
     }
 
     /**
