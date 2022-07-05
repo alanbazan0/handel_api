@@ -395,8 +395,10 @@ class AdministradorCorreo
     }
     
     
-    public function enviarCorreoUsuarios($tipo,$usuarios, $asunto, $mensaje, $info, $de=null,$imprimir=false)
+    public function enviarCorreoUsuarios($tipo,$usuarios, $asunto, $mensaje, $info, $de=null,$imprimir=false,$filename=null)
     {
+       
+       
         $resultado = new Resultado();
        
         
@@ -412,25 +414,89 @@ class AdministradorCorreo
         if($de==null)
             $de= "SAHA";
         
-        $cabecera = "From:  $de <noreply@apps-handel.com>\r\n";
-        $cabecera .= "Bcc: $correos\r\n";
-        //$cabecera .= "MIME-Version: 1.0\r\n";
-        $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";
+       
         
-        
+       
+            
+        if (file_exists($filename))
+        {
+            
+           
+            // Email body content
+            //$handle = fopen($filename, "r");  // set the file handle only for reading the file
+            //$content = fread($handle, $size); // reading the file
+            //fclose($handle);                  // close upon completion
+            
+            //$encoded_content = chunk_split(base64_encode($content));
+            
+            $fp =    @fopen($filename,"rb");
+            $data =  @fread($fp,filesize($filename));
+            
+            @fclose($fp);
+            $encoded_content = chunk_split(base64_encode($data)); 
+            
+            $boundary = md5("random");
+            
+            
+            $cabecera = "MIME-Version: 1.0\r\n"; // Defining the MIME version
+            $cabecera .= "From:  $de <noreply@apps-handel.com>\r\n";
+            $cabecera .= "Bcc: $correos\r\n";
+            $cabecera .= "Content-Type: multipart/mixed;"; // Defining Content-Type
+            $cabecera .= "boundary = $boundary\r\n";
+            // Headers for attachment
+            
+            
+            
+           
+           
+            $body = "--$boundary\r\n";
+            //$body .= "Content-Type: text/plain; charset=ISO-8859-1\r\n";
+            $body .= "Content-Type: text/html; charset=\"UTF-8\"\n";
+            $body .= "Content-Transfer-Encoding: base64\r\n\r\n";
+            $body .= chunk_split(base64_encode($mensaje));
+            
+            $body .= "--$boundary\r\n";
+            $body .="Content-Type: application/pdf; name=".basename($filename)."\r\n";
+            $body .="Content-Disposition: attachment; filename=".basename($filename)."\r\n";
+            $body .="Content-Transfer-Encoding: base64\r\n";
+            $body .="X-Attachment-Id: ".rand(1000, 99999)."\r\n\r\n";
+            $body .= $encoded_content; // Attaching the encoded file with email
+            
+           
+ //           echo $mensaje."<br>";
+//             echo $cabecera."<br>";
+           // echo $mensaje."<br>";
+            
+            //$mensaje  = "";
+            //echo $mensaje."<br>";
+            
+            $errLevel = error_reporting(E_ALL ^ E_WARNING);
+            $resultadoMail = false;
+            $resultadoMail= mail("noreply@apps-handel.com", $asunto, $body, $cabecera );
+            
+        }
+        else
+        {
+            
+         
+            $cabecera = "Content-type: text/html; charset=UTF-8\r\n";
+            $cabecera .= "From:  $de <noreply@apps-handel.com>\r\n";
+            $cabecera .= "Bcc: $correos\r\n";
+            
+            $errLevel = error_reporting(E_ALL ^ E_WARNING);
+            $resultadoMail = false;
+            $resultadoMail= mail("noreply@apps-handel.com", $asunto, $mensaje, $cabecera );
+        }
+       
         
         //$correos = "alanbazan@apps-handel.com, alanbazan@hotmail.com, alanbazan0@gmail.com";
         
-        $errLevel = error_reporting(E_ALL ^ E_WARNING);
-        $resultadoMail = false;
-        $resultadoMail= mail("noreply@apps-handel.com", $asunto, $mensaje, $cabecera);
         error_reporting($errLevel);
         
         $error = error_get_last();
         
         if($error!=null)
         {
-            
         }
         
         if ($error!=null && $error["type"] == E_WARNING)

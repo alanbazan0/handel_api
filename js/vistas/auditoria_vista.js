@@ -11,6 +11,8 @@ class AuditoriaVista extends Vista
 		this.modeloActual=null;
 		//this.listaSecciones = new ListaSecciones("listaSecciones");
 		this.listaPreguntas = new ListaPreguntasEjecucion("listaPreguntas");
+		this.listaPreguntas.contexto = this;
+		this.listaPreguntas.funcionConsultarUsuarios = this.consutarUsuarios;
 		//this.listaRespuestas = new ListaRespuestas("listaRespuestas");
 		this._categorias = [];
 		this._estandares = [];
@@ -22,8 +24,16 @@ class AuditoriaVista extends Vista
 		if(this._modo==""  || this._modo==undefined)
 			this._modo = Modo.ALTA;
 		
+		
 		this._auditoria = {};
 		
+		var fecha = new Date();
+		this._time = fecha.getTime();	
+	}
+	
+	get time()
+	{
+		return this._time;
 	}
 	
 	get modo()
@@ -208,6 +218,290 @@ class AuditoriaVista extends Vista
 	{
 		this.funcion = "siguente";
 		this.guardar();
+	}
+	
+	mostrarXRay()
+	{
+		//var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/xray.php",this, null, function()
+		{
+			var _this = this;
+			$("#exportarButton").click(function(){
+				_this.exportarXRay();
+			});
+			
+			$("#correoButton").click(function(){
+				_this.mostrarEnviarCorreoXRay();
+			});
+			
+			
+			
+			 $("#consultarRecomendacionesButton").click(function(){
+				_this.filtrarRecomendaciones();
+			});
+			 this.crearTablaRecomendaciones();
+			 this.consultarHallazgosSecciones();
+			
+		},null,"xRayModal","","guardarButton",function()
+		{
+			
+		});
+	}
+	
+	consultarHallazgosSecciones()
+	{
+		this.presentador.consultarHallazgosSecciones();
+	}
+	
+	set hallazgosSecciones(hallazgos)
+	{
+		
+		this._hallazgosSecciones =  hallazgos;
+		
+		var usuarios = this.getUsuarios(this._hallazgosSecciones);
+		this.cargarOpciones("#usuariosXRaySelect", usuarios,"", null, "id", null, "nombreCompleto",false)
+		
+		this.filtrarRecomendaciones();
+	}
+	
+	filtrarRecomendaciones()
+	{
+		var _this = this;
+		var usuarioId = $("#usuariosXRaySelect").val();
+		var recomendaciones = [];
+		if(usuarioId != "" && usuarioId != "-1")
+		{
+			recomendaciones = this._hallazgosSecciones;
+			recomendaciones = ArrayUtils.filterWithValues("responsableId",[usuarioId],recomendaciones);
+		}
+		else if(usuarioId == "-1")
+		{
+			recomendaciones = this._hallazgosSecciones;
+			recomendaciones = ArrayUtils.filterWithValues("responsableId",[undefined],recomendaciones);
+		}
+		else
+			recomendaciones = this._hallazgosSecciones;
+		this.mostrarIndicador();
+		this.hallazgosTabla.registros = recomendaciones;
+	
+		 setTimeout(function()
+			{
+				
+				_this.ocultarIndicador();
+            }, 1000);
+          
+        this._usuarioXRay = usuarioId;
+	}
+	
+	mostrarEnviarCorreoXRay()
+	{
+		var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/correo_xray.php",this, null, function()
+		{
+			if(this.hallazgosTabla.registros.length > 0)
+			{
+				
+				$("#usuarioXRaySpan").html(this.hallazgosTabla.registros[0].responsableNombreCompleto);
+			}
+			
+			$("#enviarCorreoXRayButton").click(function()
+			{
+				_this.enviarCorreoXRay();
+			});
+			$('#mensajeInput').wysihtml5({
+						  toolbar: {
+						    "font-styles": true, // Font styling, e.g. h1, h2, etc.
+						    "emphasis": true, // Italics, bold, etc.
+						    "lists": true, // (Un)ordered lists, e.g. Bullets, Numbers.
+						    "html": false, // Button which allows you to edit the generated HTML.
+						    "link": false, // Button to insert a link.
+						    "image": false, // Button to insert an image.
+						    "color": false, // Button to change color of font
+						    "blockquote": true, // Blockquote
+						    "size": "sm" // options are xs, sm, lg
+						  }
+						});
+					
+			if(this._usuariosCorreo==null)
+				this.consultarUsuariosCorreo();
+			else
+				this.usuariosCorreo = this._usuariosCorreo;
+			
+		},null,"correoXRayModal","","guardarButton",function()
+		{
+			
+		});
+	}
+	
+	consultarUsuariosCorreo()
+	{
+		this.presentador.consultarUsuariosCorreo();
+	}
+	
+	crearTablaRecomendaciones()
+	{
+		this.hallazgosTabla = new Tabla("recomendacionesTabla");
+		this.hallazgosTabla.alto = 250;
+		this.hallazgosTabla.buscar = false;
+		this.hallazgosTabla.paginacion = false;
+		this.hallazgosTabla.columnas = [
+			{longitud:200, 	titulo:"Hallazgo",   alias:"hallazgo", alineacion:"I"},
+			{longitud:200, 	titulo:"Recomendación",   alias:"recomendacion", alineacion:"I"},
+			//{longitud:200, 	titulo:"Sección",   alias:"texto", alineacion:"I"},
+			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogoResponsable},
+			{longitud:200, 	titulo:"Responsable",   alias:"responsableNombreCompleto", alineacion:"I",class: "desc" }, 
+			{longitud:50, 	titulo:"Reporte",   alias:"reporte", alineacion:"C", itemRenderer:this.renderReporte},
+			{longitud:50, 	titulo:"Notificación",   alias:"notificacion", alineacion:"C", itemRenderer:this.renderNotificacion},
+		
+		]
+	
+		/*this.hallazgosTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-1 botones-icon btn btn-sm float-left btn-success active'><span  data-toggle='tooltip' class='fas fa-pencil-alt fa-lg'></span></button>"+
+												"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+
+*/
+		
+		this.hallazgosTabla.textoTablaVacia = "No hay hallazgos";
+		this.hallazgosTabla.textoSinRegistros= "No hay hallazgos";
+		this.hallazgosTabla.registros = [];
+		
+		//this._recomendacionesXRay = this.getRecomendaciones();
+		//var usuarios = this.getUsuarios(this._recomendacionesXRay);
+		//this.cargarOpciones("#usuariosXRaySelect", usuarios,"", null, "id", null, "nombreCompleto",false)
+		//this.filtrarRecomendaciones();
+		
+		//this.hallazgosTabla.registros = this._recomendacionesXRay;
+	}
+	
+	getUsuarios(recomendaciones)
+	{
+		var usuarios = [];
+		for(var i = 0; i < recomendaciones.length; i++)
+		{
+			var recomendacion = recomendaciones[i];
+			if(!ArrayUtils.existsWithValues( "id",[recomendacion.responsableId], usuarios))
+			{
+				var usuario = {
+					id : recomendacion.responsableId,
+					nombreCompleto : recomendacion.responsableNombreCompleto.trim()
+				};
+				
+				if(usuario.id != "" && usuario.id != null)
+					usuarios.push(usuario);
+			}
+		}
+		/*usuarios = ArrayUtils.sortBy("nombreCompleto", usuarios);
+		usuarios.splice(0, 0, {id:"", nombreCompleto:"Todos"});
+		
+		var sinAsignar = ArrayUtils.searchWithValues( "id",[null], recomendaciones);
+		if(sinAsignar!=null)
+			usuarios.splice(1, 0, {id:-1, nombreCompleto:"Sin asignar"});
+		*/
+		return usuarios;
+	}
+	
+	getRecomendaciones()
+	{
+		var recomendaciones =[];
+		for(var i=0; i < this.listaPreguntas.secciones.length; i++)
+		{
+			var seccion = this.listaPreguntas.secciones[i];
+			if(seccion.observacionesSeccion!=undefined)
+			{
+				for(var o = 0; o < seccion.observacionesSeccion.length; o++)
+				{
+					var observacion = seccion.observacionesSeccion[o];
+					var recomendacion ={
+						hallazgo: observacion.hallazgo,
+						recomendacion: observacion.recomendacion,
+						reporte: observacion.reporte,
+						notificacion: observacion.notificacion,
+						responsableId  : observacion.responsableId,
+						responsableNombre  : observacion.responsableNombre,
+						responsableApellido  : observacion.responsableApellido,
+						responsableNombreCompleto  : observacion.responsableNombreCompleto,
+						departamentoNombre  : observacion.departamentoNombre,
+						fotoPerfil  : observacion.fotoPerfil,
+					};
+					if(recomendacion.hallazgo!="" && recomendacion.recomendacion!="")
+						recomendaciones.push(recomendacion);
+				}
+			}
+		}	
+		
+		var preguntasTodas = this.preguntasTodas;
+		
+		for(var p = 0; p < preguntasTodas.length; p++)
+		{
+			var pregunta = preguntasTodas[p];
+			if(pregunta.tipo == "sn")
+			{
+				var seccion = this.listaPreguntas.getSeccion(pregunta.seccionId);
+				var componentes = seccion.componentes;
+				var componente = ArrayUtils.searchWithValues("_pregunta.id",[pregunta.id], componentes);
+				if(componente!=null)
+				{
+					var modeloPregunta = componente._pregunta;
+					if(pregunta.valor == "S")
+					{
+						for(var r = 0; r < pregunta.respuestas_si.length; r++)
+						{
+							var respuesta = pregunta.respuestas_si[r];
+							if(respuesta.valor == 1)
+							{
+								var modeloRespuesta = ArrayUtils.searchWithValues("id",[respuesta.id],modeloPregunta.respuestas_si);
+								var usuario = ArrayUtils.searchWithValues("id",[respuesta.responsable],this._usuarios);
+								var recomendacion = {
+									hallazgo: modeloRespuesta.hallazgo,
+									recomendacion: modeloRespuesta.recomendacion,
+									reporte: respuesta.reporte,
+									notificacion: respuesta.notificacion,
+									responsableId  : respuesta.responsable
+									
+								};
+								if(usuario!=null)
+								{
+									recomendacion.responsableNombreCompleto  = usuario.nombreCompleto;
+									recomendacion.fotoPerfil  = usuario.fotoPerfil;
+								}
+								else
+								{
+									recomendacion.responsableNombreCompleto  = "";
+									recomendacion.fotoPerfil  = "";
+									recomendacion.responsableId = null;
+								}
+								if(recomendacion.hallazgo!="" && recomendacion.recomendacion!="")
+									recomendaciones.push(recomendacion);
+							}
+						}
+					}
+					else
+					{
+						var usuario = ArrayUtils.searchWithValues("id",[pregunta.responsable],this._usuarios);
+						var recomendacion ={
+							hallazgo: modeloPregunta.hallazgo,
+							recomendacion: modeloPregunta.recomendacion,
+							reporte: pregunta.reporte,
+							notificacion: pregunta.notificacion,
+							responsableId  : pregunta.responsable
+						};
+						if(usuario!=null)
+						{
+							recomendacion.responsableNombreCompleto  = usuario.nombreCompleto;
+							recomendacion.fotoPerfil  = usuario.fotoPerfil;
+						}
+						else
+						{
+							recomendacion.responsableNombreCompleto  = "";
+							recomendacion.fotoPerfil  = "";
+							recomendacion.responsableId = null;
+						}
+						if(recomendacion.hallazgo!="" && recomendacion.recomendacion!="")
+							recomendaciones.push(recomendacion);	
+					}
+				}
+			}				
+		}
+	 	return recomendaciones;
 	}
 	
 	mostrarObservaciones()
@@ -515,7 +809,7 @@ class AuditoriaVista extends Vista
 	{    
 		var fecha = new Date();
 		var contenido = "";
-		if(renglon.responsableId!=undefined)
+		if(renglon.responsableId!=undefined && renglon.responsableId!="")
 		{
 		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+vista.time;
 		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
@@ -686,7 +980,8 @@ class AuditoriaVista extends Vista
 	set modeloDatos(modeloDatos)
 	{
 		this._auditoria = modeloDatos;
-		$("#referenciaDiv").show();
+		$("#referenciaDiv").fadeIn();
+		$("#xrayButton").fadeIn();
 		if(modeloDatos!=null)
 		{
 			this.listaPreguntas.auditoria = modeloDatos;
@@ -794,7 +1089,44 @@ class AuditoriaVista extends Vista
 									respuestas_no: componente.respuestasNo,
 									responsable : componente.responsable,
 									reporte: componente.reporte,
-									notificacion: componente.notificacion
+									notificacion: componente.notificacion,
+									tipo: componente.pregunta.tipo
+									}; 
+					preguntas.push(pregunta);
+				}
+			}
+			
+		}
+		return preguntas;
+	}
+	
+	
+	get preguntasTodas()
+	{
+		var preguntas = [];
+	//	var seccionIndice = $("#secciones").prop("selectedIndex");
+		for(var seccionIndice=0;seccionIndice<   this.listaPreguntas.secciones.length;  seccionIndice++)
+		{
+			var seccion = this.listaPreguntas.secciones[seccionIndice];
+			var componentesPreguntas = seccion.componentes;
+			for(var i=0;  i  < componentesPreguntas.length;i++ )
+			{
+				var componente = componentesPreguntas[i];
+				if(componente.pregunta.tipo!="cat" && componente.pregunta.campoId==null)
+				{
+					var pregunta ={ 
+									seccionId : seccion.id,
+									id: componente.pregunta.id, 
+									valor:  componente.valor,
+									puntos : componente.pregunta.puntos,
+									puntosTotal : componente.pregunta.puntosTotal,
+									porcentaje : componente.pregunta.porcentaje,
+									respuestas_si: componente.respuestasSi,
+									respuestas_no: componente.respuestasNo,
+									responsable : componente.responsable,
+									reporte: componente.reporte,
+									notificacion: componente.notificacion,
+									tipo: componente.pregunta.tipo
 									}; 
 					preguntas.push(pregunta);
 				}
@@ -1235,12 +1567,18 @@ class AuditoriaVista extends Vista
 	
 	set usuariosSeccion(usuarios)
 	{
+		
 		//this.cargarOpciones("#resposableSelect", usuarios,null,"usuarioId");	
 		this.cargarOpciones("#responsableSelect", usuarios,Modo.CAMBIO, this._modeloObservacion, "responsableId", "", "nombreCompleto",true)
 //		var responsableId =this.listaPreguntas.seccionActual.responsable;
 //		if(responsableId!=null)
 //			if(responsableId!="")
 //				$("#resposableSelect").val(responsableId);
+	}
+	
+	consutarUsuarios(usuarios)
+	{
+		this._usuarios = usuarios;
 	}
 	
 	iniciarSeguimiento()
@@ -1297,6 +1635,105 @@ class AuditoriaVista extends Vista
 	        });
 	}
 	
+	exportarXRay()
+	{
+		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/pdf/xray.php");
+		//this.createNewFormElement(submitForm, "auditoriaId",this._auditoria.id);	
+		//this.createNewFormElement(submitForm, "plantillaId",this._auditoria.plantillaId);	
+		this.createNewFormElement(submitForm, "referencia",this._auditoria.referencia);	 
+		this.createNewFormElement(submitForm, "hallazgos", JSON.stringify(this.hallazgosTabla.registros));
+		this.createNewFormElement(submitForm, "usuarioXRay",this.usuarioXRay);
+		this.createNewFormElement(submitForm, "empresaId", this.empresaId);
+		this.createNewFormElement(submitForm, "sedeId", this.sedeId);
+		this.createNewFormElement(submitForm, "fecha", this.fecha);
+	    submitForm.target= "_blank";
+	    submitForm.submit();
+	}
+	
+	
+	enviarCorreoXRay()
+	{
+		this.presentador.enviarCorreoXRay();
+	}
+	
+	set usuariosCorreo(usuariosCorreo)
+	{
+		var _this = this;
+		this._usuariosCorreo = usuariosCorreo;
+		$("#usuariosCorreoSelect").empty();
+		$("#usuariosCorreoSelect").chosen();
+		$.each(this._usuariosCorreo, function(i, p) 
+		{
+			var fotoPerfil = HANDEL_API+ "/"+p.fotoPerfil+"?"+_this.time;
+		    $("#usuariosCorreoSelect").append($('<option data-img-src="'+fotoPerfil+'"></option>').val(p.id).html(p.nombreCompleto));
+		});
+		
+		
+		//$('#usuariosCorreoSelect').trigger("chosen:updated");
+		$(".chosen-search-input").height(50);
+		$(".chosen-search-input").val("");
+		
+		$("#usuariosCorreoSelect_chosen").css("width","100%");
+		
+		//$("#usuariosCorreoSelect_chosen").css("width","100%");
+		
+		var usuarios =[];
+		usuarios.push(this._usuarioXRay);
+		
+		var usuario = ArrayUtils.searchWithValues("id",[this._usuarioXRay], this._usuariosCorreo);
+		if(usuario!=null)
+		{
+			if(usuario.supervisor1Id!=null)
+				usuarios.push(usuario.supervisor1Id);
+		}
+		
+		
+		$("#usuariosCorreoSelect").val(usuarios);
+		
+	 	$('#usuariosCorreoSelect').trigger("chosen:updated");
+		
+		$('#enviarCorreoXRayButton').fadeIn();
+
+	}
+	
+	get asuntoCorreo()
+	{
+		return $('#asuntoCorreoXRayInput').val();
+	}
+	
+	get usuariosCorreo()
+	{
+		var usuariosCorreo = [];
+		var usuarios = $('#usuariosCorreoSelect').val();
+		for(var i=0; i < usuarios.length; i++)
+		{
+			var usuarioId = usuarios[i];
+			var usuario = ArrayUtils.searchWithValues("id",[usuarioId], this._usuariosCorreo);
+			if(usuario!=null)
+			{
+				usuariosCorreo.push({
+					nombreUsuario: usuario.nombreUsuario,
+					nombreCompleto: usuario.nombreCompleto	
+				});
+			}
+		}
+		return usuariosCorreo;
+	}
+	
+	get hallazgos()
+	{
+		return this.hallazgosTabla.registros;
+	}
+	
+	get referencia()
+	{
+		return this._auditoria.referencia;
+	}
+	
+	get usuarioXRay()
+	{
+		return this._usuarioXRay;
+	}
 }
 var vista = new AuditoriaVista();
 $(document).ready(function() 

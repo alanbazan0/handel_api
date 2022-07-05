@@ -82,7 +82,7 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 			this.procedimientosPendientesTabla = new Tabla("procedimientosPendientesTabla");	
 			this.procedimientosPendientesTabla.textoTablaVacia = "No hay procesos pendientes por revisar";
 			this.procedimientosPendientesTabla.alto = 350;
-			if(this.usuario.tipoUsuarioId == TipoUsuario.USUARIO)
+			/*if(this.usuario.tipoUsuarioId == TipoUsuario.USUARIO)
 			{
 				this.procedimientosPendientesTabla.columnas = [
 					{longitud:200, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I" }, 
@@ -91,7 +91,7 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 				]
 			}
 			else
-			{
+			{*/
 				this.procedimientosPendientesTabla.columnas = [
 					{longitud:100, 	titulo:"Id",   	alias:"id", alineacion:"I" },
 					{longitud:200, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I" },
@@ -100,8 +100,8 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 					{longitud:100, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I"},
 					//{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"I" },
 					//{longitud:50, 	titulo:"Código",   	alias:"codigo", alineacion:"I" }
-				]
-			}
+				];
+			//}
 			
 			procedimientosPendientesTabla.contenidoAdicional="";
 			

@@ -79,12 +79,21 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
         $procesoRevisado->usuarioProcesoId = $usuarioProcesoId;
         $procesoRevisado->estatusRevisionId = \EstatusRevision::NO_HUBO_CAMBIOS;
         $procesoRevisado->estatusValidacionId = \EstatusValidacionProceso::EN_PROCESO_DE_ANALISIS;
-        //$procesoRevisado->
-        $resultado = $this->insertar($usuario,$procesoRevisado);
-        if($resultado->correcto())
-        {
-            
-        }
+         $dia = date("d");
+         $mes = date("m");
+         $ano = date("Y");
+         $resultado = $this->consultarPorUsuarioProceso($usuarioProcesoId, $dia, $mes, $ano);
+         if($resultado->correcto())
+         {
+             if($resultado->valor==null)
+             {
+                $resultado = $this->insertar($usuario,$procesoRevisado);
+                if($resultado->correcto())
+                {
+                    
+                }
+             }
+         }
         return $resultado;
     }
     
@@ -95,49 +104,59 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
         $procesoRevisado->estatusRevisionId = \EstatusRevision::OBSERVACIONES;
         $procesoRevisado->estatusValidacionId = \EstatusValidacionProceso::EN_PROCESO_DE_ANALISIS;
         $this->conexion->autocommit(FALSE);
-        $resultado = $this->insertar($usuario,$procesoRevisado);
-        
+        $dia = date("d");
+        $mes = date("m");
+        $ano = date("Y");
+        $resultado = $this->consultarPorUsuarioProceso($usuarioProcesoId, $dia, $mes, $ano);
         if($resultado->correcto())
         {
-            $procesoRevisadoId = $resultado->valor;
-            if($observaciones!=null)
+            if($resultado->valor==null)
             {
-                for ($k = 0; $k< count($observaciones); $k++)
+                $resultado = $this->insertar($usuario,$procesoRevisado);
+                
+                if($resultado->correcto())
                 {
-                    $observacion = $observaciones[$k];
-                    $observacionId = $k + 1;
-                        
-//                     var_dump($procesoRevisadoId);
-//                     var_dump($observacion);
-                    $consulta = "INSERT INTO procesos_revisados_observaciones(proceso_revisado_id, id, tipo_observacion_id, seccion, descripcion, fecha_alta, fecha_modificacion) " .
-                        "VALUE(?, ?, ?, ?, ?, NOW(), NOW())";
-                    if($sentencia = $this->conexion->prepare($consulta))
+                    $procesoRevisadoId = $resultado->valor;
+                    if($observaciones!=null)
                     {
-                        if($sentencia->bind_param("iiiss", $procesoRevisadoId, $observacionId, $observacion->tipoObservacionId, $observacion->seccion, $observacion->descripcion))
+                        for ($k = 0; $k< count($observaciones); $k++)
                         {
-                            if($sentencia->execute())
+                            $observacion = $observaciones[$k];
+                            $observacionId = $k + 1;
+                                
+        //                     var_dump($procesoRevisadoId);
+        //                     var_dump($observacion);
+                            $consulta = "INSERT INTO procesos_revisados_observaciones(proceso_revisado_id, id, tipo_observacion_id, seccion, descripcion, fecha_alta, fecha_modificacion) " .
+                                "VALUE(?, ?, ?, ?, ?, NOW(), NOW())";
+                            if($sentencia = $this->conexion->prepare($consulta))
                             {
-                                $sentencia->close();
+                                if($sentencia->bind_param("iiiss", $procesoRevisadoId, $observacionId, $observacion->tipoObservacionId, $observacion->seccion, $observacion->descripcion))
+                                {
+                                    if($sentencia->execute())
+                                    {
+                                        $sentencia->close();
+                                    }
+                                    else
+                                    {
+                                        $resultado->codigoError = $this->conexion->errno;
+                                        $resultado->mensajeError = "Falló la ejecución(" . $this->conexion->errno . ") " . $this->conexion->error;
+                                        break;
+                                    }
+                                    
+                                }
+                                else
+                                {
+                                    $resultado->mensajeError = "Falló el enlace de parámetros";
+                                    break;
+                                }
                             }
                             else
                             {
                                 $resultado->codigoError = $this->conexion->errno;
-                                $resultado->mensajeError = "Falló la ejecución(" . $this->conexion->errno . ") " . $this->conexion->error;
+                                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
                                 break;
                             }
-                            
                         }
-                        else
-                        {
-                            $resultado->mensajeError = "Falló el enlace de parámetros";
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        $resultado->codigoError = $this->conexion->errno;
-                        $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-                        break;
                     }
                 }
             }
@@ -2208,6 +2227,41 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
         return $resultado;
     }
 
+    public function consultarPorUsuarioProceso($usuarioProcesoId, $dia, $mes, $ano)
+    {
+        $resultado = new Resultado();
+        $consulta = $this->consultaBase .
+        ' WHERE E.usuario_proceso_id  = ? AND DAY(E.fecha_alta) = ? AND MONTH(E.fecha_alta) = ? AND YEAR(E.fecha_alta) = ?';
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param('siii',$usuarioProcesoId, $dia, $mes, $ano))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id, $usuarioProcedimientoId, $fecha,$nombre,$codigo,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procesoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion,$numeroObservaciones, $nombreUsuario))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $registro = $this->crearRegistro($id, $usuarioProcedimientoId, $fecha,$nombre,$codigo,$numeroComentarios,$usuarioNombre,$usuarioApellido,$sedeId,$sedeNombre,$empresaId,$empresaNombre,$usuarioId,$validada, $comentariosValidacion,$administradorId, $administradorNombre, $administradorApellido,$validadorId, $validadorNombre, $validadorApellido, $procesoId,$estatusValidacionId, $estatusValidacionDescripcion, $estatusValidacionIcono, $estatusValidacionColor,$estatusRevisionId, $estatusRevisionDescripcion, $estatusRevisionIcono, $estatusRevisionColor, $fechaValidacion,$numeroObservaciones, $nombreUsuario);
+                            $resultado->valor = $registro;
+                        }
+                       
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__. ' Falló el enlace del resultado';
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__. ' Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. ' Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__. ' Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
+    }
+    
+    
     public function eliminar($llaves)
     {
         $resultado = new Resultado();

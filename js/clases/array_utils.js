@@ -148,6 +148,21 @@ class ArrayUtils
 		return null;
 	}
 	
+	static existsWithValues(fields,values,array)
+	{
+		if(array!=null)
+		{
+			var fieldsArray = fields.split(",");						
+			for(var i=0;i < array.length;i++)
+			{
+				var val2 = ArrayUtils.getValues(array[i],fieldsArray);
+				if(ArrayUtils.equalValues(values,val2))
+					return true
+			}		
+		}
+		return false;
+	}
+	
 	static removeWithValues(fields,values,array)
 	{
 		if(array!=null)
@@ -286,6 +301,26 @@ class ArrayUtils
 			values.push(value);
 		}
 		return values.join();
+	}
+	
+	static sortBy(property, array)
+	{
+		return array.sort(ArrayUtils.dynamicSort(property))
+	}
+	
+	static dynamicSort(property) {
+	    var sortOrder = 1;
+	    if(property[0] === "-") {
+	        sortOrder = -1;
+	        property = property.substr(1);
+	    }
+	    return function (a,b) {
+	        /* next line works with strings and numbers, 
+	         * and you may want to customize it to your needs
+	         */
+	        var result = (a[property] < b[property]) ? -1 : (a[property] > b[property]) ? 1 : 0;
+	        return result * sortOrder;
+	    }
 	}
 
 }

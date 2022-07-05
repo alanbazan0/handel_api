@@ -1,6 +1,7 @@
 <?php
 namespace php\repositorios;
 
+use Exception;
 use php\interfaces\IAuditoriasRepositorio;
 use php\modelos\Auditoria;
 use php\modelos\Resultado;
@@ -432,86 +433,93 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
     {
         $resultado = new Resultado();
         $this->conexion->autocommit(FALSE);
-        if($modelo->id=="")
+        try
         {
-            if($modelo->empresaId=="")
-                $modelo->empresaId = null;
-            
-            if($modelo->sedeId=="")
-                $modelo->sedeId = null;
-            
-            $fecha = "";
-            if($modelo->fecha!="")
+            if($modelo->id=="")
             {
-                $elementos = explode("/",$modelo->fecha);
-                $elementos = array_reverse($elementos);
-                $fecha = join("-",$elementos);
-            }
-            else
-                $fecha = null;
-            
-            $resultado =  $this->calcularId("id","auditorias");
-            if($resultado->mensajeError=="")
-            {
-                $modelo->id = $resultado->valor;
-               
-                $modelo->contadorEmpresa = $this->calcularContadorEmpresa($modelo->empresaId);
+                if($modelo->empresaId=="")
+                    $modelo->empresaId = null;
                 
+                if($modelo->sedeId=="")
+                    $modelo->sedeId = null;
                 
-                $consulta = "INSERT INTO auditorias(id, plantilla_id, fecha_ejecucion, empresa_id, contador_empresa, tipo_auditoria_id, fecha_alta, sede_id, fecha, hora) " .
-                    "VALUE(?, ?, NOW(),  ?, ?, ?, NOW(), ?, ?, ?)";
-                if($sentencia = $this->conexion->prepare($consulta))
+                $fecha = "";
+                if($modelo->fecha!="")
                 {
-                    if( $sentencia->bind_param("iiiisiss", $modelo->id, $modelo->plantillaId, $modelo->empresaId, $modelo->contadorEmpresa, $modelo->tipoAuditoriaId ,$modelo->sedeId, $fecha, $modelo->hora))
+                    $elementos = explode("/",$modelo->fecha);
+                    $elementos = array_reverse($elementos);
+                    $fecha = join("-",$elementos);
+                }
+                else
+                    $fecha = null;
+                
+                $resultado =  $this->calcularId("id","auditorias");
+                if($resultado->mensajeError=="")
+                {
+                    $modelo->id = $resultado->valor;
+                   
+                    $modelo->contadorEmpresa = $this->calcularContadorEmpresa($modelo->empresaId);
+                    
+                    
+                    $consulta = "INSERT INTO auditorias(id, plantilla_id, fecha_ejecucion, empresa_id, contador_empresa, tipo_auditoria_id, fecha_alta, sede_id, fecha, hora) " .
+                        "VALUE(?, ?, NOW(),  ?, ?, ?, NOW(), ?, ?, ?)";
+                    if($sentencia = $this->conexion->prepare($consulta))
                     {
-                        if($sentencia->execute())
+                        if( $sentencia->bind_param("iiiisiss", $modelo->id, $modelo->plantillaId, $modelo->empresaId, $modelo->contadorEmpresa, $modelo->tipoAuditoriaId ,$modelo->sedeId, $fecha, $modelo->hora))
                         {
-                            $sentencia->close();
-                            
-                            $resultado = $this->insertarDatosAuditoria($modelo);
-                            if($resultado->mensajeError=="")
+                            if($sentencia->execute())
                             {
-                                $resultado = $this->actualizarUltimoUso($modelo->plantillaId);
-                              
+                                $sentencia->close();
+                                
+                                $resultado = $this->insertarDatosAuditoria($modelo);
                                 if($resultado->mensajeError=="")
                                 {
-                                    $resultado = $this->consultarEncabezado($modelo->id);
+                                    $resultado = $this->actualizarUltimoUso($modelo->plantillaId);
+                                  
                                     if($resultado->mensajeError=="")
                                     {
+                                        $resultado = $this->consultarEncabezado($modelo->id);
+                                        if($resultado->mensajeError=="")
+                                        {
+                                        }
+                                       
                                     }
                                    
                                 }
-                               
+        
                             }
-    
+                            else
+                            {
+                                $resultado->mensajeError = "Falló la ejecución insertar(" . $this->conexion->errno . ") " . $this->conexion->error;
+                            }
                         }
                         else
                         {
-                            $resultado->mensajeError = "Falló la ejecución insertar(" . $this->conexion->errno . ") " . $this->conexion->error;
+                            $resultado->mensajeError = "Falló el enlace de parámetros";
                         }
                     }
                     else
                     {
-                        $resultado->mensajeError = "Falló el enlace de parámetros";
+                        $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
                     }
+            
                 }
-                else
-                {
-                    $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-                }
-        
             }
+            
+            if($resultado->correcto())
+            {
+                $this->conexion->commit();
+                //$resultado->valor = $modelo->id;
+                //$resultado->valor = $modelo;
+            }
+            else
+                $this->conexion->rollback();
         }
-        
-        if($resultado->correcto())
+        catch(Exception $e)
         {
-            $this->conexion->commit();
-            //$resultado->valor = $modelo->id;
-            //$resultado->valor = $modelo;
-        }
-        else
+            $resultado->mensajeError = $e->getMessage();
             $this->conexion->rollback();
-
+        }
         return $resultado;
     }
     
@@ -834,52 +842,54 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
         $resultado = new Resultado();
         
         //$administradorArchivos = new AdministradorArchivos();
-        
-        for ($i = 0; $i <  count($observaciones); $i++)
+        if(isset($observaciones) && $observaciones !=null)
         {
-            
-            $observacion = $observaciones[$i];
-            
-            if(isset($observacion->responsableId))
+            for ($i = 0; $i <  count($observaciones); $i++)
             {
-                if($observacion->responsableId=="")
-                    $observacion->responsableId = null;
-            }
-            else
-                $observacion->responsableId = null;
                 
-             $resultado = $this->calcularId("id", "auditoria_seccion_observaciones");
-             if($resultado->correcto())
-             {
-                 $id = $resultado->valor;
-                $consulta = "INSERT INTO auditoria_seccion_observaciones(id, auditoria_id, plantilla_id, seccion_id, hallazgo, recomendacion, responsable, reporte, notificacion) " .
-                    "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                if($sentencia = $this->conexion->prepare($consulta))
+                $observacion = $observaciones[$i];
+                
+                if(isset($observacion->responsableId))
                 {
-                    if($sentencia->bind_param("iiiissiii",$id, $auditoriaId,$plantillaId,$seccionId, $observacion->hallazgo, $observacion->recomendacion,$observacion->responsableId, $observacion->reporte, $observacion->notificacion))
+                    if($observacion->responsableId=="")
+                        $observacion->responsableId = null;
+                }
+                else
+                    $observacion->responsableId = null;
+                    
+                 $resultado = $this->calcularId("id", "auditoria_seccion_observaciones");
+                 if($resultado->correcto())
+                 {
+                     $id = $resultado->valor;
+                    $consulta = "INSERT INTO auditoria_seccion_observaciones(id, auditoria_id, plantilla_id, seccion_id, hallazgo, recomendacion, responsable, reporte, notificacion) " .
+                        "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    if($sentencia = $this->conexion->prepare($consulta))
                     {
-                        if($sentencia->execute())
+                        if($sentencia->bind_param("iiiissiii",$id, $auditoriaId,$plantillaId,$seccionId, $observacion->hallazgo, $observacion->recomendacion,$observacion->responsableId, $observacion->reporte, $observacion->notificacion))
                         {
-                            $sentencia->close();
+                            if($sentencia->execute())
+                            {
+                                $sentencia->close();
+                            }
+                            else
+                            {
+                                $resultado->codigoError = $this->conexion->errno;
+                                $resultado->mensajeError = __FUNCTION__.". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                                break;
+                            }
                         }
                         else
                         {
-                            $resultado->codigoError = $this->conexion->errno;
-                            $resultado->mensajeError = __FUNCTION__.". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                            $resultado->mensajeError = __FUNCTION__.". Falló el enlace de parámetros";
                             break;
                         }
                     }
                     else
                     {
-                        $resultado->mensajeError = __FUNCTION__.". Falló el enlace de parámetros";
+                        $resultado->codigoError = $this->conexion->errno;
+                        $resultado->mensajeError = __FUNCTION__.". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
                         break;
                     }
-                }
-                else
-                {
-                    $resultado->codigoError = $this->conexion->errno;
-                    $resultado->mensajeError = __FUNCTION__.". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-                    break;
                 }
             }
         }
@@ -1394,96 +1404,93 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
     public function actualizar(Auditoria $modelo)
     {
         $resultado = new Resultado();
-//         $datetime = null;
-//         if($modelo->fechaProgramada!=null)
-//         {
-//             $elementos = explode('/', $modelo->fechaProgramada);
-//             if(count($elementos)==3)
-//             {
-//                 $dia = $elementos[0];
-//                 $mes = $elementos[1];
-//                 $ano = $elementos[2];
-//                 $datetime = date("Y-m-d H:i:s", mktime(10, 30, 0, $mes, $dia, $ano));
-//             }
-//         }
+
         
-        $this->conexion->autocommit(FALSE);
-        
-        if($modelo->empresaId=="")
-            $modelo->empresaId = null;
-        
-        if($modelo->sedeId=="")
-            $modelo->sedeId = null;
-        
-        $fecha = "";
-        if($modelo->fecha!="")
+        $this->conexion->autocommit(FALSE); 
+        try
         {
-            $elementos = explode("/",$modelo->fecha);
-            $elementos = array_reverse($elementos);
-            $fecha = join("-",$elementos);
-        }
-        else
-            $fecha = null;
         
-        $consulta = " UPDATE auditorias     
-            SET empresa_id = ?, 
-                   tipo_auditoria_id = ?,   
-                    fecha_ejecucion = NOW(),
-                    observaciones = ?,
-                    buenas_practicas = ?,
-                    sede_id = ?,
-                    fecha = ?,
-                    hora = ? 
-            WHERE id = ? ";
-        
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if( $sentencia->bind_param("isssissi", $modelo->empresaId,$modelo->tipoAuditoriaId,$modelo->observaciones,$modelo->buenasPracticas,$modelo->sedeId, $fecha, $modelo->hora,$modelo->id))
+            if($modelo->empresaId=="")
+                $modelo->empresaId = null;
+            
+            if($modelo->sedeId=="")
+                $modelo->sedeId = null;
+            
+            $fecha = "";
+            if($modelo->fecha!="")
             {
-                if($sentencia->execute())
+                $elementos = explode("/",$modelo->fecha);
+                $elementos = array_reverse($elementos);
+                $fecha = join("-",$elementos);
+            }
+            else
+                $fecha = null;
+            
+            $consulta = " UPDATE auditorias     
+                SET empresa_id = ?, 
+                       tipo_auditoria_id = ?,   
+                        fecha_ejecucion = NOW(),
+                        observaciones = ?,
+                        buenas_practicas = ?,
+                        sede_id = ?,
+                        fecha = ?,
+                        hora = ? 
+                WHERE id = ? ";
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if( $sentencia->bind_param("isssissi", $modelo->empresaId,$modelo->tipoAuditoriaId,$modelo->observaciones,$modelo->buenasPracticas,$modelo->sedeId, $fecha, $modelo->hora,$modelo->id))
                 {
-                    $resultado->valor=true;
-                    $sentencia->close();
-                    
-                    $resultado = $this->consultarPuntuacionAuditoria($modelo->id);
-                    if($resultado->correcto())
+                    if($sentencia->execute())
                     {
-                        $puntuacion = $resultado->valor;
+                        $resultado->valor=true;
+                        $sentencia->close();
                         
-                        $resultado = $this->insertarDatosAuditoria($modelo);
+                        $resultado = $this->consultarPuntuacionAuditoria($modelo->id);
                         if($resultado->correcto())
                         {
-                            $resultado = $this->actualizarUltimoUso($modelo->plantillaId);
+                            $puntuacion = $resultado->valor;
+                            
+                            $resultado = $this->insertarDatosAuditoria($modelo);
                             if($resultado->correcto())
                             {
-                                $resultado = $this->consultarEncabezado($modelo->id);
+                                $resultado = $this->actualizarUltimoUso($modelo->plantillaId);
                                 if($resultado->correcto())
                                 {
-                                    $auditoria = $resultado->valor;
-                                    if($puntuacion!=$auditoria->puntuacion)
+                                    $resultado = $this->consultarEncabezado($modelo->id);
+                                    if($resultado->correcto())
                                     {
-                                        $this->calcularAleatorios($modelo->id,$auditoria->puntuacion);
+                                        $auditoria = $resultado->valor;
+                                        if($puntuacion!=$auditoria->puntuacion)
+                                        {
+                                            $this->calcularAleatorios($modelo->id,$auditoria->puntuacion);
+                                        }
                                     }
+                                    
                                 }
-                                
+                                    
                             }
-                                
                         }
                     }
+                    else
+                        $resultado->mensajeError = "Falló la ejecución actualizar(" . $this->conexion->errno . ") " . $this->conexion->error;
                 }
-                else
-                    $resultado->mensajeError = "Falló la ejecución actualizar(" . $this->conexion->errno . ") " . $this->conexion->error;
+                else  
+                    $resultado->mensajeError = "Falló el enlace de parámetros";
             }
-            else  
-                $resultado->mensajeError = "Falló el enlace de parámetros";
+            else
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            if($resultado->correcto())
+                $this->conexion->commit();
+            else
+               $this->conexion->rollback();
         }
-        else
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-        
-        if($resultado->correcto())
-            $this->conexion->commit();
-        else
-           $this->conexion->rollback();
+        catch(Exception $e)
+        {
+            $resultado->mensajeError = $e->getMessage();
+            $this->conexion->rollback();
+        }
         return $resultado;
     }
     
@@ -1571,7 +1578,10 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                                 $resultado =  $this->eliminarObservaciones($modelo->id,$modelo->plantillaId, $modelo->seccion->id);
                                 if($resultado->mensajeError=="")
                                 {
-                                    $resultado =  $this->insertarObservaciones($modelo->id,$modelo->plantillaId, $modelo->seccion->id,$modelo->seccion->observaciones);
+                                    $observaciones = array();
+                                    if(isset($modelo->seccion->observaciones))
+                                        $observaciones = $modelo->seccion->observaciones;
+                                    $resultado =  $this->insertarObservaciones($modelo->id,$modelo->plantillaId, $modelo->seccion->id,$observaciones);
                                     if($resultado->mensajeError=="")
                                     {
                                         
@@ -1599,7 +1609,7 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
             {
                 if($criteriosSeleccion->nombre!="")
                 {
-                    array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'A','campo'=>'nombre','valor'=>$criteriosSeleccion->nombre]);
+                    array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'P','campo'=>'nombre','valor'=>$criteriosSeleccion->nombre]);
                 }
             }
             if(isset($criteriosSeleccion->id))
@@ -2164,7 +2174,7 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
         
         $resultado = new Resultado();
         $preguntas = array();
-        $consulta = "SELECT A.seccion_id, pregunta_id, RTRIM(texto) texto, P.peso, RTRIM(tipo) tipo, RTRIM(hallazgo) hallazgo, RTRIM(recomendacion)recomendacion, RTRIM(practicas)practicas, RTRIM(observaciones)observaciones, RTRIM(valor) valor, responsable_id, reporte, notificacion, D.id, D.nombre departamentoNombre 
+        $consulta = "SELECT A.seccion_id, pregunta_id, RTRIM(texto) texto, P.peso, RTRIM(tipo) tipo, RTRIM(hallazgo) hallazgo, RTRIM(recomendacion)recomendacion, RTRIM(practicas)practicas, RTRIM(observaciones)observaciones, RTRIM(valor) valor, responsable_id, reporte, notificacion, D.id, D.nombre departamentoNombre, U.nombre, U.apellido 
             FROM auditoria_preguntas A
             INNER JOIN preguntas P ON A.plantilla_id = P.plantilla_id AND A.seccion_id = P.seccion_id AND A.pregunta_id = P.id 
             LEFT JOIN usuarios U ON A.responsable_id = U.id
@@ -2179,7 +2189,7 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($seccionId, $preguntaId, $texto, $peso, $tipo , $hallazgo, $recomendacion, $practicas, $observaciones, $valor, $responsable, $reporte, $notificacion, $departamentoId, $departamentoNombre))
+                    if ($sentencia->bind_result($seccionId, $preguntaId, $texto, $peso, $tipo , $hallazgo, $recomendacion, $practicas, $observaciones, $valor, $responsable, $reporte, $notificacion, $departamentoId, $departamentoNombre, $responsableNombre, $reponsableApellido))
                     {   
                         while($sentencia->fetch())
                         {
@@ -2199,8 +2209,17 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                                 'reporte' => $reporte,
                                 'notificacion' => $notificacion,
                                 'departamentoId' => $departamentoId,
-                                'departamentoNombre' => $departamentoNombre
+                                'departamentoNombre' => $departamentoNombre,
+                                'responsableNombre' => $responsableNombre,
+                                'responsableApellido' => $reponsableApellido
                             ];
+                            $pregunta->responsableNombreCompleto = $pregunta->responsableNombre . " " . $pregunta->responsableApellido;
+                            $pregunta->fotoPerfil =  "../fotos/usuario". $pregunta->responsable .".jpg";
+                            if(file_exists($pregunta->fotoPerfil))
+                                $pregunta->fotoPerfil =  "php/fotos/usuario". $pregunta->responsable .".jpg";
+                            else
+                                $pregunta->fotoPerfil =  "php/fotos/default.jpg";
+                            
                             array_push($preguntas,$pregunta);
                         }
                         $resultado->valor = $preguntas;
@@ -2456,7 +2475,7 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
             WHERE auditoria_id = ? AND plantilla_id  = ? AND seccion_id= ? AND pregunta_id = ? 
             ORDER BY respuesta_id";*/
         
-        $consulta = "SELECT respuesta_id, valor, responsable_id, reporte, notificacion, D.id, D.nombre, R.hallazgo, R.recomendacion
+        $consulta = "SELECT respuesta_id, valor, responsable_id, reporte, notificacion, D.id, D.nombre, R.hallazgo, R.recomendacion, U.nombre, U.apellido
             FROM auditoria_respuestas_si  RS
                     INNER JOIN respuestas_si R ON RS.plantilla_id = R.plantilla_id AND RS.seccion_id = R.seccion_id AND RS.pregunta_id = R.pregunta_id AND RS.respuesta_id = R.id
                 LEFT JOIN usuarios U ON RS.responsable_id = U.id
@@ -2469,7 +2488,7 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($respuestaId, $valor, $responsable, $reporte, $notificacion,$departamentoId, $departamentoNombre, $hallazgo, $recomendacion))
+                    if ($sentencia->bind_result($respuestaId, $valor, $responsable, $reporte, $notificacion,$departamentoId, $departamentoNombre, $hallazgo, $recomendacion, $responsableNombre, $responsableApellido))
                     {
                         while($sentencia->fetch())
                         {
@@ -2482,9 +2501,17 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                                 'departamentoId' => $departamentoId,
                                 'departamentoNombre' => $departamentoNombre,
                                 'hallazgo' => $hallazgo,
-                                'recomendacion' => $recomendacion
+                                'recomendacion' => $recomendacion,
+                                'responsableNombre' => $responsableNombre,
+                                'responsableApellido' => $responsableApellido
                               
                             ];
+                            $respuesta->responsableNombreCompleto = $respuesta->responsableNombre . " " . $respuesta->responsableApellido;
+                            $respuesta->fotoPerfil =  "../fotos/usuario". $respuesta->responsable .".jpg";
+                            if(file_exists($respuesta->fotoPerfil))
+                                $respuesta->fotoPerfil =  "php/fotos/usuario". $respuesta->responsable .".jpg";
+                            else
+                                $respuesta->fotoPerfil =  "php/fotos/default.jpg";
                             array_push($respuestas,$respuesta);
                         }
                         $resultado->valor = $respuestas;
@@ -3009,7 +3036,7 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
         return $resultado;
     }
     
-    public function getHallazgos($secciones,$tipo)
+    public function getHallazgos($secciones,$tipo=null)
     {
         $resultado = new Resultado();
         $observaciones = array();
@@ -3036,7 +3063,7 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                                 {
                                     $respuesta = $pregunta->respuestas_si[$r];
                                    
-                                    if($respuesta->$tipo==1)
+                                    if($tipo==null || $respuesta->$tipo==1)
                                     {
                                         if($respuesta->valor==1)
                                         {
@@ -3052,7 +3079,11 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                                                 'recomendacion' => $respuesta->recomendacion,
                                                 'seccionId' => $seccion->id,
                                                 'preguntaId' => $pregunta->preguntaId,
-                                                'respuestaId' => $respuesta->id
+                                                'respuestaId' => $respuesta->id,
+                                                'reporte' => $respuesta->reporte,
+                                                'notificacion' => $respuesta->notificacion,
+                                                'responsableNombreCompleto' => $respuesta->responsableNombreCompleto,
+                                                'fotoPerfil' => $respuesta->fotoPerfil
                                             ];
                                                 
                                             array_push($observaciones,$observacion);
@@ -3061,7 +3092,7 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                                 }
                             break;
                             case "N":
-                                if($pregunta->$tipo==1)
+                                if($tipo==null || $pregunta->$tipo==1)
                                 {
                                     $departamento = $pregunta->departamentoNombre;
                                     if($pregunta->responsable=="")
@@ -3075,7 +3106,11 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                                         'recomendacion' => $pregunta->recomendacion,
                                         'seccionId' => $seccion->id,
                                         'preguntaId' => $pregunta->preguntaId,
-                                        'respuestaId' => null
+                                        'respuestaId' => null,
+                                        'reporte' => $pregunta->reporte,
+                                        'notificacion' => $pregunta->notificacion,
+                                        'responsableNombreCompleto' => $pregunta->responsableNombreCompleto,
+                                        'fotoPerfil' => $pregunta->fotoPerfil
                                     ];
                                     array_push($observaciones,$observacion);
                                 }
@@ -3084,34 +3119,10 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                     }
                 }
                 
-//                 if($seccion->$tipo==1 && $seccion->hallazgo!="")
-//                  {
-//                      $departamento = $seccion->departamentoNombre;
-//                      if($seccion->responsable=="")
-//                          $departamento = "No asignado";
-//                      else if($departamento=="")
-//                         $departamento = "Sin departamento";
-//                      $observacion = (object)['criterio' =>$criterio, 
-//                          'departamento' => $departamento, 
-//                          'responsableId' => $seccion->responsable,
-//                          'hallazgo' => $seccion->hallazgo,
-//                          'recomendacion' => $seccion->recomendacion,
-//                          'seccionId' => $seccion->id,
-//                          'preguntaId' => null,
-//                          'respuestaId' => null
-//                      ];
-//                      array_push($observaciones,$observacion);
-//                  }
-
-
-               
                 
             
             }
             
-           // echo 'observaciones';
-            
-            //var_dump($seccion->observacionesSeccion);   
             for ($o = 0; $o < count($seccion->observacionesSeccion); $o++)
             {
                 $observacionSeccion = $seccion->observacionesSeccion[$o];
@@ -3131,7 +3142,11 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                         'seccionId' => $seccion->id,
                         'observacion' => $o + 1,
                         'preguntaId' => null,
-                        'respuestaId' => null
+                        'respuestaId' => null,
+                        'reporte' => $observacionSeccion->reporte,
+                        'notificacion' => $observacionSeccion->notificacion,
+                        'responsableNombreCompleto' => $observacionSeccion->responsableNombreCompleto,
+                        'fotoPerfil' => $observacionSeccion->fotoPerfil
                     ];
                     array_push($observaciones,$observacion);
                 }
@@ -3141,6 +3156,26 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
         }
         $resultado->valor = $observaciones;
         return $resultado;
+    }
+    
+    public function consultarHallazgosSecciones($llaves)
+    {
+        $resultado = new Resultado();
+        $llaves= (object) [
+            'auditoriaId' =>  $llaves->id,
+            'plantillaId' =>  $llaves->plantillaId
+        ];
+        $secciones = array();
+        $resultado = $this->consultarValoresSecciones($llaves);
+        if($resultado->correcto())
+        {
+            
+            $secciones = $resultado->valor;
+            $resultado = $this->getHallazgos($secciones,"notificacion");
+            
+        }
+        return $resultado;
+        
     }
     
     public function iniciarSeguimiento($llaves)

@@ -35,7 +35,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                                     LEFT JOIN areas A ON A.id = U.area_id
                                     LEFT JOIN departamentos D ON D.id = U.departamento_id
                                     INNER JOIN tipos_usuario TU ON TU.id = U.tipo_usuario_id
-                                    INNER JOIN usuarios UA ON UA.id = EM.administrador_procesos_id ";
+                                    LEFT JOIN usuarios UA ON UA.id = EM.administrador_procesos_id ";
         
         $this->consultaBasePendientesRevisados = "SELECT * FROM(SELECT UP.id usuario_proceso_id,U.empresa_id,EM.nombre, U.sede_id, S.nombre, usuario_id ,U.nombre,U.apellido,
                                                 proceso_id, P.nombre, IFNULL(DATE_FORMAT(UP.fecha_alta,'%d/%m/%Y'),'')fecha_alta,IFNULL(DATE_FORMAT(UP.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,P.ruta_archivo,

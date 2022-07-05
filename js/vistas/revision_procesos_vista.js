@@ -1505,8 +1505,10 @@ class RevisionProcesosVista extends CatalogoVista
 		var contenido ="";
 		if(renglon.estatusValidacionId!=0)
 		{
-			contenido += "<center><span data-toggle='tooltip' data-placemen='bottom' title='"+renglon.estatusValidacionDescripcion+"'  class='"+renglon.estatusValidacionIcono+" fa-lg "+renglon.estatusValidacionColor+"' ></span></center>";
-		
+			if(renglon.estatusRevisionId != EstatusRevision.OBSERVACIONES)
+				contenido += "<center><span data-toggle='tooltip' data-placemen='bottom' title='"+renglon.estatusValidacionDescripcion+"'  class='"+renglon.estatusValidacionIcono+" fa-lg "+renglon.estatusValidacionColor+"' ></span></center>";
+			else
+				contenido +="<center><span data-toggle='tooltip' data-placemen='bottom' title='Revise el estado de solicitud de cada observación'>NA</span></center>";
 		}
 		return contenido;
 	}
@@ -1514,7 +1516,7 @@ class RevisionProcesosVista extends CatalogoVista
 	getSeccionValidacion(renglon)
 	{
 		var contenido ="";
-		if(renglon.seccionAdmin=="")
+		if(renglon.seccionAdmin=="" || renglon.seccionAdmin==null)
 			contenido = renglon.seccion;
 		else if(renglon.seccion==renglon.seccionAdmin)
 			contenido = renglon.seccion;
@@ -1527,7 +1529,7 @@ class RevisionProcesosVista extends CatalogoVista
 	{
 		var contenido ="";
 		
-		if(renglon.descripcionAdmin=="")
+		if(renglon.descripcionAdmin=="" || renglon.descripcionAdmin==null)
 			contenido = renglon.descripcion;
 		else if(renglon.descripcion==renglon.descripcionAdmin)
 			contenido = renglon.descripcion;

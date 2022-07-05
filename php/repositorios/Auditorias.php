@@ -183,6 +183,10 @@ try
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarAnos($usuario,$criteriosSeleccion);
                 break;
+                case 'consultarHallazgosSecciones':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarHallazgosSecciones($llaves);
+                break; 
                 default:
                     $resultado->mensajeError = "Acción no implementada";
                 break;

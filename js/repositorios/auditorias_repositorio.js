@@ -499,4 +499,50 @@ class AuditoriasRepositorio extends Repositorio
 	       }
 	   });
 	}
+	
+	enviarCorreoXRay(contexto,funcion, auditoriaId, plantillaId, referencia, hallazgos, usuarios, usuarioXRay, empresaId, sedeId, fecha)
+	{		
+		var url = HANDEL_API+"/php/pdf/xray.php";
+		 $.ajax({
+           url: url,
+           type: 'POST',
+           data: {auditoriaId : auditoriaId, plantillaId: plantillaId, referencia: referencia, hallazgos: JSON.stringify(hallazgos), enviarCorreo: true, usuarios: JSON.stringify(usuarios), usuarioXRay: usuarioXRay, empresaId:empresaId, sedeId: sedeId, fecha: fecha },
+           success: function( data, textStatus, jQxhr )
+           {
+               funcion.call(contexto,data);
+           },
+           error: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : textStatus});
+           },
+           fail: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : textStatus});
+           }
+       });
+	}
+	
+	consultarHallazgosSecciones(contexto,funcion,llaves)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarHallazgosSecciones", llaves: JSON.stringify(llaves)},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : errorThrown + "." +jqXhr.responseText});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : errorThrown+ "." +jqXhr.responseText});
+	       }
+	   });
+	}
+
+
 }

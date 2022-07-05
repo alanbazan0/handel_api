@@ -208,4 +208,60 @@ class AuditoriaPresentador extends CatalogoPresentador
 			 }
 		 },llaves);
 	}
+	
+	 consultarUsuariosCorreo()
+	 {
+		this.vista.mostrarIndicador();	
+		 var repositorio = new UsuariosRepositorio(this);		
+		 repositorio.consultarUsuariosCorportarivoYAdministradoresPorEmpresa(this, function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+			{
+				this.vista.usuariosCorreo = resultado.valor;			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		 //);
+		,this.vista.empresaId);
+	}
+	
+	consultarHallazgosSecciones()
+	{
+		 var llaves ={plantillaId: this.vista.modeloEdicion.plantillaId,
+				 	id: this.vista.modeloEdicion.id};
+		this.vista.mostrarIndicador();	
+		 var repositorio = new AuditoriasRepositorio(this);		
+		 repositorio.consultarHallazgosSecciones(this, function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+			{
+				this.vista.hallazgosSecciones = resultado.valor;			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		,llaves);
+	}
+	
+	enviarCorreoXRay()
+	{
+		this.vista.mostrarIndicador();	
+		 var repositorio = new AuditoriasRepositorio(this);		
+		 repositorio.enviarCorreoXRay(this, function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+			{
+				this.vista.mostrarMensaje("Notificación","Enviado");
+				this.vista.cerrarModal("correoXRayModal");
+				//this.vista.usuariosCorreo = resultado.valor;			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		,this.vista.auditoriaId, this.vista.plantillaId, this.vista.referencia, this.vista.hallazgos, this.vista.usuariosCorreo, this.vista.usuarioXRay, this.vista.empresaId, this.vista.sedeId, this.vista.fecha);
+	}
 }

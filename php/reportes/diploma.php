@@ -295,6 +295,18 @@ abstract class PDF extends FPDF
                 $rgb = $this->toRGB($textColorHex);
                 $this->SetTextColor($rgb->r, $rgb->g, $rgb->b);
                 //$this->SetFillColor($rgb->red, $rgb->green, $rgb->blue);
+                if($data[$i]=="@checked")
+                {
+                    $data[$i] =  chr(52);
+                    $this->SetFont("ZapfDingbats", $this->fontWeights[$i], $this->fontSizes[$i]);
+                }
+                else if($data[$i]=="@unchecked")
+                {
+                    $data[$i] =  chr(54);
+                    $this->SetFont("ZapfDingbats", $this->fontWeights[$i], $this->fontSizes[$i]);
+                }
+                else
+                    $this->SetFont($this->fontNames[$i],$this->fontWeights[$i],$this->fontSizes[$i]);
                 
                 $this->SetFont($this->fontNames[$i],$this->fontWeights[$i],$this->fontSizes[$i]);
                 //Print the text
