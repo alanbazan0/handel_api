@@ -759,9 +759,9 @@ class GraficaCapacitacionesAvanceUsuarioVista extends CatalogoVista
 			// Create series
 			var series = chart.series.push(new am4charts.ColumnSeries());
 			series.sequencedInterpolation = true;
-			series.dataFields.valueY = "porcentaje";
+			series.dataFields.valueY = "porcentajeAvance";
 			series.dataFields.categoryX = "nombreId";
-			series.tooltipText = "{nombreCompleto} ({nombreUsuario}) : {valueY}% ({correctas}/{preguntasContestadas})";
+			series.tooltipText = "{nombreCompleto} ({nombreUsuario}) : {valueY}% ({preguntasContestadas}/{totalPreguntas})";
 			series.columns.template.strokeWidth = 0;
 
 			series.tooltip.pointerOrientation = "vertical";

@@ -223,7 +223,8 @@ class GraficaCapacitacionesAvanceUsuarioPresentador extends CatalogoPresentador
 	 {
 		this.vista.mostrarIndicador();	
 		 var repositorio = new CapacitacionesRepositorio(this);		
-		 repositorio.consultarAvanceUsuarios(this, function(resultado)
+		 //repositorio.consultarAvanceUsuarios(this, function(resultado)
+		 repositorio.consultarResultadosUsuarios(this, function(resultado)
 		 {
 			this.vista.ocultarIndicador();	
 			if(resultado.mensajeError=="")
