@@ -61,7 +61,7 @@ class AuditoriasRepositorio extends RepositorioBase implements IAuditoriasReposi
                 	LEFT JOIN empresas E1 ON E1.id = U.empresa_id
                 WHERE auditoria_id = A.id AND R.estatus_validacion_id!=2) recomendacionesPendientes,
                  IFNULL(DATE_FORMAT(A.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') AS fechaAlta,A.sede_id, S.nombre sedeNombre, IFNULL(DATE_FORMAT(A.fecha,'%d/%m/%Y'),''), A.hora, TA.nombre,
-seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m/%Y %H:%i:%s'),'')fecha_seguimiento_finalizado
+IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m/%Y %H:%i:%s'),'')fecha_seguimiento_finalizado
              FROM auditorias A 
              INNER JOIN plantillas P on A.plantilla_id = P.id 
             LEFT JOIN empresas E on A.empresa_id = E.id 
@@ -4002,7 +4002,7 @@ seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fecha_seguimiento_finalizado,'%d/%m
                 	LEFT JOIN usuarios U ON U.id = R.responsable_id
                 	LEFT JOIN empresas E1 ON E1.id = U.empresa_id
                 WHERE auditoria_id = A.id AND R.estatus_validacion_id!=2 $and) recomendacionesPendientes, 
-                IFNULL(DATE_FORMAT(A.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') AS fechaAlta,A.sede_id, S.nombre AS sedeNombre, IFNULL(DATE_FORMAT(A.fecha,'%d/%m/%Y'),''), A.hora, TA.nombre AS tipoAuditoriaNombre, A.seguimiento_finalizado, A.fecha_seguimiento_finalizado
+                IFNULL(DATE_FORMAT(A.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') AS fechaAlta,A.sede_id, S.nombre AS sedeNombre, IFNULL(DATE_FORMAT(A.fecha,'%d/%m/%Y'),''), A.hora, TA.nombre AS tipoAuditoriaNombre, IFNULL(A.seguimiento_finalizado,0), A.fecha_seguimiento_finalizado
              FROM auditorias A 
                  INNER JOIN plantillas P on A.plantilla_id = P.id 
                 LEFT JOIN empresas E on A.empresa_id = E.id 
