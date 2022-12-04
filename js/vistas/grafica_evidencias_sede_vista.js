@@ -74,11 +74,11 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 	set sedesCriterio(registros)
 	{		
 		this.cargarOpciones('#sedeSelectCriterio', registros);
-		if(this.consultoGrid==false)
+		/*if(this.consultoGrid==false)
 		{
 			this.consultar();
 			this.consultoGrid=true;
-		}
+		}*/
 	}
 
 	

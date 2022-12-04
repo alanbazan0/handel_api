@@ -2083,7 +2083,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                                     date_add($diaActual, date_interval_create_from_date_string("$diasDiferencia days"));
                                 $fechaCompromiso = date_format($diaActual, "Y-m-d");
                                 
-                                var_dump($diaActual);
+                             //   var_dump($diaActual);
                             }
                             
                             

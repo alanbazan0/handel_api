@@ -92,11 +92,11 @@ class GraficaRevisionProcesosUsuarioVista extends CatalogoVista
 	set departamentosCriterio(registros)
 	{		
 		this.cargarOpciones('#departamentoSelectCriterio', registros);
-		if(this.consultoGrid==false)
+		/*if(this.consultoGrid==false)
 		{
 			this.consultar();
 			this.consultoGrid=true;
-		}
+		}*/
 	}
 
 	

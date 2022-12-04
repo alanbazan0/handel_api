@@ -354,7 +354,7 @@ class MinutasPresentador extends CatalogoPresentador
 			 }
 			 else
 			 {
-				 this.vista.mostrarMensajeError("Error","Ocurrió un error al copiar la plantilla. " + resultado.mensajeError, resultado.codigoError);
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al copiar la minuta. " + resultado.mensajeError, resultado.codigoError);
 			 }
 		 },this.vista.llaves,titulo);
 	 }
