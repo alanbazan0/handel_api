@@ -938,9 +938,11 @@ class EntrenamientoVista extends CatalogoVista
 		this._cursosPendientes.registros = datos;
 		$('.dropdown-toggle').dropdown();
 		
-		var elementList = document.querySelectorAll('.descripcion' );
+		/*var elementList = document.querySelectorAll('.descripcion' );
 		for (var i = 0; i < elementList.length; i++) 
-			new Dotdotdot( elementList[i], {});
+			new Dotdotdot( elementList[i], {});*/
+			
+		this.truncarTitulos();
 		
 		this.inicializarEventosPendientes();
 		
@@ -961,9 +963,11 @@ class EntrenamientoVista extends CatalogoVista
 		this._cursosContestando.registros = datos;
 		$('.dropdown-toggle').dropdown();
 		
-		var elementList = document.querySelectorAll('.descripcion' );
+		/*var elementList = document.querySelectorAll('.descripcion' );
 		for (var i = 0; i < elementList.length; i++) 
-			new Dotdotdot( elementList[i], {});
+			new Dotdotdot( elementList[i], {});*/
+			
+		this.truncarTitulos();
 		
 		this.inicializarEventosContestando();
 		
@@ -985,11 +989,11 @@ class EntrenamientoVista extends CatalogoVista
 		this._cursosTerminados.registros = datos;
 		$('.dropdown-toggle').dropdown();
 		
-		var elementList = document.querySelectorAll('.descripcion' );
+		/*var elementList = document.querySelectorAll('.descripcion' );
 		for (var i = 0; i < elementList.length; i++) 
-			new Dotdotdot( elementList[i], {});
-		
-		//this.inicializarEventos();
+			new Dotdotdot( elementList[i], {});*/
+			
+		this.truncarTitulos();
 		
 		$('[data-toggle="tooltip"]').tooltip({
 		    trigger : 'hover',
@@ -1001,6 +1005,13 @@ class EntrenamientoVista extends CatalogoVista
 			$("#tituloTerminados").show();
 		else
 			$("#tituloTerminados").hide();
+	}
+	
+	truncarTitulos()
+	{
+		$('.descripcion').ellipsis({
+		  responsive: true
+		});		
 	}
 	
 	inicializarEventosContestando()
