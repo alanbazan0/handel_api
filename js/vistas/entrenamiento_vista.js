@@ -214,7 +214,7 @@ class EntrenamientoVista extends CatalogoVista
 			_this.consultarEmpresasReporte();
 			
 			moment.locale('es') ;
-			var start = moment().startOf('month');
+			var start = moment().startOf('year');
     		var end = moment();	
 
 		 function cb(start, end) {
@@ -281,7 +281,7 @@ class EntrenamientoVista extends CatalogoVista
 			
 			
 			moment.locale('es') ;
-			var start = moment().subtract(1, 'years');
+			var start = moment().startOf('year');
     		var end = moment();	
 
 		 function cb(start, end) {
@@ -297,6 +297,7 @@ class EntrenamientoVista extends CatalogoVista
 				//opens: 'center',
 		        ranges   : {
 		          'Histórico'       : ["01/08/2020", moment()],
+		          'Este año'   : [moment().startOf('year'),, moment()],
 		          'Ultimo año'   : [moment().subtract(1, 'year'), moment()],
 		          'Ultimo semestre' : [moment().subtract(6, 'month'), moment()],
 		          'Ultimo trimestre': [moment().subtract(3, 'month'), moment()],

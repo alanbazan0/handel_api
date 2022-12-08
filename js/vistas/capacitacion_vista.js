@@ -458,6 +458,7 @@ class CapacitacionVista extends CatalogoVista
 		
 		$('#tituloH').html(titulo);
 		$('#tituloInput').val(this.modeloEdicion.titulo);
+		
 		var title = $(document).prop('title');
 		$(document).prop('title', title + " " + this.modeloEdicion.titulo);
 		

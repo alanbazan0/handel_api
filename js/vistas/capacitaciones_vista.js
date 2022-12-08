@@ -142,7 +142,14 @@ class CapacitacionesVista extends CatalogoVista
 	    $( "#tarjetas" ).disableSelection();
 		
 	    
-	   
+	   /*$("#horasPresencialesInput").blur(function()
+	   {
+			var number = parseInt($("#horasPresencialesInput").text());
+			if(number==NaN)
+				number = 0;
+			$("#horasPresencialesInput").val(number);
+			
+	   });*/
 	    
 	    
 	    this.consultar();
@@ -160,7 +167,7 @@ class CapacitacionesVista extends CatalogoVista
 		});
 		$("#descripcionInput").change(this.cambiarCampo);
 		$("#publicadoRadio").change(this.cambiarCampo);
-		
+		$("#horasPresencialesInput").change(this.cambiarCampoHoras);
 		
 		$("#tituloLeccionInput").change(this.cambiarCampoLeccion);
 		$("#descripcionLeccionInput").change(this.cambiarCampoLeccion);
@@ -214,6 +221,20 @@ class CapacitacionesVista extends CatalogoVista
 			}
 			vista.presentador.actualizarValor(campo,valor);
 		}
+	}
+	
+	cambiarCampoHoras(event)
+	{
+		var campo = $(event.currentTarget).attr("data-campo");
+		
+		var valor = $(event.currentTarget).val();
+		valor = parseInt(valor);
+		if(isNaN(valor))
+			valor = 0;
+		$(event.currentTarget).val(valor);
+		
+		vista.presentador.actualizarValor(campo,valor);
+		
 	}
 	
 	cambiarCampoLeccion(event)
@@ -648,6 +669,7 @@ class CapacitacionesVista extends CatalogoVista
 		this.modeloEdicion = valor;
 		$('#tituloH').html(this.modeloEdicion.titulo);
 		$('#tituloInput').val(this.modeloEdicion.titulo);
+		$('#horasPresencialesInput').val(this.modeloEdicion.horasPresenciales);
 		$('#descripcionInput').val(this.modeloEdicion.descripcion);
 		if(this.modeloEdicion.publicado)
 			$("#publicadoRadio").prop('checked', true);

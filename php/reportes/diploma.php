@@ -440,8 +440,9 @@ public function generar($usuario,$criteriosSeleccion)
         $this->fondo();
         $this->usuario();
         $this->capacitaciones();
-        $this->periodo();
-        $this->requiereCapacitacion();
+        $this->periodo(118, 195);
+        $this->requiereCapacitacion(113, 201);
+        $this->horasPresenciales(110, 207);
         $this->porcentaje();
     }
 }
@@ -459,7 +460,7 @@ function usuario()
 
 function capacitaciones()
 {
-   
+    $this->horasPresenciales = 0;
     $borde = 0;
     $this->SetFont('SFNSText','',9);
     $this->SetTextColor(0,0,0);
@@ -491,6 +492,7 @@ function capacitaciones()
                 $x = ($columna * $anchoColumna) + $this->margen;
                 $this->SetXY($x, $yInicial);
             }
+            $this->horasPresenciales += $curso->horasPresenciales;
         }
          
     }
@@ -498,12 +500,12 @@ function capacitaciones()
     
 }
 
-function periodo()
+function periodo($x, $y)
 {
     $borde = 0;
     $this->SetFont('SFNSText','',10);
     $this->SetTextColor(256,256,256);
-    $this->SetXY(120, 195);
+    $this->SetXY($x, $y);
     $fechaInicial = $this->criteriosSeleccion->fechaInicialTerminado;
     $fechaFinal = $this->criteriosSeleccion->fechaFinalTerminado;
     $this->Cell(100,8,$this->texto("Período del certificado: $fechaInicial - $fechaFinal"),$borde,1,'L');
@@ -511,12 +513,12 @@ function periodo()
    
 }
 
-function requiereCapacitacion()
+function requiereCapacitacion($x, $y)
 {
     $borde = 0;
     $this->SetFont('SFNSText','',10);
     $this->SetTextColor(256,256,256);
-    $this->SetXY(113, 204);
+    $this->SetXY($x, $y);
     
     $repositorio = new CursosRepositorio($this->conexion);
     $resultado = $repositorio->consultarDiasCapacitacionUsuario($this->usuarioDiploma);
@@ -528,6 +530,22 @@ function requiereCapacitacion()
    // var_dump($resultado);
     
    
+    
+}
+
+function horasPresenciales($x,$y)
+{
+    $borde = 0;
+    $this->SetFont('SFNSText','',10);
+    $this->SetTextColor(256,256,256);
+    $this->SetXY($x, $y);
+    
+   
+        
+        $this->Cell(100,8,$this->texto("Equivalente en horas presenciales: $this->horasPresenciales"),$borde,1,'L');
+    // var_dump($resultado);
+    
+    
     
 }
 
