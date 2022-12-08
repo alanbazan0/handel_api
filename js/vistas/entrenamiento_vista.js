@@ -223,6 +223,7 @@ class EntrenamientoVista extends CatalogoVista
 		       	$('#daterange-btn span').html(start.format('D MMMM YYYY') + ' - ' + end.format('D MMMM YYYY'))
 		    }
 
+			
 			$('#daterange-btn').daterangepicker(
 		      {
 			// drops: 'up',
@@ -230,6 +231,7 @@ class EntrenamientoVista extends CatalogoVista
 				//opens: 'center',
 		        ranges   : {
 		          'Histórico'       : ["01/08/2020", moment()],
+		          'Este año'   : [moment().startOf('year'),, moment()],
 		          'Ultimo año'   : [moment().subtract(1, 'year'), moment()],
 		          'Ultimo semestre' : [moment().subtract(6, 'month'), moment()],
 		          'Ultimo trimestre': [moment().subtract(3, 'month'), moment()],
