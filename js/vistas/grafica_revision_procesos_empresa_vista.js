@@ -49,8 +49,20 @@ class GraficaRevisionProcesosEmpresaVista extends CatalogoVista
 		
 		
 		
-		this.consultar();
+		//this.consultar();
 		
+	}
+	
+	cambiarEmpresaCriterio()
+	{
+		this.consultarSedesCriterio();
+	}
+	
+	consultarSedesCriterio()
+	{
+		//this.cargandoOpciones("#departamentoSelectCriterio");
+		this.cargandoOpciones("#sedeSelectCriterio");
+		this.presentador.consultarSedesCriterio();
 	}
 
 	
@@ -93,6 +105,7 @@ class GraficaRevisionProcesosEmpresaVista extends CatalogoVista
 		var criteriosSeleccion = 
 		{
 			empresaId:  $('#empresaSelectCriterio').val(),
+			sedeId:  $('#sedeSelectCriterio').val(),
 			mes:  $('#mesSelectCriterio').val(),
 			ano: $('#anoSelectCriterio').val()
 		};
@@ -163,6 +176,11 @@ class GraficaRevisionProcesosEmpresaVista extends CatalogoVista
 
 	}
 	
+	set sedesCriterio(registros)
+	{		
+		this.cargarOpciones('#sedeSelectCriterio', registros);
+		
+	}
 	
 }
 

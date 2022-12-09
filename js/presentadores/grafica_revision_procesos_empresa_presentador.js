@@ -27,11 +27,29 @@ class GraficaRevisionProcesosEmpresaPresentador extends CatalogoPresentador
 			if(resultado.mensajeError=="")
 			{
 				this.vista.empresasCriterio = resultado.valor;
+				this.vista.cambiarEmpresaCriterio();
 			}
 			else
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 			
 		 },{estatus:1},true);
+	 }
+	 
+	 
+	 consultarSedesCriterio()	
+	 {
+		 var repositorio = new SedesRepositorio(this);		
+		 repositorio.consultarPorEmpresa(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.sedesCriterio = resultado.valor;			
+				//this.vista.cambiarSedeCriterio();
+			}
+			else
+				this.vista.mostrarMensaje("Error",resultado.mensajeError);
+		 }
+		,this.vista.criteriosSeleccion.empresaId,true);
 	 }
 	 
 	
