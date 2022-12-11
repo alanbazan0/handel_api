@@ -76,6 +76,7 @@
                                       <div id='archivosProgressBar' class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
                                     </div>
         							<button id='adjuntarArchivoButton' type="button" class='btn btn-primary pull-right' style='display:none;'><i class='fas fa-paperclip'></i> Adjuntar</button>
+        							<button id="pendienteRecomendacionArchivosButton" style='display:none' class='btn btn-warning float-right'><i class=''></i> Pendiente</button>
                                     <button id="rechazarRecomendacionArchivosButton" style='display:none' class='btn btn-danger float-right'><i class='fas fa-times'></i> Rechazar</button>
                                     <button id="validarRecomendacionArchivosButton" style='display:none' class='btn btn-success float-right'><i class='fas fa-check'></i> Validar</button>
         						</div>

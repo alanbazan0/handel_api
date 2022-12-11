@@ -225,7 +225,8 @@ class ValidacionEvidenciasVista extends CatalogoVista
 	renderAvance(renglon, type, set)
 	{    
 		var contenido = "";
-		if(renglon.cumplimiento == 100 && renglon.estatusValidacionId == EstatusValidacion.ENVIADA_A_VALIDACION)
+		//if(renglon.cumplimiento == 100 && renglon.estatusValidacionId == EstatusValidacion.ENVIADA_A_VALIDACION)
+		if(renglon.cumplimiento == 100)
 				contenido += "<button data-toggle='tooltip' data-placemen='bottom' title='Validar'  type='button' class='avance btn-circle mr-0 botones-icon btn btn-sm btn-light'><span  data-toggle='tooltip' class='fas fa-check-square fa-lg text-success'></span></button>";
 
 	    return contenido;
@@ -620,7 +621,7 @@ class ValidacionEvidenciasVista extends CatalogoVista
 	renderIcono(renglon, type, set)
 	{    
 		var fecha = new Date();
-		var icono = HANDEL_API + "/php/iconos_plantillas/" + renglon.icono+"?"+fecha.getTime();
+		var icono = HANDEL_API + "/php/iconos_plantillas/" + renglon.icono+"?"+vista.time;
 		var contenido = "";
 		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;'></img></center>";
 	    return contenido;
@@ -1442,12 +1443,23 @@ class ValidacionEvidenciasVista extends CatalogoVista
 			
 			$("#adjuntarArchivoButton").click(function(){_this.adjuntarArchivo();});
 			
-			if(this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR && this._recomendacionSeleccionada.cumplimiento==100 && _this._recomendacionSeleccionada.estatusValidacionId!=EstatusValidacion.VALIDADA)
+			if(this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR && this._recomendacionSeleccionada.cumplimiento==100)
 			{
-				$("#validarRecomendacionArchivosButton").show();
+				if(_this._recomendacionSeleccionada.estatusValidacionId==EstatusValidacion.VALIDADA)
+				{
+					$("#rechazarRecomendacionArchivosButton").show();
+					$("#pendienteRecomendacionArchivosButton").show();
+				}
+				else
+				{
+					$("#validarRecomendacionArchivosButton").show();
+					$("#rechazarRecomendacionArchivosButton").show();
+				}
+			
 				$("#validarRecomendacionArchivosButton").click(function(){_this.validarRecomendacion(EstatusValidacion.VALIDADA);});
-				$("#rechazarRecomendacionArchivosButton").show();
+				
 				$("#rechazarRecomendacionArchivosButton").click(function(){_this.validarRecomendacion(EstatusValidacion.RECHAZADA);});
+				$("#pendienteRecomendacionArchivosButton").click(function(){_this.validarRecomendacion(EstatusValidacion.PENDIENTE);});
 			}
 			
 		},null,"archivosModal","","guardarAvanceButton",function()
