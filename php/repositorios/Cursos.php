@@ -424,6 +424,23 @@ try
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarAvanceUsuarios($usuario,$criteriosSeleccion);
                 break;
+                case 'consultarUsuarioCursoLecciones':
+                    $usuarioId = REQUEST('usuarioId');
+                    $cursoId = REQUEST('cursoId');
+                    $resultado = $repositorio->consultarUsuarioCursoLecciones($usuarioId, $cursoId);
+                break;
+                case 'eliminarUsuarioCapacitacionLeccion':
+                    $usuarioId = REQUEST('usuarioId');
+                    $cursoId = REQUEST('cursoId');
+                    $leccionId = REQUEST('leccionId');
+                    $resultado = $repositorio->eliminarUsuarioCapacitacionLeccion($usuarioId, $cursoId, $leccionId);
+                break;
+                
+                case 'consultarUsuarioCapacitacion':
+                    $usuarioId = REQUEST('usuarioId');
+                    $cursoId = REQUEST('cursoId');
+                    $resultado = $repositorio->consultarUsuarioCapacitacion($usuarioId, $cursoId);
+                break;
                 default:
                     $resultado->mensajeError = "Acción no válida";
                 break;

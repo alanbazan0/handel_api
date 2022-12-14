@@ -82,7 +82,7 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 			{longitud:100, 	titulo:"Departamento",   alias:"departamentoNombre", alineacion:"I" },	
 			//{longitud:100, 	titulo:"Capacitación",   alias:"capacitacion", alineacion:"I", itemRenderer: this.rendererCapacitacion },
 			
-			{longitud:100, 	titulo:"Aprovechamiento",   alias:"porcentaje", alineacion:"C",itemRenderer: this.rendererPorcentaje },
+			{longitud:100, 	titulo:"Aprovechamiento",   alias:"porcentaje", alineacion:"C",itemRenderer: this.renderPorcentaje },
 			{longitud:100, 	titulo:"Preguntas correctas",   alias:"correctas", alineacion:"C"},
 			{longitud:100, 	titulo:"Total de preguntas",   alias:"total", alineacion:"C" },
 			{longitud:100, 	titulo:"Total de preguntas contestadas",   alias:"preguntasContestadas", alineacion:"C" },
@@ -99,8 +99,10 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 		]
 		
 		if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR || this.usuario.recursosHumanos==1)
-			this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar resultados'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
-
+		{
+			this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Lecciones'  type='button' class='lecciones btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-list fa-lg'></span></button>"+
+			"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar calificación de capacitación'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+		}
 		var _this = this;
 		
 		var datatable = this.tabla.datatable.DataTable();
@@ -226,29 +228,7 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 	    return "";
 	}
 	
-	rendererPorcentaje(renglon, type, set)
-	{    
-		//if(renglon.fechaUltimaCapacitacion!=null)
-		//{
-			var porcentajeCumplimiento = parseFloat(renglon.porcentaje);
-			var label ="";
-			if(porcentajeCumplimiento >= 0 && porcentajeCumplimiento < 51)
-			{
-				label = "text-red";
-			}
-			else if(porcentajeCumplimiento >= 51 && porcentajeCumplimiento < 100)
-			{
-				label = "text-yellow";
-			}
-			else if(porcentajeCumplimiento >= 100)
-			{
-				label = "text-green";
-			}
-			var preguntas = renglon.correctas + "/" + renglon.total;
-			return "<span data-toggle='tooltip' data-placemen='bottom' title='"+preguntas+"' style='font-weight:bold' class='"+label+"'>"+porcentajeCumplimiento+"%</span>";
-		//}
-		return "";
-	}
+	
 	
 	renderPermisoSAHA(renglon, type, set)
 	{    
@@ -327,11 +307,11 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 	set usuariosCriterio(registros)
 	{		
 		this.cargarOpciones('#usuarioSelectCriterio', registros, "", null, "",null, "nombreCompleto");
-		if(this.consultoGrid==false)
+		/*if(this.consultoGrid==false)
 		{
 			this.consultar();
 			this.consultoGrid=true;
-		}
+		}*/
 	}
 	
 	set cursosCriterio(registros)
@@ -807,6 +787,240 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 				_this.eliminar();
 			}
 		});
+		
+		$(tbody).on("click", "button.lecciones", function()
+		{
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+		    _this._registroSeleccionado  = table.row( tr ).data();
+			
+			
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["usuarioId", "cursoId"]);
+				_this.mostrarLecciones();
+			}
+		});
+		
+	}
+	
+	mostrarLecciones()
+	{
+		var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/usuarios_cursos_lecciones.php",this, null, function()
+		{
+			$("#usuarioLabel").html(_this._registroSeleccionado.nombreCompleto);
+			$("#capacitacionLabel").html(_this._registroSeleccionado.titulo);
+			/*$("#estatusValidacionIcono").addClass(_this._recomendacionSeleccionada.estatusValidacionIcono);
+			$("#estatusValidacionIcono").addClass(_this._recomendacionSeleccionada.estatusValidacionColor);
+			$("#estatusValidacionLabel").html(_this._recomendacionSeleccionada.estatusValidacionDescripcion);
+			if(_this._recomendacionSeleccionada.estatusValidacionId!=EstatusValidacion.VALIDADA)
+			{
+				$("#registrarAvanceButton").show();
+				$("#registrarAvanceButton").click(function(){_this.mostrarFormularioAvance(Modo.ALTA);});
+				if(_this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR && _this._recomendacionSeleccionada.cumplimiento==100)
+				{
+					$("#validarRecomendacionButton").show();
+					$("#validarRecomendacionButton").click(function(){_this.mostrarFormularioValidacion();});
+					
+				}
+			}*/
+			this.crearTablaLecciones();
+			this.consultarLeccionesCapacitacionUsuario();
+			
+		},null,"leccionesModal","","", function()
+		{
+			
+		},function()
+		{
+			//_this.consultarRecomendacionPorLlaves(false);
+		});
+	}
+	
+	crearTablaLecciones()
+	{
+		this.leccionesTabla = new Tabla("leccionesTabla");
+		this.leccionesTabla.buscar = false;
+		this.leccionesTabla.paginacion = true;
+		this.leccionesTabla.alto = 250;
+		this.leccionesTabla.columnas = [];
+		
+		//this.leccionesTabla.columnas.push({longitud:50, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"C"});
+		this.leccionesTabla.columnas.push({longitud:300, 	titulo:"Titulo",   alias:"titulo", alineacion:"L" });
+		this.leccionesTabla.columnas.push({longitud:100, 	titulo:"Aprovechamiento",   alias:"porcentaje", alineacion:"C", itemRenderer:this.renderAprovechamiento});
+		//this.leccionesTabla.columnas.push({longitud:300, 	titulo:"Comentario",   alias:"comentario", alineacion:"I",itemRenderer:this.renderComentarioAvance});
+		//this.leccionesTabla.columnas.push({longitud:100, 	titulo:"Fecha de ultima modificación",   alias:"fechaModificacion", alineacion:"I",itemRenderer:this.renderFechaModificacionAvance } );
+		
+		//if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR || this.usuario.tipoUsuarioId == TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId == TipoUsuario.SUPERVISOR)
+		//{
+		//	this.leccionesTabla.columnas.push({longitud:40, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoUsuarioAvance});
+		//	this.leccionesTabla.columnas.push({longitud:100, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I",itemRenderer:this.renderNombreUsuarioAvance});
+
+		//}
+		/*this.leccionesTabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>"+
+												"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+
+*/
+		//this.leccionesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderEditarAvance});
+		this.leccionesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderEliminarLeccion});
+
+	
+		this.leccionesTabla.textoTablaVacia = "";
+		this.leccionesTabla.registros = [];
+		
+		
+		
+	}
+	
+	getAprovechamiento(renglon)
+	{
+		if(renglon.porcentaje==undefined)
+			renglon.porcentaje = 0;
+	
+		var porcentajeAprovechamiento = parseFloat(renglon.porcentaje);
+		var color ="";
+		if(porcentajeAprovechamiento <= 70)
+		{
+			color = "red";
+		}
+		else if(porcentajeAprovechamiento > 70 && porcentajeAprovechamiento <=80)
+		{
+			color = "#e9a13d";
+		}
+		else if(porcentajeAprovechamiento > 80)
+		{
+			color = "green";
+		}
+		return "<span style='font-weight:bold;color:"+color+";' >"+porcentajeAprovechamiento+"%</span>";
+	}
+	
+	renderAprovechamiento(renglon, type, set)
+	{  
+		return "<div id='cumplimientoAvanceTabla"+renglon.usuarioId+"_"+renglon.cursoId+"'>" +vista.getAprovechamiento(renglon) + "</div>";
+	}
+	
+	renderPorcentaje(renglon, type, set)
+	{  
+		return "<div id='porcentajeTabla"+renglon.usuarioId+"_"+renglon.cursoId+"'>" +vista.getPorcentaje(renglon) + "</div>";
+	}
+	
+	getPorcentaje(renglon)
+	{    
+		var porcentajeAprovechamiento = parseFloat(renglon.porcentaje);
+		var label ="";
+		if(porcentajeAprovechamiento >= 0 && porcentajeAprovechamiento < 51)
+		{
+			label = "text-red";
+		}
+		else if(porcentajeAprovechamiento >= 51 && porcentajeAprovechamiento < 100)
+		{
+			label = "text-yellow";
+		}
+		else if(porcentajeAprovechamiento >= 100)
+		{
+			label = "text-green";
+		}
+		var preguntas = renglon.correctas + "/" + renglon.total;
+		return "<span data-toggle='tooltip' data-placemen='bottom' title='"+preguntas+"' style='font-weight:bold' class='"+label+"'>"+porcentajeAprovechamiento+"%</span>";
+	}
+	
+	renderEliminarLeccion()
+	{
+		//if(vista._recomendacionSeleccionada!=null)
+			return "<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>";
+		//else
+		//	return "";
+	}
+	
+	consultarLeccionesCapacitacionUsuario()
+	{
+		this.presentador.consultarLeccionesCapacitacionUsuario();
+	}
+	
+	set lecciones(lecciones)
+	{
+		this.leccionesTabla.textoTablaVacia = "";
+		this.leccionesTabla.registros = lecciones;
+		this.inicializarEventosBotonesTablaLecciones("#" + this.leccionesTabla._id+"Table tbody",this.leccionesTabla.datatable.DataTable());
+	}
+	
+	
+	inicializarEventosBotonesTablaLecciones(tbody, table)
+	{
+		var _this = this;
+		
+		$(tbody).on("click", "button.eliminar", function()
+		{
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+		    _this._leccionSeleccionada  = table.row( tr ).data();
+			if (_this._leccionSeleccionada != undefined)
+			{
+				_this._llavesLeccion = _this.copiarPropiedadesObjeto(_this._leccionSeleccionada, ["id"]);
+				//_this._llavesLeccion.recomendacionId = _this._llavesRecomendacion.id;
+				//_this._llavesRecomendacion.recomendacionId = _this._llaves.id;
+				_this.eliminarUsuarioCapacitacionLeccion();
+			}
+		});
+		
+		
+	}
+	
+	
+	eliminarUsuarioCapacitacionLeccion()
+	{ 
+		var _this = this;
+		swal({
+	            title: "\u00bfEst\u00E1 seguro de eliminar?",
+	            text: "Se eliminar\u00e1 esta lecci\u00f3n!!</br><strong>"+ _this.leccionSeleccionada.titulo +"</strong>",
+	            html:true,
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Si, eliminar!!",
+	            cancelButtonText: "No",
+	            closeOnConfirm: false,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	 setTimeout(function(){
+	            		 _this.presentador.eliminarUsuarioCapacitacionLeccion();
+	 	            }, 1000);
+	            }
+	        });
+	}
+	
+	get registroSeleccionado()
+	{
+		return this._registroSeleccionado;
+	}
+	
+	get leccionSeleccionada()
+	{
+		return this._leccionSeleccionada;
+	}
+	
+	
+	set modeloCapacitacion(modeloCapacitacion)
+	{
+		//modeloCapacitacion.porcentaje = 10;
+		this._modeloCapacitacion = modeloCapacitacion;
+		var id= '#porcentajeTabla'+this._modeloCapacitacion.usuarioId+"_"+this._modeloCapacitacion.cursoId;
+		var texto = this.getPorcentaje(this._modeloCapacitacion);
+		$(id).html(texto);
+		this._registroSeleccionado.porcentaje = modeloCapacitacion.porcentaje;
 		
 	}
 	

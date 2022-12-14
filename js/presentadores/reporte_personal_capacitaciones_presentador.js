@@ -273,8 +273,62 @@ class ReportePersonalCapacitacionesPresentador extends CatalogoPresentador
 		,this.vista.llaves);
 	 }
 	 
+	 consultarLeccionesCapacitacionUsuario()	
+	 {
+		 this.vista.mostrarIndicador();	
+		 var repositorio = new CapacitacionesRepositorio(this);
+		 repositorio.consultarUsuarioCursoLecciones(this, function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+			{
+				this.vista.lecciones = resultado.valor;				
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },this.vista.registroSeleccionado.usuarioId, vista.registroSeleccionado.cursoId);
+	 }
+	 
+	eliminarUsuarioCapacitacionLeccion()
+	 {
+		 this.vista.mostrarIndicador();	
+		 var repositorio = new CapacitacionesRepositorio(this);
+		 repositorio.eliminarUsuarioCapacitacionLeccion(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 this.vista.cerrarConfirmacionEliminar();
+			 if(resultado.mensajeError=="")
+			 {
+				
+				 this.vista.mostrarMensaje("Notificación","La lección se eliminó correctamente.");
+				 this.consultarLeccionesCapacitacionUsuario();
+				 this.consultarUsuarioCapacitacion();
+			 }
+			 else
+			 {
+				 if(resultado.codigoError==1451)
+					 this.vista.mostrarMensajeAdvertencia("Error","No se puede eliminar el registro porque esta relacionado con otro catálogo. ") ;
+				 else
+					 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar el registro. " + resultado.mensajeError, resultado.codigoError);
+			 }
+		 },this.vista.leccionSeleccionada.usuarioId, vista.leccionSeleccionada.cursoId, this.vista.leccionSeleccionada.leccionId);
+	 }
 	 
 	 
-	
+	consultarUsuarioCapacitacion()
+	{
+		this.vista.mostrarIndicador();	
+		var repositorio = new CapacitacionesRepositorio(this);
+		 repositorio.consultarUsuarioCapacitacion(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.modeloCapacitacion = resultado.valor;
+			 }
+			 else
+				 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError, resultado.codigoError);
+		 },this.vista.registroSeleccionado.usuarioId, vista.registroSeleccionado.cursoId);
+	}
 	 
 }
