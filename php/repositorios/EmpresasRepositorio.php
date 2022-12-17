@@ -121,6 +121,23 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
         return $resultado;
     }    
   
+  /*  private function filtrarDesactivados($filtros, $criteriosSeleccion)
+    {
+        if($criteriosSeleccion!=null)
+        {
+            if(isset($criteriosSeleccion->desactivado))
+            {
+                if(!$criteriosSeleccion->desactivado)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'estatus','valor'=>1]);
+                    
+            }
+            else
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'estatus','valor'=>1]);
+        }
+        else
+            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'estatus','valor'=>1]);
+            
+    }*/
     public function consultar($criteriosSeleccion,$opcional, $usuario)
     {     
         $resultado = new Resultado();
@@ -134,6 +151,8 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
                 array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'E','campo'=>'estatus','valor'=>$criteriosSeleccion->estatus]);
             if(isset($criteriosSeleccion->nombre))
                 array_push($filtros,(object)['tipoDato'=>'varchar','tabla' => 'E', 'campo'=>'nombre','valor'=>$criteriosSeleccion->nombre]);
+           
+                
         }
         if($usuario!=null)
         {
@@ -171,6 +190,8 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
             }
             
         }
+        
+        //$this->filtrarDesactivados($filtros, $criteriosSeleccion);
         
         $where = $this->where($filtros);
         

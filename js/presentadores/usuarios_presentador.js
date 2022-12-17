@@ -28,7 +28,7 @@ class UsuariosPresentador extends CatalogoPresentador
 		 //this.vista.mostrarIndicador();
 		 var repositorio = new EmpresasRepositorio(this);		
 		 var criteriosSeleccion = {nombre:""};
-		 repositorio.consultar(this,this.consultarEmpresasResultado,null);
+		 repositorio.consultar(this,this.consultarEmpresasResultado,{estatus:1});
 	 }
 	 
 	 consultarDepartamentos()	

@@ -11,7 +11,7 @@ class CatalogoVista extends Vista
 		this._urlFormulario = "";
 	}
 	
-	inicializar()
+	inicializar(consultarTabla)
 	{
 		super.inicializar();
 		
@@ -30,8 +30,13 @@ class CatalogoVista extends Vista
 		
 		
 		
-		this.crearColumnasGrid();		
-		this.consultar();
+		this.crearColumnasGrid();	
+		
+		if(consultarTabla==undefined)
+			consultarTabla = true;
+		
+		if(consultarTabla)	
+			this.consultar();
 	}
 	
 	

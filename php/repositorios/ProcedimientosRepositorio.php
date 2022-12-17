@@ -146,8 +146,9 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
                 if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'P','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
             }
-            $where = $this->where($filtros);
         }
+        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'E','campo'=>'estatus','valor'=>1]);
+        $where = $this->where($filtros);
         $consulta = $this->consultaBase . $where;
         if($sentencia = $this->conexion->prepare($consulta))
         {

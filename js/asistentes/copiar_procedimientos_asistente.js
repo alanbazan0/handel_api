@@ -653,7 +653,7 @@ class CopiarProcedimientosAsistente
 		this._contexto.cargandoOpciones("#empresaIdOrigenSelect");
 		this._contexto.cargandoOpciones("#empresaIdDestinoSelect");
 		var repositorio = new EmpresasRepositorio();
-		repositorio.consultar(this,this.consultarEmpresasResultado);
+		repositorio.consultar(this,this.consultarEmpresasResultado,{estatus:1});
 	}
 	
 	consultarEmpresasResultado(resultado)

@@ -246,6 +246,9 @@ try
                         
                         if($resultado->valor->estatus!=1)
                             $tienePermiso = false;
+                        
+                        if($resultado->valor->empresaEstatus!=1)
+                            $tienePermiso = false;
                        
                         if($tienePermiso)
                         {

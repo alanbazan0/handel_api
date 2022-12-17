@@ -16,7 +16,7 @@ class UsuariosVista extends CatalogoVista
 
 	inicializar()
 	{
-		super.inicializar();
+		super.inicializar(false);
 		this.consultarEmpresasCriterio();
 	}
 	
@@ -755,7 +755,7 @@ class UsuariosVista extends CatalogoVista
 	set empresasCriterio(registros)
 	{		
 		this.cargarOpciones('#empresaSelectCriterio', registros);
-		this.consultar();
+		//this.consultar();
 	}
 	
 	cargarSupervisores(select, registros, modo, modeloEdicion, campo, texto)
@@ -803,11 +803,11 @@ class UsuariosVista extends CatalogoVista
 	set sedesCriterio(registros)
 	{		
 		this.cargarOpciones('#sedeSelectCriterio', registros);
-		if(this.consultoGrid==false)
+		/*if(this.consultoGrid==false)
 		{
 			this.consultar();
 			this.consultoGrid=true;
-		}
+		}*/
 	}
 	
 	set historialAcceso(historialAcceso)

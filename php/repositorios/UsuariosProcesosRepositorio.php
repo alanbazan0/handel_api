@@ -29,6 +29,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         $this->consultaBase = "SELECT UP.id, usuario_id usuarioId,U.nombre usuarioNombre, proceso_id, P.nombre, IFNULL(DATE_FORMAT(UP.fecha_alta,'%d/%m/%Y'),'')fecha_alta, IFNULL(DATE_FORMAT(UP.fecha_cancelacion,'%d/%m/%Y'),'')fecha_cancelacion, UP.estatus,codigo, U.apellido usuarioApellido, U.empresa_id empresaId, U.sede_id sedeId, P.sede_id procedimientoSedeId,IFNULL(DATE_FORMAT(UP.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,P.ruta_archivo, U.nombre_usuario nombreUsuario, U.tipo_usuario_id tipoUsuarioId,EM.mes_revision_procesos mesRevision, EM.administrador_procesos_id administradorId, UA.nombre administradorNombre, UA.apellido administradorApellido, UA.nombre_usuario administradorNombreUsuario 
                                 FROM usuarios_procesos UP
                                     LEFT JOIN usuarios U ON U.id = UP.usuario_id
+                                    LEFT JOIN empresas E ON E.id = U.empresa_id
                                     LEFT JOIN sedes S ON S.id = U.sede_id
                                     LEFT JOIN empresas EM ON U.empresa_id = EM.id
                                     LEFT JOIN procesos P ON P.id = UP.proceso_id
@@ -162,8 +163,9 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                 if($criteriosSeleccion->nombreUsuario!="" && $criteriosSeleccion->nombreUsuario!=null)
                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'nombreUsuario','valor'=>$criteriosSeleccion->nombreUsuario]);
             }
-            $where = $this->where($filtros);
         }
+        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'E','campo'=>'estatus','valor'=>1]);
+        $where = $this->where($filtros);
         $consulta = $this->consultaBase .$where ." order by date(UP.fecha_alta) desc";
         if($sentencia = $this->conexion->prepare($consulta))
         {

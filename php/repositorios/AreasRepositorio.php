@@ -99,8 +99,9 @@ class AreasRepositorio extends RepositorioBase implements IAreasRepositorio
                 if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'A','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
             }
-             $where = $this->where($filtros);
         }
+        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'E','campo'=>'estatus','valor'=>1]);
+        $where = $this->where($filtros);
         $consulta = $this->consultaBase .
         $where . " order by A.nombre";     
         

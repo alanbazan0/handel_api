@@ -99,8 +99,10 @@ class SedesRepositorio extends RepositorioBase implements ISedesRepositorio
                 if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
             }
-            $where = $this->where($filtros);
+            
         }
+        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'E','campo'=>'estatus','valor'=>1]);
+        $where = $this->where($filtros);
         $consulta = $this->consultaBase .
         $where . " order by S.nombre";     
         

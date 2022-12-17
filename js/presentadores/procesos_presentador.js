@@ -10,7 +10,7 @@ class ProcesosPresentador extends CatalogoPresentador
 	 consultarEmpresas()	
 	 {
 		 var repositorio = new EmpresasRepositorio(this);		
-		 repositorio.consultar(this,this.consultarEmpresasResultado,null);
+		 repositorio.consultar(this,this.consultarEmpresasResultado,{estatus:1});
 	 }
 	 
 	 consultarEmpresasResultado(resultado)

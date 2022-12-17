@@ -2056,7 +2056,7 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
             
             
             
-            
+            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'EM','campo'=>'estatus','valor'=>1]);
             
             $where = $this->where($filtros);
             
