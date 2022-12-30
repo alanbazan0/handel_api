@@ -79,7 +79,7 @@ try
                 break;
                 case 'consultar':
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                    $resultado = $repositorio->consultar($criteriosSeleccion);
+                    $resultado = $repositorio->consultar($usuario,$criteriosSeleccion);
                 break;
                 case 'consultarPorLlaves':
                     $llaves = json_decode(REQUEST('llaves'));

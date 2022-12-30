@@ -28,6 +28,7 @@ class Usuario
     public $perfilId;
     public $recursosHumanos;
     public $numeroEmpleado;
+    public $verificador;
     
 }
 

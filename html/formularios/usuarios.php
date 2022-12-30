@@ -105,10 +105,20 @@
 					<div class="form-group">
 						<label class="control-label mb-1">Acceso a SAHA</label> <label
 							class="switch switch-3d switch-success mr-3"> <input
-							id="permisoSAHARadio" name="permisoSAHA" type="checkbox"
+							id="permisoSAHARadio" name="permisoSAHA" type="checkbox" onchange="vista.cambiarPermisoSAHA();"
 							class="switch-input" > <span
 							class="switch-label"></span> <span class="switch-handle"></span>
 						</label>
+					</div>
+					<div id='verificadorGroup' style='display:none'>
+    					<div class="form-group">
+        							<label class="control-label mb-1">Verificador</label> <label
+        							class="switch switch-3d switch-success mr-3"> <input
+        							id="verificadorRadio" name="verificadorRadio" type="checkbox"
+        							class="switch-input"> <span
+        							class="switch-label"></span> <span class="switch-handle"></span>
+        						</label>
+    					</div>
 					</div>
 					<div class="form-group">
 						<label class="control-label mb-1">Acceso a SIVAH</label> <label
@@ -129,7 +139,7 @@
 					<div class="form-group">
 						<label class="control-label mb-1">Acceso a CAVI</label> <label
 							class="switch switch-3d switch-success mr-3"> <input
-							id="permisoCAVIRadio" name="permisoCAVI" type="checkbox"   onchange="vista.cambiarpermisoCAVI();"
+							id="permisoCAVIRadio" name="permisoCAVI" type="checkbox"   onchange="vista.cambiarPermisoCAVI();"
 							class="switch-input" > <span
 							class="switch-label"></span> <span class="switch-handle"></span>
 						</label>
@@ -150,6 +160,7 @@
     						</label>
     					</div>
 					</div>
+					
 					<div class="form-group">
 						<label class="control-label mb-1">Activo</label> <label
 							class="switch switch-3d switch-success mr-3"> <input

@@ -1,12 +1,11 @@
 <?php
 namespace php\repositorios;
 
-use TipoReporteEvidencias;
 use php\clases\Porcentaje;
 use php\interfaces\IEvidenciasRepositorio;
 use php\modelos\Evidencia;
-use php\modelos\Resultado;
 use php\modelos\EvidenciaComentario;
+use php\modelos\Resultado;
 
 require_once('../interfaces/IEvidenciasRepositorio.php');
 require_once('../modelos/Evidencia.php');
@@ -30,6 +29,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                                FROM evidencias E
                             		INNER JOIN  usuarios_procedimientos UP ON UP.id = E.usuario_procedimiento_id
                                     INNER JOIN usuarios U ON U.id = UP.usuario_id
+                                    LEFT JOIN departamentos D ON D.id = U.departamento_id
                                     LEFT JOIN sedes S ON S.id = U.sede_id
                                     LEFT JOIN empresas EM ON EM.id = S.empresa_id
                             		INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
@@ -1667,7 +1667,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             return $resultado;
     }
 
-    public function consultar($criteriosSeleccion)
+    public function consultar($usuario,$criteriosSeleccion)
     {
        
             $resultado = new Resultado();
@@ -1675,28 +1675,13 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             $registros = array();
             
             $filtros = array();
-            
+            $filtros = $this->getFiltrosN($usuario,$criteriosSeleccion,true);
             
             
             $where="";
             if($criteriosSeleccion!=null)
             {
-//                 if(isset($criteriosSeleccion->tipoReporte))
-//                 {
-                   
-//                     switch($criteriosSeleccion->tipoReporte)
-//                     {
-//                         case TipoReporteEvidencias::VALIDADAS:
-//                             array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'validada','valor'=> 1]);
-//                         break;
-//                         case TipoReporteEvidencias::NO_VALIDADAS:
-//                             array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'validada','valor'=> 0]);
-//                         break;
-//                         case TipoReporteEvidencias::JUSTIFICADAS:
-//                             array_push($filtros,(object)['tipo'=>'estatico','texto'=>'E.justificacion_id is not null']);
-//                         break;
-//                     }
-//                 }
+
                 if(isset($criteriosSeleccion->validada) && $criteriosSeleccion->validada!="")
                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'validada','valor'=> $criteriosSeleccion->validada]);
                 if(isset($criteriosSeleccion->justificada) && $criteriosSeleccion->justificada!="")
@@ -1706,34 +1691,25 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     else  if($criteriosSeleccion->justificada==0)
                         array_push($filtros,(object)['tipo'=>'estatico','texto'=>'E.justificacion_id is null']);
                 }
-                if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
-                if(isset($criteriosSeleccion->sedeId) && $criteriosSeleccion->sedeId!="")
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
-                if(isset($criteriosSeleccion->areaId) && $criteriosSeleccion->areaId!="")
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'area_id','valor'=>$criteriosSeleccion->areaId]);
-                if(isset($criteriosSeleccion->usuarioId) && $criteriosSeleccion->usuarioId!="")
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'UP', 'campo'=>'usuario_id','valor'=>$criteriosSeleccion->usuarioId]);
+//                 if(isset($criteriosSeleccion->empresaId) && $criteriosSeleccion->empresaId!="")
+//                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+//                 if(isset($criteriosSeleccion->sedeId) && $criteriosSeleccion->sedeId!="")
+//                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+//                 if(isset($criteriosSeleccion->areaId) && $criteriosSeleccion->areaId!="")
+//                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'area_id','valor'=>$criteriosSeleccion->areaId]);
+//                 if(isset($criteriosSeleccion->usuarioId) && $criteriosSeleccion->usuarioId!="")
+//                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'UP', 'campo'=>'usuario_id','valor'=>$criteriosSeleccion->usuarioId]);
                 if(isset($criteriosSeleccion->administradorId)  && $criteriosSeleccion->administradorId!="")
                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'EM', 'campo'=>'administrador_id','valor'=>$criteriosSeleccion->administradorId]);
-//                 if(isset($criteriosSeleccion->validada) && $criteriosSeleccion->validada!="")
-//                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'validada','valor'=> $criteriosSeleccion->validada]);
-//                 if(isset($criteriosSeleccion->justificada)  && $criteriosSeleccion->justificada!="")
-//                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'justificada','valor'=> $criteriosSeleccion->justificada]);
-                if(isset($criteriosSeleccion->mes)  && $criteriosSeleccion->mes!="")
-                    array_push($filtros,(object)['tipoDato'=>'int','campo'=>'MONTH(E.fecha_alta)','valor'=> $criteriosSeleccion->mes]);
-                if(isset($criteriosSeleccion->ano)  && $criteriosSeleccion->ano!="")
-                    array_push($filtros,(object)['tipoDato'=>'int','campo'=>'YEAR(E.fecha_alta)','valor'=> $criteriosSeleccion->ano]);
-                if(isset($criteriosSeleccion->departamentoId) && $criteriosSeleccion->departamentoId!="")
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'departamento_id','valor'=>$criteriosSeleccion->departamentoId]);
+//                     array_push($filtros,(object)['tipoDato'=>'int','campo'=>'MONTH(E.fecha_alta)','valor'=> $criteriosSeleccion->mes]);
+//                 if(isset($criteriosSeleccion->ano)  && $criteriosSeleccion->ano!="")
+//                     array_push($filtros,(object)['tipoDato'=>'int','campo'=>'YEAR(E.fecha_alta)','valor'=> $criteriosSeleccion->ano]);
+//                 if(isset($criteriosSeleccion->departamentoId) && $criteriosSeleccion->departamentoId!="")
+//                     array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'departamento_id','valor'=>$criteriosSeleccion->departamentoId]);
                    
                
             }
-            
-            
-            
-            
-            
+            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'EM','campo'=>'estatus','valor'=>1]);
             
             $where = $this->where($filtros);
             

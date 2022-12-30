@@ -18,6 +18,7 @@ class UsuariosVista extends CatalogoVista
 	{
 		super.inicializar(false);
 		this.consultarEmpresasCriterio();
+		
 	}
 	
 	clickNotificacion(event)
@@ -447,8 +448,14 @@ class UsuariosVista extends CatalogoVista
 			$("#recursosHumanosRadio").prop('checked', true);
 		else
 			$("#recursosHumanosRadio").prop('checked', false);
+			
+		if(this.modeloEdicion.verificador==1)
+			$("#verificadorRadio").prop('checked', true);
+		else
+			$("#verificadorRadio").prop('checked', false);
 		
-		this.cambiarpermisoCAVI();
+		this.cambiarPermisoCAVI();
+		this.cambiarPermisoSAHA();
 	}
 	
 	get modelo()
@@ -476,6 +483,7 @@ class UsuariosVista extends CatalogoVista
 		     perfilId:$('#perfilSelect').val(),
 		     recursosHumanos:$('#recursosHumanosRadio').is(':checked')?1:0,
 		     numeroEmpleado:$('#numeroEmpleadoInput').val(),
+		     verificador:$('#verificadorRadio').is(':checked')?1:0,
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
@@ -578,13 +586,22 @@ class UsuariosVista extends CatalogoVista
 		
 	}
 	
-	cambiarpermisoCAVI()
+	cambiarPermisoCAVI()
 	{
 		 var permisoCAVI=$('#permisoCAVIRadio').is(':checked')?1:0;
 		if(permisoCAVI)
 			$('#perfilGroup').fadeIn();
 		else
 			$('#perfilGroup').fadeOut();
+	}
+	
+	cambiarPermisoSAHA()
+	{
+		 var permisoSAHA=$('#permisoSAHARadio').is(':checked')?1:0;
+		if(permisoSAHA)
+			$('#verificadorGroup').fadeIn();
+		else
+			$('#verificadorGroup').fadeOut();
 	}
 	
 	cambiarTipoUsuario()

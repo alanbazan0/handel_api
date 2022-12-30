@@ -39,6 +39,11 @@ class EvidenciasVista extends CatalogoVista
 			_this.validarJustificadas();
 		});
 		
+		if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
+		{
+			$("#administradorDiv").show();
+		}
+		
 	}
 	
 	crearColumnasGrid()
@@ -551,10 +556,10 @@ class EvidenciasVista extends CatalogoVista
 			if (_this._evidenciaSeleccionada != undefined)
 			{
 				_this._llaves = _this.copiarPropiedadesObjeto(_this._evidenciaSeleccionada, ["id"]);
-				if(_this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR)
-				{
+				//if(_this.usuario.tipoUsuarioId==TipoUsuario.ADMINISTRADOR)
+				//{
 					_this.mostrarFormularioValidacionEvidencia();
-				}
+				//}
 				/*else if(_this.usuario.tipoUsuarioId==TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId==TipoUsuario.SUPERVISOR)
 				{
 					_this.modo = Modo.CONSULTA
