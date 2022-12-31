@@ -2334,6 +2334,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 if($sentencia->execute())
                 {
                     $sentencia->close();
+                    $resultado = $this->calcularCalificacionUsuarioCursoLeccion($usuarioId, $cursoId, $leccionId);
                 }
                 else
                 {
@@ -2354,6 +2355,122 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             
     
         return  $resultado;
+    }
+    
+    public function calcularCalificacionUsuarioCursoLeccion($usuarioId, $cursoId, $leccionId)
+    {
+        $resultado = new Resultado();
+        $consulta="SELECT UCL.leccion_id, titulo, 
+    (
+    	SELECT count(*)
+    	FROM usuarios_cursos_lecciones_preguntas P
+    	INNER JOIN cursos C on C.id = P.curso_id
+    	INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
+    	WHERE P.usuario_id = U.id
+    	AND R.correcta=1  AND C.id = UCL.curso_id AND P.leccion_id =UCL.leccion_id 
+    )correctas,
+    (   
+    	 SELECT count(*)
+    	FROM usuarios_cursos_lecciones_preguntas P
+    	INNER JOIN cursos C on C.id = P.curso_id
+    	INNER JOIN usuarios_cursos UC ON UC.curso_id = C.id AND UC.usuario_id= P.usuario_id                    
+    	INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
+    	WHERE P.usuario_id = U.id AND C.id = UCL.curso_id AND P.leccion_id =UCL.leccion_id 
+    )preguntasContestadas,  E.calificacion_minima
+    FROM usuarios_cursos_lecciones UCL
+    	INNER JOIN cursos_lecciones CL ON UCL.curso_id = CL.curso_id AND CL.id = UCL.leccion_id 
+    	INNER JOIN usuarios U ON U.id = UCL.usuario_id
+        INNER JOIN empresas E ON U.empresa_id = E.id
+    WHERE U.id = ?
+    	AND UCL.curso_id = ?
+        AND CL.id = ?
+    ORDER BY titulo";
+            
+//         $consulta = "SELECT id, titulo, SUM(total), SUM(correctas), SUM(preguntasContestadas) FROM(
+//                 SELECT L.id, L.titulo, 
+//                 (SELECT count(*)
+//             FROM cursos C
+//             INNER JOIN cursos_preguntas CPR ON CPR.curso_id = C.id
+//             WHERE  U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)  AND C.id = UC1.curso_id AND CPR.leccion_id = UCL.leccion_id 
+//             )total,
+//             (
+//                 SELECT count(*)
+//                 FROM usuarios_cursos_lecciones_preguntas P
+//                 INNER JOIN cursos C on C.id = P.curso_id
+//                 INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
+//                 WHERE P.usuario_id = U.id
+//                 AND R.correcta=1  AND C.id = UC1.curso_id AND P.leccion_id =UCL.leccion_id
+//             )correctas,
+//             (
+//                  SELECT count(*)
+//                 FROM usuarios_cursos_lecciones_preguntas P
+//                 INNER JOIN cursos C on C.id = P.curso_id
+//                 INNER JOIN usuarios_cursos UC ON UC.curso_id = C.id AND UC.usuario_id= P.usuario_id
+//                 INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
+//                 WHERE P.usuario_id = U.id AND C.id = UC1.curso_id AND P.leccion_id =UCL.leccion_id
+//             )preguntasContestadas
+//           FROM usuarios_cursos_lecciones UCL
+//               INNER JOIN cursos_lecciones L ON L.curso_id = UCL.curso_id AND L.id = UCL.leccion_id
+//               INNER JOIN usuarios_cursos UC1 ON UC1.curso_id = UCL.curso_id AND UC1.usuario_id = UCL.usuario_id
+//               INNER JOIN cursos CR ON CR.id = UC1.curso_id
+//               LEFT JOIN usuarios U ON UC1.usuario_id = U.id
+//               LEFT JOIN empresas E ON U.empresa_id=E.id
+//               LEFT JOIN sedes S ON U.sede_id = S.id
+//               LEFT JOIN tipos_usuario T ON U.tipo_usuario_id = T.id
+//               LEFT JOIN departamentos D ON D.id = U.departamento_id
+//               LEFT JOIN perfiles PR ON PR.id = U.perfil_id
+//         WHERE U.id = ? 
+//                 AND CR.id = ?   
+//                 AND L.id = ? 
+//                )consulta 
+//                  group by id,titulo 
+//                  order by titulo ";
+                
+                    //Logger::log("CursosRepositiorio", $consulta);
+                    
+                    
+                    
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("iii", $usuarioId, $cursoId, $leccionId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $leccionTitulo, $correctas, $preguntasContestadas, $calificacionMinima))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $registro= (object) [
+                                'id' =>  $id,
+                                'titulo' =>  $leccionTitulo,
+                                'correctas' =>  $correctas,
+                                'preguntasContestadas' =>  $preguntasContestadas,
+                                'calificacionMinima' => $calificacionMinima
+                                
+                            ];
+                            
+                            //$registro->nombreId =  $registro->nombre ." (".$registro->id.")";
+                            $this->calcularPorcentaje($registro,'correctas','preguntasContestadas',"porcentaje");
+                            
+                            $resultado->valor = $registro;
+                            //var_dump("ok");
+                            //array_push($registros,$registro);
+                        }
+                        
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado.";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        return $resultado;
     }
     
     public function terminarCurso($usuarioId, $cursoId)
@@ -2524,6 +2641,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         $resultado = new Resultado();
         $this->conexion->autocommit(FALSE);
         $resultado = $this->terminarLeccion($usuario->id, $cursoId, $leccionId);
+        $valor = $resultado->valor;
         if($resultado->correcto())
         {
             Logger::log("terminarLeccionCurso",  "LECCION TERMINADA: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId",'logs/terminarLeccionCurso/');
@@ -2561,6 +2679,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         }
         if($resultado->correcto())
         {
+            $resultado->valor = $valor;
             $this->conexion->commit();
             Logger::log("terminarLeccionCurso",  "commit leccion: usuarioId: $usuario->id; cursoId: $cursoId, leccionId: $leccionId;",'logs/terminarLeccionCurso/');
         }

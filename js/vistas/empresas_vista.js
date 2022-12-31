@@ -300,6 +300,17 @@ class EmpresasVista extends CatalogoVista
 		this.consultarAdministradoresSIVAH();
 		this.consultarAdministradoresProcesos();
 		this.consultarPerfiles();
+		$("#calificacionMinimaInput").change(this.cambiarCalificacionMinima);
+		
+	}
+	
+	cambiarCalificacionMinima(event)
+	{
+		var valor = $(event.currentTarget).val();
+		valor = parseInt(valor);
+		if(isNaN(valor))
+			valor = 0;
+		$(event.currentTarget).val(valor);
 	}
 	
 	editar(id)
@@ -385,6 +396,8 @@ class EmpresasVista extends CatalogoVista
 		
 		$('#logoImage').attr('src', HANDEL_API + "/php/logos_empresas/" + this.modeloEdicion.icono);
 		$('#logoImage').show();
+		
+		$('#calificacionMinimaInput').val(this.modeloEdicion.calificacionMinima);
 		this.consultarCombos();
 	}
 	
@@ -406,7 +419,8 @@ class EmpresasVista extends CatalogoVista
 	 		 mesRevisionProcesos:$('#mesRevisionProcesosSelect').val(),
 			 administradorIdProcesos:$('#administradorProcesosSelect').val(),
 			 perfilId:$('#perfilSelect').val(),
-			 estatus:$('#estatusRadio').is(':checked')?1:0
+			 estatus:$('#estatusRadio').is(':checked')?1:0,
+			 calificacionMinima:$('#calificacionMinimaInput').val()
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;

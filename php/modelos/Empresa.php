@@ -19,5 +19,6 @@ class Empresa
     public $perfilId;
     public $mesRevisionProcesos;
     public $administradorIdProcesos;
+    public $calificacionMinima;
 }
 

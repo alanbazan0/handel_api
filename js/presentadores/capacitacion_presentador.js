@@ -83,12 +83,23 @@ class CapacitacionPresentador extends CatalogoPresentador
 			 this.vista.guardando = false;
 			 if(resultado.mensajeError=="")
 			 {
-				
+				this.evaluarCalificacion(resultado.valor);
 			 }
 			 else
 				 this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		 }
 		 ,this.vista.cursoId, leccionId);
+	}
+	
+	evaluarCalificacion(valor)
+	{
+		if(valor!=null)
+		{
+			if(parseFloat(valor.porcentaje) < parseFloat(valor.calificacionMinima))
+			{
+				vista.mostrarMensajeCalificacionInferior(valor.titulo,valor.porcentaje);
+			}
+		}
 	}
 	
 	actualizarDuracionLeccion(leccionId,duracion)

@@ -123,6 +123,12 @@
                       	 </div> 
                       </div> 
                       <div class="form-group">
+                      	<div>
+                            <label for="calificacionMinimaInput" class="control-label mb-1">Calificación mínima para capacitaciones</label>
+                            <input id="calificacionMinimaInput" name="calificacionMinimaInput" type="text" class="form-control" aria-required="true" aria-invalid="false" >
+                          </div> 
+                      </div> 
+                      <div class="form-group">
                       		<label class="control-label mb-1">Activo</label>
                      		<label class="switch switch-3d switch-success mr-3">
                              <input id="estatusRadio" name="estatus" type="checkbox" class="switch-input" checked="true">

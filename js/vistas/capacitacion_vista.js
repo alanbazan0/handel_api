@@ -703,6 +703,22 @@ class CapacitacionVista extends CatalogoVista
 	{
 		this.presentador.terminarLeccionCurso(leccionId);
 	}
+	
+	mostrarMensajeCalificacionInferior(titulo,calificacion)
+	{
+		var _this = this;
+		  swal({
+	            title: "Advertencia",
+	            text: "Tu calificación para la lección <strong>" + titulo +"</strong> es inferior a la mínima para acreditar el curso, tu supervisor va a reasignar el o los temas necesarios para que puedas acreditarlo.",
+	            html: true,
+	            type: "warning",
+	            confirmButtonColor: "#32C2CD",
+	            confirmButtonText: "Cerrar",
+	            closeOnConfirm: true
+	        },
+	        function(){
+	        });
+	}
 
 	get textoLeccionTerminada()
 	{
