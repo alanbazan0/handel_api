@@ -679,12 +679,12 @@ abstract class PDF extends FPDF
         $this->licencia();
         $this->distribucion();
         $this->avanceFecha();
-        $this->cierreHallazgosMes();
-        $this->cierre();
+        $this->cierreHallazgosPersona();
+        $this->cierreHallazgosDia();
         $this->tareas();
     }
     
-    private function cierre()
+    private function cierreHallazgosDia()
     {
         $this->AddPage();
         $this->SetY(25);
@@ -693,10 +693,39 @@ abstract class PDF extends FPDF
         $chartWidth = 220;
         
         $fechas = array();
-        $fecha = substr($this->auditoria->fecha,0,10);
-        list($dia, $mes, $ano) = explode("/", $fecha);
+        
+        $fechaInicioSeguimiento = substr($this->auditoria->fechaSeguimiento,0,10);
+        list($diaInicio, $mesInicio, $anoInicio) = explode("/", $fechaInicioSeguimiento);
+        
+        $fechaIncioDate = new DateTime();
+        $fechaIncioDate->setDate(intval($anoInicio),intval($mesInicio),intval($diaInicio));
+        
+        if($this->auditoria->fechaSeguimientoFinalizado!=null)
+        {
+            $fechaSeguimientoFinalizado = substr($this->auditoria->fechaSeguimientoFinalizado,0,10);
+            list($diaFin, $mesFin, $anoFin) = explode("/", $fechaSeguimientoFinalizado);
+            $fechaFinDate = new DateTime();
+            $fechaFinDate->setDate(intval($anoFin),intval($mesFin),intval($diaFin));
+        }
+        else 
+        {
+            $fechaFinDate = new DateTime();
+            $fechaFinDate->setDate(date("Y"),date("m"),1);
+        }
+       
+        
+        
         
         $fecha = new DateTime();
+        $fecha->setDate($anoInicio,$mesInicio,1);
+        array_push($fechas,(object)["mes"=>$fecha->format("m"), "ano"=>$fecha->format("Y")]);
+        while($fecha < $fechaFinDate)
+        {
+            $fecha->add(new DateInterval('P1M'));
+            array_push($fechas,(object)["mes"=>$fecha->format("m"), "ano"=>$fecha->format("Y")]);
+        }
+        
+       /* $fecha = new DateTime();
         $fecha->setDate($ano,$mes,1);
         array_push($fechas,$fecha);
 
@@ -713,54 +742,41 @@ abstract class PDF extends FPDF
         $fecha = new DateTime();
         $fecha->setDate($ano,$mes,1);
         $fecha->add(new DateInterval('P3M'));
-        array_push($fechas,$fecha);
+        array_push($fechas,$fecha);*/
+        
+        //var_dump($fechas);
         
         $repositorio = new AuditoriasRepositorio($this->conexion);
         $registros = array();
-        $validadas = 0;
-        $validadasEnviadas = 0;
+        //$validadas = 0;
+        //$validadasEnviadas = 0;
         
         //var_dump($fechas);
         
         for ($i = 0; $i < count($fechas); $i++) 
         {
             $fecha = $fechas[$i];
-            $mes =  intval($fecha->format("m"));
-            $ano = intval($fecha->format("Y"));
+            $mes = $fecha->mes;
+            $ano = $fecha->ano;
+            //$mes =  intval($fecha->format("m"));
+            //$ano = intval($fecha->format("Y"));
             
             
             $resultado = $repositorio->consultarNumeroRecomendacionesPorMes($mes,$ano,$this->auditoria->id,$this->auditoria->puntuacion);
             if($resultado->correcto())
             {
                 $registro = $resultado->valor;
-//                 $registro->mes = $mes;
-//                 $registro->ano = $ano;
-                
-//                 $registro->nombreMes = $this->getNombreMes($mes). " $ano";
-                
-//                 $validadas = $registro->validadas;
-//                 $validadasEnviadas = $registro->validadasEnviadas;
-                
-//                 $registro->porcetajeFaltante = 100 - floatval($this->auditoria->puntuacion);
-                
-//                 if($registro->total!=0)
-//                     $registro->valorHallagzo =  floatval($registro->porcetajeFaltante)/  floatval($registro->total);
-//                 else 
-//                     $registro->valorHallagzo = 0;
-                
-//                 $registro->avanceValidadas =  $registro->valorHallagzo * $validadas;
-//                 $registro->avanceValidadasEnviadas =  $registro->valorHallagzo * $validadasEnviadas;
-                
-//                 $registro->porcentajeValidadas = $this->auditoria->puntuacion +  $registro->avanceValidadas;
-//                 $registro->porcentajeValidadasEnviadas = $this->auditoria->puntuacion +  $registro->avanceValidadasEnviadas;
-                
+
                 array_push($registros,$registro);
             }
+           
         }
+        
+        //var_dump($registros);
         
         $pdfWidth = $this->GetPageWidth();
         $chartWidth= 220;
-        $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
+        $colores = [ '#00a1ff', '#60d836', '#f8ba00',"#8eb15a","#ac94ea","#27AE60","#C0392B","#5e8251","#568dd5","#f5ad5f","#935b1a","#568dd5","#fa6f57","#b79a74","#34495e","#e67e22","#ecf0f1","#bdc3c7","#95a5a6","#7f8c8d"];
         $image = $this->graficaCierre("",'',$registros,"nombreMes",$colores,true,100,$this->mes);
         if($image!='')
             $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
@@ -798,26 +814,15 @@ abstract class PDF extends FPDF
                 'color' => "#00a65a"
             ];
             
-//             $newRow2= (object) [
-//                 'name' =>  $row->$xField,
-//                 'y' => 70,
-//                 'color' => "#f39c12"
-//             ];
-            
-//             $newRow3= (object) [
-//                 'name' =>  $row->$xField,
-//                 'y' => 50,
-//                 'color' => "#dd4b39"
-//             ];
+
             
             array_push($categories, $row->$xField);
-            if($row->mes<=$mesActual)
-            {
+            //if($row->mes<=$mesActual)
+            //{
                 array_push($data, $newRow);
                 array_push($data1, $newRow1);
-            }
-//                 array_push($data2, $newRow2);
-//                 array_push($data3, $newRow3);
+           // }
+
         }
         
         $yAxis = (object) [ 'title' => (object) [ 'text'=> $yTitle]];
@@ -877,11 +882,11 @@ abstract class PDF extends FPDF
         }
     }
     
-    private function cierreHallazgosMes()
+    private function cierreHallazgosPersona()
     {
         $this->AddPage();
         $this->SetY(25);
-        $this->subtitulo("Cierre de hallazgos por mes");
+        $this->subtitulo("Cierre de hallazgos por persona");
         
         
         $pdfWidth = $this->GetPageWidth();
