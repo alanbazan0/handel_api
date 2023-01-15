@@ -19,6 +19,8 @@ require_once("UsuariosRepositorio.php");
 require_once('../clases/AdministradorConexion.php');
 require_once('../clases/AdministradorCorreo.php');
 require_once("../clases/TipoReporte.php");
+require_once("../clases/EstatusCurso.php");
+
 
 class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
 {
@@ -2473,17 +2475,17 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         return $resultado;
     }
     
-    public function terminarCurso($usuarioId, $cursoId)
+    public function cambiarEstatusCurso($usuarioId, $cursoId, $estatus)
     {
         $resultado = new Resultado();
         $consulta = "UPDATE usuarios_cursos
-                SET fecha_final = NOW(), terminado = 1, fecha_modificacion= NOW()
+                SET fecha_final = NOW(), terminado = ?, fecha_modificacion= NOW()
                 WHERE usuario_id=? AND curso_id = ?";
         
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param("ii",$usuarioId,$cursoId))
+            if($sentencia->bind_param("iii", $estatus, $usuarioId,$cursoId))
             {
                 if($sentencia->execute())
                 {
@@ -2654,7 +2656,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 if($numeroLeccionesRestantes<=0)
                 {
                     Logger::log("terminarLeccionCurso",  "terminando curso: usuarioId: $usuario->id; cursoId: $cursoId",'logs/terminarLeccionCurso/');
-                    $resultado = $this->terminarCurso($usuario->id, $cursoId);
+                    $resultado = $this->cambiarEstatusCurso($usuario->id, $cursoId, \EstatusCurso::TERMINADO);
                     if($resultado->correcto())
                     {
                         Logger::log("terminarLeccionCurso",  "CURSO TERMINADO: usuarioId: $usuario->id; cursoId: $cursoId",'logs/terminarLeccionCurso/');
@@ -2742,7 +2744,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                                         if($numeroLeccionesRestantes<=0)
                                         {
                                              Logger::log("guardarPreguntaUsuario",  "terminando curso: usuarioId: $usuario->id; cursoId: $cursoId");
-                                            $resultado = $this->terminarCurso($usuario->id, $cursoId);
+                                            $resultado = $this->cambiarEstatusCurso($usuario->id, $cursoId, \EstatusCurso::TERMINADO);
                                             if($resultado->correcto())
                                             {
                                                  Logger::log("guardarPreguntaUsuario",  "CURSO TERMINADO: usuarioId: $usuario->id; cursoId: $cursoId");
@@ -3947,7 +3949,11 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             $resultado = $this->eliminarUsuarioCapacitacionLeccionEjecucion($usuarioId, $cursoId, $leccionId);
             if($resultado->correcto())
             {
-                
+                $resultado = $this->cambiarEstatusCurso($usuarioId, $cursoId, \EstatusCurso::NO_TERMINADO);
+                if($resultado->correcto())
+                {
+                    
+                }
             }
         }
         if($resultado->correcto())

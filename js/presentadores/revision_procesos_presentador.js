@@ -215,7 +215,7 @@ class RevisionProcesosPresentador extends CatalogoPresentador
 			 {
 				 this.vista.modeloProceso = resultado.valor;
                  this.vista.mostrarFormularioRevision(resultado.valor);					
-				if(resultado.valor.estatusRevisionId == EstatusRevision.OBSERVACIONES)
+				//if(resultado.valor.estatusRevisionId == EstatusRevision.OBSERVACIONES)
 				 	this.consultarObservaciones();
 			 }
 			 else

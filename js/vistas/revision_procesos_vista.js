@@ -744,12 +744,12 @@ class RevisionProcesosVista extends CatalogoVista
 			$("#estatusValidacionIcono").addClass(proceso.estatusValidacionIcono);
 			$("#estatusValidacionIcono").addClass(proceso.estatusValidacionColor);
 			$("#estatusValidacionLabel").html(proceso.estatusValidacionDescripcion);
-			if(proceso.estatusRevisionId == EstatusRevision.OBSERVACIONES)
-			{
+			//if(proceso.estatusRevisionId == EstatusRevision.OBSERVACIONES)
+			//{
 				$("#observacionesLabel").fadeIn();	
 				$("#agregarObservacionButton").fadeIn();			
 				this.crearTablaObservaciones();
-			}
+			/*}
 			else
 			{
 				$("#agregarObservacionButton").fadeOut();
@@ -757,9 +757,9 @@ class RevisionProcesosVista extends CatalogoVista
 				$("#autorizadoButton").fadeIn();	
 				$("#rechazadoButton").fadeIn();	
 				$("#respondioButton").fadeIn();	
-				$("#estatusValidacionDiv").fadeIn();	
+				$("#estatusValidacionDiv").fadeIn();	*/
 				
-			}
+			//}
 				
 			this.crearEventosBotonesValidacion();
 			
