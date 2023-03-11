@@ -571,6 +571,13 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
          
     private function getConsultarAvanceusuarios($usuario, $criteriosSeleccion, $andEmpresa)
     {
+        
+        $filtroFecha ="";
+        if(isset($criteriosSeleccion->ano)  && $criteriosSeleccion->ano!="")
+            $filtroFecha .= " AND YEAR(PR1.fecha_alta) = $criteriosSeleccion->ano";
+        if(isset($criteriosSeleccion->mes)  && $criteriosSeleccion->mes!="")
+            $filtroFecha .= " AND MONTH(PR1.fecha_alta) = $criteriosSeleccion->mes";
+        
         $consulta= "SELECT U.id, U.nombre, U.apellido, U.nombre_usuario, U.empresa_id empresaId, EM.nombre empresaNombre, U.sede_id sedeId, S.nombre sedeNombre, U.departamento_id departamentoId, D.nombre departamentoNombre,
                     (SELECT count(*) numeroProcesos
                     FROM usuarios_procesos UP1
@@ -610,6 +617,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                             AND D1.estatus = 1
                             AND U1.permiso_saha = 1
                             AND P1.estatus = 1
+                            $filtroFecha
                     ) revisados
                     FROM usuarios_procesos UP
                         INNER JOIN usuarios U ON U.id = UP.usuario_id
@@ -640,17 +648,12 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         $filtros = array();
         
         
-        //$tipoUsuarioId = $usuario->tipoUsuarioId;
-        //$usuario->tipoUsuarioId = \TipoUsuario::COORDINADOR;
         $procesosRepositorio = new ProcesosRepositorio($this->conexion);
         $filtros = $procesosRepositorio->getFiltrosN($usuario,$criteriosSeleccion,false);
-        //$usuario->tipoUsuarioId = $tipoUsuarioId;
         $andEmpresa = $this->and($filtros);
         
         
-        $primerDiaAno = "$criteriosSeleccion->ano-1-1";
-        // $ultimoDiaMes = date("Y-m-t", strtotime($primerDiaMes));
-        $ultimoDiaAno = "$criteriosSeleccion->ano-12-31";
+      
         
         $consulta = $this->getConsultarAvanceUsuarios($usuario,$criteriosSeleccion,$andEmpresa);
                     
@@ -787,17 +790,11 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         $filtros = array();
         
         
-        //$tipoUsuarioId = $usuario->tipoUsuarioId;
-        //$usuario->tipoUsuarioId = \TipoUsuario::COORDINADOR;
         $procesosRepositorio = new ProcesosRepositorio($this->conexion);
         $filtros = $procesosRepositorio->getFiltrosN($usuario,$criteriosSeleccion,false);
-        //$usuario->tipoUsuarioId = $tipoUsuarioId;
         $andEmpresa = $this->and($filtros);
         
         
-        $primerDiaAno = "$criteriosSeleccion->ano-1-1";
-        // $ultimoDiaMes = date("Y-m-t", strtotime($primerDiaMes));
-        $ultimoDiaAno = "$criteriosSeleccion->ano-12-31";
         
         
         $consulta = "SELECT empresaId, empresaNombre, SUM(pendientes)pendientes, SUM(revisados )revisados

@@ -385,12 +385,12 @@ try
                      $resultado = $repositorio->consultarTiempoUsuarios($usuario,$criteriosSeleccion);
                 break;
                 case 'consultarCapacitacionesTomadas':
-//                     session_start();
-//                     $usuario = null;
-//                     if(isset($_SESSION['usuario']))
-//                         $usuario = $_SESSION['usuario'];
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarCapacitacionesTomadas($usuario,$criteriosSeleccion);
+                break;
+                case 'consultarAvanceCapacitaciones':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarAvanceCapacitaciones($usuario,$criteriosSeleccion);
                 break;
                 case 'consultarLeccionesTomadas':
 //                     session_start();

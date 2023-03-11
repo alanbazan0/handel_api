@@ -134,11 +134,29 @@ class AuditoriaPresentador extends CatalogoPresentador
 	 
 	 consultarUsuariosSeccion()
 	 {
+		if(this.vista.empresaId!="")
+		{
+		 this.vista.mostrarIndicador();	
 		 var repositorio = new UsuariosRepositorio(this);		
-		repositorio.consultar(this,function(resultado)
+		 repositorio.consultarUsuariosCorportarivoYAdministradoresPorEmpresa(this, function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+			{
+				this.vista.usuariosSeccion = resultado.valor;			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		,this.vista.empresaId);	
+		}
+		
+		/*repositorio.consultar(this,function(resultado)
 		{
 			this.vista.usuariosSeccion = resultado.valor;
-		},{empresaId: this.vista.empresaId});
+		},{empresaId: this.vista.empresaId});*/arguments
+		
+		
 		//},{empresaId: this.vista.empresaId, permisoSIVAH: "1"});
 	 }
 	 

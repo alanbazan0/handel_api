@@ -6,12 +6,14 @@ use php\modelos\Plantilla;
 use php\modelos\Resultado;
 use php\clases\AdministradorConexion;
 use php\clases\Logger;
+use php\clases\AdministradorCorreo;
 
 include "../interfaces/IPlantillasRepositorio.php";
 include "../modelos/Plantilla.php";
 include "RepositorioBase.php";
 require_once("../clases/Resultado.php");
 require_once('../clases/AdministradorConexion.php');
+require_once('../clases/Logger.php');
 
 class PlantillasRepositorio extends RepositorioBase implements IPlantillasRepositorio
 {
@@ -2256,8 +2258,10 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
     {
         $resultado = new Resultado();
        
+       
      
-                
+        
+        
         for ($k = 0; $k< count($respuestas); $k++)
         {
             $respuesta = $respuestas[$k];
@@ -2278,7 +2282,10 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
                         $texto = "plantillaId $plantillaId,seccionId $seccionId, preguntaId $preguntaId";
                         $resultado->mensajeError =  __FUNCTION__ ." .Falló la ejecución (" . $texto . ") " . $this->conexion->error;
                         
-                        //Logger::log("PlantillasRepositorio_insertarRespuestasSiPregunta", $texto);
+                        $json = json_encode($respuestas, JSON_UNESCAPED_UNICODE);
+                        Logger::log("PlantillasRepositorio",$texto,"logs/");
+                        Logger::log("PlantillasRepositorio",$json,"logs/");
+                        
                         break;
                     }
                     
