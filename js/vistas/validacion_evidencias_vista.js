@@ -1319,11 +1319,11 @@ class ValidacionEvidenciasVista extends CatalogoVista
 	{
 		this._modeloRecomendacionValidacion = { id: this._recomendacionSeleccionada.id,
 			estatusValidacionId : estatus,
-			comentarios: $("#comentariosValidacionInput").val(),
+			comentariosValidacion: $("#comentariosValidacionInput").val(),
 			};
 		if(estatus==EstatusValidacion.RECHAZADA)
 		{
-			if(this._modeloRecomendacionValidacion.comentarios!="")
+			if(this._modeloRecomendacionValidacion.comentariosValidacion!="")
 			{
 				this.presentador.validarRecomendacion();
 			}

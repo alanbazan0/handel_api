@@ -206,6 +206,9 @@ try
                         array_push($permisos,(object)['id'=>'SIVAH','nombre'=>'SIVAH','imagen'=>'images/logoSIVAH.png']);
                     if($usuario->permiso10y7==1)
                         array_push($permisos,(object)['id'=>'10y7','nombre'=>'10y7','imagen'=>'images/logo10y7.png']);
+                    if($usuario->permisoCAVI==1)
+                        array_push($permisos,(object)['id'=>'10y7','nombre'=>'10y7','imagen'=>'images/logo10y7.png']);
+                    
                 }
                 $resultado->valor = $permisos;
             break;
