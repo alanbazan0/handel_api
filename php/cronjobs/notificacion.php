@@ -50,19 +50,19 @@ try
         $tipoUsuarioId = REQUEST("tipoUsuarioId");
         if($tipoUsuarioId==null || $tipoUsuarioId=="")
         {
-            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::USUARIO, 'permisoSAHA' => 1],false);
+            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::USUARIO, 'permisoSAHA' => 1, 'estatus' => 1],false);
             if($resultado->correcto())
                 $asociados = $resultado->valor;
             else
                 mensajeLog("error",$resultado->mensajeError);
                     
-            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::SUPERVISOR, 'permisoSAHA' => 1],false);
+            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::SUPERVISOR, 'permisoSAHA' => 1, 'estatus' => 1],false);
             if($resultado->correcto())
                 $supervisores = $resultado->valor;
             else
                 mensajeLog("error",$resultado->mensajeError);
                 
-            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::COORDINADOR, 'permisoSAHA' => 1],false);
+            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::COORDINADOR, 'permisoSAHA' => 1, 'estatus' => 1],false);
             if($resultado->correcto())
                 $coordinadores = $resultado->valor;
             else
@@ -77,7 +77,7 @@ try
         }
         else 
         {
-            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  $tipoUsuarioId, 'permisoSAHA' => 1],false);
+            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  $tipoUsuarioId, 'permisoSAHA' => 1, 'estatus' => 1],false);
             if($resultado->correcto())
                 $asociados = $resultado->valor;
             else
@@ -102,7 +102,7 @@ try
             $nombreUsuario= REQUEST("nombreUsuario");
             if($nombreUsuario!="")
             {
-                $resultado = $usuariosRepositorio->consultar(null,(object) ['nombreUsuario' =>  $nombreUsuario, 'permisoSAHA' => 1],false);
+                $resultado = $usuariosRepositorio->consultar(null,(object) ['nombreUsuario' =>  $nombreUsuario, 'permisoSAHA' => 1, 'estatus' => 1],false);
                 if($resultado->correcto())
                     $usuarios = $resultado->valor;
             }
@@ -121,37 +121,7 @@ try
             $usuarios = array_slice($usuarios,0,$numeroUsuarios);
           
             
-//             $usuarios = array();
-//             $resultado = $usuariosRepositorio->consultarPorLLaves((object) ['id'=>8]);
-//             if($resultado->correcto())
-//             {
-//                 $usuario = $resultado->valor;
-//                 $usuario->nombreUsuario = "alanbazan@apps-handel.com";
-//                 array_push($usuarios,$usuario);
-                
-//             }
-//             else 
-//                 mensajeLog("error",$resultado->mensajeError);
-            
-//             $resultado = $usuariosRepositorio->consultarPorLLaves((object) ['id'=>8]);
-//             if($resultado->correcto())
-//             {
-//                 $usuario = $resultado->valor;
-//                 $usuario->nombreUsuario = "eduardo@handel-sce.com";
-//                 array_push($usuarios,$usuario);
-//             }
-//             else
-//                 mensajeLog("error",$resultado->mensajeError);
-            
-//             $resultado = $usuariosRepositorio->consultarPorLLaves((object) ['id'=>8]);
-//             if($resultado->correcto())
-//             {
-//                 $usuario = $resultado->valor;
-//                 $usuario->nombreUsuario = "noemi@handel-sce.com";
-//                 array_push($usuarios,$usuario);
-//             }
-//             else
-//                 mensajeLog("error",$resultado->mensajeError);
+
         }
             
         
@@ -180,6 +150,7 @@ try
                     
                   
                     $cabecera = "From:  SAHA <noreply@apps-handel.com>\r\n";
+                    $cabecera .= "Bcc: bitacora_correo@apps-handel.com\r\n";
                     $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";
                     
                     $errLevel = error_reporting(E_ALL ^ E_WARNING);
@@ -298,15 +269,7 @@ function getCaricatura($caricatura,$width)
 
 function getContenido($conexion,UsuariosRepositorio $usuariosRepositorio,UsuariosProcedimientosRepositorio $usuariosProcedimientosRepositorio,EvidenciasRepositorio $evidenciasRepositorio,$usuario,$dia)
 {
-//     $contenido ="";
-//     if($usuario->tipoUsuarioId == TipoUsuario::COORDINADOR)
-//         $contenido = getContenidoCoordinador($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
-//     if($usuario->tipoUsuarioId == TipoUsuario::SUPERVISOR)
-//         $contenido = getContenidoSupervisor($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
-//     else if($usuario->tipoUsuarioId == TipoUsuario::USUARIO)
-//         $contenido = getContenidoUsuario($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
-   
-//     return $contenido;
+
 
     $contenido ="";
     if($usuario->tipoUsuarioId == TipoUsuario::COORDINADOR)
@@ -314,7 +277,19 @@ function getContenido($conexion,UsuariosRepositorio $usuariosRepositorio,Usuario
     if($usuario->tipoUsuarioId == TipoUsuario::SUPERVISOR)
         $contenido = getContenidoSupervisor($conexion,$usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
     else if($usuario->tipoUsuarioId == TipoUsuario::USUARIO)
-        $contenido = getContenidoUsuario($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
+    {
+        $resultado = $usuariosProcedimientosRepositorio->consultar((object)['usuarioId' => $usuario->id, 'estatus' => 1]);
+        $numeroEvidenciasActivas = 0;
+        if($resultado->correcto())
+        {
+            $numeroEvidenciasActivas = count($resultado->valor);
+        }
+      //  echo "numeroEvidenciasActivas " .$numeroEvidenciasActivas;
+        if($numeroEvidenciasActivas>0)
+            $contenido = getContenidoUsuario($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia) .  "numeroEvidenciasActivas " .$numeroEvidenciasActivas;
+        else
+            $contenido = "";
+    }
             
     return $contenido;
    

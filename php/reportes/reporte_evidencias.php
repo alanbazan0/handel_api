@@ -506,6 +506,7 @@ class PDF extends ReporteBase
         if($this->usuario->corporativo)
         {
             $chartWidth = 80;
+            //echo "begin";
             $resultado= $repositorio->consultarPorcentajesEvidencias($this->usuario, $criteriosSeleccion);
             if($resultado->correcto())
             {
@@ -513,6 +514,7 @@ class PDF extends ReporteBase
                 $resultado= $repositorio->consultarPorcentajesEvidencias($this->usuario, $criteriosSeleccionAnterior);
                 if($resultado->correcto())
                 {
+                    //echo "end";
                     $porcentajesMesAnterior = $resultado->valor;
                     $meses = array();
                     
@@ -1645,20 +1647,20 @@ function graficaBarrasMesActualAnterior($title, $yTitle, $serieTitle, $rows, $xF
         $newRow1= (object) [
             'name' =>  $row->$xField,
             'y' => (float)$row->porcentajeEnviadas,
-            'color' => "#00a65a"
+            'color' => "#05a65a"
         ];
         
         $newRow2= (object) [
             'name' =>  $row->$xField,
             'y' => (float)$row->porcentajePendientes,
-            'color' => "#f39c12"
+            'color' => "#fe2500"
             
         ];
         
         $newRow3= (object) [
             'name' =>  $row->$xField,
             'y' => (float)$row->porcentajeJustificadas,
-            'color' => "#dd4b39"
+            'color' => "#f39c13"
             
             
         ];
@@ -1706,9 +1708,9 @@ function graficaBarrasMesActualAnterior($title, $yTitle, $serieTitle, $rows, $xF
         ],
         'yAxis' => $yAxis,
         'series' => array(
-            (object) ['name' => "Enviadas", 'data' => $data1,  'showInLegend' => $showInLegend, "color"=>"#60d836"],
+            (object) ['name' => "Enviadas", 'data' => $data1,  'showInLegend' => $showInLegend, "color"=>"#05a65a"],
             (object) ['name' => "Pendientes", 'data' => $data2,  'showInLegend' => $showInLegend, "color"=>"#fe2500"],
-            (object) ['name' => "Justificadas", 'data' => $data3,  'showInLegend' => $showInLegend, "color"=>"#f9c320"]
+            (object) ['name' => "Justificadas", 'data' => $data3,  'showInLegend' => $showInLegend, "color"=>"#f39c13"]
         )
     ];
     $chartURL = getHightchartsURL($highchart);

@@ -29,6 +29,7 @@ class Usuario
     public $recursosHumanos;
     public $numeroEmpleado;
     public $verificador;
+    public $urlDocumentos;
     
 }
 

@@ -234,7 +234,20 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
                         if($sentencia->fetch())
                         {
                             $registro = $this->crearRegistro($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus);
+                            
+                            
                             $resultado->valor = $registro;
+                            
+                            
+                            $sentencia->close();
+                            
+                            $resultadoCertificaciones = $this->consultarCertificaciones($registro->id);
+                            if($resultadoCertificaciones->mensajeError=="")
+                            {
+                                $registro->certificaciones = $resultadoCertificaciones->valor;
+                            }
+                            else
+                                $resultado->mensajeError = $resultadoCertificaciones->mensajeError;
                         }
                         else
                             $resultado->mensajeError = 'No se encontró ningún resultado.';
@@ -252,6 +265,52 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
             $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
         return $resultado;
     }
+    
+    private function consultarCertificaciones($procedimientoId)
+    {
+        $resultado = new Resultado();
+        $certificaciones = array();
+        $consulta = "SELECT certificacion_id, C.nombre " .
+            "FROM procedimientos_certificaciones PC 
+                    INNER JOIN certificaciones C ON PC.certificacion_id = C.id
+            WHERE procedimiento_id  = ? ".
+            "ORDER BY C.nombre";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$procedimientoId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $nombre))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $certificacion= (object) [
+                                'id' =>  $id,
+                                'nombre' => $nombre
+                            ];
+                            array_push($certificaciones,$certificacion);
+                        }
+                        $resultado->valor = $certificaciones;
+                        
+                        $sentencia->close();
+                        
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        return $resultado;
+    }
+    
 
     public function eliminar($llaves)
     {

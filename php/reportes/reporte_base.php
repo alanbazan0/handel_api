@@ -42,8 +42,11 @@ class ReporteBase extends \FPDF
                 }
                 
                 //$this->SetFillColor($rgb->red, $rgb->green, $rgb->blue);
-                
-                $this->SetFont($this->fontNames[$i],$this->fontWeights[$i],$this->fontSizes[$i]);
+                $font = "Helvetica";
+                if(isset($this->fontNames))
+                    if(i < count($this->fontNames))
+                        $font = $this->fontNames[$i];
+                $this->SetFont($font,$this->fontWeights[$i],$this->fontSizes[$i]);
                 //Print the text
                 $this->MultiCell($w,$height,$data[$i],0,$a);
                 //Put the position to the right of the cell

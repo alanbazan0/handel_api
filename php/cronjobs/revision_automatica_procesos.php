@@ -91,7 +91,7 @@ try
                                  if($mes = 1)
                                      $revisar = true;
                              }
-                             
+                             $revisar = true;
                              if($revisar)
                              {
                                  $criteriosSeleccion = (object)["ano" => $ano];
@@ -114,10 +114,10 @@ try
                                      if($resultado->error())
                                          break;
                                  }
-                                echo $usuario->id . ". ".$usuario->usuarioNombreCompleto . ": " . count($procesos) . " procesos terminados."; 
+                                echo "<br>".$usuario->id . ". ".$usuario->usuarioNombreCompleto . ": " . count($procesos) . " procesos terminados."; 
                              }
                              else 
-                                 echo $usuario->id . ". ".$usuario->usuarioNombreCompleto .": No es mes de terminacion automatica";
+                                 echo "<br>".$usuario->id . ". ".$usuario->usuarioNombreCompleto .": No es mes de terminacion automatica";
                          }
                      }
                      Logger::log("log_revision_automatica_procesos","Termimado!");

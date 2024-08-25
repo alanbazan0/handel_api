@@ -327,12 +327,15 @@ class Vista
 	
 	
 	
-	getNewSubmitForm(url)
+	getNewSubmitForm(url, method)
 	{
 		var form = document.createElement('form');
 	    document.body.appendChild(form);
 	    form.action = url;
-	    form.method = "post";
+	    if(method!=undefined)
+	    	form.method = "get";
+	    else
+	    	form.method = "post";
 	   // form.target = "_blank";
 	    return form;
 	}
@@ -1080,6 +1083,41 @@ class Vista
 			$("#"+modal).modal("hide");
 		}
 		
-	
+		mostrarDocumentos()
+		{
+			if(this.usuario.urlDocumentos!="" && this.usuario.urlDocumentos!=undefined)
+			{
+				var _this = this;
+				swal({
+			            title: "Advertencia",
+			            text: "Estas a punto de acceder a una nube segura en la que se encuentra tu información, se abrirá en otra ventana de tu navegador dejando a SAHA abierto. \n\n Recuerda que esta información es solo para uso personal y no debes compartir con personal no autorizado, al hacer clic en aceptar te comprometes al buen uso de esta información",
+			            type: "warning",
+			            showCancelButton: true,
+			            confirmButtonColor: "#DD6B55",
+			            confirmButtonText: "Si, Acceder",
+			            cancelButtonText: "Cancelar",
+			            closeOnConfirm: true,
+			            closeOnCancel: true,
+			            showLoaderOnConfirm: true,
+			        },
+			        function(isConfirm)
+			        {
+			            if (isConfirm) 
+			            {
+			            	 setTimeout(function(){
+			            		var submitForm = _this.getNewSubmitForm(_this.usuario.urlDocumentos,"get");
+							    submitForm.target= "_blank";
+							    submitForm.submit();
+			 	            }, 500);
+			            }
+						//else
+						
+						//	vista.actualizarSesion();
+			        });
+				
+			}
+			else
+				this.mostrarMensaje("","No hay documentos asignados");
+		}
 		
 }

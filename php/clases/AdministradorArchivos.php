@@ -1,5 +1,6 @@
 <?php
 namespace php\clases;
+use Complex\Exception;
 use php\modelos\Resultado;
 
 class AdministradorArchivos
@@ -139,6 +140,88 @@ class AdministradorArchivos
         return $resultado;
     }
     
+    public function eliminarTodo($nombreCarpeta, $eliminar)
+    {
+        $directorio = "../".$nombreCarpeta."/";
+        $resultado = new Resultado();
+        
+        if(file_exists($directorio))
+        {
+            $archivosEliminados = array();
+            $archivos = glob($directorio . '*');
+            //$threshold = strtotime('-'.$dias.' days');
+            
+            
+            foreach ($archivos as $archivo)
+            {
+                //$archivoNuevo = str_replace($nombreCarpeta,"trash/".$nombreCarpeta,$archivo);
+                $fecha = date("F d Y H:i:s.", filemtime($archivo));
+                if($eliminar)
+                {
+                    if(is_dir($archivo))
+                        $this->eliminarDirectorio($archivo);
+                    else
+                        unlink($archivo);
+                }
+                array_push($archivosEliminados, (object)["archivo"=> $archivo, "fecha" => $fecha]);
+                
+                
+            }
+            $resultado->valor = (object)[ "directorio" => $directorio,
+                "numeroArchivos" => count($archivos),
+                "numeroArchivosEliminados" => count($archivosEliminados),
+                "archivosEliminados" => $archivosEliminados ];
+        }
+        else
+            $resultado->mensajeError = "No existe el directorio " .  $directorio;
+        
+        return $resultado;
+    }
+    
+    public function eliminarArchivosAntiguos($nombreCarpeta, $dias, $eliminar)
+    {
+        $directorio = "../".$nombreCarpeta."/";
+        $resultado = new Resultado();
+        
+        if(file_exists($directorio))
+        {
+            $archivosEliminados = array();
+            $archivos = glob($directorio . '*');
+            //$threshold = strtotime('-'.$dias.' days');
+            
+            $max_age = $dias * 86400;
+            $limit = time() - $max_age;
+            
+            foreach ($archivos as $archivo)
+            {
+                $archivoNuevo = str_replace($nombreCarpeta,"trash/".$nombreCarpeta,$archivo);
+                $fecha = date("F d Y H:i:s.", filemtime($archivo));
+                $filetime = filemtime($archivo);
+                if ($filetime < $limit)
+                {
+                    if($eliminar)
+                    {
+                        if (!file_exists($archivoNuevo) && is_dir($archivoNuevo)) {
+                            
+                            mkdir($archivoNuevo, 0777, true);
+                        } 
+                        rename($archivo,$archivoNuevo);
+                    }
+                    array_push($archivosEliminados, (object)["archivo"=> $archivo,"filetime" => $filetime, "limit" => $limit, "archivoNuevo" =>$archivoNuevo, "fecha" => $fecha]);
+                    
+                }
+                
+            }
+            $resultado->valor = (object)[ "directorio" => $directorio,
+                "numeroArchivos" => count($archivos),
+                "numeroArchivosEliminados" => count($archivosEliminados),
+                "archivosEliminados" => $archivosEliminados ];
+        }
+        else
+            $resultado->mensajeError = "No existe el directorio " .  $directorio;
+        
+        return $resultado;
+    }
     
 }
 

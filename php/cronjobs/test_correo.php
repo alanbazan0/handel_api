@@ -32,6 +32,7 @@ header('Access-Control-Allow-Credentials: true');
 try
 {
     $cabecera = "From:  SAHA <noreply@apps-handel.com>\r\n";
+    $cabecera .= "Bcc: bitacora_correo@apps-handel.com\r\n";
     $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";
     $correoElectronico = "alanbazan@apps-handel.com";   
     $errLevel = error_reporting(E_ALL ^ E_WARNING);
@@ -41,7 +42,7 @@ try
     
     $error = error_get_last();
     
-    if ( $error["type"] == E_WARNING)
+    if ($error!=null && $error["type"] == E_WARNING)
     {
         echo "No se pudo enviar el correo electrónico a $correoElectronico.  ". htmlspecialchars_decode($error["message"]) ;
     }

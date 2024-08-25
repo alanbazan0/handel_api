@@ -110,6 +110,7 @@ try
                 
               
                     $cabecera = "From:  SAHA <noreply@apps-handel.com>\r\n";
+                    $cabecera .= "Bcc: bitacora_correo@apps-handel.com\r\n";
                     $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";
                     
                     $errLevel = error_reporting(E_ALL ^ E_WARNING);

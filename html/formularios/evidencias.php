@@ -16,6 +16,9 @@
 				</button>
 			</div>
 			<div class="modal-body">
+				
+                        
+			
 				<form id="formulario" action="#"  method="post">
 					<div class="form-group" style='display:none'>
 						<div>

@@ -25,6 +25,8 @@ class ProcedimientosVista extends CatalogoVista
 		this._copiarProcedimientosModal.mostrar(this, this.copiar);
 	}
 	
+	
+	
 	copiar()
 	{
 		
@@ -114,6 +116,12 @@ class ProcedimientosVista extends CatalogoVista
 	consultarCombos()
 	{
 		this.consultarEmpresas();
+		this.consultarCertificaciones();
+	}
+	
+	consultarCertificaciones()
+	{	
+		this.presentador.consultarCertificaciones();
 	}
 	
 	editar(id)
@@ -248,6 +256,24 @@ class ProcedimientosVista extends CatalogoVista
 	set sedes(registros)
 	{		
 		this.cargarOpciones('#sedeIdSelect', registros, this.modo, this.modeloEdicion, 'sedeId',"");
+	}
+	
+	set certificacionesDisponibles(certificaciones)
+	{
+		var html = "";
+		for(var i = 0; i < certificaciones.length; i++)
+		{
+			var certificacion = certificaciones[i];
+			var check =  "<li><div class='form-group col-3'>" +
+            "<label class='control-sidebar-subheading'>"+
+              certificacion.nombre +
+              "<input type='checkbox' id='certificacionCheck"+certificacion.id+"' class='pull-right' >"+
+          "  </label>"+
+          "</div></li>";
+          
+          html+=check;
+		}
+		$("#certificacionesUl").html(html);
 	}
 
 	

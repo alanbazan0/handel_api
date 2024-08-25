@@ -2533,7 +2533,7 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
         
         
         
-        $consulta =  "SELECT  IFNULL(DATE_FORMAT( P.fecha_alta,'%d/%m/%Y'),'') fecha, U.id, U.nombre, U.apellido, ER.descripcion estatus
+        $consulta =  "SELECT  IFNULL(DATE_FORMAT( PR.fecha_alta,'%d/%m/%Y'),'') fecha, U.id, U.nombre, U.apellido, ER.descripcion estatus
                     FROM procesos_revisados PR
                     	INNER JOIN usuarios_procesos UP ON UP.id = PR.usuario_proceso_id
                         INNER JOIN usuarios U ON U.id = UP.usuario_id

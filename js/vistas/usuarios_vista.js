@@ -456,6 +456,8 @@ class UsuariosVista extends CatalogoVista
 		
 		this.cambiarPermisoCAVI();
 		this.cambiarPermisoSAHA();
+		
+		$('#urlDocumentosInput').val(this.modeloEdicion.urlDocumentos);
 	}
 	
 	get modelo()
@@ -484,6 +486,7 @@ class UsuariosVista extends CatalogoVista
 		     recursosHumanos:$('#recursosHumanosRadio').is(':checked')?1:0,
 		     numeroEmpleado:$('#numeroEmpleadoInput').val(),
 		     verificador:$('#verificadorRadio').is(':checked')?1:0,
+		     urlDocumentos:$('#urlDocumentosInput').val()
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;

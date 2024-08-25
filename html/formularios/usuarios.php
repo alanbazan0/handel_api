@@ -103,6 +103,12 @@
 						</div>
 					</div>
 					<div class="form-group">
+						<div>
+							<label for="urlDocumentosInput" class="control-label mb-1">URL Documentos</label>
+							<input id="urlDocumentosInput" name="urlDocumentosInput" type="text" class="form-control">
+						</div>
+					</div>
+					<div class="form-group">
 						<label class="control-label mb-1">Acceso a SAHA</label> <label
 							class="switch switch-3d switch-success mr-3"> <input
 							id="permisoSAHARadio" name="permisoSAHA" type="checkbox" onchange="vista.cambiarPermisoSAHA();"

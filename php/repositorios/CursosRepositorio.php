@@ -1738,7 +1738,9 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                         FROM cursos C
                     INNER JOIN usuarios U ON C.usuario_id = U.id 
                     INNER JOIN usuarios_cursos UC ON UC.curso_id = C.id AND UC.usuario_id = ?
-                    WHERE C.id IN(SELECT curso_id FROM usuarios_cursos UC WHERE UC.usuario_id = ? AND UC.terminado=0) " ;
+                    WHERE C.id IN(SELECT curso_id FROM usuarios_cursos UC WHERE UC.usuario_id = ? AND UC.terminado=0) 
+                            AND ? IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id) 
+                            AND C.publicado = 1" ;
                     
         $consulta.= $and . " order by orden";
         
@@ -1746,7 +1748,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if( $sentencia->bind_param("iii", $usuario->id, $usuario->id, $usuario->id))
+            if( $sentencia->bind_param("iiii", $usuario->id, $usuario->id, $usuario->id, $usuario->perfilId))
             {
                 if($sentencia->execute())
                 {
@@ -4979,7 +4981,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 "\nGROUP BY departamentoId,departamentoNombre" .
                 "\nORDER BY departamentoNombre";
             
-            //var_dump($consulta);
+            var_dump($consulta);
             
             if($sentencia = $this->conexion->prepare($consulta))
             {

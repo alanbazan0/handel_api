@@ -526,38 +526,38 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             $this->getConsultaEvidenciasBase($usuario,$criteriosSeleccion,$and)  .
             "\n) AS A ";
       
+        //echo $consulta;      
             
-            
-            if($sentencia = $this->conexion->prepare($consulta))
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
             {
-                if($this->bind_param($sentencia, $filtros))
+                if($sentencia->execute())
                 {
-                    if($sentencia->execute())
+                    if($sentencia->bind_result($justificadas, $enviadas, $pendientes))
                     {
-                        if($sentencia->bind_result($justificadas, $enviadas, $pendientes))
+                        if($sentencia->fetch())
                         {
-                            if($sentencia->fetch())
-                            {
-                                $porcentajes = array();
-                                array_push($porcentajes,(object)['nombre'=>'Enviadas','valor'=>intval($enviadas)]);
-                                array_push($porcentajes,(object)['nombre'=>'Pendientes','valor'=>intval($pendientes)]);
-                                array_push($porcentajes,(object)['nombre'=>'Justificadas','valor'=>intval($justificadas)]);
-                                
-                                $resultado->valor = $porcentajes;
-                            }
+                            $porcentajes = array();
+                            array_push($porcentajes,(object)['nombre'=>'Enviadas','valor'=>intval($enviadas)]);
+                            array_push($porcentajes,(object)['nombre'=>'Pendientes','valor'=>intval($pendientes)]);
+                            array_push($porcentajes,(object)['nombre'=>'Justificadas','valor'=>intval($justificadas)]);
+                            
+                            $resultado->valor = $porcentajes;
                         }
-                        else
-                            $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                     }
                     else
-                        $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
                 }
                 else
-                    $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
             }
             else
-                $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
-                return $resultado;
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        return $resultado;
     }
     
     
@@ -1167,7 +1167,10 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             $consulta .= $where;
             
             $consulta.=" GROUP BY ano, mes
-                    ORDER BY ano desc, mes desc";
+                    ORDER BY ano, mes
+                    LIMIT 1";
+            
+           // echo $consulta;
             
             
             if($sentencia = $this->conexion->prepare($consulta))
@@ -1178,17 +1181,20 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     {
                         if($sentencia->bind_result($ano, $mes))
                         {
-                            while($sentencia->fetch())
+                            if($sentencia->fetch())
                             {
                                 $mesNombre = $this->getNombreMes($mes);
-                                $registro= (object) [
+                                $primerMes= (object) [
                                     'ano' =>  $ano,
                                     'mes' =>  $mes,
                                     'mesNombre' =>  $mesNombre
                                 ];
-                                array_push($registros,$registro);
+                                
+                                
+                                $registros = $this->calcularMeses($primerMes);
+                                $resultado->valor = $registros;
                             }
-                            $resultado->valor = $registros;
+                            
                         }
                         else
                             $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
@@ -1204,6 +1210,39 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         }
         
         return $resultado;
+    }
+    
+    private function calcularMeses($primerMes)
+    {
+        $meses = array();
+        $mesActual = date("n");
+        $anoActual = date("Y");
+        for($i = $anoActual; $i >= $primerMes->ano; $i--)
+        {
+            for($j = 12; $j > 0; $j--)
+            {
+                $mesNombre = $this->getNombreMes($j);
+                $mes= (object) [
+                    'ano' =>  $i,
+                    'mes' =>  $j,
+                    'mesNombre' =>  $mesNombre
+                ];
+                if($i == $anoActual)
+                {
+                    if($j <= $mesActual)
+                        array_push($meses,$mes);
+                }
+                else if($i == $primerMes->ano)
+                {
+                    if($j >= $primerMes->mes)
+                        array_push($meses,$mes);
+                }
+                else
+                    array_push($meses,$mes);
+            }
+        }
+        return $meses;
+        
     }
     
     public function consultarAnos($usuario,$criteriosSeleccion)

@@ -32,7 +32,7 @@ class InspeccionesVista extends CatalogoVista
 			{
 				$("#numeroCajaInputCriterio").prop("disabled",false);
 				//$("#porcentajeAleatoriasLabel").show();
-				}
+			}
 		});
 		
 		this.crearColumnasGrid();		
@@ -155,8 +155,10 @@ class InspeccionesVista extends CatalogoVista
 				} 
 				
 				var fecha =  dd+'/'+mm+'/'+yyyy;
+				var fechaInicial = '01/'+mm+'/'+yyyy;
 				
 				$("#fechaFinalInputCriterio").val(fecha);
+				$("#fechaInicialInputCriterio").val(fechaInicial);
 				
 	}
 	
