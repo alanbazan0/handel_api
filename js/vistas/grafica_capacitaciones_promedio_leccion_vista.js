@@ -662,8 +662,11 @@ class GraficaCapacitacionesPromedioLeccionVista extends CatalogoVista
 		this.cargarOpciones('#sedeSelectCriterio', registros);
 		if(this.consultoGrid==false)
 		{
-			this.consultar();
-			this.consultoGrid=true;
+			if(this.usuario.tipoUsuarioId != TipoUsuario.ADMINISTRADOR)
+			{
+				this.consultar();
+				this.consultoGrid=true;
+			}
 		}
 	}
 	

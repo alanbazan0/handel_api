@@ -655,7 +655,6 @@ class GraficaCapacitacionesAvanceUsuarioVista extends CatalogoVista
 	set empresasCriterio(registros)
 	{		
 		this.cargarOpciones('#empresaSelectCriterio', registros);
-		//this.consultar();
 	}
 	
 	set sedesCriterio(registros)
@@ -663,8 +662,11 @@ class GraficaCapacitacionesAvanceUsuarioVista extends CatalogoVista
 		this.cargarOpciones('#sedeSelectCriterio', registros);
 		if(this.consultoGrid==false)
 		{
-			this.consultar();
-			this.consultoGrid=true;
+			if(this.usuario.tipoUsuarioId != TipoUsuario.ADMINISTRADOR)
+			{
+				this.consultar();
+				this.consultoGrid=true;
+			}
 		}
 	}
 	

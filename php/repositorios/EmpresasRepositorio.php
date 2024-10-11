@@ -19,7 +19,7 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = " SELECT E.id, E.nombre, IFNULL(E.nombre_corto,'') nombre_corto , E.tipo_empresa_id, T.nombre tipo_empresa, E.direccion, E.pais_id, P.nombre pais, E.estado_id, ES.nombre estado, E.ciudad_id, C.nombre ciudad, E.telefono, E.corporativo_id , IFNULL(CO.nombre,'') corporativo, E.fecha_alta, E.fecha_modificacion, E.estatus, U.id administradorId, U.nombre usuarioNombre,  U.apellido usuarioApellido, E.perfil_id,  US.id administradorIdSIVAH, US.nombre usuarioNombreSIVAH,  US.apellido usuarioApellidoSIVAH,E.mes_revision_procesos,UP.id administradorIdProcesos, UP.nombre usuarioNombreProcesos,  UP.apellido usuarioApellidoProcesos, E.calificacion_minima
+        $this->consultaBase = " SELECT E.id, E.nombre, IFNULL(E.nombre_corto,'') nombre_corto , E.tipo_empresa_id, T.nombre tipo_empresa, E.direccion, E.pais_id, P.nombre pais, E.estado_id, ES.nombre estado, E.ciudad_id, C.nombre ciudad, E.telefono, E.corporativo_id , IFNULL(CO.nombre,'') corporativo, E.fecha_alta, E.fecha_modificacion, E.estatus, U.id administradorId, U.nombre usuarioNombre,  U.apellido usuarioApellido, E.perfil_id,  US.id administradorIdSIVAH, US.nombre usuarioNombreSIVAH,  US.apellido usuarioApellidoSIVAH,E.mes_revision_procesos,UP.id administradorIdProcesos, UP.nombre usuarioNombreProcesos,  UP.apellido usuarioApellidoProcesos, E.calificacion_minima, E.fecha_inicio_temporada
                              FROM empresas E 
                                LEFT JOIN tipos_empresa T ON T.id = E.tipo_empresa_id 
                                LEFT JOIN paises P ON P.id = E.pais_id 
@@ -49,11 +49,11 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
         if($resultado->mensajeError=="")
         {
             $id = $resultado->valor;           
-            $consulta = "INSERT INTO empresas(id, nombre, nombre_corto, tipo_empresa_id, direccion, pais_id, estado_id, ciudad_id, telefono, corporativo_id, fecha_alta, fecha_modificacion, estatus, administrador_id, perfil_id, administrador_sivah_id, mes_revision_procesos,administrador_procesos_id, calificacion_minima) " .
-                        "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?, ?, ?, ?)";
+            $consulta = "INSERT INTO empresas(id, nombre, nombre_corto, tipo_empresa_id, direccion, pais_id, estado_id, ciudad_id, telefono, corporativo_id, fecha_alta, fecha_modificacion, estatus, administrador_id, perfil_id, administrador_sivah_id, mes_revision_procesos,administrador_procesos_id, calificacion_minima, fecha_inicio_temporada) " .
+                        "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?, ?, ?, ?, ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if( $sentencia->bind_param("issisiiiisiiiiiii", $id, $modelo->nombre,$modelo->nombreCorto, $modelo->tipoEmpresaId, $modelo->direccion, $modelo->paisId, $modelo->estadoId, $modelo->ciudadId, $modelo->telefono, $modelo->corporativoId, $modelo->estatus, $modelo->administradorId, $modelo->perfilId, $modelo->admintradorIdSIVAH, $modelo->mesRevisionProcesos, $modelo->admintradorIdProcesos, $modelo->calificacionMinima))
+                if( $sentencia->bind_param("issisiiiisiiiiiiis", $id, $modelo->nombre,$modelo->nombreCorto, $modelo->tipoEmpresaId, $modelo->direccion, $modelo->paisId, $modelo->estadoId, $modelo->ciudadId, $modelo->telefono, $modelo->corporativoId, $modelo->estatus, $modelo->administradorId, $modelo->perfilId, $modelo->admintradorIdSIVAH, $modelo->mesRevisionProcesos, $modelo->admintradorIdProcesos, $modelo->calificacionMinima, $modelo->fechaInicioTemporada))
                 {
                     if($sentencia->execute())       
                         $resultado->valor = $id;
@@ -208,11 +208,11 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
             {
                 if($sentencia->execute())
                 {                
-                    if ($sentencia->bind_result($id, $nombre, $nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono, $corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima))
+                    if ($sentencia->bind_result($id, $nombre, $nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono, $corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima, $fechaInicioTemporada))
                     {                    
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono, $corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima);
+                            $registro = $this->crearRegistro($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono, $corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima, $fechaInicioTemporada);
                       
                             array_push($registros,$registro);
                         }
@@ -290,11 +290,11 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono,$corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima))
+                    if ($sentencia->bind_result($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono,$corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima, $fechaInicioTemporada))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono, $corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima);
+                            $registro = $this->crearRegistro($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono, $corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima, $fechaInicioTemporada);
                             
                             array_push($registros,$registro);
                         }
@@ -315,7 +315,7 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
         return $resultado;
     }
     
-    private function crearRegistro($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono,$corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre,$administradorApellido,$perfilId=null,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH, $mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos, $calificacionMinima)
+    private function crearRegistro($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono,$corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre,$administradorApellido,$perfilId=null,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH, $mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos, $calificacionMinima, $fechaInicioTemporada)
     {
         $archivoIcono = '../../php/logos_empresas/logo'.$id.'.png';
         $icono = 'default.png';
@@ -354,7 +354,8 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
             'administradorIdProcesos' => $administradorIdProcesos,
             'administradorNombreProcesos' => $administradorNombreProcesos,
             'administradorApellidoProcesos' => $administradorApellidoProcesos,
-            'calificacionMinima' => $calificacionMinima
+            'calificacionMinima' => $calificacionMinima,
+            'fechaInicioTemporada' => $fechaInicioTemporada
         ];
         $registro->nodeId = $id;
         $registro->parentId = $registro->corporativoId;

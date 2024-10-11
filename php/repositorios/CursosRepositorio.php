@@ -4981,7 +4981,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 "\nGROUP BY departamentoId,departamentoNombre" .
                 "\nORDER BY departamentoNombre";
             
-            var_dump($consulta);
+            //var_dump($consulta);
             
             if($sentencia = $this->conexion->prepare($consulta))
             {

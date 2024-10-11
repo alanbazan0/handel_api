@@ -398,6 +398,8 @@ class EmpresasVista extends CatalogoVista
 		$('#logoImage').show();
 		
 		$('#calificacionMinimaInput').val(this.modeloEdicion.calificacionMinima);
+		$('#fechaInicioTemporada').val(this.modeloEdicion.fechaInicioTemporada);
+		this.consultarCombos();
 		this.consultarCombos();
 	}
 	
@@ -420,7 +422,8 @@ class EmpresasVista extends CatalogoVista
 			 administradorIdProcesos:$('#administradorProcesosSelect').val(),
 			 perfilId:$('#perfilSelect').val(),
 			 estatus:$('#estatusRadio').is(':checked')?1:0,
-			 calificacionMinima:$('#calificacionMinimaInput').val()
+			 calificacionMinima:$('#calificacionMinimaInput').val(),
+			 fechaInicioTemporada:$('#fechaInicioTemporadaInput').val()
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
@@ -444,6 +447,7 @@ class EmpresasVista extends CatalogoVista
 		this.cargandoOpciones('#ciudadSelect');
 		this.cargandoOpciones('#corporativoSelect');
 		this.cargandoOpciones('#administradorSelect');
+		$('#fechaInicioTemporada').val("");
 	}
 	
 	consultarAdministradores()
