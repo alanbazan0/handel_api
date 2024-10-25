@@ -60,8 +60,35 @@ class CatalogoVista extends Vista
 				 showMonthAfterYear: false,
 				 yearSuffix: ''
 				 };
+				 
+			$.fn.datepicker.dates['es'] = {
+				days: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
+				daysShort: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
+				daysMin: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+				months: ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+				monthsShort: ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+				today: "Hoy",
+				monthsTitle: "Meses",
+				clear: "Borrar",
+				weekStart: 1,
+				format: "dd/mm/yyyy"
+			};
 		
 		$.datepicker.setDefaults($.datepicker.regional['es']);
+	}
+	
+	formatoFecha(fecha)
+	{
+		if(fecha!=undefined)
+		{
+			var elementos = fecha.split("/");
+			if(elementos.length == 3)
+			{
+				var formato = elementos[2] + "-" + elementos[1] + "-" + elementos[0];
+				return formato;
+			}
+		}
+		return "";
 	}
 	
 	editar()
@@ -387,7 +414,7 @@ class CatalogoVista extends Vista
 				$("#modalAlta").remove();
 			});
 			
-			$("#modalAlta").on("show.bs.modal", function () {
+			$("#modalAlta").on("shown.bs.modal", function () {
 				$('#nombreInput').focus();
 				if(_this.modo == Modo.CAMBIO)
 				{	

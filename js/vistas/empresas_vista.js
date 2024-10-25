@@ -301,8 +301,19 @@ class EmpresasVista extends CatalogoVista
 		this.consultarAdministradoresProcesos();
 		this.consultarPerfiles();
 		$("#calificacionMinimaInput").change(this.cambiarCalificacionMinima);
-		
+		/*$("#fechaSorteoInput").datepicker().on('change', function(){
+       	 	$('.datepicker').hide();
+       	 	$('#fechaSorteoInput').focus();
+    	});*/
+    	/*$("#fechaSorteoInput").datepicker().on('change', function(){
+       	 	$('#fechaSorteoInput').focus();
+    	});*/
+    	$("#fechaInicioTemporadaInput").datepicker({language: 'es'}).on('change', function(){
+       	 	$('.datepicker').hide();
+    	});
 	}
+	
+	
 	
 	cambiarCalificacionMinima(event)
 	{
@@ -398,8 +409,7 @@ class EmpresasVista extends CatalogoVista
 		$('#logoImage').show();
 		
 		$('#calificacionMinimaInput').val(this.modeloEdicion.calificacionMinima);
-		$('#fechaInicioTemporada').val(this.modeloEdicion.fechaInicioTemporada);
-		this.consultarCombos();
+		$('#fechaInicioTemporadaInput').val(this.modeloEdicion.fechaInicioTemporada);
 		this.consultarCombos();
 	}
 	
@@ -423,7 +433,7 @@ class EmpresasVista extends CatalogoVista
 			 perfilId:$('#perfilSelect').val(),
 			 estatus:$('#estatusRadio').is(':checked')?1:0,
 			 calificacionMinima:$('#calificacionMinimaInput').val(),
-			 fechaInicioTemporada:$('#fechaInicioTemporadaInput').val()
+			 fechaInicioTemporada: this.formatoFecha($('#fechaInicioTemporadaInput').val())
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;

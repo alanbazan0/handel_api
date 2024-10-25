@@ -128,14 +128,13 @@
                             <input id="calificacionMinimaInput" name="calificacionMinimaInput" type="text" class="form-control" aria-required="true" aria-invalid="false" >
                           </div> 
                       </div> 
-                      <div class="form-group">
-                          <div class="input-group date" data-provide="datepicker" style='width:130px'>
-    					    <input id="fechaInicioTemporadaInput" type="text" class="form-control" style="background:white;" data-date-container='#modalAlta' >
-    					    <div class="input-group-addon">
-    					        <span class="far fa-calendar-check"></span>
-    					    </div>
-    					  </div>
-				      </div>
+                     
+				       <div class='form-group'>
+                          <div>
+                              <label class='control-label mb-1'>Fecha de inicio de temporada</label>
+                              <input  id='fechaInicioTemporadaInput' name='fechaInicioTemporadaInput' type='text' class='form-control' >
+                          </div>
+                  	</div>
                       <div class="form-group">
                       		<label class="control-label mb-1">Activo</label>
                      		<label class="switch switch-3d switch-success mr-3">
