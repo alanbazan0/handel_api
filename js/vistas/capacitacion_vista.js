@@ -35,7 +35,6 @@ class CapacitacionVista extends CatalogoVista
 		this.crearVideo();
 	
 		
-		
 	
 	}
 	
@@ -45,17 +44,18 @@ class CapacitacionVista extends CatalogoVista
 		var options = { controlBar: {
 	        CurrentTimeDisplay: true,
 	        DurationDisplay: true
-	    }};
+	    },loop:false};
 		this._player = videojs('video', options, function onPlayerReady() {
-			  videojs.log('Your player is ready!');
 			  
 //			  $(".vjs-big-play-button").off('click',_this.clickPlay);
 //			  $(".vjs-big-play-button").on('click',_this,_this.clickPlay);
-			  $(".vjs-progress-holder").hide();
+			 
 			  //$(".vjs-remaining-time").hide();
 			 
 			  this.on('ended', function() 
 			  {
+				  _this._player.pause();
+					_this._player.hide();
 				  _this.consultarPreguntaAleatoria();
 			  });
 			  
@@ -69,6 +69,7 @@ class CapacitacionVista extends CatalogoVista
 			    	var duracion = parseInt(myPlayer.duration());
 			    	//_this.actualizarDuracionLeccion(duracion);
 			    	_this.guardarLeccionUsuario(duracion);
+			    	
 			    });
 		  	 
 			    myPlayer.on("timeupdate", function(event) {
@@ -98,6 +99,7 @@ class CapacitacionVista extends CatalogoVista
 				    });
 			   }
 			    
+			   
 
 			    setInterval(function() {
 			      if (!myPlayer.paused()) {
@@ -107,16 +109,18 @@ class CapacitacionVista extends CatalogoVista
 			  
 			});
 		
+	  	if(!_this.seeking)
+			 $(".vjs-progress-holder").hide();
+		
 		$('.video-js').bind('contextmenu',function() { return false; });
 		
-		 $('.vjs-control-bar').css("display","none");
+		$('.vjs-control-bar').css("display","none");
 		
 		$('.full-vid').hover(function() {
 			 $('.vjs-control-bar').attr("style","");
 	    },function() {
 	    	 $('.vjs-control-bar').css("display","none");
 	    });
-		
 		
 	}
 	
@@ -707,7 +711,8 @@ class CapacitacionVista extends CatalogoVista
 	mostrarMensajeCalificacionInferior(titulo,calificacion)
 	{
 		var _this = this;
-		  swal({
+	
+		/*  swal({
 	            title: "Advertencia",
 	            text: "Tu calificación para la lección <strong>" + titulo +"</strong> es inferior a la mínima para acreditar el curso, tu supervisor va a reasignar el o los temas necesarios para que puedas acreditarlo.",
 	            html: true,
@@ -717,7 +722,60 @@ class CapacitacionVista extends CatalogoVista
 	            closeOnConfirm: true
 	        },
 	        function(){
+	        });*/
+	        
+	        swal({
+               title: "Advertencia",
+	            text: "Tu calificación para la lección <strong>" + titulo +"</strong> es inferior a la mínima para acreditar el curso. <br/>¿Qué quieres hacer?",
+	            html: true,
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            calcelButtonColor: "#32C2CD",
+	            confirmButtonText: "Lo veré depués",
+	            cancelButtonText: "Quiero volver a ver el video",
+	            closeOnConfirm: false,
+	            closeOnCancel: false,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (!isConfirm) 
+					_this.volverAVer(calificacion);
+				else
+					_this.verDespues();
 	        });
+	        
+	        $(".sweet-alert").find(".cancel").css("background-color","#00a65a");
+	}
+	
+	volverAVer(calificacion)
+	{
+		
+		this.presentador.eliminarIntentoLeccion(calificacion,true);
+	}
+	
+	verDespues()
+	{
+		this.presentador.eliminarIntentoLeccion(calificacion,false);
+	}
+	
+	cerrarIntento(leccionId, volverAVer)
+	{
+		swal.close();
+		
+		if(volverAVer)
+		{
+			this.listaLecciones.reiniciarLeccion(leccionId);
+			// _this.vsgLoadVideo(this._player,leccion.video);
+			 
+			this.seleccionarLeccion(null,leccionId);
+			 this._player.show();
+			 this._player.currentTime = 0;
+	  		this._player.play();
+  		}
+		
+		
 	}
 
 	get textoLeccionTerminada()
@@ -838,7 +896,10 @@ class CapacitacionVista extends CatalogoVista
 	
 	get leccionIdSeleccionada()
 	{
-		return this._leccionSeleccionada.id;
+		if(this._leccionSeleccionada!=null)
+			return this._leccionSeleccionada.id;
+		else
+			return this._leccionIdSeleccionada;
 	}
 	
 	get cursoId()
@@ -907,6 +968,11 @@ class CapacitacionVista extends CatalogoVista
 			$('#file').trigger('click');
 	}
 
+	get end()
+	{
+		return $("body").attr("data-end")=="true";
+		
+	}
 	
 	
 }

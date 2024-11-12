@@ -272,5 +272,40 @@ class CatalogoPresentador
 		 },{"terminada":"0"});
 	 }
 	 
+	 consultarLeccionesReprobadas()
+	 {
+		 var repositorio = new CapacitacionesRepositorio(this);		
+		 repositorio.consultarLeccionesReprobadas(this,function(resultado){
+			 if(resultado.mensajeError=="")
+			{
+				this.vista.leccionesReprobadas = resultado.valor;
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
+		 },true);
+		 
+		 
+	  repositorio.consultarNumeroNotificacionesNoLeidas(this,function(resultado){
+			 if(resultado.mensajeError=="")
+			{
+				this.vista.notificacionesNoLeidas = resultado.valor;
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
+		 });
+		 
+	 }
 	 
+	leerNotificaciones()
+	{
+		 var repositorio = new CapacitacionesRepositorio(this);		
+		 repositorio.leerNotificaciones(this,function(resultado){
+			 if(resultado.mensajeError=="")
+			{
+				this.vista.notificacionesNoLeidas = 0;
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
+		 });
+	}
 }

@@ -44,7 +44,8 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 		this.consultarEmpresasCriterio();
 		this.consultarCursosCriterio();
 		
-		//this.consultarDepartamentosCriterio();
+		 this.inicializarMoment();
+	    this.consultarLeccionesReprobadas();
 	}
 	
 
@@ -601,7 +602,8 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 			cursoId : $('#cursoSelectCriterio').val(),
 			tipoReporte:$('#tipoReporteSelectCriterio').val(),
 			fechaInicial: this._fechaInicial,
-			fechaFinal: this._fechaFinal
+			fechaFinal: this._fechaFinal,
+			filtrarPerfil: $('#filtrarPerfilSelectCriterio').val()=="true"?true:false
 		 }
 		 return criteriosSeleccion;
 	}	
@@ -611,7 +613,7 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 		 $( "#"+id ).datepicker();
 	}
 	
-	crearFechas()
+	/*crearFechas()
 	{
 		var _this = this;
 			moment.locale('es') ;
@@ -649,7 +651,7 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 			 
 			cb(start,end);
 				
-	}
+	}*/
 	
 	
 	
@@ -682,6 +684,7 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 	{
 		//this.cargandoOpciones("#departamentoSelectCriterio");
 		this.consultarSedesCriterio();
+		this.consultarInicioTemporadaEmpresa();
 	}
 	
 	cambiarSedeCriterio()
@@ -1022,6 +1025,17 @@ class ReportePersonalCapacitacionesVista extends CatalogoVista
 		$(id).html(texto);
 		this._registroSeleccionado.porcentaje = modeloCapacitacion.porcentaje;
 		
+	}
+	
+	consultarInicioTemporadaEmpresa()
+	{
+		this.presentador.consultarInicioTemporadaEmpresa();
+	}
+	
+	set inicioTemporadaEmpresa(valor)
+	{
+		if(valor!="")
+			this.crearFechas(valor);
 	}
 	
 }

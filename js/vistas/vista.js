@@ -15,11 +15,43 @@ class Vista
 		this.actualizarSesion();	
 		
 		//this.inicializarSesion();
-		
+		this.inicializarMoment();
 
 
 
 
+	}
+	
+	inicializarMoment()
+	{
+		try
+		{
+			moment.updateLocale('es', {
+			    relativeTime : {
+			        future: "in %s",
+			        past:   "%s",
+			        s: function (number, withoutSuffix, key, isFuture){
+			            return '00:' + (number<10 ? '0':'') + number + ' min';
+			        },
+			        m:  "1 min",
+			        mm: function (number, withoutSuffix, key, isFuture){
+			            return (number<10 ? '0':'') + number + ' min';
+			        },
+			        h:  "1 hr",
+			        hh: "%d hr",
+			        d:  "1 d",
+			        dd: "%d d",
+			        M:  "a m",
+			        MM: "%d m",
+			        y:  "1 a",
+			        yy: "%d a"
+			    }
+			});
+		}
+		catch(e)
+		{
+			
+		}
 	}
 	
 	actualizarSesion()
@@ -1120,4 +1152,6 @@ class Vista
 				this.mostrarMensaje("","No hay documentos asignados");
 		}
 		
+		
+	
 }

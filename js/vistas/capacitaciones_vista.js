@@ -153,6 +153,8 @@ class CapacitacionesVista extends CatalogoVista
 	    
 	    
 	    this.consultar();
+	    this.inicializarMoment();
+	    this.consultarLeccionesReprobadas();
 	
 	}
 	

@@ -42,6 +42,8 @@ class ReporteAvanceCapacitacionVista extends CatalogoVista
 		this.crearFechas();
 		
 		this.consultarEmpresasCriterio();
+		 this.inicializarMoment();
+	    this.consultarLeccionesReprobadas();
 		//this.consultarCursosCriterio();
 		
 		//this.consultarDepartamentosCriterio();
@@ -612,7 +614,7 @@ class ReporteAvanceCapacitacionVista extends CatalogoVista
 		 $( "#"+id ).datepicker();
 	}
 	
-	crearFechas()
+	/*crearFechas()
 	{
 		var _this = this;
 			moment.locale('es') ;
@@ -650,7 +652,7 @@ class ReporteAvanceCapacitacionVista extends CatalogoVista
 			 
 			cb(start,end);
 				
-	}
+	}*/
 	
 	
 	
@@ -683,6 +685,7 @@ class ReporteAvanceCapacitacionVista extends CatalogoVista
 	{
 		//this.cargandoOpciones("#departamentoSelectCriterio");
 		this.consultarSedesCriterio();
+		this.consultarInicioTemporadaEmpresa();
 	}
 	
 	cambiarSedeCriterio()
@@ -1023,6 +1026,17 @@ class ReporteAvanceCapacitacionVista extends CatalogoVista
 		$(id).html(texto);
 		this._registroSeleccionado.porcentaje = modeloCapacitacion.porcentaje;
 		
+	}
+	
+	consultarInicioTemporadaEmpresa()
+	{
+		this.presentador.consultarInicioTemporadaEmpresa();
+	}
+	
+	set inicioTemporadaEmpresa(valor)
+	{
+		if(valor!="")
+			this.crearFechas(valor);
 	}
 	
 }

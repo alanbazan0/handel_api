@@ -236,6 +236,19 @@ class GraficaCapacitacionesPromedioLeccionPresentador extends CatalogoPresentado
 		,this.vista.criteriosSeleccion);
 	 }
 	 
+	 consultarInicioTemporadaEmpresa()	
+	 {
+		 var repositorio = new EmpresasRepositorio(this);		
+		 repositorio.consultarInicioTemporadaEmpresa(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.inicioTemporadaEmpresa = resultado.valor;			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },this.vista.criteriosSeleccion.empresaId);
+	 }
 	 
 	 
 	

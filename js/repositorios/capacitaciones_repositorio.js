@@ -735,6 +735,31 @@ class CapacitacionesRepositorio extends Repositorio
         });
 	}
 	
+	consultarCursosTerminadosDiploma(contexto,funcion, criteriosSeleccion, opcional)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+            url: url,
+            type: 'POST',
+            data: {accion : "consultarCursosTerminadosDiploma", criteriosSeleccion: JSON.stringify(criteriosSeleccion), opcional: opcional},
+            success: function( data, textStatus, jQxhr )
+            {
+                funcion.call(contexto,data);
+            },
+            error: function( jqXhr, textStatus, errorThrown )
+            {
+            	if(textStatus=="parsererror")
+        	   		funcion.call(contexto,{ mensajeError : jqXhr.responseText});
+           		else
+           			funcion.call(contexto,{ mensajeError : textStatus});
+            },
+            fail: function( jqXhr, textStatus, errorThrown )
+            {
+           	 funcion.call(contexto,{ mensajeError : textStatus});
+            }
+        });
+	}
+	
 	
 	consultarPreguntaAleatoria(contexto,funcion,cursoId, leccionId, modo)
 	{				
@@ -1164,13 +1189,13 @@ class CapacitacionesRepositorio extends Repositorio
       });
 	}
 	
-	eliminarUsuarioCapacitacionLeccion(contexto,funcion, usuarioId, cursoId, leccionId)
+	eliminarUsuarioCapacitacionLeccion(contexto,funcion, usuarioId, cursoId, leccionId, calificacion)
 	{				
 		var url = HANDEL_API + "/" + this.servicio;
 		 $.ajax({
           url: url,
           type: 'POST',
-          data: {accion : "eliminarUsuarioCapacitacionLeccion",usuarioId: usuarioId, cursoId: cursoId, leccionId: leccionId},
+          data: {accion : "eliminarUsuarioCapacitacionLeccion",usuarioId: usuarioId, cursoId: cursoId, leccionId: leccionId, calificacion: calificacion},
           success: function( data, textStatus, jQxhr )
           {
               funcion.call(contexto,data);
@@ -1289,5 +1314,73 @@ class CapacitacionesRepositorio extends Repositorio
 	        }
 	    });
 	}
+	
+	consultarLeccionesReprobadas(contexto,funcion, limite)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+	        url: url,
+	        type: 'POST',
+	        data: {accion : "consultarLeccionesReprobadas", limite: limite},
+	        success: function( data, textStatus, jQxhr )
+	        {
+	            funcion.call(contexto,data);
+	        },
+	        error: function( jqXhr, textStatus, errorThrown )
+	        {
+	       	 funcion.call(contexto,{ mensajeError : textStatus});
+	        },
+	        fail: function( jqXhr, textStatus, errorThrown )
+	        {
+	       	 funcion.call(contexto,{ mensajeError : textStatus});
+	        }
+	    });
+	}
+	
+	consultarNumeroNotificacionesNoLeidas(contexto,funcion, limite)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+	        url: url,
+	        type: 'POST',
+	        data: {accion : "consultarNumeroNotificacionesNoLeidas"},
+	        success: function( data, textStatus, jQxhr )
+	        {
+	            funcion.call(contexto,data);
+	        },
+	        error: function( jqXhr, textStatus, errorThrown )
+	        {
+	       	 funcion.call(contexto,{ mensajeError : textStatus});
+	        },
+	        fail: function( jqXhr, textStatus, errorThrown )
+	        {
+	       	 funcion.call(contexto,{ mensajeError : textStatus});
+	        }
+	    });
+	}
+	
+	leerNotificaciones(contexto,funcion, limite)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+	        url: url,
+	        type: 'POST',
+	        data: {accion : "leerNotificaciones"},
+	        success: function( data, textStatus, jQxhr )
+	        {
+	            funcion.call(contexto,data);
+	        },
+	        error: function( jqXhr, textStatus, errorThrown )
+	        {
+	       	 funcion.call(contexto,{ mensajeError : textStatus});
+	        },
+	        fail: function( jqXhr, textStatus, errorThrown )
+	        {
+	       	 funcion.call(contexto,{ mensajeError : textStatus});
+	        }
+	    });
+	}
+	
+	
 	
 }

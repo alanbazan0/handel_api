@@ -201,6 +201,11 @@ class EntrenamientoVista extends CatalogoVista
 				_this.diplomaPrimeraVez = true;
 				_this.mostrarFormularioDiploma();
 			});
+			
+		$("#diplomaButtonV2").click(function(){
+				_this.diplomaPrimeraVez = true;
+				_this.mostrarFormularioDiplomaV2();
+			});
 	
 	}
 	
@@ -280,46 +285,54 @@ class EntrenamientoVista extends CatalogoVista
 			_this.consultarEmpresasDiploma();
 			
 			
-			moment.locale('es') ;
-			var start = moment().startOf('year');
-    		var end = moment();	
-
-		 function cb(start, end) {
-				_this._fechaInicial = start.format('DD/MM/YYYY');
-				_this._fechaFinal = end.format('DD/MM/YYYY');
-		       	$('#daterange-btn span').html(start.format('D MMMM YYYY') + ' - ' + end.format('D MMMM YYYY'))
-		    }
-
-			$('#daterange-btn').daterangepicker(
-		      {
-			// drops: 'up',
-				drops: 'auto',
-				//opens: 'center',
-		        ranges   : {
-		          'Histórico'       : ["01/08/2020", moment()],
-		          'Este año'   : [moment().startOf('year'),, moment()],
-		          'Ultimo año'   : [moment().subtract(1, 'year'), moment()],
-		          'Ultimo semestre' : [moment().subtract(6, 'month'), moment()],
-		          'Ultimo trimestre': [moment().subtract(3, 'month'), moment()],
-		          'Este mes'  : [moment().startOf('month'), moment().endOf('month')],
-		          'Mes pasado'  : [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-		        },
-		        startDate: start,
-		        endDate  : end,
-				locale: {
-				    "customRangeLabel": "Rango",
-					"cancelLabel" : "Cancelar"
-				  },
-		      },
-		      cb
-		    );
-			 
-			cb(start,end);
+		
+			_this.crearFechas();
+			
 			
 		},null,"reporteModal","","imprimirButton",function()
 		{
 			//$("#reporteFormulario").submit();
 			_this.imprimirDiploma();
+			
+		},function()
+		{
+			_this.diplomaEmpresa = false;
+			_this.diplomaSede = false;
+			_this.diplomaDepartamento = false;
+			_this.diplomaUsuario = false;
+		});
+	}
+	
+	mostrarFormularioDiplomaV2()
+	{
+		var _this = this;
+		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/diploma.php",this, null, function()
+		{
+			_this.diplomaEmpresa = true;
+			_this.diplomaSede = true;
+			_this.diplomaDepartamento = true;
+			_this.diplomaUsuario = true;
+			
+			if(this.usuario.tipoUsuarioId != TipoUsuario.ADMINISTRADOR && this.usuario.tipoUsuarioId != TipoUsuario.COORDINADOR && this.usuario.tipoUsuarioId != TipoUsuario.SUPERVISOR )
+			{
+				$("#empresaSelectDiploma").attr("disabled",true);
+				$("#sedeSelectDiploma").attr("disabled",true);
+				$("#departamentoSelectDiploma").attr("disabled",true);
+				$("#usuarioSelectDiploma").attr("disabled",true);
+			}
+			
+			
+			_this.consultarEmpresasDiploma();
+			
+			
+		
+			_this.crearFechas();
+			
+			
+		},null,"reporteModal","","imprimirButton",function()
+		{
+			//$("#reporteFormulario").submit();
+			_this.imprimirDiplomaV2();
 			
 		},function()
 		{
@@ -410,6 +423,55 @@ class EntrenamientoVista extends CatalogoVista
 	            if (isConfirm) 
 	            {
 	            	var submitForm = _this.getNewSubmitForm(HANDEL_API+"/php/reportes/diploma.php");
+						_this.createNewFormElement(submitForm, "criteriosSeleccion", JSON.stringify(_this.criteriosSeleccionDiploma));	 
+					    submitForm.target= "_blank";
+					    submitForm.submit();
+	            }
+	        });
+		}
+		else
+			this.mostrarMensajeAdvertencia("Advertencia","Todos los criterios son obligatorios")
+	}
+	
+	imprimirDiplomaV2()
+	{
+		if(this.criteriosSeleccionDiploma.empresaId!="" && this.criteriosSeleccionDiploma.sedeId!="" && this.criteriosSeleccionDiploma.departamentoId!="" && this.criteriosSeleccionDiploma.usuarioId!="")
+		{
+			var empresaNombre = $( "#empresaSelectDiploma option:selected" ).text();
+			var sedeNombre = $( "#sedeSelectDiploma option:selected" ).text();
+			var departamentoNombre = $( "#departamentoSelectDiploma option:selected" ).text();
+			var usuarioNombre = $( "#usuarioSelectDiploma option:selected" ).text();
+			var _this = this;
+			var texto = `<p>CAVI va a generar el diploma: en una nueva pestaña, esto podría tardar unos segundos, por favor verifica que el bloqueador de ventanas no esté activo 
+						y espera tu diploma.</p>
+						<p><strong>El diploma solicitado es</strong>
+						<br>
+						
+						`+empresaNombre+ "<br>" +
+						sedeNombre+ "<br>" +
+						departamentoNombre+ "<br>" +
+						usuarioNombre+ "<br>" +
+						_this._fechaInicial + " - " + _this._fechaFinal + "<br>"+
+						`</p>`;
+				swal({
+		            title: "",
+	            text: texto,
+				html: true,
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#3c8dbc",
+	            confirmButtonText: "Aceptar",
+				cancelButtonColor: "#DD6B55",
+	            cancelButtonText: "Cancelar",
+	            closeOnConfirm: true,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	var submitForm = _this.getNewSubmitForm(HANDEL_API+"/php/reportes/diplomaV2.php");
 						_this.createNewFormElement(submitForm, "criteriosSeleccion", JSON.stringify(_this.criteriosSeleccionDiploma));	 
 					    submitForm.target= "_blank";
 					    submitForm.submit();
@@ -1553,6 +1615,7 @@ class EntrenamientoVista extends CatalogoVista
 	{
 		//this.cargandoOpciones("#departamentoSelectCriterio");
 		this.consultarSedesReporte();
+		this.consultarInicioTemporadaEmpresaReporte();
 	}
 	
 	cambiarEmpresaDiploma()
@@ -1561,6 +1624,7 @@ class EntrenamientoVista extends CatalogoVista
 		this.cargandoOpciones("#departamentoSelectDiploma");
 		this.cargandoOpciones("#usuarioSelectDiploma");
 		this.consultarSedesDiploma();
+		this.consultarInicioTemporadaEmpresaDiploma();
 	}
 	
 	cambiarSedeDiploma()
@@ -1682,6 +1746,21 @@ class EntrenamientoVista extends CatalogoVista
 		}
 	}
 	
+	consultarInicioTemporadaEmpresaDiploma()
+	{
+		this.presentador.consultarInicioTemporadaEmpresaDiploma();
+	}
+	
+	consultarInicioTemporadaEmpresaReporte()
+	{
+		this.presentador.consultarInicioTemporadaEmpresaReporte();
+	}
+	
+	set inicioTemporadaEmpresa(valor)
+	{
+		if(valor!="")
+			this.crearFechas(valor);
+	}
 	
 }
 var vista = new EntrenamientoVista(this);

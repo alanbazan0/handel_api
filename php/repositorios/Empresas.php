@@ -92,13 +92,14 @@ try
             case 'consultarEstructura':
                 $resultado = $repositorio->consultarEstructura(false);
             break;
-           
             case 'eliminar':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);
             break;
-            
-            
+            case 'consultarInicioTemporadaEmpresa':
+                $empresaId = REQUEST('empresaId');
+                $resultado = $repositorio->consultarInicioTemporadaEmpresa($empresaId);
+            break;
             default:
                 $resultado->mensajeError = "Acción no válida";
             break;

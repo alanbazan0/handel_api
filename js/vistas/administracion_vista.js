@@ -43,6 +43,8 @@ class AdministracionVista extends CatalogoVista
 		this.consultoGrid = false;
 		this.consultarDepartamentosCriterio();
 		this.consultarPerfilesCriterio();
+		 this.inicializarMoment();
+	    this.consultarLeccionesReprobadas();
 		//this.consultarEmpresasCriterio();
 	}
 	

@@ -9,6 +9,13 @@ class CatalogoVista extends Vista
 		this.tabla = new Tabla("tabla");	
 		this.modeloActual=null;
 		this._urlFormulario = "";
+		var fecha = new Date();
+		this._time = fecha.getTime();
+	}
+	
+	get time()
+	{
+		return this._time;
 	}
 	
 	inicializar(consultarTabla)
@@ -37,12 +44,15 @@ class CatalogoVista extends Vista
 		
 		if(consultarTabla)	
 			this.consultar();
+			
+		this.consultarLeccionesReprobadas();
 	}
 	
 	
 	
 	inicializarFechas()
 	{
+		
 		$.datepicker.regional['es'] = {
 				 closeText: 'Cerrar',
 				 prevText: '< Ant',
@@ -61,6 +71,9 @@ class CatalogoVista extends Vista
 				 yearSuffix: ''
 				 };
 				 
+		try
+		{
+				 
 			$.fn.datepicker.dates['es'] = {
 				days: ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"],
 				daysShort: ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"],
@@ -73,6 +86,11 @@ class CatalogoVista extends Vista
 				weekStart: 1,
 				format: "dd/mm/yyyy"
 			};
+		}
+		catch(e)
+		{
+			
+		}	
 		
 		$.datepicker.setDefaults($.datepicker.regional['es']);
 	}
@@ -202,6 +220,14 @@ class CatalogoVista extends Vista
 		if($("#tareasPendientesSpan").length>0)
 		{
 			this.presentador.consultarTareasPendientes();
+		}
+	}
+	
+	consultarLeccionesReprobadas()
+	{
+		if($("#leccionesReprobadasLi").length>0)
+		{
+			this.presentador.consultarLeccionesReprobadas();
 		}
 	}
 	
@@ -479,7 +505,123 @@ class CatalogoVista extends Vista
 		}
 	}
 	
-	
+	crearFechas(fechaInicioTemporada)
+	{
+		var _this = this;
+		moment.locale('es') ;
+		
+		
+		var start = moment().subtract(1, 'years');
+		var end = moment();	
 
+		
+		    
+	    var ranges = {
+	          'Histórico'       : ["01/08/2020", moment()],
+	          'Ultimo año'   : [moment().subtract(1, 'year'), moment()],
+	          'Ultimo semestre' : [moment().subtract(6, 'month'), moment()],
+	          'Ultimo trimestre': [moment().subtract(3, 'month'), moment()],
+	          'Este mes'  : [moment().startOf('month'), moment().endOf('month')],
+	          'Mes pasado'  : [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+	        };
+	     
+	    if(fechaInicioTemporada!=null && fechaInicioTemporada!="")
+	    {
+			
+			start = moment(fechaInicioTemporada, "DD-MM-YYYY");
+			end = moment();	
+			
+			ranges = {
+			  'Inicio de temporada' : [fechaInicioTemporada, moment()],
+	          'Histórico'       : [moment("01/08/2020", "DD-MM-YYYY"), moment()],
+	          'Ultimo año'   : [moment().subtract(1, 'year'), moment()],
+	          'Ultimo semestre' : [moment().subtract(6, 'month'), moment()],
+	          'Ultimo trimestre': [moment().subtract(3, 'month'), moment()],
+	          'Este mes'  : [moment().startOf('month'), moment().endOf('month')],
+	          'Mes pasado'  : [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+	        };
+			
+		}
+		else
+		{
+			start = moment().subtract(1, 'years');
+			end = moment();	
+			
+		  	ranges = {
+	          'Histórico'       : [moment("01/08/2020", "DD-MM-YYYY"), moment()],
+	          'Ultimo año'   : [moment().subtract(1, 'year'), moment()],
+	          'Ultimo semestre' : [moment().subtract(6, 'month'), moment()],
+	          'Ultimo trimestre': [moment().subtract(3, 'month'), moment()],
+	          'Este mes'  : [moment().startOf('month'), moment().endOf('month')],
+	          'Mes pasado'  : [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+	        };
+		}
+	    	
+
+		$('#daterange-btn').daterangepicker(
+	      {
+		// drops: 'up',
+			drops: 'auto',
+			//opens: 'center',
+	        ranges   : ranges,
+	        startDate: start,
+	        endDate  : end,
+			locale: {
+			    "customRangeLabel": "Rango",
+				"cancelLabel" : "Cancelar"
+			  },
+	      },
+	      cb
+	    );
+		 
+		 function cb(start, end) {
+			_this._fechaInicial = start.format('DD/MM/YYYY');
+			_this._fechaFinal = end.format('DD/MM/YYYY');
+	       	$('#daterange-btn span').html(start.format('D MMMM YYYY') + ' - ' + end.format('D MMMM YYYY'))
+	    }
+	     
+		cb(start,end);
+				
+	}
+	
+	set leccionesReprobadas(lecciones)
+	{
+		if(lecciones.length>0)
+		{
+			//$("#leccionesReprobadasNumeroSpan").html(lecciones.length);
+			//$("#leccionesReprobadasMensajeLi").html("Tienes " +lecciones.length +" notificaciones");
+			
+			var html = "";
+			
+			for(var i = 0; i < lecciones.length; i++)
+			{
+				html += new Notificacion().renderizar( lecciones[i]);
+			}
+			
+			$("#leccionesReprobadasUl").html(html);
+			
+		}
+	}
+	
+	set notificacionesNoLeidas(notificacionesNoLeidas)
+	{
+		if(notificacionesNoLeidas>0)
+		{
+			$("#leccionesReprobadasNumeroSpan").html(notificacionesNoLeidas);
+			//$("#leccionesReprobadasMensajeLi").html("Tienes " +notificacionesNoLeidas +" notificaciones");
+		}	
+		else
+		{
+			$("#leccionesReprobadasNumeroSpan").html("");
+			//$("#leccionesReprobadasMensajeLi").html("Tienes " +notificacionesNoLeidas +" notificaciones");
+		}	
+	}
+	
+	leerNotificaciones()
+	{
+		var html = $("#leccionesReprobadasNumeroSpan").html();
+		if(html!="")
+			this.presentador.leerNotificaciones();
+	}
 	
 }

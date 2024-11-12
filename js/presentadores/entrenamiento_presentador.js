@@ -504,6 +504,8 @@ class EntrenamientoPresentador extends CatalogoPresentador
 		 },this.vista.criteriosSeleccion);
 	 }
 	 
+	 
+	 
 	 consultarAvanceUsuario()
 	 {
 		 this.vista.mostrarIndicador();
@@ -656,6 +658,33 @@ class EntrenamientoPresentador extends CatalogoPresentador
 		,{empresaId: this.vista.criteriosSeleccionDiploma.empresaId, sedeId: this.vista.criteriosSeleccionDiploma.sedeId, departamentoId: this.vista.criteriosSeleccionDiploma.departamentoId, permisoCAVI: 1, estatus: 1},false);
 	 }
 	 
+	  consultarInicioTemporadaEmpresaDiploma()	
+	 {
+		 var repositorio = new EmpresasRepositorio(this);		
+		 repositorio.consultarInicioTemporadaEmpresa(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.inicioTemporadaEmpresa = resultado.valor;			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },this.vista.criteriosSeleccionDiploma.empresaId);
+	 }
+	 
+	  consultarInicioTemporadaEmpresaReporte()	
+	 {
+		 var repositorio = new EmpresasRepositorio(this);		
+		 repositorio.consultarInicioTemporadaEmpresa(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.inicioTemporadaEmpresa = resultado.valor;			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },this.vista.criteriosSeleccionReporte.empresaId);
+	 }
 	 
 	
 }

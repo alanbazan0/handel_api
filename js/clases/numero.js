@@ -1,9 +1,9 @@
 class Numero
 {
-	static formato(valor, decimales) 
+	static formato(valor) 
 	{
-    	var re = new RegExp('^-?\\d+(?:\.\\d{0,' + (decimales || -1) + '})?');
-	    return valor.toString().match(re)[0];
+    	 return valor.toLocaleString();
 	}
+	
 
 }

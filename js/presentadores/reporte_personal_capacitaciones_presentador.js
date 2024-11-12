@@ -330,5 +330,19 @@ class ReportePersonalCapacitacionesPresentador extends CatalogoPresentador
 				 this.vista.mostrarMensajeError("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError, resultado.codigoError);
 		 },this.vista.registroSeleccionado.usuarioId, vista.registroSeleccionado.cursoId);
 	}
+	
+	 consultarInicioTemporadaEmpresa()	
+	 {
+		 var repositorio = new EmpresasRepositorio(this);		
+		 repositorio.consultarInicioTemporadaEmpresa(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.inicioTemporadaEmpresa = resultado.valor;			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },this.vista.criteriosSeleccion.empresaId);
+	 }
 	 
 }

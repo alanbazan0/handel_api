@@ -157,5 +157,21 @@ class CapacitacionPresentador extends CatalogoPresentador
 		 }
 		 ,this.vista.cursoId, this.vista.leccionIdSeleccionada,preguntaId,respuestaId );
 	}
-	 
+	
+	eliminarIntentoLeccion(calificacion, volverAVer)
+	{
+		this.vista.mostrarIndicador();	
+		this._repositorio.eliminarUsuarioCapacitacionLeccion(this, function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+			 	this.vista.cerrarIntento(this.vista._leccionIdSeleccionada,volverAVer);
+			 }
+			 else
+				 this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		 ,this.vista.usuario.id, this.vista.cursoId, this.vista._leccionIdSeleccionada,calificacion);
+	
+	} 
 }

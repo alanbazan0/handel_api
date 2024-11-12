@@ -203,7 +203,7 @@ abstract class PDF extends FPDF
     private function calcularFolio()
     {
        // $folio ="Seguimiento". $this->auditoria->id;
-        $folio="RCV";
+        $folio.="RCV";
         if($this->empresa!=null)
             $folio.="-".$this->empresa->nombreCorto;
         if($this->sede!=null)
@@ -700,7 +700,7 @@ abstract class PDF extends FPDF
              $this->comparativaAvanceAprovechamiento();
             
               $this->avanceDepartamentos($colores);
-             $this->aprovechamientoDepartamentos($colores);
+              $this->aprovechamientoDepartamentos($colores);
               $this->usuariosDepartamento($colores);
               $this->resumenCapacitaciones();
               $this->mejoresAprovechamiento();
@@ -1085,7 +1085,6 @@ abstract class PDF extends FPDF
         
         $this->fontSizes = array(10, 10, 10, 10, 10, 10);
         $this->fontWeights = array("B","B","B","B","B","B");
-        $this->fontNames = array($this->font,$this->font,$this->font,$this->font,$this->font,$this->font);
         $this->aligns = array("C","C","C","C","C","C");
         $this->widths = array(15, 90, 34.25, 34.25, 34.25, 34.25);
         $this->textColors = array("#ffffff","#ffffff","#ffffff","#ffffff","#ffffff","#ffffff");
@@ -1163,7 +1162,6 @@ abstract class PDF extends FPDF
         
         $this->fontSizes = array(10, 10, 10, 10, 10,10);
         $this->fontWeights = array("B","B","B","B","B","B");
-        $this->fontNames = array($this->font,$this->font,$this->font,$this->font,$this->font,$this->font);
         $this->aligns = array("C","C","C","C","C","C");
         $this->widths = array(15, 56, 56, 52, 34, 34);
         $this->textColors = array("#ffffff","#ffffff","#ffffff","#ffffff","#ffffff","#ffffff");
@@ -1182,44 +1180,28 @@ abstract class PDF extends FPDF
         {
             $registros = $resultado->valor;
             
-            $resultado = $repositorio->consultarUsuariosReprobados($this->usuario, $this->criteriosSeleccion);
-            if($resultado->correcto())
+            usort($registros, array("PDF", "compartarPorcentaje"));
+            $limite = 10;
+            
+            for($i = 0; $i < count($registros) && $i < $limite; $i++)
             {
-                $usuariosReprobados = $resultado->valor;
-                $registros = $this->filtrarNoReprobados($registros, $usuariosReprobados);
-                
-                usort($registros, array("PDF", "compartarPorcentaje"));
-                $limite = 10;
-                
-                for($i = 0; $i < count($registros) && $i < $limite; $i++)
+                $registro = $registros[$i];
+                if($registro->porcentaje>=80)
                 {
-                    $registro = $registros[$i];
-                    if($registro->porcentaje>=80)
-                    {
-                        $color = "";
-                        if($i%2==0)
-                            $color = "#ffffff";
-                        else
-                            $color = "#f5f5f5";
-                        $this->backgroundColors = array("#e6e6e6",$color,$color,$color,$color,$color);
-                        
-                        $id = $i+1;
-                        $this->Row2(array($id,$this->texto($registro->nombre),$this->texto($registro->apellido),$this->texto($registro->departamentoNombre),$registro->porcentajeAvance, $registro->porcentaje),8);
-                                
-                    }
+                    $color = "";
+                    if($i%2==0)
+                        $color = "#ffffff";
+                    else
+                        $color = "#f5f5f5";
+                    $this->backgroundColors = array("#e6e6e6",$color,$color,$color,$color,$color);
+                    
+                    $id = $i+1;
+                    $this->Row2(array($id,$this->texto($registro->nombre),$this->texto($registro->apellido),$this->texto($registro->departamentoNombre),$registro->porcentajeAvance, $registro->porcentaje),8);
+                    
                 }
             }
-            
-           
         }
      
-    }
-    
-   
-    function filtrarNoReprobados($registros, $usuariosReprobados)
-    {
-       
-        return $registros;
     }
     
     static function compartarPorcentaje($a, $b)

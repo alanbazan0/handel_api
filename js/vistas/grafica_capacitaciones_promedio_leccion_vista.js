@@ -23,9 +23,6 @@ class GraficaCapacitacionesPromedioLeccionVista extends CatalogoVista
 			_this.iniciarSubirFormato();
 		});
 		
-		//this.crearFechas();
-		
-		//this.crearFecha("fechaInicialInputCriterio");
 		
 		this.crearColumnasGrid();		
 		
@@ -33,7 +30,8 @@ class GraficaCapacitacionesPromedioLeccionVista extends CatalogoVista
 		this.consultarDepartamentosCriterio();
 		
 		this.crearFechas();
-		//this.consultarDepartamentosCriterio();
+		 this.inicializarMoment();
+	    this.consultarLeccionesReprobadas();
 	}
 	
 
@@ -598,45 +596,7 @@ class GraficaCapacitacionesPromedioLeccionVista extends CatalogoVista
 	}
 	
 
-	crearFechas()
-	{
-		var _this = this;
-			moment.locale('es') ;
-			var start = moment().subtract(1, 'years');
-    		var end = moment();	
 
-		 function cb(start, end) {
-				_this._fechaInicial = start.format('DD/MM/YYYY');
-				_this._fechaFinal = end.format('DD/MM/YYYY');
-		       	$('#daterange-btn span').html(start.format('D MMMM YYYY') + ' - ' + end.format('D MMMM YYYY'))
-		    }
-
-			$('#daterange-btn').daterangepicker(
-		      {
-			// drops: 'up',
-				drops: 'auto',
-				//opens: 'center',
-		        ranges   : {
-		          'Histórico'       : ["01/08/2020", moment()],
-		          'Ultimo año'   : [moment().subtract(1, 'year'), moment()],
-		          'Ultimo semestre' : [moment().subtract(6, 'month'), moment()],
-		          'Ultimo trimestre': [moment().subtract(3, 'month'), moment()],
-		          'Este mes'  : [moment().startOf('month'), moment().endOf('month')],
-		          'Mes pasado'  : [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-		        },
-		        startDate: start,
-		        endDate  : end,
-				locale: {
-				    "customRangeLabel": "Rango",
-					"cancelLabel" : "Cancelar"
-				  },
-		      },
-		      cb
-		    );
-			 
-			cb(start,end);
-				
-	}
 	
 	
 	consultarEmpresasCriterio()
@@ -675,6 +635,7 @@ class GraficaCapacitacionesPromedioLeccionVista extends CatalogoVista
 	{
 		//this.cargandoOpciones("#departamentoSelectCriterio");
 		this.consultarSedesCriterio();
+		this.consultarInicioTemporadaEmpresa();
 	}
 	
 	cambiarSedeCriterio()
@@ -825,6 +786,17 @@ class GraficaCapacitacionesPromedioLeccionVista extends CatalogoVista
 			}); // end am4core.ready()
 
 
+	}
+	
+	consultarInicioTemporadaEmpresa()
+	{
+		this.presentador.consultarInicioTemporadaEmpresa();
+	}
+	
+	set inicioTemporadaEmpresa(valor)
+	{
+		if(valor!="")
+			this.crearFechas(valor);
 	}
 }
 var vista = new GraficaCapacitacionesPromedioLeccionVista(this);

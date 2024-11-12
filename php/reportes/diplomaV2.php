@@ -468,7 +468,7 @@ function capacitaciones()
     $repositorio = new CursosRepositorio($this->conexion);
     
     
-    $resultado = $repositorio->consultarCursosTerminados($this->usuarioDiploma,  $this->criteriosSeleccion);
+    $resultado = $repositorio->consultarCursosTerminadosDiploma($this->usuarioDiploma,  $this->criteriosSeleccion);
     $numeroColumnas = 3;
     $anchoColumna = ($this->w - ($this->margen*2)) / $numeroColumnas;
     $altoColumna = 4;
@@ -552,8 +552,8 @@ function porcentaje()
     
     $repositorio = new CursosRepositorio($this->conexion);
     $criteriosSeleccion = (object) [ "fechaInicialTerminado" => $this->criteriosSeleccion->fechaInicialTerminado, "fechaFinalTerminado" => $this->criteriosSeleccion->fechaFinalTerminado];
-   // $resultado = $repositorio->consultarAprovechamientoUsuarioDiploma($this->usuarioDiploma, $criteriosSeleccion);
-    $resultado = $repositorio->consultarAprovechamientoUsuario($this->usuarioDiploma, $criteriosSeleccion);
+    $resultado = $repositorio->consultarAprovechamientoUsuarioDiploma($this->usuarioDiploma, $criteriosSeleccion);
+    //$resultado = $repositorio->consultarAprovechamientoUsuario($this->usuarioDiploma, $criteriosSeleccion);
     if($resultado->correcto())
     {
         $resultados = $resultado->valor;

@@ -114,13 +114,14 @@ try
                     $resultado = $repositorio->consultarCursosPendientes($usuario,$criteriosSeleccion);
                 break;
                 case 'consultarCursosTerminados':
-//                     session_start();
-//                     $usuario = null;
-//                     if(isset($_SESSION['usuario']))
-//                         $usuario = $_SESSION['usuario'];
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarCursosTerminados($usuario,$criteriosSeleccion);
                 break;
+                case 'consultarCursosTerminadosDiploma':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarCursosTerminadosDiploma($usuario,$criteriosSeleccion);
+                    break;
+                    
                 case 'ordenarPreguntas':
                     $cursoId = REQUEST('cursoId');
                     $leccionId = REQUEST('leccionId');
@@ -433,13 +434,26 @@ try
                     $usuarioId = REQUEST('usuarioId');
                     $cursoId = REQUEST('cursoId');
                     $leccionId = REQUEST('leccionId');
-                    $resultado = $repositorio->eliminarUsuarioCapacitacionLeccion($usuarioId, $cursoId, $leccionId);
+                    $calificacion = REQUEST('calificacion');
+                    $resultado = $repositorio->eliminarUsuarioCapacitacionLeccion($usuarioId, $cursoId, $leccionId,$calificacion);
                 break;
-                
                 case 'consultarUsuarioCapacitacion':
                     $usuarioId = REQUEST('usuarioId');
                     $cursoId = REQUEST('cursoId');
                     $resultado = $repositorio->consultarUsuarioCapacitacion($usuarioId, $cursoId);
+                break;
+                case 'consultarLeccionesReprobadas':
+                    $limite = REQUEST('limite');
+                    $resultado = $repositorio->consultarLeccionesReprobadas($usuario,$limite);
+                break;
+                case 'consultarNumeroNotificacionesNoLeidas':
+                    $resultado = $repositorio->consultarNumeroNotificacionesNoLeidas($usuario);
+                break;
+                case 'consultarNotificacionesNoLeidas':
+                    $resultado = $repositorio->consultarNotificacionesNoLeidas($usuario);
+                break;
+                case 'leerNotificaciones':
+                    $resultado = $repositorio->leerNotificaciones($usuario);
                 break;
                 default:
                     $resultado->mensajeError = "Acción no válida";
