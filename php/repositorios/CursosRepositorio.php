@@ -4682,9 +4682,72 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     public function consultarUsuariosReprobados($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
-        $registros = array();
         
-        $resultado->valor = $registros;
+        $filtroFechas = "";
+        if(isset($criteriosSeleccion->fechaInicial) && isset($criteriosSeleccion->fechaFinal))
+        {
+            if($criteriosSeleccion->fechaInicial!=null && $criteriosSeleccion->fechaInicial!="" && $criteriosSeleccion->fechaFinal!=null && $criteriosSeleccion->fechaFinal!=null)
+            {
+                list($diaInicial, $mesInicial, $anoInicial) = explode("/", $criteriosSeleccion->fechaInicial);
+                list($diaFinal, $mesFinal, $anoFinal) = explode("/", $criteriosSeleccion->fechaFinal);
+                $filtroFechas = " AND DATE(LR.fecha) >= '$anoInicial-$mesInicial-$diaInicial' AND DATE(LR.fecha) <= '$anoFinal-$mesFinal-$diaFinal' ";
+            }
+        }
+            
+        $lecciones = array();
+        $consulta = "SELECT  LR.usuario_id, U.nombre, U.apellido
+                FROM appshand_saha.usuarios_cursos_lecciones_reprobadas LR
+                	INNER JOIN usuarios U ON U.id = LR.usuario_id
+                	INNER JOIN cursos C ON C.id = LR.curso_id
+                    INNER JOIN cursos_lecciones L ON L.id = LR.leccion_id AND L.curso_id = LR.curso_id
+                WHERE U.empresa_id =  ?
+                $filtroFechas
+                GROUP BY LR.usuario_id,  U.nombre, U.apellido";
+         
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$criteriosSeleccion->empresaId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($usuarioId,$usuarioNombre, $usuarioApellido))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro= (object) [
+                                'usuarioId' =>  $usuarioId,
+                                'usuarioNombre' => $usuarioNombre,
+                                'usuarioApellido' => $usuarioApellido
+                                
+                            ];
+                            
+                           /* $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
+                            $registro->fotoPerfil =  "../fotos/usuario". $registro->usuarioId .".jpg";
+                            if(file_exists($registro->fotoPerfil))
+                                $registro->fotoPerfil =  "php/fotos/usuario". $registro->usuarioId .".jpg";
+                            else
+                                $registro->fotoPerfil =  "php/fotos/default.jpg";*/
+                                
+                            array_push($lecciones,$usuarioId);
+                        }
+                        $resultado->valor = $lecciones;
+                        
+                        $sentencia->close();
+                        
+                        }
+                        else
+                            $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                else
+                   $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                
         return $resultado;
     }
   
@@ -6719,6 +6782,7 @@ public function consultarAvanceCapacitaciones($usuario,$criteriosSeleccion)
                         
                         return $resultado;
     }
+    
     
     public function leerNotificaciones($usuario)
     {

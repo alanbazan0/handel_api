@@ -561,7 +561,7 @@ abstract class PDF extends FPDF
         $this->SetFont($this->font,'',12);
         $this->Cell(0,6,$this->texto($this->empresa->nombre),0,2,'C');
         $sedeNombre = "Todas las sedes";
-        iF($this->sede!=null)
+        iF(isset($this->sede) && $this->sede!=null)
             $sedeNombre = $this->sede->nombre;
         $this->Cell(0,6,$this->texto($sedeNombre),0,2,'C');
         
@@ -1218,8 +1218,27 @@ abstract class PDF extends FPDF
    
     function filtrarNoReprobados($registros, $usuariosReprobados)
     {
-       
-        return $registros;
+        $filtrados = array();
+        for($i = 0; $i < count($registros); $i++)
+        {
+            $registro = $registros[$i];
+            if(!$this->existe($registro->id,$usuariosReprobados))
+            {
+                array_push($filtrados, $registro);
+            }
+        }
+        return $filtrados;
+    }
+    
+    function existe($id, $ids)
+    {
+        for($i = 0; $i < count($ids); $i++)
+        {
+            $valor = $ids[$i];
+            if($valor == $id)
+                return true;
+        }
+        return false;
     }
     
     static function compartarPorcentaje($a, $b)
@@ -1359,7 +1378,7 @@ class ReporteFabrica
     }
 }
 
-
+$conexion = null;
 $administrador_conexion = new AdministradorConexion();
 try
 {
