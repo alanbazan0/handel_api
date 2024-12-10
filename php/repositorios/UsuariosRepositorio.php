@@ -72,7 +72,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         return $resultado;
     }
     
-    
+   
    
     public function insertar($usuario,Usuario $modelo)
     {            
@@ -96,6 +96,8 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 $modelo->numeroEmpleado=null;
             if($modelo->verificador=="")
                 $modelo->verificador=null;
+            
+            $this->ajustarCampos($modelo);
                     
                 
             if($resultado->mensajeError=="")
@@ -444,6 +446,9 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             $modelo->areaId=null;
         if($modelo->verificador=="")
             $modelo->verificador=null;
+        
+         $this->ajustarCampos($modelo);
+            
         $resultado = new Resultado();
         $consulta = " UPDATE usuarios " .
                     "SET nombre_usuario = ?, " .
@@ -512,6 +517,39 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         else
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;   
         return $resultado;        
+    }
+    
+    public function actualizarNombreApellido($modelo)
+    {
+        $this->ajustarCampos($modelo);
+        
+        $resultado = new Resultado();
+        $consulta = " UPDATE usuarios " .
+                    "SET nombre_usuario = ?, " .
+                    " nombre = ?, " .
+                    " apellido = ? " .
+                    "WHERE id = ?";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("sssi",
+                $modelo->nombreUsuario,
+                $modelo->nombre,
+                $modelo->apellido,
+                $modelo->id))
+            {
+                if($sentencia->execute())
+                {
+                    $resultado->valor=true;
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else  $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        return $resultado;
     }
     
     private function crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id, $supervisor2, $supervisor3Id, $supervisor3, $fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus, $tipoEmpresaId, $tipoAreaId, $permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre,$permisoCAVI, $perfilId, $perfilNombre, $recursosHumanos, $numeroEmpleado, $empresaEstatus, $verificador, $urlDocumentos)
@@ -2097,5 +2135,39 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             return $resultado;
     }
     
+    function ajustarCampos($modelo)
+    {
+        $modelo->nombre = trim(mb_convert_case($modelo->nombre, MB_CASE_TITLE, "UTF-8"));
+        $modelo->apellido = trim(mb_convert_case($modelo->apellido, MB_CASE_TITLE, "UTF-8"));
+        $modelo->nombreUsuario = trim(strtolower($modelo->nombreUsuario));
+        $modelo->nombre  = str_replace("  ", " ",  $modelo->nombre );
+        $modelo->apellido  = str_replace("  ", " ",  $modelo->apellido );
+    }
+    
+    public function ajustarCamposUsuarios($usuario)
+    {
+        $resultado = $this->consultar($usuario, (object)[], false);
+        if($resultado->correcto())
+        {
+            $registros = $resultado->valor;
+            for($i = 0; $i < count($registros); $i++)
+            {
+                $usuario = $registros[$i];
+                
+                //if($usuario->id == 1439 )
+                //{
+                $this->ajustarCampos($usuario);
+                echo "\n".$usuario->id . " " . $usuario->nombre . " " . $usuario->apellido . " " . $usuario->nombreUsuario;
+                
+                $resultado = $this->actualizarNombreApellido($usuario);  
+                if($resultado->correcto())
+                    echo " OK";
+                else 
+                    echo " ". $resultado->mensajeError;
+                //}
+                
+            }
+        }
+    }
 }
 ?>

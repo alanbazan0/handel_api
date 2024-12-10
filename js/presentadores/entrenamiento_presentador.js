@@ -686,5 +686,18 @@ class EntrenamientoPresentador extends CatalogoPresentador
 		 },this.vista.criteriosSeleccionReporte.empresaId);
 	 }
 	 
+	 consultarLeccionesReprobadasSinTerminar()
+	 {
+		 this._repositorio.consultarLeccionesReprobadasSinTerminar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.leccionesReprobadasSinTerminar = resultado.valor;			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError,resultado.codigoError);
+		 }
+		);
+	 }
 	
 }

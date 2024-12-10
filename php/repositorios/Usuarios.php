@@ -466,6 +466,13 @@ try
                 $perfilId = REQUEST('perfilId');
                 $resultado = $repositorio->actualizarPerfil($usuariosIds,$perfilId);
             break;
+            case 'ajustarCamposUsuarios':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $resultado = $repositorio->ajustarCamposUsuarios($usuario);
+            break;
 //             case 'enviarNotificacion':
 //                 session_start();
 //                 $usuario = null;

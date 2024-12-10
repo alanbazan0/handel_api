@@ -814,11 +814,7 @@ class ReportePersonalVista extends CatalogoVista
 		this.presentador.consultarInicioTemporadaEmpresa();
 	}
 	
-	set inicioTemporadaEmpresa(valor)
-	{
-		if(valor!="")
-			this.crearFechas(valor);
-	}
+	
 	
 }
 var vista = new ReportePersonalVista(this);

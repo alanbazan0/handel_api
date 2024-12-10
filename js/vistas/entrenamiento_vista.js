@@ -207,8 +207,13 @@ class EntrenamientoVista extends CatalogoVista
 				_this.mostrarFormularioDiplomaV2();
 			});
 	
+		this.consultarLeccionesReprobadasSinTerminar();
 	}
 	
+	consultarLeccionesReprobadasSinTerminar()
+	{
+		this.presentador.consultarLeccionesReprobadasSinTerminar();
+	}
 	
 	mostrarFormularioReporteCapacitacionVirtual()
 	{
@@ -1107,13 +1112,14 @@ class EntrenamientoVista extends CatalogoVista
 		e.data.ejecutar(token);
 	}
 	
-	ejecutar(token,tokenEjecucion)
+	ejecutar(token, tokenEjecucion, leccionId)
 	{
 		var submitForm = getNewSubmitForm("capacitacion.php");
 		createNewFormElement(submitForm, "token", token);
 		if(tokenEjecucion!=null)
 			createNewFormElement(submitForm, "tke", tokenEjecucion);
 		createNewFormElement(submitForm, "pnt", "entrenamiento.php");
+		createNewFormElement(submitForm, "leccionId", leccionId);
 		submitForm.method = "get"
 		submitForm.target= "_self";
 		submitForm.submit();
@@ -1756,11 +1762,39 @@ class EntrenamientoVista extends CatalogoVista
 		this.presentador.consultarInicioTemporadaEmpresaReporte();
 	}
 	
-	set inicioTemporadaEmpresa(valor)
+	set leccionesReprobadasSinTerminar(lecciones)
 	{
-		if(valor!="")
-			this.crearFechas(valor);
+		if(lecciones.length>0)
+		{
+			var html = "";
+			
+			for(var i = 0; i < lecciones.length && i < 3; i++)
+			{
+				var leccion = lecciones[i];
+				html+="<b><a href='#' data-token='"+leccion.token+"' data-leccionId='"+leccion.leccionId+"' onclick='vista.mostrarLeccionReprobada(this)'>" + leccion.leccionTitulo +"</a></b>";
+				if(i < lecciones.length - 1)
+					html+=", ";
+			}
+			
+			var textoLeccionesReprobadas = "";
+			if(lecciones.length == 1)
+				textoLeccionesReprobadas ="Recuerda que tienes esta lección pendiente por recursar:";
+			else
+				textoLeccionesReprobadas ="Recuerda que tienes estas lecciones pendientes por recursar:";
+						
+			$("#textoLeccionesReprobadas").html(textoLeccionesReprobadas);
+			$("#leccionesReprobadasSpan").html(html);
+			$("#recordatorioDiv").fadeIn(1000);
+		}
 	}
+	
+	mostrarLeccionReprobada(elemento)
+	{
+		var token = $(elemento).attr("data-token");
+		var leccionId = $(elemento).attr("data-leccionId");
+		this.ejecutar(token,null,leccionId);
+	}
+	
 	
 }
 var vista = new EntrenamientoVista(this);

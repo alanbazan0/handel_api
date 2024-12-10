@@ -455,6 +455,9 @@ try
                 case 'leerNotificaciones':
                     $resultado = $repositorio->leerNotificaciones($usuario);
                 break;
+                case 'consultarLeccionesReprobadasSinTerminar':
+                    $resultado = $repositorio->consultarLeccionesReprobadasSinTerminar($usuario);
+                break;
                 default:
                     $resultado->mensajeError = "Acción no válida";
                 break;

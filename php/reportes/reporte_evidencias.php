@@ -65,7 +65,7 @@ class VariableStream
     }
 }
 
-class PDF extends ReporteBase
+class ReporteEvidencias extends ReporteBase
 {
     //private $font = "Helvetica";
     private $modelo;
@@ -378,8 +378,8 @@ class PDF extends ReporteBase
     {
         $this->conexion = $conexion;
         
-        ini_set('max_execution_time', 1000);
-        ini_set('memory_limit', '50M');
+        ini_set('max_execution_time', 0);
+        ini_set('memory_limit', -1);
         set_time_limit(0);
         
         $repositorio = new UsuariosRepositorio($conexion);
@@ -419,7 +419,7 @@ class PDF extends ReporteBase
             {
                 $this->graficasSupervisor();
             }
-                $this->evidenciasJustificadas();    
+            $this->evidenciasJustificadas();    
         }
         
     }
@@ -1779,7 +1779,7 @@ try
         {
             if($mes!=0 && $ano!=0)
             {
-                 $pdf = new PDF();
+                 $pdf = new ReporteEvidencias();
                  $pdf->AliasNbPages();
                  $pdf->generar($conexion,$usuarioId,$mes,$ano);
                  $pdf->guardar();

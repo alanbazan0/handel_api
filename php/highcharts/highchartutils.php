@@ -511,8 +511,11 @@ function toLineChart($title, $yTitle, $serieTitle, $rows, $xField, $yField,$colo
         array_push($categories, $row->$xField);
         if($i<=$mes-1)
         {
-            array_push($data, $newRow);
-            array_push($data4, $newRow4);
+            if($newRow4->y!=null)
+            {
+                array_push($data, $newRow);
+                array_push($data4, $newRow4);
+            }
         }
         array_push($data1, $newRow1);
         array_push($data2, $newRow2);

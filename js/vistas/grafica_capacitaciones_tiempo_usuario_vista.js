@@ -799,11 +799,7 @@ class GraficaCapacitacionesTiempoUsuarioVista extends CatalogoVista
 		this.presentador.consultarInicioTemporadaEmpresa();
 	}
 	
-	set inicioTemporadaEmpresa(valor)
-	{
-		if(valor!="")
-			this.crearFechas(valor);
-	}
+	
 }
 var vista = new GraficaCapacitacionesTiempoUsuarioVista(this);
 $(document).ready(function() 

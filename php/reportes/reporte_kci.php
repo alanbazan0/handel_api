@@ -8,19 +8,22 @@ use php\repositorios\SedesRepositorio;
 use php\repositorios\CursosRepositorio;
 use php\clases\Porcentaje;
 use php\clases\GeneradorColores;
+use php\repositorios\EvidenciasRepositorio;
+use php\reportes\ReporteBase;
 
 
 require('../vendor/fpdf181/fpdf.php');
 include '../clases/Utilidades.php';
-include '../clases/AdministradorConexion.php';
+require_once('../clases/AdministradorConexion.php');
 require_once('../repositorios/EmpresasRepositorio.php');
 require_once('../clases/Porcentaje.php');
 require_once('../clases/GeneradorColores.php');
 require_once('../repositorios/SedesRepositorio.php');
 require_once('../repositorios/CursosRepositorio.php');
 require_once('../highcharts/highchartutils.php');
+require_once('../reportes/reporte_base.php');
 
-abstract class PDF extends FPDF
+ class ReporteKCI extends ReporteBase
 {
     protected $font = "Helvetica";
     protected $auditoria;
@@ -32,6 +35,7 @@ abstract class PDF extends FPDF
         parent::__construct("L","mm","A4");
         $this->SetLeftMargin($this->margen);
         $this->SetRightMargin($this->margen);
+        
     }
     
     function setAuditoria($auditoria)
@@ -142,7 +146,7 @@ abstract class PDF extends FPDF
     
     function Footer()
     {
-        $this->SetLeftMargin($this->margen);
+        /*$this->SetLeftMargin($this->margen);
         $this->SetRightMargin($this->margen);
         
         $this->SetTextColor(0,0,0);
@@ -153,17 +157,17 @@ abstract class PDF extends FPDF
         
         $this->Cell(0, 4, $this->texto("Prohibida la reproducción total o parcial"), $borde, 1, 'C');
         $this->SetFont($this->font, 'U', 9);
-        $this->Cell($anchoColumna, 4, "cavi.apps-handel.com", $borde, 0, 'L', false,"https://cavi.apps-handel.com");
+        $this->Cell($anchoColumna, 4, "saha.apps-handel.com", $borde, 0, 'L', false,"https://saha.apps-handel.com");
         $this->SetFont($this->font, 'I', 9);
         $this->Cell($anchoColumna, 4, $this->texto("sin autorización expresa de Handel Consultoría"), $borde, 0, 'C');
-        $this->Cell($anchoColumna, 4, "Hoja ". $this->PageNo().' de {nb}', $borde, 0, 'R');
+        $this->Cell($anchoColumna, 4, "Hoja ". $this->PageNo().' de {nb}', $borde, 0, 'R');*/
     }
     
     
     
     function Header()
     {
-        $this->SetLeftMargin($this->margen);
+        /*$this->SetLeftMargin($this->margen);
         $this->SetRightMargin($this->margen);
         
         $borde = 0;
@@ -179,8 +183,8 @@ abstract class PDF extends FPDF
         $this->Cell($anchoColumna, 4, "Reporte de Coordinador", $borde, 0, 'R');
         
         $this->Ln();
-        $fechaInicial = $this->criteriosSeleccion->fechaInicial;
-        $fechaFinal = $this->criteriosSeleccion->fechaFinal;
+        $fechaInicial = "";//$this->criteriosSeleccion->fechaInicial;
+        $fechaFinal = "";//$this->criteriosSeleccion->fechaFinal;
         $this->Cell($anchoColumna, 8, "Periodo $fechaInicial a $fechaFinal", $borde, 0, 'L');
         $this->Cell($anchoColumna, 4, "emitido el $fecha", $borde, 0, 'R');
         
@@ -189,7 +193,7 @@ abstract class PDF extends FPDF
         $logoY = 11;
         $logo = "../imagenes/favicon_cavi.png";
         if (file_exists($logo))
-            $this->Image($logo,$logoX,$logoY,$logoAlto,0,'','');
+            $this->Image($logo,$logoX,$logoY,$logoAlto,0,'','');*/
     }
     
     private function linea($y, $r, $g, $b, $w)
@@ -203,19 +207,17 @@ abstract class PDF extends FPDF
     private function calcularFolio()
     {
        // $folio ="Seguimiento". $this->auditoria->id;
-        $folio="RCV";
+        $folio="KCI";
         if($this->empresa!=null)
             $folio.="-".$this->empresa->nombreCorto;
-        if($this->sede!=null)
-          $folio.="-".$this->sede->nombreCorto;
-        
-        if($this->criteriosSeleccion->fechaInicial!=null && $this->criteriosSeleccion->fechaFinal!=null)
+            $folio.="-" . $this->mes ."-". $this->ano;
+     /*   if($this->criteriosSeleccion->fechaInicial!=null && $this->criteriosSeleccion->fechaFinal!=null)
         {
             list($dia, $mes, $ano) = explode("/", $this->criteriosSeleccion->fechaInicial);
             $folio.="-".$dia.$mes.$ano;
             list($dia, $mes, $ano) = explode("/", $this->criteriosSeleccion->fechaFinal);
             $folio.="-".$dia.$mes.$ano;
-        }
+        }*/
         
         //list($dia, $mes, $ano) = explode("/", $thisfecha);
        /* $fecha = substr($this->auditoria->fechaAlta,0,10);
@@ -337,6 +339,55 @@ abstract class PDF extends FPDF
             $this->Ln($h);
     }
     
+    function RowTransparent($data, $height)
+    {
+        //Calculate the height of the row
+        $nb=0;
+        for($i=0;$i<count($data);$i++)
+            $nb=max($nb,$this->NbLines($this->widths[$i],$data[$i]));
+            $h=$height*$nb;
+            //Issue a page break first if needed
+            $this->CheckPageBreak($h);
+            //Draw the cells of the row
+            for($i=0;$i<count($data);$i++)
+            {
+                $w=$this->widths[$i];
+                $a=isset($this->aligns[$i]) ? $this->aligns[$i] : 'L';
+                //Save the current position
+                $x=$this->GetX();
+                $y=$this->GetY();
+                
+                $colorHex = $this->backgroundColors[$i];
+                $rgb = $this->toRGB($colorHex);
+                
+                //Draw background
+                $this->SetFillColor($rgb->r, $rgb->g, $rgb->b);
+                //$this->Rect($x,$y,$w,$h,"F");
+                
+                if($this->borders[$i]==1)
+                {
+                    $colorHex = $this->borderColors[$i];
+                    $rgb = $this->toRGB($colorHex);
+                    $this->SetDrawColor($rgb->r, $rgb->g, $rgb->b);
+                    $this->Rect($x,$y,$w,$h,"D");
+                }
+                
+                $textColorHex = $this->textColors[$i];
+                $rgb = $this->toRGB($textColorHex);
+                $this->SetTextColor($rgb->r, $rgb->g, $rgb->b);
+                //$this->SetFillColor($rgb->red, $rgb->green, $rgb->blue);
+                
+                $this->SetFont($this->fontNames[$i],$this->fontWeights[$i],$this->fontSizes[$i]);
+                //Print the text
+                $this->MultiCell($w,$height,$data[$i],0,$a);
+                //Put the position to the right of the cell
+                $this->SetXY($x+$w,$y);
+            }
+            
+            //Go to the next line
+            $this->Ln($h);
+    }
+    
     function toRGB($hex)
     {
         $values = str_replace( '#', '', $hex );
@@ -409,6 +460,659 @@ abstract class PDF extends FPDF
                 }
                 return $nl;
     }
+ 
+    function fondoPortada()
+    {
+        $imagen = "../imagenes/portada.001.png";
+        $width = $this->w;
+        $anchoFoto = 120;
+        $x = ($width/2) - ($anchoFoto/2);
+        $y = 30;
+        $this->Image($imagen,0,0,$this->w, $this->h);
+     
+    }
+    
+    function fondoPlantilla()
+    {
+        $imagen = "../imagenes/plantilla.001.png";
+        $width = $this->w;
+        $anchoFoto = 120;
+        $x = ($width/2) - ($anchoFoto/2);
+        $y = 30;
+        $this->Image($imagen,0,0,$this->w, $this->h);   
+    }
+    
+    function portada()
+    {
+        $this->AddPage();
+        $this->fondoPortada();
+        
+        $this->SetY(80);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font,'B',50);
+        $this->Cell(0,6,$this->texto("Indicadores de cumplimiento"),0,2,'C');
+        $this->Ln();
+        $this->Ln();
+        $this->SetFont($this->font,'I',40);
+        $this->Cell(0,6,$this->texto("(Key compliance indicators)"),0,2,'C');
+        
+       /* $
+        $this->SetTextColor(38,88,175);
+        $this->SetFont($this->font,'B',32);
+        $this->Cell(0,6,$this->texto($this->empresa->nombre),0,2,'C');*/
+        
+        $margenX = 20;
+        $this->SetX($margenX);
+        $this->SetY(150);
+        $this->fontSizes = array(32);
+        $this->fontWeights = array("B");
+        $this->fontNames = array($this->font);
+        $this->aligns = array("C");
+        $this->widths = array($this->w - ($margenX*2));
+        $this->textColors = array("#2658af");
+        $this->borders = array(0);
+        $this->borderColors = array("#afb2b0");
+        $this->backgroundColors = array("#ffffff");
+        $this->RowTransparent(array($this->texto($this->empresa->nombre)),10);
+        
+        
+        $imagen = "../imagenes/logo_handel.png";
+        $width = $this->w;
+        $anchoFoto = 60;
+        $x = 20;
+        $y = 20;
+        $this->Image($imagen,$x,$y,$anchoFoto);
+        
+        
+        $nombreMesActual = Mes::getNombreMesActual();
+        $anoActual = date("Y");
+        
+        $this->SetY(182);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font,'B',15);
+        $this->Cell(0,6,$this->texto($nombreMesActual . ", " . $anoActual),0,2,'C');
+      
+        
+    }
+    
+    function subtitulo($subtitulo)
+    {
+        $this->SetY(10);
+        $this->SetLeftMargin(100);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font,'B',20);
+        $this->Cell(0,6,$this->texto($subtitulo),0,2,'C');
+    }
+    
+    function temasReunion()
+    {
+        $this->AddPage();
+        $this->fondoPlantilla();
+        $this->tituloPagina("Orden del día");
+        
+       $this->subtitulo("Temas de reunión");
+      
+       
+        $this->SetY(30);
+       
+        $this->textoVineta("Resultados SAHA");
+        $this->Ln();
+        $this->textoVineta("Avances CAVI");
+        $this->Ln();
+        $this->textoVineta("Avances SIVAH");
+        
+        $this->Image("../imagenes/caricatura/caricatura01.png", 225, 130, 70);
+    }
+    
+    function textoVineta($texto)
+    {
+        $this->SetX(120);
+        $this->SetFont("ZapfDingbats", 'B', 20);
+        $this->Cell(10,10,$this->texto(chr(108)),0,0,"L");
+        $this->SetFont($this->font, '', 18);
+        $this->Cell(50,10,$this->texto($texto),0,0,'L');
+    }
+    
+    function cumplimientoGlobalSAHA()
+    {
+        $this->AddPage();
+        $this->fondoPlantilla();
+        $this->tituloPagina("Resultados SAHA");
+        
+        
+        
+        $pdfWidth = 190;
+        $this->SetLeftMargin(20);
+        $this->SetRightMargin(20);
+        
+        $criteriosSeleccion= (object) [
+            'mes' =>  $this->mesSAHA,
+            'ano' =>  $this->anoSAHA,
+            "empresaId" => $this->empresa->id
+        ];
+        
+        
+        $fecha = new DateTime();
+        $fecha->setDate($this->anoSAHA,$this->mesSAHA,1);
+        $fecha->sub(new DateInterval('P1M'));
+        
+        $anoAnterior = $fecha->format("Y");
+        $mesAnterior = $fecha->format("m");
+        $criteriosSeleccionAnterior= (object) [
+            'mes' =>   $mesAnterior,
+            'ano' => $anoAnterior,
+            "empresaId" => $this->empresa->id
+        ];
+        
+        $nombreMes = ucfirst(Mes::getNombre($this->mesSAHA));
+        $nombreMesAnterior = ucfirst(Mes::getNombre($mesAnterior));
+        
+        $this->subtitulo("Porcentaje global $nombreMesAnterior $anoAnterior - $nombreMes $this->anoSAHA");
+        
+        $repositorio = new EvidenciasRepositorio($this->conexion);
+        
+        $chartWidth = 100;
+        $resultado = $repositorio->consultarPorcentajesEvidencias($this->usuario, $criteriosSeleccion);
+        if($resultado->correcto())
+        {
+            $porcentajes = $resultado->valor;
+            $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
+            $image = toPieChartWithLabels("Porcentaje de cumplimiento global del área <br>($nombreMes)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores,20);
+            if($image!='')
+                $this->Image($image,95 ,60, $chartWidth);
+        }
+        
+        $resultado = $repositorio->consultarPorcentajesEvidencias($this->usuario, $criteriosSeleccionAnterior);
+        if($resultado->correcto())
+        {
+            $porcentajes = $resultado->valor;
+            $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
+            $image = toPieChartWithLabels("Porcentaje de cumplimiento global del área <br>($nombreMesAnterior)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores,20);
+            if($image!='')
+                $this->Image($image, 190 ,60,$chartWidth);
+        }
+        
+        $this->SetY(170);
+        $this->SetLeftMargin(200);
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(50,6,$this->texto("Supervisores y coordinadores reciben un reporte detallado el día 28 de cada mes"),0,2,'C');
+        $this->SetTextColor(173,8,46);
+        $this->Cell(50,6,$this->texto("Se recomienda no tener más de un 15% de evidencias justificadas"),0,2,'C');
+        
+        //var_dump($criteriosSeleccion);
+        //var_dump($criteriosSeleccionAnterior);
+    }
+    
+    function cumplimientoUsuarioSAHA()
+    {
+        $this->AddPage();
+        $this->fondoPlantilla();
+        $this->tituloPagina("Resultados SAHA");
+        $this->subtitulo("Cumplimiento por usuario");
+        
+        $criteriosSeleccion= (object) [
+            'mes' =>  $this->mesSAHA,
+            'ano' =>  $this->anoSAHA,
+            "empresaId" => $this->empresa->id
+        ];
+        $nombreMes = ucfirst(Mes::getNombre($this->mesSAHA));
+        $pdfWidth = $this->GetPageWidth();
+        $chartWidth= 170;
+        $repositorio = new EvidenciasRepositorio($this->conexion);
+        $resultado = $repositorio->consultarPorcentajesUsuarios($this->usuario, $criteriosSeleccion);
+        if($resultado->correcto())
+        {
+            $porcentajes = $resultado->valor;
+            $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
+            //$image = toColumnChart("Porcentaje de cumplimiento <br>($nombreMes)",'','Usuarios',$porcentajes,"nombreCompleto","porcentajeCumplimiento",$colores,false,100);
+            $image = $this->graficaBarrasUsuarios("Porcentaje de cumplimiento por usuario <br>($nombreMes)",'','Usuarios',$porcentajes,"nombreCompleto");
+            if($image!='')
+                $this->Image($image,100 ,50, $chartWidth);
+        }
+        
+        $this->Image("../imagenes/caricatura/caricatura02.png", 50, 120, 50);
+    }
+    
+    function cumplimientoDepartamentoSAHA()
+    {
+        $this->AddPage();
+        $this->fondoPlantilla();
+        $this->tituloPagina("Resultados SAHA");
+        $this->subtitulo("Cumplimiento por departamento");
+        
+        $criteriosSeleccion= (object) [
+            'mes' =>  $this->mesSAHA,
+            'ano' =>  $this->anoSAHA,
+            "empresaId" => $this->empresa->id
+        ];
+        $nombreMes = ucfirst(Mes::getNombre($this->mesSAHA));
+        $chartWidth= 170;
+        $repositorio = new EvidenciasRepositorio($this->conexion);
+        
+        $chartWidth= 170;
+        $resultado = $repositorio->consultarPorcentajesAreas($this->usuario, $criteriosSeleccion);
+        if($resultado->correcto())
+        {
+            $porcentajes = $resultado->valor;
+            $image = $this->graficaBarrasDepartamentos("Porcentaje de cumplimiento por departamento <br>($nombreMes)",'','Areas',$porcentajes,"nombre");
+            if($image!='')
+                $this->Image($image, 100 ,50, $chartWidth);
+        }
+        
+        $this->Image("../imagenes/caricatura/caricatura02.png", 50, 120, 50);
+    }
+    
+    function cumplimientoSedeSAHA()
+    {
+        $this->AddPage();
+        $this->fondoPlantilla();
+        $this->tituloPagina("Resultados SAHA");
+        $this->subtitulo("Cumplimiento por sede");
+        
+        $criteriosSeleccion= (object) [
+            'mes' =>  $this->mesSAHA,
+            'ano' =>  $this->anoSAHA,
+            "empresaId" => $this->empresa->id
+        ];
+        $nombreMes = ucfirst(Mes::getNombre($this->mesSAHA));
+        $chartWidth= 170;
+        $repositorio = new EvidenciasRepositorio($this->conexion);
+        
+        $chartWidth= 170;
+        $resultado = $repositorio->consultarPorcentajesSedes($this->usuario, $criteriosSeleccion);
+        if($resultado->correcto())
+        {
+            $porcentajes = $resultado->valor;
+            $image = $this->graficaBarrasDepartamentos("Porcentaje de cumplimiento por sede <br>($nombreMes)",'','Sedes',$porcentajes,"nombre");
+            if($image!='')
+                $this->Image($image, 100 ,50, $chartWidth);
+        }
+        
+        $this->Image("../imagenes/caricatura/caricatura02.png", 50, 120, 50);
+    }
+    
+    function graficaBarrasDepartamentos($title, $yTitle, $serieTitle, $rows, $xField)
+    {
+        $showInLegend = true;
+        
+        $categories = array();
+        $data = array();
+        
+        $data = array();
+        
+        $data1 = array();
+        $data2 = array();
+        $data3 = array();
+        
+        $fecha = new DateTime();
+        $mesActual = (int)$fecha->format("m");
+        
+        for ($i = 0; $i < count($rows); $i++)
+        {
+            $row = $rows[$i];
+            
+            //         $newRow= (object) [
+            //             'name' =>  $row->$xField,
+            //             'y' => (float)$row->cumplidas,
+            //             'color' => "#00a1ff"
+            
+            //         ];
+            
+            $newRow1= (object) [
+                'name' =>  $row->$xField,
+                'y' => (float)$row->porcentajeEnviadas,
+                // 'color' => "#3c8dbc"
+            ];
+            
+            $newRow2= (object) [
+                'name' =>  $row->$xField,
+                'y' => (float)$row->porcentajeJustificadas,
+                //'color' => "#f39c12"
+            ];
+            
+            //             $newRow3= (object) [
+            //                 'name' =>  $row->$xField,
+            //                 'y' => (float)$row->proceso,
+            //                 'color' => "#919191"
+            //             ];
+            
+            array_push($categories, $row->$xField);
+            array_push($data1, $newRow1);
+            array_push($data2, $newRow2);
+            // array_push($data3, $newRow3);
+        }
+        
+        $yAxis = (object) [ 'title' => (object) [ 'text'=> $yTitle]];
+        
+        $yAxis->min= 0;
+        $yAxis->max= 100;
+        $yAxis->tickInterval= 10;
+        
+        
+        
+        $highchart = (object)
+        [
+            'chart' => (object) [ 'type' => "column"],
+            'title' => (object) [ 'text'=> $title],
+            'credits' => (object) ['enabled' => false],
+            'xAxis' => (object) [ 'categories' => $categories],
+            'plotOptions' => (object)
+            [
+                'column'=> (object)[
+                    'stacking' => 'normal',
+                    'dataLabels'=>(object)
+                    [
+                        'enabled'=>true,
+                        //'crop'=>false,
+                        //'overflow' =>'none',
+                        //"inside"=> false,
+                        'color'=> 'black',
+                        'style'=> (object)
+                        [
+                            'fontSize' => 10,
+                            'textOutline' => '0px'
+                        ],
+                        'verticalAlign' => 'bottom'
+                        // 'format'=>"{point.y:.1f} %"
+                    ]
+                ]
+            ],
+            'yAxis' => $yAxis,
+            'series' => array(
+                (object) ['name' => "Justificadas", 'data' => $data2,  'showInLegend' => $showInLegend, "color"=>"#f39c12"],
+                (object) ['name' => "Enviadas", 'data' => $data1,  'showInLegend' => $showInLegend, "color"=>"#00a65a"],
+                //(object) ['name' => "En proceso de validación", 'data' => $data3,  'showInLegend' => $showInLegend, "color"=>"#919191"]
+            )
+        ];
+        
+        //         $data= (object) [
+        //             'async' =>  true,
+        //             'type' => 'image/jpeg',
+        //             'width' => 1080,
+        //             'options' => $highchart
+        //         ];
+        
+        //         $options = array(
+            //             'http' => array(
+                //                 'method'  => 'POST',
+            //                 'content' => json_encode( $data ),
+            //                 'header'=>  "Content-Type: application/json\r\n" .
+            //                 "Accept: application/json\r\n"
+            //             )
+        //         );
+                
+            //         $url = EXPORT_HIGHCHARTS_SERVER;
+            
+            //         $context  = stream_context_create( $options );
+            
+            
+            
+            //         $result = file_get_contents( $url, false, $context );
+            
+            //         $charturl='';
+            //         if ($result === FALSE)
+                //         {
+                
+            //         }
+            //         else
+                //         {
+            //             $charturl = $url . $result;
+                
+            //         }
+            //         return $charturl;
+            $chartURL = getHightchartsURL($highchart);
+            return $chartURL;
+            
+            //  return 'ok';
+            
+    }
+    
+    
+    function graficaBarrasUsuarios($title, $yTitle, $serieTitle, $rows, $xField)
+    {
+        $showInLegend = true;
+        
+        $categories = array();
+        $data = array();
+        
+        $data = array();
+        
+        $data1 = array();
+        $data2 = array();
+        $data3 = array();
+        
+        $fecha = new DateTime();
+        $mesActual = $this->mesSAHA;
+        
+        for ($i = 0; $i < count($rows); $i++)
+        {
+            $row = $rows[$i];
+            
+            
+            $newRow1= (object) [
+                'name' =>  $row->$xField,
+                'y' => (float)$row->porcentajeEnviadas,
+            ];
+            
+            $newRow2= (object) [
+                'name' =>  $row->$xField,
+                'y' => (float)$row->porcentajeJustificadas,
+            ];
+            
+            
+            array_push($categories, $row->$xField);
+            array_push($data1, $newRow1);
+            array_push($data2, $newRow2);
+            // array_push($data3, $newRow3);
+        }
+        
+        $yAxis = (object) [ 'title' => (object) [ 'text'=> $yTitle]];
+        
+        $yAxis->min= 0;
+        $yAxis->max= 100;
+        $yAxis->tickInterval= 10;
+        
+        
+        
+        $rotacion = 0;
+        if(count($rows)>=10)
+            $rotacion = -90;
+            
+            
+            
+            $highchart = (object)
+            [
+                'chart' => (object) [ 'type' => "column"],
+                'title' => (object) [ 'text'=> $title],
+                'credits' => (object) ['enabled' => false],
+                'xAxis' => (object) [ 'categories' => $categories],
+                'plotOptions' => (object)
+                [
+                    'column'=> (object)[
+                        'stacking' => 'normal',
+                        'dataLabels'=>(object)
+                        [
+                            'enabled'=>true,
+                            'color'=> 'black',
+                            'style'=> (object)
+                            [
+                                'fontSize' => 10,
+                                'textOutline' => '0px'
+                            ],
+                            'verticalAlign' => 'bottom'
+                            
+                        ]
+                    ]
+                ],
+                'yAxis' => $yAxis,
+                'series' => array(
+                    (object) ['name' => "Justificadas", 'data' => $data2,  'showInLegend' => $showInLegend, "color"=>"#f39c12"],
+                    (object) ['name' => "Enviadas", 'data' => $data1,  'showInLegend' => $showInLegend, "color"=>"#00a65a"],
+                )
+            ];
+            
+            $chartURL = getHightchartsURL($highchart);
+            return $chartURL;
+            
+            
+    }
+    
+    function nivelRiesgoSAHA()
+    {
+        $this->AddPage();
+        $this->fondoPlantilla();
+        $this->tituloPagina("Resultados SAHA");
+        $this->subtitulo("Nivel de riesgo");
+        
+        $meses = array();
+        $repositorio = new EvidenciasRepositorio($this->conexion);
+        
+        if($this->mesSAHA == 1 && $this->ano != $this->anoSAHA)
+               $limite = 12;
+        else 
+            $limite = $this->mesSAHA;
+        
+        for($i = 1; $i <= $limite; $i++)
+        {
+            $mes = (object) [];
+            $mes->mes = $i;
+            $mes->nombreMes = Mes::getNombre($i);
+            
+            $criteriosSeleccion= (object) [
+                'mes' =>  $i,
+                'ano' =>  $this->anoSAHA,
+            ];
+            
+           // $camposGroupBy = array();
+            //array_push($camposGroupBy,(object)['tabla'=>'EM','campo'=>'id','alias'=>'empresaId']);
+            $resultado = $repositorio->consultarPorcentajesEvidencias($this->usuario, $criteriosSeleccion);
+            if($resultado->correcto())
+            {
+                $mes->enviadas = $resultado->valor[0]->valor;
+                $mes->pedientes = $resultado->valor[1]->valor;
+                $mes->justificadas = $resultado->valor[2]->valor;
+                
+                $total =  $mes->enviadas +  $mes->pedientes +   $mes->justificadas;
+                $cumplidas = $mes->enviadas +  $mes->justificadas;
+                $porcentajeCumplimiento = 0;
+                if($total!=0)
+                    $porcentajeCumplimiento = $cumplidas * 100 / $total;
+                    
+                $porcentajeCumplimientoEnviadas = 0;
+                if($total!=0)
+                    $porcentajeCumplimientoEnviadas = $mes->enviadas * 100 / $total;
+                    
+                    $mes->porcentajeCumplimiento=    number_format($porcentajeCumplimiento, 1, '.', '');
+                    $mes->porcentajeCumplimientoEnviadas =  number_format($porcentajeCumplimientoEnviadas, 1, '.', '');
+                        
+                        
+            }
+            
+            array_push($meses, $mes);
+            
+        }
+        if($this->mesSAHA == 1 && $this->ano != $this->anoSAHA)
+        {
+           
+        }
+        else 
+        {
+            for($i = $this->mesSAHA + 1; $i <= 12 ; $i++)
+            {
+                $mes = (object)[
+                    "porcentajeCumplimiento" =>  null,
+                    "porcentajeCumplimientoEnviadas" => null
+                ];
+                $mes->nombreMes = Mes::getNombre($i);
+                $mes->mes = $i;
+                array_push($meses, $mes);
+            }
+        }
+        $pdfWidth = $this->GetPageWidth();
+        $chartWidth= 170;
+        $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
+        $image = toLineChart("Nivel de riesgo anual <br>($this->anoSAHA)",'','Cumplimiento global',$meses,"nombreMes","porcentajeCumplimiento",$colores,true,100,12);
+        if($image!='')
+            $this->Image($image,100 ,50, $chartWidth);
+        
+        $this->Image("../imagenes/caricatura/caricatura03.png", 35, 119, 67);
+    }
+    
+    function tituloPagina($titulo)
+    {
+       
+        $this->SetLeftMargin(5);
+        $this->SetX(0);
+        $this->SetY($this->h/2 - 10);
+        $this->fontSizes = array(32);
+        $this->fontWeights = array("B");
+        $this->fontNames = array($this->font);
+        $this->aligns = array("C");
+        $this->widths = array(80);
+        $this->textColors = array("#ffffff");
+        $this->borders = array(0);
+        $this->backgroundColors = array("#ffffff");
+        $this->RowTransparent(array($this->texto($titulo)),10);
+        
+      
+    }
+    
+   
+    
+    
+    
+   
+    
+    public function generar($usuario,$criteriosSeleccion)
+    {
+        $this->criteriosSeleccion = $criteriosSeleccion;
+        $this->usuario = $usuario;
+        if($this->criteriosSeleccion!=null)
+        {
+            
+            $empresasRepositorio = new EmpresasRepositorio($this->conexion);
+            $resultado = $empresasRepositorio->consultarPorLlaves((object)["id" => $criteriosSeleccion->empresaId]);
+            if($resultado->correcto())
+            {
+                $this->empresa = $resultado->valor;
+                
+                $this->dia = date("d");
+                $this->mes = date("m");
+                $this->ano = date("Y");
+                
+            /*   $this->dia = 1;
+                $this->mes = 11;
+                $this->ano = 2024;*/
+                
+                if( $this->dia < 28)
+                {
+                    $fecha = new DateTime();
+                    $fecha->setDate($this->ano,$this->mes,1);
+                    $fecha->sub(new DateInterval('P1M'));
+                    
+                    $this->anoSAHA = $fecha->format("Y");
+                    $this->mesSAHA = $fecha->format("m");
+                }
+                else
+                {
+                    $this->anoSAHA = $this->ano;
+                    $this->mesSAHA = $this->mes;
+                }
+                
+                /*01*/$this->portada();
+                /*02*/$this->temasReunion();
+                /*03*/$this->cumplimientoGlobalSAHA();
+                /*04*/$this->cumplimientoSedeSAHA();
+                /*05*/$this->cumplimientoDepartamentoSAHA();
+                /*06*/$this->cumplimientoUsuarioSAHA();
+                /*07*/$this->nivelRiesgoSAHA();
+            }
+           
+        }
+    }
+    
+   
+    
     
     function graficaBarrasMesActualAnterior($title, $yTitle, $serieTitle, $rows, $xField, $yField, $showInLegend,$max)
     {
@@ -428,6 +1132,12 @@ abstract class PDF extends FPDF
         {
             $row = $rows[$i];
             
+            //         $newRow= (object) [
+            //             'name' =>  $row->$xField,
+            //             'y' => (float)$row->cumplidas,
+            //             'color' => "#00a1ff"
+            
+            //         ];
             
             $newRow1= (object) [
                 'name' =>  $row->$xField,
@@ -500,370 +1210,8 @@ abstract class PDF extends FPDF
         ];
         $chartURL = getHightchartsURL($highchart);
         return $chartURL;
-       
-        
+      
     }
-    
-    function portada()
-    {
-        $this->AddPage();
-       
-        $this->SetY(35);
-        $this->SetFont($this->font,'B',13);
-        $this->SetTextColor(0, 0, 0);
-        
-        $imagen = "../imagenes/logoCAVI.png";
-        $width = $this->w;
-        $anchoFoto = 120;
-        $x = ($width/2) - ($anchoFoto/2);
-        $y = 30;
-        $this->Image($imagen,$x,$y,$anchoFoto);
-        
-        
-        $this->SetY(80);
-        $this->SetFillColor(113,129,71);
-        $this->SetDrawColor(113,129,71);
-        $this->SetTextColor(255, 255, 255);
-        $this->SetFont($this->font,'',20);
-        $this->Cell(0,5,"",1,2,'C',1);
-        $this->Cell(0,10,$this->texto("Reporte de capacitación virtual"),1,2,'C',1);
-        $this->SetFont($this->font,'',12);
-        $this->Cell(0,6,$this->texto(""),1,2,'C',1);
-        $this->SetFont($this->font,'I',12);
-        $fechas="";
-        if($this->criteriosSeleccion->fechaInicial!=null && $this->criteriosSeleccion->fechaFinal!=null)
-           $fechas = $this->criteriosSeleccion->fechaInicial ." - ". $this->criteriosSeleccion->fechaFinal;
-        $this->Cell(0,6,$fechas,1,2,'C',1);
-        $this->Cell(0,5,"",1,2,'C',1);
-        
-        $this->Ln();
-         $this->SetTextColor(0, 0, 0);
-        $this->SetFont($this->font,'',12);
-        $this->Cell(0,6,$this->texto($this->empresa->nombre),0,2,'C');
-        $sedeNombre = "Todas las sedes";
-        iF(isset($this->sede) && $this->sede!=null)
-            $sedeNombre = $this->sede->nombre;
-        $this->Cell(0,6,$this->texto($sedeNombre),0,2,'C');
-        
-        $repositorio = new CursosRepositorio($this->conexion);
-        $criteriosSeleccionAprovechamiento = clone $this->criteriosSeleccion;
-        $criteriosSeleccionAprovechamiento->tipoReporte = TipoReporte::CAPACITACION_INICIADA;
-        $resultado = $repositorio->consultarResultados($this->usuario, $criteriosSeleccionAprovechamiento);
-        $aprovechamiento=0;
-        if($resultado->correcto())
-        {
-            if(count($resultado->valor)>0)
-            {
-                $registro = $resultado->valor[0];
-                $aprovechamiento=  $registro->porcentaje;
-            }
-        }
-        
-        $criteriosSeleccionAvance = clone $this->criteriosSeleccion;
-        $criteriosSeleccionAvance->tipoReporte = TipoReporte::TODOS;
-        $resultado = $repositorio->consultarResultados($this->usuario, $criteriosSeleccionAvance);
-        $avance=0;
-        if($resultado->correcto())
-        {
-            if(count($resultado->valor)>0)
-            {
-                $registro = $resultado->valor[0];
-                $avance=  $registro->porcentajeAvance;
-            }
-        }
-        
-        //var_dump($this->criteriosSeleccion);
-        
-        $this->Ln();
-        $this->Cell(0,6,$this->texto("Avance a la fecha: $avance%"),0,2,'C');
-        $this->Cell(0,6,$this->texto("Aprovechamiento a la fecha: $aprovechamiento%"),0,2,'C');
-       
-        
-        $imagen = "../imagenes/mundo_verde.png";
-        $anchoFoto = 20;
-        $y = 156;
-        $x = 30;
-        $this->Image($imagen,$x,$y,$anchoFoto);
-        
-        $hojas = 0;
-        $arboles = 0;
-        $litros = 0;
-        
-        $resultado = $repositorio->consultarVideosVistosEmpresa($this->criteriosSeleccion->empresaId);
-        if($resultado->correcto())
-        {
-            $registro = $resultado->valor;
-            $videosVistos = $registro->vistos;
-            $hojas = $videosVistos;
-            $litros = $videosVistos * 0.2612;
-            $arboles = $videosVistos * 0.000063;
-            
-            $arboles = Porcentaje::formatear($arboles,4);
-            $litros = Porcentaje::formatear($litros,2);
-        }
-        
-        $this->Ln();
-        $this->Ln();
-        $this->SetFont($this->font,'',9);
-        $this->SetTextColor(50,110,36);
-        $this->SetX(50);
-        $this->Cell(0,4,$this->texto("Beneficio ecológico de usar CAVI:"),0,2,'L');
-        $this->Cell(0,4,$this->texto("Su compañía ha ahorrado a la fecha $hojas hojas para evaluar la eficiencia de los aprendizajes."),0,2,'L');
-        $this->Cell(0,4,$this->texto("Como consecuencia se ha avanzado en salvar $arboles árboles y $litros litros de agua en el proceso."),0,2,'L');
-        
-    }
-    
-    public function aviso()
-    {
-        $this->AddPage();
-        $this->SetY(90);
-        //$this->subtitulo("Aviso");
-        $tamanoLinea = 8;
-        $borde = 0;
-        $this->SetFont($this->font,'B',11);
-        $this->SetTextColor(145,145,145);
-        $this->Cell(0,$tamanoLinea,$this->texto('Aviso'),$borde,1,'L');
-        $this->SetFont($this->font,'',11);
-        $this->Cell(0,$tamanoLinea,$this->texto('El presente reporte incluye un resumen de la capacitación entre el personal registrado en nuestro sistema de'),$borde,1,'FJ');
-        $this->Cell(0,$tamanoLinea,$this->texto('capacitación virtual CAVI, es importante que la alta gerencia tenga disponible esta información a fin de que se promueva'),$borde,1,'FJ');
-        $this->Cell(0,$tamanoLinea,$this->texto('la activa participación del equipo de trabajo a fin de mantener un estándar que garantice el objetivo de la certificación.'),$borde,1,'FJ');
-        //$this->Cell(0,$tamanoLinea,$this->texto('en el seguimiento.'),$borde,1,'L');
-        
-        $this->Ln();
-        $this->SetFont($this->font,'B',11);
-        $this->Cell(0,$tamanoLinea,$this->texto('Aviso de privacidad'),$borde,1,'L');
-        $this->SetFont($this->font,'',11);
-        $this->Cell(0,$tamanoLinea,$this->texto('La información personal contenida en el reporte es protegida por nuestro aviso de privacidad entendiendo que las'),$borde,1,'FJ');
-        $this->Cell(0,$tamanoLinea,$this->texto('mismas son utilizadas exclusivamente para realizar una evaluación en el entorno de la certificación. El cliente y sus'),$borde,1,'FJ');
-        $this->Cell(0,$tamanoLinea,$this->texto('trabajadores aceptan que el contenido del mismo es para efectos de capacitación, evaluación y trabajo sensible dentro'),$borde,1,'FJ');
-        $this->Cell(0,$tamanoLinea,$this->texto('de la organización por lo que se prohibe su libre distribución a personal que no corresponda al equipo de trabajo de'),$borde,1,'FJ');
-        $this->Cell(0,$tamanoLinea,$this->texto('Handel o de su propia compañía.'),$borde,1,'L');
-        
-    }
-    
-    private function subtitulo($texto)
-    {
-        $this->SetFont($this->font,'B',15);
-        $this->SetTextColor(0,0,0);
-        $this->Cell(0,8,$this->texto($texto),0,2,'C');
-    }
-    
-    
-    
-   
-    
-    public function generar($usuario,$criteriosSeleccion)
-    {
-        $this->criteriosSeleccion = $criteriosSeleccion;
-        $this->usuario = $usuario;
-        if($this->criteriosSeleccion!=null)
-        {
-            $empresasRepositorio = new EmpresasRepositorio($this->conexion);
-            $sedesRepositorio = new SedesRepositorio($this->conexion);
-            $resultado = $empresasRepositorio->consultarPorLlaves((object)["id" => $criteriosSeleccion->empresaId]);
-            if($resultado->correcto())
-                $this->empresa = $resultado->valor;
-            
-            $resultado = $sedesRepositorio->consultarPorLlaves((object)["id" => $criteriosSeleccion->sedeId]);
-            if($resultado->correcto())
-                $this->sede = $resultado->valor;
-            
-//             $coloresBase = [ "#0c9cfb","#78d34b","#6a666a", "#f6ba36","#e13d47","#ca3675","#958b34","#81bede"];
-//             $colores  =  $this->generarColores($coloresBase,100);
-            
-            $colores = GeneradorColores::generar(100);
-            
-             $this->portada();
-            
-              $this->aviso();
-              $this->introduccion();
-             $this->comparativaAvanceAprovechamiento();
-            
-              $this->avanceDepartamentos($colores);
-             $this->aprovechamientoDepartamentos($colores);
-              $this->usuariosDepartamento($colores);
-              $this->resumenCapacitaciones();
-              $this->mejoresAprovechamiento();
-        }
-    }
-    
-    private function usuariosDepartamento($colores)
-    {
-        $this->AddPage();
-        $this->SetY(25);
-        $this->subtitulo("Usuarios por departamento del período");
-        $this->Ln();
-        
-        $chartWidth = 120;
-        $repositorio = new CursosRepositorio($this->conexion);
-        $this->criteriosSeleccion->tipoReporte = TipoReporte::TODOS;
-        $resultado = $repositorio->consultarUsuariosDepartamento($this->usuario, $this->criteriosSeleccion);
-        if($resultado->correcto())
-        {
-            $registros = $resultado->valor;
-                
-            $image = toColumnChartSerieColors("",'','',$registros,"nombre","numeroUsuarios",$colores,false,0);
-            if($image!='')
-                $this->Image($image,30, 60, $chartWidth);
-            
-            $image = toPieChartWithLabels("",'','',$registros,"nombre","numeroUsuarios",$colores,20);
-            if($image!='')
-                $this->Image($image,150 ,60, $chartWidth);
-        }
-    }
-    
-    
-    private function avanceDepartamentos($colores)
-    {
-        $this->AddPage();
-        $this->SetY(25);
-        $this->subtitulo("Avance por departamento del período");
-        $this->Ln();
-        
-        $chartWidth = 220;
-        $repositorio = new CursosRepositorio($this->conexion);
-        $this->criteriosSeleccion->tipoReporte = TipoReporte::TODOS;
-        $resultado = $repositorio->consultarResultadosDepartamentos($this->usuario, $this->criteriosSeleccion);
-        if($resultado->correcto())
-        {
-            $registros = $resultado->valor;
-           
-            $image = toColumnChartSerieColors("",'','',$registros,"nombre","porcentajeAvance",$colores,false,100,false,"{point.y:.1f} %");
-            if($image!='')
-                $this->Image($image,$this->w/2 -$chartWidth/2 ,40, $chartWidth);
-                
-                
-        }
-    }
-    
-    private function aprovechamientoDepartamentos($colores)
-    {
-        $this->AddPage();
-        $this->SetY(25);
-        $this->subtitulo("Aprovechamiento por departamento del período");
-        $this->Ln();
-        
-        $chartWidth = 220;
-        $repositorio = new CursosRepositorio($this->conexion);
-        $this->criteriosSeleccion->tipoReporte = TipoReporte::CAPACITACION_INICIADA;
-        $resultado = $repositorio->consultarResultadosDepartamentos($this->usuario, $this->criteriosSeleccion);
-        if($resultado->correcto())
-        {
-            $registros = $resultado->valor;
-            $image = toColumnChartSerieColors("",'','',$registros,"nombre","porcentaje",$colores,false,100,false,"{point.y:.1f} %");
-            if($image!='')
-                $this->Image($image,$this->w/2 -$chartWidth/2 ,40, $chartWidth);
-                
-                
-        }
-    }
-    
-    
-    private function comparativaAvanceAprovechamiento()
-    {
-        $this->AddPage();
-        $this->SetY(25);
-        $this->subtitulo("Comparativa de Avance y Aprovechamiento");
-        $this->Ln();
-        
-        $this->SetX(0);
-        $y = 80;
-        $pdfWidth = $this->w;
-        $chartWidth = 220;
-        $colores = [ '#00a1ff', '#60d836', '#f8ba00'];
-        
-        $avancePeriodo = 0;
-        $aprovechamientoPeriodo=0;
-        $avanceActual=0;
-        $aprovechamientoActual=0;
-        
-        $criteriosSeleccionActual= clone $this->criteriosSeleccion;
-        $fechaUltimoDia = Mes::getUltimoDiaMesActual();
-        $criteriosSeleccionActual->fechaFinal =$fechaUltimoDia;
-        list($dia, $mes, $ano) = explode("/",  $criteriosSeleccionActual->fechaFinal);
-        $criteriosSeleccionActual->fechaInicial = "1/$mes/$ano";
-        
-        $repositorio = new CursosRepositorio($this->conexion);
-        
-        $this->criteriosSeleccion->tipoReporte = TipoReporte::TODOS;
-        $resultado = $repositorio->consultarResultados($this->usuario, $this->criteriosSeleccion);
-        if($resultado->correcto())
-        {
-            if(count($resultado->valor)>0)
-            {
-                $registro = $resultado->valor[0];
-                $avancePeriodo=  $registro->porcentajeAvance;
-            }
-        }
-        else 
-            var_dump($resultado->mensajeError);
-        $criteriosSeleccionActual->tipoReporte = TipoReporte::TODOS;
-        $resultado = $repositorio->consultarResultados($this->usuario, $criteriosSeleccionActual);
-        if($resultado->correcto())
-        {
-            if(count($resultado->valor)>0)
-            {
-                $registro = $resultado->valor[0];
-                $avanceActual=  $registro->porcentajeAvance;
-            }
-        }
-        else
-            var_dump($resultado->mensajeError);
-        $this->criteriosSeleccion->tipoReporte = TipoReporte::CAPACITACION_INICIADA;
-        $resultado = $repositorio->consultarResultados($this->usuario, $this->criteriosSeleccion);
-        if($resultado->correcto())
-        {
-            if(count($resultado->valor)>0)
-            {
-                $registro = $resultado->valor[0];
-                $aprovechamientoPeriodo=  $registro->porcentaje;
-            }
-        }
-        else
-            var_dump($resultado->mensajeError);
-        $criteriosSeleccionActual->tipoReporte = TipoReporte::CAPACITACION_INICIADA;
-        $resultado = $repositorio->consultarResultados($this->usuario,$criteriosSeleccionActual);
-        if($resultado->correcto())
-        {
-            if(count($resultado->valor)>0)
-            {
-                $registro = $resultado->valor[0];
-                $aprovechamientoActual = $registro->porcentajeAvance;
-            }
-        }
-        else
-            var_dump($resultado->mensajeError);
-       
-                
-                
-//                 $criteriosSeleccionActual->fechaFinal="";
-//                 $criteriosSeleccionActual->fechaInicial ="";
-                
-                //var_dump($criteriosSeleccionActual);
-                //$fechaAnterior = substr($resultado->valor->fecha,0,10);
-//                 $resultado = $repositorio->consultarResultados($this->usuario, $criteriosSeleccionActual);
-//                 if($resultado->correcto())
-//                 {
-//                     if(count($resultado->valor)>0)
-//                     {
-//         $registro = $resultado->valor[0];
-//         $avanceActual=  $registro->porcentajeAvance;
-//         $aprovechamientoActual= $registro->porcentaje;
-        
-        $porcentajes = array();
-        array_push($porcentajes,(object)["nombre"=>"Avance", "periodo"=> $avancePeriodo, "actual" =>$avanceActual]);
-        array_push($porcentajes,(object)["nombre"=>"Aprovechamiento", "periodo"=> $aprovechamientoPeriodo, "actual" =>$aprovechamientoActual]);
-        
-        //var_dump($porcentajes);
-    
-        $image = $this->graficaComparativoAvanceAprovechamiento("",'',"Este mes","Periodo seleccionado",$porcentajes,"nombre","actual","periodo",$colores,false,100);
-        if($image!='')
-            $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
-//                     }
-//                 }
-            
-    }
-    
     
     function graficaComparativoAvanceAprovechamiento($title, $yTitle, $serieTitle,$serieTitleAnterior, $rows, $xField, $yFieldActual, $yFieldAnterior, $colors, $showInLegend,$max)
     {
@@ -1253,7 +1601,7 @@ abstract class PDF extends FPDF
     
     public function imprimir()
     {
-        $filename ="../reportes_capacitaciones/";
+        $filename ="../reportes_kci/";
         $filename.=$this->calcularFolio();
         $filename.=".pdf";
         
@@ -1279,16 +1627,7 @@ abstract class PDF extends FPDF
         $this->Cell(0, 8, "Avance: $avance%", $borde, 0, 'R');
     }
     
-    function titulo()
-    {
-        $this->Ln();
-        //$this->SetY(16);
-        //$this->SetLeftMargin(5);
-        $this->SetFont($this->font,'B',18);
-        $this->SetTextColor(60, 141, 188);
-        $this->Cell(0,0,$this->texto("auditoria DE REUNIÓN"),0,2,'C');
-    }
-    
+   
     
     function campo($ancho,$texto,$valor)
     {
@@ -1339,23 +1678,16 @@ abstract class PDF extends FPDF
 
 
 
-class ReporteCapacitaciones extends PDF
-{
-   
-   
-    
-   
-    
-}
 
 
-class ReporteFabrica
+function format($valor)
 {
-    public function crear()
-    {
-        $reporte = new ReporteCapacitaciones();
-        return $reporte;
-    }
+    $valor = bcdiv($valor, '1', 1);
+    
+    list($enteros, $decimales) = explode(".", $valor);
+    if($decimales=="0")
+        $valor = str_replace(".$decimales","",$valor);
+        return $valor;
 }
 
 $conexion = null;
@@ -1369,17 +1701,20 @@ try
         session_start();
         $usuario = null;
         if(isset($_SESSION['usuario']))
-            $usuario = $_SESSION['usuario'];
-        $reporteFabrica = new ReporteFabrica();
-        $reporte = $reporteFabrica->crear();
-        if($reporte!=null)
         {
-            $reporte->setConexion($conexion);
-            $reporte->AliasNbPages();
-            $reporte->generar($usuario,$criteriosSeleccion);
-           $reporte->imprimir();
-        
+            $usuario = $_SESSION['usuario'];
+            $reporte =new ReporteKCI();
+            if($reporte!=null)
+            {
+                $reporte->setConexion($conexion);
+                $reporte->AliasNbPages();
+                $reporte->generar($usuario,$criteriosSeleccion);
+               $reporte->imprimir();
+            
+            }
         }
+        else
+            echo "Sesión caducada";
     }
 }
 catch(Exception $e)

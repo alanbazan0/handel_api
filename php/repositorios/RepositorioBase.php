@@ -36,26 +36,32 @@ class RepositorioBase
     
     public function groupBy($campos)
     {
-        $alias = "GROUP BY ";
-        for ($i = 0; $i < count($campos);$i++)
+        if(count($campos) > 0)
         {
-            $campo = $campos[$i];
-            $alias.=$campo->alias;
-            if($i < count($campos) - 1)
-                $alias.=", "; 
+            $alias = "GROUP BY ";
+            for ($i = 0; $i < count($campos);$i++)
+            {
+                $campo = $campos[$i];
+                $alias.=$campo->alias;
+                if($i < count($campos) - 1)
+                    $alias.=", "; 
+            }
         }
         return $alias;
     }
     
     public function orderBy($campos)
     {
-        $alias = "ORDER BY ";
-        for ($i = 0; $i < count($campos);$i++)
+        if(count($campos) > 0)
         {
-            $campo = $campos[$i];
-            $alias.=$campo->alias;
-            if($i < count($campos) - 1)
-                $alias.=", ";
+            $alias = "ORDER BY ";
+            for ($i = 0; $i < count($campos);$i++)
+            {
+                $campo = $campos[$i];
+                $alias.=$campo->alias;
+                if($i < count($campos) - 1)
+                    $alias.=", ";
+            }
         }
         return $alias;
     }

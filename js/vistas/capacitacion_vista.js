@@ -274,29 +274,8 @@ class CapacitacionVista extends CatalogoVista
 	btnGuardarFormulario_onClick()
 	{		
 		$("#formulario").submit();
-//		 if(this.datosValidos())
-//		 {
-//			if(this.modo=='ALTA')
-//				this.presentador.insertar();
-//			else
-//				this.presentador.actualizar();
-//		 }		
-		
-		
-		
 	}
-	
-	
 
-//	btnSalir_onClick()
-//	{
-//		var confirmacion = confirm("¿Esta seguro que desea salir?")
-//	    if (confirmacion)
-//	    	{
-//		    	
-//	    	}
-//	}
-	
 	btnSalirFormulario_onClick()
 	{		
 		this.salirFormulario();
@@ -308,8 +287,6 @@ class CapacitacionVista extends CatalogoVista
 		$('#principalDiv').hide();	
 		$('#formularioDiv').show();
 		$('#contenidoFormularioDiv').hide();
-		//$('#guardarButton').hide();
-		
 	}
 	
 	salirFormulario()
@@ -485,7 +462,11 @@ class CapacitacionVista extends CatalogoVista
 			if(this.listaLecciones.lecciones!=null)
 				if(this.listaLecciones.lecciones.length>0)
 				{
-					this._leccionSeleccionada =  this.getLeccionSinCompletar(this.modeloEdicion.lecciones);
+					if(this.leccionId != undefined && this.leccionId!="")
+						this._leccionSeleccionada =  this.getLeccion(this.leccionId,this.modeloEdicion.lecciones);
+					else
+						this._leccionSeleccionada =  this.getLeccionSinCompletar(this.modeloEdicion.lecciones);
+						
 					if(this._leccionSeleccionada==null)
 						this._leccionSeleccionada= this.modeloEdicion.lecciones[0];
 					this.mostrarLeccion(this._leccionSeleccionada);
@@ -510,6 +491,17 @@ class CapacitacionVista extends CatalogoVista
 		{
 			var leccion = lecciones[i];
 			if(leccion.terminado!=1)
+				return leccion;
+		}
+		return null;
+	}
+	
+	getLeccion(leccionId,lecciones)
+	{
+		for(var i=0; i < lecciones.length; i++)
+		{
+			var leccion = lecciones[i];
+			if(leccion.id==leccionId)
 				return leccion;
 		}
 		return null;
@@ -693,8 +685,8 @@ class CapacitacionVista extends CatalogoVista
 			}
 			else
 			{
-				this.listaLecciones.terminarLeccion(leccionId);
-				html+=this.textoLeccionTerminada;
+				//this.listaLecciones.terminarLeccion(leccionId);
+				//html+=this.textoLeccionTerminada;
 				if(numeroPreguntasRestantes==0 && numeroPreguntasContestadas>0)
 					this.terminarLeccionCurso(leccionId)
 			}
@@ -743,7 +735,7 @@ class CapacitacionVista extends CatalogoVista
 	            if (!isConfirm) 
 					_this.volverAVer(calificacion);
 				else
-					_this.verDespues();
+					_this.verDespues(calificacion);
 	        });
 	        
 	        $(".sweet-alert").find(".cancel").css("background-color","#00a65a");
@@ -755,27 +747,52 @@ class CapacitacionVista extends CatalogoVista
 		this.presentador.eliminarIntentoLeccion(calificacion,true);
 	}
 	
-	verDespues()
+	verDespues(calificacion)
 	{
 		this.presentador.eliminarIntentoLeccion(calificacion,false);
 	}
 	
 	cerrarIntento(leccionId, volverAVer)
 	{
-		swal.close();
 		
+		var _this = this;
 		if(volverAVer)
 		{
-			this.listaLecciones.reiniciarLeccion(leccionId);
+			swal.close();
+			//this.listaLecciones.reiniciarLeccion(leccionId);
 			// _this.vsgLoadVideo(this._player,leccion.video);
-			 
+			this._leccionIdSeleccionada = -1;
 			this.seleccionarLeccion(null,leccionId);
-			 this._player.show();
-			 this._player.currentTime = 0;
-	  		this._player.play();
+			this._player.play();
+			// this._player.show();
+			/* this._player.currentTime = 0;
+	  		this._player.play();*/
   		}
+		else
+		{
+			
+	         swal({
+               title: "Aviso",
+	            text: "Te recordaré en tu siguiente ingreso a CAVI",
+	            html: true,
+	            type: "warning",
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Cerrar",
+	            closeOnConfirm: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            _this.recordarLeccion(leccionId);
+	        });
+			
+		}
 		
-		
+	}
+	
+	recordarLeccion(leccionId)
+	{
+		this.salirFormulario();
 	}
 
 	get textoLeccionTerminada()
@@ -886,7 +903,7 @@ class CapacitacionVista extends CatalogoVista
 					//"youtube": { "iv_load_policy": 3 }
 			  });
 
-		  console.log(ext);
+		  //console.log(ext);
 
 		 
 		  if (poster) vgsPlayer.poster(poster);
@@ -959,7 +976,6 @@ class CapacitacionVista extends CatalogoVista
 	get seeking()
 	{
 		return $("body").attr("data-seeking")=="true";
-		
 	}
 	
 	cambiarLogo()
@@ -971,7 +987,11 @@ class CapacitacionVista extends CatalogoVista
 	get end()
 	{
 		return $("body").attr("data-end")=="true";
-		
+	}
+	
+	get leccionId()
+	{
+		return $("body").attr("data-leccionId");
 	}
 	
 	

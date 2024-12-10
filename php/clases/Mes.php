@@ -29,7 +29,11 @@ class Mes
 //         $fecha = "$dia/$mes/$ano $hora";
 //         return $fecha;
 //     }
-    
+    public static function getNombreMesActual()
+    {
+        $mes = date("m");
+        return Mes::getNombre($mes);
+    }
     
     
     public static function getNombre($mes)

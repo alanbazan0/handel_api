@@ -83,7 +83,7 @@ class CapacitacionPresentador extends CatalogoPresentador
 			 this.vista.guardando = false;
 			 if(resultado.mensajeError=="")
 			 {
-				this.evaluarCalificacion(resultado.valor);
+				this.evaluarCalificacion(leccionId,resultado.valor);
 			 }
 			 else
 				 this.vista.mostrarMensajeError("Error",resultado.mensajeError);
@@ -91,13 +91,19 @@ class CapacitacionPresentador extends CatalogoPresentador
 		 ,this.vista.cursoId, leccionId);
 	}
 	
-	evaluarCalificacion(valor)
+	evaluarCalificacion(leccionId,valor)
 	{
 		if(valor!=null)
 		{
 			if(parseFloat(valor.porcentaje) < parseFloat(valor.calificacionMinima))
 			{
 				vista.mostrarMensajeCalificacionInferior(valor.titulo,valor.porcentaje);
+			}
+			else
+			{
+				this.vista.listaLecciones.terminarLeccion(leccionId);
+				var html=this.vista.textoLeccionTerminada;
+ 				$("#divBotonesPreguntas").html(html);
 			}
 		}
 	}

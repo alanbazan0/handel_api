@@ -11,6 +11,7 @@ class CatalogoVista extends Vista
 		this._urlFormulario = "";
 		var fecha = new Date();
 		this._time = fecha.getTime();
+		this._inicioTemporadaConfigurada = false;
 	}
 	
 	get time()
@@ -513,11 +514,25 @@ class CatalogoVista extends Vista
 		
 		var start = moment().subtract(1, 'years');
 		var end = moment();	
+		
+		/*
+		
+		 ranges   : {
+		          'Histórico'       : ["01/08/2020", moment()],
+		          'Este año'   : [moment().startOf('year'),, moment()],
+		          'Ultimo año'   : [moment().subtract(1, 'year'), moment()],
+		          'Ultimo semestre' : [moment().subtract(6, 'month'), moment()],
+		          'Ultimo trimestre': [moment().subtract(3, 'month'), moment()],
+		          'Este mes'  : [moment().startOf('month'), moment().endOf('month')],
+		          'Mes pasado'  : [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+		
+		*/
 
 		
 		    
 	    var ranges = {
 	          'Histórico'       : ["01/08/2020", moment()],
+	          'Este año'   : [moment().startOf('year'), moment()],
 	          'Ultimo año'   : [moment().subtract(1, 'year'), moment()],
 	          'Ultimo semestre' : [moment().subtract(6, 'month'), moment()],
 	          'Ultimo trimestre': [moment().subtract(3, 'month'), moment()],
@@ -527,13 +542,14 @@ class CatalogoVista extends Vista
 	     
 	    if(fechaInicioTemporada!=null && fechaInicioTemporada!="")
 	    {
-			
+			this._inicioTemporadaConfigurada = true;
 			start = moment(fechaInicioTemporada, "DD-MM-YYYY");
 			end = moment();	
 			
 			ranges = {
-			  'Inicio de temporada' : [fechaInicioTemporada, moment()],
+			  'Esta temporada' : [fechaInicioTemporada, moment()],	
 	          'Histórico'       : [moment("01/08/2020", "DD-MM-YYYY"), moment()],
+	           'Este año'   : [moment().startOf('year'),, moment()],
 	          'Ultimo año'   : [moment().subtract(1, 'year'), moment()],
 	          'Ultimo semestre' : [moment().subtract(6, 'month'), moment()],
 	          'Ultimo trimestre': [moment().subtract(3, 'month'), moment()],
@@ -544,11 +560,14 @@ class CatalogoVista extends Vista
 		}
 		else
 		{
+			this._inicioTemporadaConfigurada = false;
 			start = moment().subtract(1, 'years');
 			end = moment();	
 			
 		  	ranges = {
+			  'Esta temporada' : [moment().startOf('year'), moment()],	
 	          'Histórico'       : [moment("01/08/2020", "DD-MM-YYYY"), moment()],
+	            'Este año'   : [moment().startOf('year'),, moment()],
 	          'Ultimo año'   : [moment().subtract(1, 'year'), moment()],
 	          'Ultimo semestre' : [moment().subtract(6, 'month'), moment()],
 	          'Ultimo trimestre': [moment().subtract(3, 'month'), moment()],
@@ -575,9 +594,21 @@ class CatalogoVista extends Vista
 	    );
 		 
 		 function cb(start, end) {
+			 
+			 
+		
+			 
 			_this._fechaInicial = start.format('DD/MM/YYYY');
 			_this._fechaFinal = end.format('DD/MM/YYYY');
 	       	$('#daterange-btn span').html(start.format('D MMMM YYYY') + ' - ' + end.format('D MMMM YYYY'))
+	       	
+	       	if(this!=null)
+	       	{
+		       	var title = this.chosenLabel;
+		       	if(title == "Esta temporada"  && !_this._inicioTemporadaConfigurada)
+		       		_this.mostrarMensajeAdvertencia("Advertencia","No se ha definido una fecha de inicio de temporada, vea con su especialista asignado en Handel para que la registre, se mostrarara del 1 de Enero a la fecha");
+       		}
+   			//_this.title =  $("div.ranges").find("li.active").html();
 	    }
 	     
 		cb(start,end);
@@ -622,6 +653,12 @@ class CatalogoVista extends Vista
 		var html = $("#leccionesReprobadasNumeroSpan").html();
 		if(html!="")
 			this.presentador.leerNotificaciones();
+	}
+	
+	set inicioTemporadaEmpresa(valor)
+	{
+		//if(valor!="")
+		this.crearFechas(valor);
 	}
 	
 }

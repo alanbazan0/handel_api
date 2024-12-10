@@ -6887,5 +6887,71 @@ public function consultarAvanceCapacitaciones($usuario,$criteriosSeleccion)
             return $resultado;
     }
     
+    public function consultarLeccionesReprobadasSinTerminar($usuario)
+    {
+        $resultado = new Resultado();
+        
+            
+        $lecciones = array();
+        $consulta = "SELECT curso_id, descripcion, leccion_id,titulo, token FROM(
+                        SELECT LR.curso_id, C.descripcion, LR.leccion_id, L.titulo, C.token,
+                        	(SELECT count(*) FROM usuarios_cursos_lecciones UCL WHERE UCL.usuario_id = LR.usuario_id AND UCL.curso_id = LR.curso_id AND UCL.leccion_id = LR.leccion_id AND UCL.terminado = 0)  pendiente,
+                            (SELECT count(*) FROM usuarios_cursos_lecciones UCL WHERE UCL.usuario_id = LR.usuario_id AND UCL.curso_id = LR.curso_id AND UCL.leccion_id = LR.leccion_id)  contestando
+                        FROM appshand_saha.usuarios_cursos_lecciones_reprobadas LR
+                        	INNER JOIN usuarios U ON U.id = LR.usuario_id
+                        	INNER JOIN cursos C ON C.id = LR.curso_id
+                        	INNER JOIN cursos_lecciones L ON L.id = LR.leccion_id AND L.curso_id = LR.curso_id
+                        WHERE  LR.usuario_id = ?
+                        GROUP BY  LR.curso_id, C.descripcion, LR.leccion_id, L.titulo
+                        ) A
+                        WHERE pendiente > 0 || contestando = 0
+                    ";
+                        
+                        
+                        
+                        
+                        //var_dump($filtros);
+                        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$usuario->id))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($cursoId, $cursoDescripcion, $leccionId, $leccionTitulo, $token))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro= (object) [
+                                'cursoId' => $cursoId,
+                                'cursoDescripcion' => $cursoDescripcion,
+                                'leccionId' => $leccionId,
+                                'leccionTitulo' => $leccionTitulo,
+                                'token' => $token
+                            ];
+                            
+                                    
+                            array_push($lecciones,$registro);
+                        }
+                        $resultado->valor = $lecciones;
+                        
+                        $sentencia->close();
+                        
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                else
+                   $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        return $resultado;
+    }
+    
 }
 

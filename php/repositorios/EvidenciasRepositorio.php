@@ -515,7 +515,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
     }
     
     
-    public function consultarPorcentajesEvidencias($usuario,$criteriosSeleccion)
+    public function consultarPorcentajesEvidencias($usuario,$criteriosSeleccion, $camposGroupBy=null)
     {
         
         $resultado = new Resultado();
@@ -523,10 +523,11 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         $and = $this->and($filtros);
         $consulta = "SELECT SUM(justificadas)justificadas, SUM(enviadas)enviadas, SUM(pendientes)pendientes ".
             "\nFROM(" .
-            $this->getConsultaEvidenciasBase($usuario,$criteriosSeleccion,$and)  .
+            $this->getConsultaEvidenciasBase($usuario,$criteriosSeleccion,$and, $camposGroupBy)  .
             "\n) AS A ";
       
-        //echo $consulta;      
+        //echo $and;  
+        
             
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -649,7 +650,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             "\nFROM(" .
             $this->getConsultaEvidenciasBase($usuario,$criteriosSeleccion,$and)  .
             "\n) AS A " .
-            "\nGROUP BY sedeId,sedeNombre,sedeNombreCorto";
+            "\nGROUP BY sedeId,sedeNombre,sedeNombreCorto".
             "\nORDER BY sedeNombre";
         
         if($sentencia = $this->conexion->prepare($consulta))
@@ -730,7 +731,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     "\nFROM(" .
                    $this->getConsultaEvidenciasBase($usuario,$criteriosSeleccion,$and)  .
                    "\n) AS A " .
-                   "\nGROUP BY departamentoId,departamentoNombre";
+                   "\nGROUP BY departamentoId,departamentoNombre".
                    "\nORDER BY departamentoNombre";
                    
         
@@ -820,7 +821,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         return $filtros;
     }
     
-    public function getConsultaEvidenciasBase($usuario,$criteriosSeleccion,$and)
+    public function getConsultaEvidenciasBase($usuario,$criteriosSeleccion,$and,$camposGroupBy=null)
     {
       
         
@@ -923,7 +924,10 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
       
         $consulta .=  $and . " ";
         
-        $consulta .="\n".$this->groupBy($campos);
+        if($camposGroupBy!=null)
+            $consulta .="\n".$this->groupBy($camposGroupBy);
+        else
+            $consulta .="\n".$this->groupBy($campos);
 
         return $consulta;
     }
