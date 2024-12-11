@@ -1357,6 +1357,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                             $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre,$permisoCAVI, $perfilId, $perfilNombre, $recursosHumanos, $numeroEmpleado, $empresaEstatus, $verificador, $urlDocumentos);
                             array_push($registros,$registro);
                         }
+                        $sentencia->close();
                         $resultado->valor = $registros;
                     }
                     else
@@ -2168,6 +2169,52 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 
             }
         }
+    }
+    
+    public function consultarCoordinador($empresaId)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+       
+        $consulta =  $this->consultaBase .
+                      " WHERE U.tipo_usuario_id = 2 
+                            AND E.id = ? 
+                     ORDER BY U.nombre, U.apellido
+                     LIMIT 1";
+        
+        //var_dump($consulta);
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            //if($sentencia->bind_param("ss",$criteriosSeleccion->nombre,$criteriosSeleccion->apellido))
+            if($sentencia->bind_param("i",$empresaId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id,$supervisor2, $supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre, $permisoCAVI, $perfilId, $perfilNombre, $recursosHumanos, $numeroEmpleado, $empresaEstatus, $verificador, $urlDocumentos))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $registro = $this->crearRegistro($id, $nombreUsuario, $contrasena, $nombre, $apellido,$empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1,$supervisor2Id, $supervisor2,$supervisor3Id, $supervisor3,$fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus,$tipoEmpresaId, $tipoAreaId,$permisoSAHA, $permisoSIVAH, $permiso10y7,$departamentoId, $departamentoNombre,$permisoCAVI, $perfilId, $perfilNombre, $recursosHumanos, $numeroEmpleado, $empresaEstatus, $verificador, $urlDocumentos);
+                            $resultado->valor = $registro;
+                        }
+                        $sentencia->close();
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado.";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            
+        return $resultado;     
     }
 }
 ?>

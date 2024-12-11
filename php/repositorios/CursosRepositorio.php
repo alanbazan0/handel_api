@@ -5256,6 +5256,69 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 return $resultado;
     }
     
+    public function consultarResultadosSedes($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
+        
+        $filtroCapacitacion ="";
+        if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
+            $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
+            
+            $consulta = "SELECT sedeId, sede,SUM(correctas)correctas, SUM(total)total,SUM(totalPreguntas),SUM(preguntasContestadas),SUM(preguntasContestadasMes), count(*) numeroUsuarios ".
+                "\nFROM(" . $this->getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario).
+                "\n) AS A " .
+                "\nGROUP BY sedeId,sede" .
+                "\nORDER BY sede";
+            
+            //var_dump($consulta);
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($this->bind_param($sentencia, $filtros))
+                {
+                    if($sentencia->execute())
+                    {
+                        if ($sentencia->bind_result($id, $nombre, $correctas, $total, $totalPreguntas, $preguntasContestadas, $preguntasContestadasMes, $numeroUsuarios)  )
+                        {
+                            while($row = $sentencia->fetch())
+                            {
+                                $registro= (object) [
+                                    'id' =>  $id,
+                                    'nombre' => $nombre,
+                                    'correctas' => $correctas,
+                                    'total' => $total,
+                                    'totalPreguntas' =>$totalPreguntas,
+                                    'preguntasContestadas' => $preguntasContestadas,
+                                    'preguntasContestadasMes' => $preguntasContestadasMes,
+                                    'numeroUsuarios' => $numeroUsuarios
+                                ];
+                                
+                                $registro->nombreId =  $registro->nombre." (".$registro->id.")";
+                                $this->calcularPorcentaje($registro,'correctas','preguntasContestadas',"porcentaje");
+                                $this->calcularPorcentaje($registro,'preguntasContestadas','totalPreguntas',"porcentajeAvance");
+                                $this->calcularPorcentaje($registro,'preguntasContestadasMes','totalPreguntas',"porcentajeAvanceMensual");
+                                
+                                array_push($registros,$registro);
+                            }
+                            $resultado->valor = $registros;
+                        }
+                        else
+                            $resultado->mensajeError = "Falló el enlace del resultado.";
+                    }
+                    else
+                        $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = "Falló el enlace de parámetros";
+            }
+            else
+                $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                
+                return $resultado;
+    }
+    
     public function consultarUsuariosDepartamento($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();

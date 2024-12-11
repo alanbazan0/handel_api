@@ -3985,7 +3985,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
             
 //             $where = $this->where($filtros);
 //         }
-        $consulta ="SELECT * FROM (SELECT A.id, A.plantilla_id, P.nombre plantillaNombre, IFNULL(DATE_FORMAT(A.fecha_ejecucion,'%d/%m/%Y %H:%i:%s'),'')fecha_ejecucion, A.empresa_id, E.nombre, IFNULL(E.nombre_corto,'')nombre_corto, A.contador_empresa,tipo_auditoria_id,
+        $consulta ="SELECT * FROM (SELECT A.id, A.plantilla_id, P.nombre plantillaNombre, IFNULL(DATE_FORMAT(A.fecha_ejecucion,'%d/%m/%Y %H:%i:%s'),'')fecha_ejecucion, A.empresa_id, EM.nombre, IFNULL(EM.nombre_corto,'')nombre_corto, A.contador_empresa,tipo_auditoria_id,
                 (SELECT SUM(porcentaje) / COUNT(*) as porcentaje 
                         FROM auditoria_secciones ASS
                         	INNER JOIN auditorias A1 ON A1.id = ASS.auditoria_id
@@ -4007,9 +4007,9 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                 IFNULL(DATE_FORMAT(A.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') AS fechaAlta,A.sede_id, S.nombre AS sedeNombre, IFNULL(DATE_FORMAT(A.fecha,'%d/%m/%Y'),''), A.hora, TA.nombre AS tipoAuditoriaNombre, IFNULL(A.seguimiento_finalizado,0), A.fecha_seguimiento_finalizado
              FROM auditorias A 
                  INNER JOIN plantillas P on A.plantilla_id = P.id 
-                LEFT JOIN empresas E on A.empresa_id = E.id 
-                LEFT JOIN tipos_empresa TE ON TE.id = E.tipo_empresa_id
-                LEFT JOIN paises PS ON PS.id = E.pais_id
+                LEFT JOIN empresas EM on A.empresa_id = EM.id 
+                LEFT JOIN tipos_empresa TE ON TE.id = EM.tipo_empresa_id
+                LEFT JOIN paises PS ON PS.id = EM.pais_id
                 LEFT JOIN sedes S ON A.sede_id = S.id
                 LEFT JOIN tipos_auditoria TA ON TA.id = A.tipo_auditoria_id
             ORDER BY UNIX_TIMESTAMP(fecha) desc, hora desc
@@ -5424,6 +5424,150 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
         else
             $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
+    }
+    
+    public function consultarAuditorias($auditorias)
+    {
+        $in = "";
+        for($i = 0; $i < count($auditorias); $i++)
+        {
+            $in.=$auditorias[$i]->id;
+            if($i < count($auditorias) - 1)
+                $in.=",";
+        }
+       
+        $consulta ="SELECT * FROM 
+                (SELECT A.id, A.plantilla_id, P.nombre plantillaNombre, IFNULL(DATE_FORMAT(A.fecha_ejecucion,'%d/%m/%Y %H:%i:%s'),'')fecha_ejecucion, A.empresa_id, EM.nombre, IFNULL(EM.nombre_corto,'')nombre_corto, A.contador_empresa,tipo_auditoria_id,
+                (SELECT SUM(porcentaje) / COUNT(*) as porcentaje
+                        FROM auditoria_secciones ASS
+                        	INNER JOIN auditorias A1 ON A1.id = ASS.auditoria_id
+                        	INNER JOIN secciones S ON S.plantilla_id = A1.plantilla_id AND S.id= ASS.seccion_id
+                        WHERE S.orden>1 AND A1.id = A.id ) puntuacion,
+                A.nivel_compromiso, A.implementacion, A.verificacion,
+                TE.nivel_compromiso tipoEmpresaNivelCompromiso, TE.implementacion tipoEmpresaImplementacion, TE.verificacion tipoEmpresaVerificacion,
+                PS.nivel_compromiso paisNivelCompromiso, PS.implementacion paisImplementacion, PS.verificacion paisVerificacion, observaciones, buenas_practicas, seguimiento, IFNULL(DATE_FORMAT(A.fecha_seguimiento,'%d/%m/%Y %H:%i:%s'),'')fecha_seguimiento,
+                 (SELECT count(*)
+                FROM recomendaciones R
+                	LEFT JOIN usuarios U ON U.id = R.responsable_id
+                	LEFT JOIN empresas E1 ON E1.id = U.empresa_id
+                WHERE auditoria_id = A.id) recomendacionesTotal,
+            (SELECT count(*)
+                FROM recomendaciones R
+                	LEFT JOIN usuarios U ON U.id = R.responsable_id
+                	LEFT JOIN empresas E1 ON E1.id = U.empresa_id
+                WHERE auditoria_id = A.id AND R.estatus_validacion_id!=2) recomendacionesPendientes,
+                IFNULL(DATE_FORMAT(A.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') AS fechaAlta,A.sede_id, S.nombre AS sedeNombre, IFNULL(DATE_FORMAT(A.fecha,'%d/%m/%Y'),''), A.hora, TA.nombre AS tipoAuditoriaNombre, IFNULL(A.seguimiento_finalizado,0), A.fecha_seguimiento_finalizado
+             FROM auditorias A
+                 INNER JOIN plantillas P on A.plantilla_id = P.id
+                LEFT JOIN empresas EM on A.empresa_id = EM.id
+                LEFT JOIN tipos_empresa TE ON TE.id = EM.tipo_empresa_id
+                LEFT JOIN paises PS ON PS.id = EM.pais_id
+                LEFT JOIN sedes S ON A.sede_id = S.id
+                LEFT JOIN tipos_auditoria TA ON TA.id = A.tipo_auditoria_id
+                WHERE A.id IN($in)
+            ORDER BY UNIX_TIMESTAMP(fecha) desc, hora desc
+            )SB
+            WHERE recomendacionesTotal > 0";
+        
+        $resultado = new Resultado();
+        $registros = array();
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            //if($this->bind_param($sentencia, $filtros))
+            //{
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento, $fechaSeguimiento, $recomendacionesTotal, $recomendacionesPendientes, $fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre,$seguimientoFinalizado, $fechaSeguimientoFinalizado))
+                    {
+                        while($row = $sentencia->fetch())
+                        {
+                            $registro = $this->crearRegistro($id,  $plantillaId, $plantillaNombre, $fechaEjecucion, $empresaId, $empresaNombre, $empresaNombreCorto, $contadorEmpresa,$tipoAuditoriaId, $puntuacion, $nivelCompromiso, $implementacion, $verificacion,$tipoEmpresaNivelCompromiso, $tipoEmpresaImplementacion, $tipoEmpresaVerificacion, $paisNivelCompromiso, $paisImplementacion, $paisVerificacion, $observaciones, $buenasPracticas, $seguimiento,$fechaSeguimiento, $recomendacionesTotal,$recomendacionesPendientes,$fechaAlta, $sedeId, $sedeNombre, $fecha, $hora, $tipoAuditoriaNombre,$seguimientoFinalizado, $fechaSeguimientoFinalizado);
+                            
+                            
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado.";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+           // }
+           // else
+            //    $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+        
+        
+    }
+    
+    public function consultarAuditoriasRecientesEmpresa($empresaId)
+    {
+        $resultado = new Resultado();
+        $consulta = "SELECT id, sede_id
+                    FROM auditorias
+                    WHERE empresa_id = ?
+                        AND seguimiento = 1
+                    ORDER BY fecha_alta desc";
+        $registros = array();
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param('i',$empresaId))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id, $sedeId))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro= (object) [
+                                'id' =>  $id,
+                                'sedeId' =>  $sedeId
+                            ];
+                            array_push($registros,$registro);
+                        }
+                        
+                        $sentencia->close();
+                        
+                        $auditorias = array();
+                        for($i = 0; $i < count($registros); $i++)
+                        {
+                            if(!$this->existeSede($registros[$i]->sedeId, $auditorias))
+                            {
+                                array_push($auditorias,$registros[$i]);
+                            }
+                        }
+                        $resultado->valor = $auditorias;
+                        
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__. '. Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. '. Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__. '. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        
+        
+        return $resultado;
+    }
+    
+    function existeSede($sedeId, $registros)
+    {
+        for($i = 0; $i < count($registros); $i++)
+        {
+            if($sedeId == $registros[$i]->sedeId)
+                return true;
+        }
+        return false;
     }
     
     

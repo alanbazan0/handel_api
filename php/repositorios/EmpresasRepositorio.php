@@ -211,7 +211,7 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
                 {                
                     if ($sentencia->bind_result($id, $nombre, $nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono, $corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima, $fechaInicioTemporada))
                     {                    
-                        while($row = $sentencia->fetch())
+                        while($row = $sentencia->fetch()) 
                         {
                             $registro = $this->crearRegistro($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono, $corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima, $fechaInicioTemporada);
                       
@@ -225,6 +225,7 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
                                 array_unshift($registros, $registro);
                             }
                         }
+                        $sentencia->close();
                         $resultado->valor = $registros; 
                     }           
                     else

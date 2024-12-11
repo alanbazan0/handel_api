@@ -546,6 +546,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                             
                             $resultado->valor = $porcentajes;
                         }
+                        $sentencia->close();
                     }
                     else
                         $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
@@ -602,6 +603,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
+                        $sentencia->close();
                     }
                     else
                         $resultado->mensajeError = __FUNCTION__. '. Falló el enlace del resultado.';
@@ -768,6 +770,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                             
                             array_push($registros,$registro);
                         }
+                        $sentencia->close();
                         $resultado->valor = $registros;
                     }
                     else
@@ -1051,6 +1054,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
+                        $sentencia->close();
                     }
                     else
                         $resultado->mensajeError = __FUNCTION__.'. Falló el enlace del resultado.';

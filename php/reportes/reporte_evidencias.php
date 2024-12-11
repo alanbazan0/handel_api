@@ -411,7 +411,7 @@ class ReporteEvidencias extends ReporteBase
            $this->introduccion();
             
             
-            if($this->usuario->tipoUsuarioId==TipoUsuario::COORDINADOR)
+           if($this->usuario->tipoUsuarioId==TipoUsuario::COORDINADOR)
             {
                $this->graficasCoordinador();
             }
@@ -426,6 +426,8 @@ class ReporteEvidencias extends ReporteBase
     
     private function evidenciasJustificadas()
     {
+        
+        
         $this->AddPage();
         $this->titulo("Resumen de justificaciones del mes");
         $this->Ln();

@@ -314,22 +314,7 @@ function toColumnChartSerieColors($title, $yTitle, $serieTitle, $rows, $xField, 
         'xAxis' => (object) [ 'categories' => $categories],
         'plotOptions' => (object)
         [
-//             'column'=> (object)[
-//                 'dataLabels'=>(object)
-//                 [
-//                     'enabled'=>true,
-//                     'crop'=>false,
-//                     'overflow' =>'none',
-//                     //"inside"=> $inside,
-//                     'color'=> 'black',
-//                     'style'=> (object)
-//                     [
-//                         'fontSize' => 10,
-//                         'textOutline' => '0px'
-//                     ],
-//                     'format' => $format
-//                 ]
-//             ],
+
             'series' => (object)
             [
                 'dataLabels'=>(object)
