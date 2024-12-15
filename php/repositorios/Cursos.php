@@ -341,47 +341,23 @@ try
                     $resultado = $repositorio->actualizarPerfiles($cursoId, $perfiles);
                 break;
                 case 'consultarAvanceUsuario':
-//                     session_start();
-//                     $usuario = null;
-//                     if(isset($_SESSION['usuario']))
-//                         $usuario = $_SESSION['usuario'];
                     $resultado = $repositorio->consultarAvanceUsuario($usuario);
                 break;
                 case 'consultarAprovechamientoUsuario':
-//                     session_start();
-//                     $usuario = null;
-//                     if(isset($_SESSION['usuario']))
-//                         $usuario = $_SESSION['usuario'];
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarAprovechamientoUsuario($usuario,$criteriosSeleccion);
                 break;
                 case 'consultarVideosVistosUsuario':
-//                     session_start();
-//                     $usuario = null;
-//                     if(isset($_SESSION['usuario']))
-//                         $usuario = $_SESSION['usuario'];
                     $resultado = $repositorio->consultarVideosVistosUsuario($usuario);
                 break;
                 case 'consultarDiasCapacitacionUsuario':
-//                     session_start();
-//                     $usuario = null;
-//                     if(isset($_SESSION['usuario']))
-//                         $usuario = $_SESSION['usuario'];
                     $resultado = $repositorio->consultarDiasCapacitacionUsuario($usuario);
                 break;
                 case 'consultarResultadosUsuarios':
-//                     session_start();
-//                     $usuario = null;
-//                     if(isset($_SESSION['usuario']))
-//                         $usuario = $_SESSION['usuario'];
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarResultadosUsuarios($usuario,$criteriosSeleccion);
                 break;
                 case 'consultarTiempoUsuarios':
-//                     session_start();
-//                     $usuario = null;
-//                     if(isset($_SESSION['usuario']))
-//                         $usuario = $_SESSION['usuario'];
                      $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                      $resultado = $repositorio->consultarTiempoUsuarios($usuario,$criteriosSeleccion);
                 break;
@@ -394,34 +370,22 @@ try
                     $resultado = $repositorio->consultarAvanceCapacitaciones($usuario,$criteriosSeleccion);
                 break;
                 case 'consultarLeccionesTomadas':
-//                     session_start();
-//                     $usuario = null;
-//                     if(isset($_SESSION['usuario']))
-//                         $usuario = $_SESSION['usuario'];
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarLeccionesTomadas($usuario,$criteriosSeleccion);
                 break;
                 case 'consultarResultadosDepartamentos':
-//                     session_start();
-//                     $usuario = null;
-//                     if(isset($_SESSION['usuario']))
-//                         $usuario = $_SESSION['usuario'];
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarResultadosDepartamentos($usuario,$criteriosSeleccion);
                 break;
+                case 'consultarResultadosSedes':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarResultadosSedes($usuario,$criteriosSeleccion);
+                break;
                 case 'consultarAvanceDepartamentos':
-//                     session_start();
-//                     $usuario = null;
-//                     if(isset($_SESSION['usuario']))
-//                         $usuario = $_SESSION['usuario'];
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarAvanceDepartamentos($usuario,$criteriosSeleccion);
                 break;
                 case 'consultarAvanceUsuarios':
-//                     session_start();
-//                     $usuario = null;
-//                     if(isset($_SESSION['usuario']))
-//                         $usuario = $_SESSION['usuario'];
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarAvanceUsuarios($usuario,$criteriosSeleccion);
                 break;

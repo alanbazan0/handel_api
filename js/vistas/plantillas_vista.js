@@ -108,6 +108,10 @@ class PlantillasVista extends CatalogoVista
 	    $( "#listaRespuestas" ).disableSelection();
 	    
 		this.crearEventosActualizacion();
+		
+		$(".treeview").on("click",function(){
+                $(".treeview-menu").toggle(100);
+            })
 	}
 	
 	

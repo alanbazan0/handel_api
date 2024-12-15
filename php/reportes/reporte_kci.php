@@ -1,6 +1,5 @@
 <?php
 use php\clases\AdministradorConexion;
-use php\modelos\Resultado;
 use php\repositorios\AuditoriasRepositorio;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use php\repositorios\EmpresasRepositorio;
@@ -11,7 +10,7 @@ use php\clases\GeneradorColores;
 use php\repositorios\EvidenciasRepositorio;
 use php\reportes\ReporteBase;
 use php\repositorios\UsuariosRepositorio;
-
+use php\clases\ArrayUtils;
 
 require('../vendor/fpdf181/fpdf.php');
 include '../clases/Utilidades.php';
@@ -24,6 +23,7 @@ require_once('../repositorios/SedesRepositorio.php');
 require_once('../repositorios/CursosRepositorio.php');
 require_once('../highcharts/highchartutils.php');
 require_once('../reportes/reporte_base.php');
+include "../clases/ArrayUtils.php";
 
  class ReporteKCI extends ReporteBase
 {
@@ -1378,7 +1378,7 @@ require_once('../reportes/reporte_base.php');
     
     function sivah()
     {
-        $this->avanceCierreAuditoriaSIVAH();
+        //$this->avanceCierreAuditoriaSIVAH();
         
         $repositorio = new AuditoriasRepositorio($this->conexion);
         $resultado = $repositorio->consultarAuditoriasRecientesEmpresa($this->empresa->id);
@@ -1389,11 +1389,7 @@ require_once('../reportes/reporte_base.php');
             $this->avanceCierreAuditoriaDepartamentoSIVAH($auditorias);
             $this->avanceCierreAuditoriaUsuarioSIVAH($auditorias);
         }
-        
-  
              
-               
-               // 
     }
     
     function avanceCierreAuditoriaSedeSIVAH($auditorias)
@@ -1460,14 +1456,52 @@ require_once('../reportes/reporte_base.php');
             {
                 $hallazgos = array_merge($hallazgos, $resultado->valor);
             }
+           // echo $auditoria->id.",";
         }
-        $hallazgos = $resultado->valor;
+       
+        //total,validadas,proceso
+        //$hallazgos = ArrayUtils::filter($hallazgos, "nombre","Sistemas");
+       // echo "count: " . count($hallazgos);
+        $hallazgos = ArrayUtils::groupBySUM("nombre", "total,validadas,proceso", $hallazgos);
+        //$hallazgos = ArrayUtils::groupBySUM("nombre", "total,validadas,proceso", $hallazgos);
+        $hallazgos = ArrayUtils::orderBy($hallazgos);
+       // $hallazgos = $this->orderByAuditoriayNombre($hallazgos); 
+       
+        // var_dump($hallazgos);
+    
+        
+        
         $image = $this->graficaBarrasAvance("",'','',$hallazgos,"nombre",true);
         if($image!='')
             $this->Image($image, 100 ,50, $chartWidth);
                 
         
     }
+    
+    static function orderByAuditoriayNombre($records)
+    {
+        $getName = function ($registro) {
+            return $registro->auditoriaYNombre;
+        };
+        $names = array_map($getName, $records);
+        sort($names);
+        $sorted = [];
+        foreach ($names as $name) {
+            foreach ($records as $record) {
+                if ($record->auditoriaYNombre === $name) {
+                    $sorted[] = $record;
+                    break;
+                }
+            }
+        }
+        return $sorted;
+    }
+    
+    static function ordernarPorNombre($a, $b) {
+        return strcmp(strtolower($a->nombre), strtolower($b->nombre));
+    }
+    
+  
     
     
     function avanceCierreAuditoriaUsuarioSIVAH($auditorias)
@@ -1491,8 +1525,12 @@ require_once('../reportes/reporte_base.php');
                 $hallazgos = array_merge($hallazgos, $resultado->valor);
             }
         }
-        $hallazgos = $resultado->valor;
-        $image = $this->graficaBarrasAvance("",'','',$hallazgos,"nombre",true);
+        //$hallazgos = ArrayUtils::filter($hallazgos, "nombre","Andrés");
+        $hallazgos = ArrayUtils::groupBySUM("nombreCompleto", "total,validadas,proceso", $hallazgos);
+        $hallazgos = ArrayUtils::orderByNombreCompleto($hallazgos);
+        
+        
+        $image = $this->graficaBarrasAvance("",'','',$hallazgos,"nombreCompleto",true);
         if($image!='')
             $this->Image($image, 100 ,50, $chartWidth);
         
@@ -2101,7 +2139,7 @@ try
                         $reporte->setConexion($conexion);
                         $reporte->AliasNbPages();
                         $reporte->generar($usuario,$criteriosSeleccion);
-                        $reporte->imprimir();
+                       $reporte->imprimir();
                     }
             /*    }
                 else 

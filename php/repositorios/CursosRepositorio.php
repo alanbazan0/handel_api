@@ -4528,7 +4528,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
     
     private function getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario)
     {
-        if($criteriosSeleccion->tipoReporte==="" || $criteriosSeleccion->tipoReporte==null)
+        if(!isset($criteriosSeleccion->tipoReporte) || $criteriosSeleccion->tipoReporte==="" || $criteriosSeleccion->tipoReporte==null)
             $criteriosSeleccion->tipoReporte = \TipoReporte::TODOS;
         //$filtros = $this->getFiltroEstructura($usuario,$criteriosSeleccion);
         $filtroFechas = "";
@@ -5266,7 +5266,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId!="")
             $filtroCapacitacion = " AND C.id = $criteriosSeleccion->cursoId ";
             
-            $consulta = "SELECT sedeId, sede,SUM(correctas)correctas, SUM(total)total,SUM(totalPreguntas),SUM(preguntasContestadas),SUM(preguntasContestadasMes), count(*) numeroUsuarios ".
+            $consulta = "SELECT sedeId, TRIM(sede) sede,SUM(correctas)correctas, SUM(total)total,SUM(totalPreguntas),SUM(preguntasContestadas),SUM(preguntasContestadasMes), count(*) numeroUsuarios ".
                 "\nFROM(" . $this->getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario).
                 "\n) AS A " .
                 "\nGROUP BY sedeId,sede" .

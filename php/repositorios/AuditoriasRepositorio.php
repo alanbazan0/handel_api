@@ -5290,7 +5290,8 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                                 'nombre' =>  $nombre,
                                 'total' =>  $total,
                                 'validadas' =>  $validadas,
-                                'proceso' =>  $proceso
+                                'proceso' =>  $proceso,
+                                'auditoriaYNombre' => $auditoriaId ."-". $nombre
                                 
                             ];
                             array_push($registros,$registro);
@@ -5347,8 +5348,8 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                                 'apellido' => $apellido,
                                 'total' =>  $total,
                                 'validadas' =>  $validadas,
-                                'proceso' =>  $proceso
-                                
+                                'proceso' =>  $proceso,
+                                'auditoriaYNombre' => $auditoriaId ."-". $nombre
                                 
                             ];
                             
@@ -5465,7 +5466,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                 LEFT JOIN sedes S ON A.sede_id = S.id
                 LEFT JOIN tipos_auditoria TA ON TA.id = A.tipo_auditoria_id
                 WHERE A.id IN($in)
-            ORDER BY UNIX_TIMESTAMP(fecha) desc, hora desc
+            ORDER BY S.nombre
             )SB
             WHERE recomendacionesTotal > 0";
         
