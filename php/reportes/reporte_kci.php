@@ -1378,22 +1378,24 @@ include "../clases/ArrayUtils.php";
     
     function sivah()
     {
-        //$this->avanceCierreAuditoriaSIVAH();
+        $this->avanceCierreAuditoriaSIVAH();
         
         $repositorio = new AuditoriasRepositorio($this->conexion);
         $resultado = $repositorio->consultarAuditoriasRecientesEmpresa($this->empresa->id);
         if($resultado->correcto())
         {
             $auditorias = $resultado->valor;
-            $this->avanceCierreAuditoriaSedeSIVAH($auditorias);
-            $this->avanceCierreAuditoriaDepartamentoSIVAH($auditorias);
-            $this->avanceCierreAuditoriaUsuarioSIVAH($auditorias);
+            
+            $hallazgosPendientes = $this->avanceCierreAuditoriaSedeSIVAH($auditorias);
+            $this->avanceCierreAuditoriaDepartamentoSIVAH($auditorias,$hallazgosPendientes);
+            $this->avanceCierreAuditoriaUsuarioSIVAH($auditorias,$hallazgosPendientes);
         }
              
     }
     
     function avanceCierreAuditoriaSedeSIVAH($auditorias)
     {
+        $hallazgosPendientes = 0;
         $this->AddPage();
         $this->fondoPlantilla();
         $this->tituloPagina("Seguimiento de auditoría");
@@ -1411,10 +1413,14 @@ include "../clases/ArrayUtils.php";
             if($resultado->correcto())
             {
                 $auditorias = $resultado->valor;
+                
                 $chartWidth = 170;
                 $image = $this->graficaBarrasAvanceAuditoria("",'','',$auditorias,"sedeNombre",true);
                 if($image!='')
                     $this->Image($image, 100 ,50, $chartWidth);
+                
+                $hallazgosPendientes = $this->calcularHallazgosPendientes($auditorias);
+                $this->hallazgosPendientes($hallazgosPendientes);
             }
            
                 
@@ -1432,11 +1438,37 @@ include "../clases/ArrayUtils.php";
                 $this->Image($image, 100 ,50, $chartWidth);
                 
         }*/
-        
+        return $hallazgosPendientes;
        
     }
     
-    function avanceCierreAuditoriaDepartamentoSIVAH($auditorias)
+    function hallazgosPendientes($hallazgos)
+    {
+        $this->SetY(170);
+        $this->SetLeftMargin(230);
+        $this->SetFont($this->font, '', 10);
+        
+        $texto = "";
+        if($hallazgos == 1)
+            $texto = $hallazgos . " Hallazgo pendiente";
+        else 
+            $texto = $hallazgos . " Hallazgos pendientes";
+        
+        $this->Cell(50,6,$this->texto($texto),0,2,'C');
+    }
+    
+    function calcularHallazgosPendientes($auditorias)
+    {
+        $suma = 0;
+        for($i = 0; $i < count($auditorias); $i++)
+        {
+            $auditoria = $auditorias[$i];
+            $suma += $auditoria->recomendacionesPendientes;
+        }
+        return $suma;
+    }
+    
+    function avanceCierreAuditoriaDepartamentoSIVAH($auditorias,$hallazgosPendientes)
     {
         $this->AddPage();
         $this->fondoPlantilla();
@@ -1475,7 +1507,7 @@ include "../clases/ArrayUtils.php";
         if($image!='')
             $this->Image($image, 100 ,50, $chartWidth);
                 
-        
+        $this->hallazgosPendientes($hallazgosPendientes);
     }
     
     static function orderByAuditoriayNombre($records)
@@ -1504,7 +1536,7 @@ include "../clases/ArrayUtils.php";
   
     
     
-    function avanceCierreAuditoriaUsuarioSIVAH($auditorias)
+    function avanceCierreAuditoriaUsuarioSIVAH($auditorias,$hallazgosPendientes)
     {
         $this->AddPage();
         $this->fondoPlantilla();
@@ -1534,6 +1566,8 @@ include "../clases/ArrayUtils.php";
         if($image!='')
             $this->Image($image, 100 ,50, $chartWidth);
         
+           // echo json_encode($hallazgos, JSON_UNESCAPED_UNICODE);
+        $this->hallazgosPendientes($hallazgosPendientes);
     }
     
     function graficaBarrasAvance($title, $yTitle, $serieTitle, $rows, $xField, $showInLegend)

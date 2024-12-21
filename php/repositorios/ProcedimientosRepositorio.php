@@ -26,7 +26,7 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
     public function insertar(Procedimiento $modelo)
     {
         $resultado = $this->calcularId('id','procedimientos');
-        if($resultado->mensajeError=='')
+        if($resultado->correcto())
         {
             $id = $resultado->valor;
             $consulta = "INSERT INTO procedimientos(id, codigo, nombre, descripcion, ruta_archivo, empresa_id, sede_id, fecha_alta, fecha_modificacion, estatus)VALUES(?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?)";
@@ -34,8 +34,25 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
             {
                 if($sentencia->bind_param('issssiii', $id, $modelo->codigo, $modelo->nombre, $modelo->descripcion, $modelo->rutaArchivo, $modelo->empresaId, $modelo->sedeId, $modelo->estatus))
                 {
-                    if(!$sentencia->execute())
+                    if($sentencia->execute())
+                    {
+                       $sentencia->close();
+                       $resultado =  $this->eliminarCertificaciones($modelo->id);
+                       if($resultado->correcto())
+                       {
+                           $certificaciones = array();
+                           if(isset($modelo->certificaciones))
+                               $certificaciones = $modelo->certificaciones;
+                           $resultado =  $this->insertarCertificaciones($modelo->id, $certificaciones);
+                           if($resultado->correcto())
+                           {
+                             
+                           }
+                       }
+                    }
+                    else
                         $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                    
                 }
                 else
                     $resultado->mensajeError = 'Falló el enlace de parámetros';
@@ -64,10 +81,23 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
                 {
                     if($sentencia->bind_param('issssii', $id, $procedimiento->codigo, $procedimiento->nombre, $procedimiento->descripcion, $procedimiento->rutaArchivo, $empresaIdDetino, $sedeIdDestino))
                     {
-                        if(!$sentencia->execute())
+                        if($sentencia->execute())
+                        {
+                            $resultado = $this->copiarCertificaciones($procedimiento->id, $id);
+                            if($resultado->correcto())
+                            {
+                                
+                            }
+                            else
+                            {
+                                $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                                break;
+                            }
+                        }
+                        else
                         {
                             $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
-                            break;   
+                            break; 
                         }
                     }
                     else
@@ -91,6 +121,18 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
         
         return $resultado;
     }
+    
+    public function copiarCertificaciones($procedimientoOrigenId, $procedimientoDestinoId)
+    {
+        $resultado = new Resultado();
+        $resultado = $this->consultarCertificaciones($procedimientoOrigenId);
+        if($resultado->correcto())
+        {
+            $certificaciones = $resultado->valor;
+            $resultado = $this->insertarCertificaciones($procedimientoDestinoId, $certificaciones);
+        }
+        return $resultado;
+    }
 
     public function actualizar(Procedimiento $modelo)
     {
@@ -112,6 +154,19 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
             {
                 if($sentencia->execute())
                 {
+                    $sentencia->close();
+                    $resultado =  $this->eliminarCertificaciones($modelo->id);
+                    if($resultado->correcto())
+                    {
+                        $certificaciones = array();
+                        if(isset($modelo->certificaciones))
+                            $certificaciones = $modelo->certificaciones;
+                            $resultado =  $this->insertarCertificaciones($modelo->id, $certificaciones);
+                            if($resultado->correcto())
+                            {
+                                
+                            }
+                    }
                     $resultado->valor=true;
                 }
                 else
@@ -359,5 +414,87 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
             'estatus' => $estatus
         ];
         return $registro;
+    }
+    
+    private function eliminarCertificaciones($procedimientoId)
+    {
+        $resultado = new Resultado();
+        $consulta ="DELETE FROM procedimientos_certificaciones WHERE procedimiento_id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$procedimientoId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                    
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = __FUNCTION__. ". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+                
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. ". Falló el enlace de parámetros";
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = __FUNCTION__. ". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        }
+        return $resultado;
+    }
+    
+    public function insertarCertificaciones($procedimientoId,$certificaciones)
+    {
+        $resultado = new Resultado();
+        
+        if(isset($certificaciones) && $certificaciones !=null)
+        {
+            for ($i = 0; $i <  count($certificaciones); $i++)
+            {
+                
+                $certificacion = $certificaciones[$i];
+                
+                $resultado = $this->calcularId("id", "procedimientos_certificaciones");
+                if($resultado->correcto())
+                {
+                    $id = $resultado->valor;
+                    $consulta = "INSERT INTO procedimientos_certificaciones(id, procedimiento_id, certificacion_id) " .
+                        "VALUE(?, ?, ?)";
+                    if($sentencia = $this->conexion->prepare($consulta))
+                    {
+                        if($sentencia->bind_param("iii",$id, $procedimientoId,$certificacion->certificacionId))
+                        {
+                            if($sentencia->execute())
+                            {
+                                $sentencia->close();
+                            }
+                            else
+                            {
+                                $resultado->codigoError = $this->conexion->errno;
+                                $resultado->mensajeError = __FUNCTION__.". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            $resultado->mensajeError = __FUNCTION__.". Falló el enlace de parámetros";
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        $resultado->codigoError = $this->conexion->errno;
+                        $resultado->mensajeError = __FUNCTION__.". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                        break;
+                    }
+                }
+            }
+        }
+        return $resultado;
     }
 }

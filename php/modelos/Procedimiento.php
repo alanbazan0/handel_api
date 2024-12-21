@@ -11,4 +11,5 @@ class Procedimiento
   public $empresaId;
   public $sedeId;
   public $estatus;
+  public $certificaciones;
 }

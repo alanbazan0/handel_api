@@ -165,10 +165,13 @@ class ProcedimientosVista extends CatalogoVista
 			 nombre:$('#nombreInput').val(),
 			 descripcion:$('#descripcionInput').val(),
 			 rutaArchivo:$('#rutaArchivoInput').val(),
-			 estatus:$('#estatusRadio').is(':checked')?1:0
+			 estatus:$('#estatusRadio').is(':checked')?1:0,
+			 certificaciones: this.certificaciones
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
+			 
+			 
 		 return modelo;
 	 }
 	 
@@ -267,13 +270,44 @@ class ProcedimientosVista extends CatalogoVista
 			var check =  "<li><div class='form-group col-3'>" +
             "<label class='control-sidebar-subheading'>"+
               certificacion.nombre +
-              "<input type='checkbox' id='certificacionCheck"+certificacion.id+"' class='pull-right' >"+
+              "<input type='checkbox' id='certificacionCheck"+i+"' data-certificacion='"+certificacion.id+"' class='pull-right' >"+
           "  </label>"+
           "</div></li>";
           
           html+=check;
 		}
 		$("#certificacionesUl").html(html);
+		
+		if(this.modo == Modo.CAMBIO)
+		{
+			this.seleccionarCertificaciones(this.modeloEdicion.certificaciones);
+		}
+	}
+	
+	seleccionarCertificaciones(certificaciones)
+	{
+		for(var i=0; i < certificaciones.length; i++)
+		{
+			var certificacion = certificaciones[i];
+			var checkbox = $("#certificacionesUl").find("input[data-certificacion='"+certificacion.id+"']");
+			checkbox.prop('checked', true);
+		}
+	}
+	
+	get certificaciones()
+	{
+		var certificaciones = [];
+		var lista = $("#certificacionesUl").children(); 
+		for(var i = 0; i < lista.length; i++)
+		{
+			var checkbox = $("#certificacionCheck"+ i)
+			var seleccionado = checkbox.is(':checked');
+			if(seleccionado)
+				certificaciones.push({certificacionId: checkbox.attr("data-certificacion")});
+			
+		}
+		return certificaciones;
+		
 	}
 
 	

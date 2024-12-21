@@ -5506,6 +5506,8 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
         
     }
     
+  
+    
     public function consultarAuditoriasRecientesEmpresa($empresaId)
     {
         $resultado = new Resultado();

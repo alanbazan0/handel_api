@@ -22,10 +22,10 @@ class ArrayUtils
                        // $group[$fieldsArray[$j]] = $item[$fieldsArray[$j]];
                         $group->{$fieldsArray[$j]} = $item->{$fieldsArray[$j]};
                     }
-                    for($i = 0; $i < count($operationFieldsArray); $i++)
+                   /* for($i = 0; $i < count($operationFieldsArray); $i++)
                     {
                         $group->{$operationFieldsArray[$i]} = 0;;
-                    }
+                    }*/
                     $group->data = array();
                     
                     
@@ -41,6 +41,9 @@ class ArrayUtils
                 }
             }
         }
+        
+        
+        
         return $groups;
     }
     
@@ -159,5 +162,18 @@ class ArrayUtils
         }
         return $sorted;
     }
+    
+    static function filter($records, $field, $value)
+    {
+        $filtered = array();
+        for($i = 0; $i < count($records); $i++)
+        {
+            $record = $records[$i];
+            if($record->{$field} == $value)
+                array_push($filtered, $record);
+        }
+        return $filtered;
+    }
+    
 }
 
