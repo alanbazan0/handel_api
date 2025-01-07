@@ -36,11 +36,8 @@ class GraficaEvidenciasAreaVista extends CatalogoVista
 	{
 		var fecha = new Date();
 		
-		if(anos.length==0)
-		{
-			anos.push({id:fecha.getFullYear(), nombre:fecha.getFullYear()})
-			
-		}
+		if(anos.length==0 || !ArrayUtils.existsWithValues("id",[fecha.getFullYear()],anos))
+			anos.push({id:fecha.getFullYear(), nombre:fecha.getFullYear()});
 		this.cargarOpciones('#anoSelectCriterio', anos);
 		
 		$("#mesSelectCriterio").val(fecha.getMonth()+1);

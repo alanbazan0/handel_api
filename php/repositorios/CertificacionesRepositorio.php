@@ -73,7 +73,7 @@ class CertificacionesRepositorio extends RepositorioBase implements ICertificaci
             return $resultado;
     }
     
-    public function consultar($criteriosSeleccion)
+    public function consultar($criteriosSeleccion, $opcional)
     {
         $resultado = new Resultado();
         $registros = array();
@@ -100,6 +100,14 @@ class CertificacionesRepositorio extends RepositorioBase implements ICertificaci
                         {
                             $registro = $this->crearRegistro($id, $nombre,$fechaAlta, $fechaModificacion, $estatus);
                             array_push($registros,$registro);
+                        }
+                        if($opcional=="true")
+                        {
+                            //if($usuario->tipoUsuarioId == \TipoUsuario::SUPERUSUARIO)
+                            //{
+                            $registro = $this->crearRegistro("", "Todas las certificaciones", null, null, null);
+                            array_unshift($registros, $registro);
+                            //}
                         }
                         $resultado->valor = $registros;
                     }

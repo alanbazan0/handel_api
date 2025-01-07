@@ -1,9 +1,9 @@
-class GraficaEvidenciasSedeVista extends CatalogoVista
+class GraficaEvidenciasCertificacionVista extends CatalogoVista
 {		
 	constructor()
 	{	
 		super();
-		this.presentador = new GraficaEvidenciasSedePresentador(this);
+		this.presentador = new GraficaEvidenciasCertificacionPresentador(this);
 	}
 	
 	inicializar()
@@ -38,6 +38,7 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 		
 		if(anos.length==0 || !ArrayUtils.existsWithValues("id",[fecha.getFullYear()],anos))
 			anos.push({id:fecha.getFullYear(), nombre:fecha.getFullYear()});
+		
 		this.cargarOpciones('#anoSelectCriterio', anos);
 		
 		$("#mesSelectCriterio").val(fecha.getMonth()+1);
@@ -55,6 +56,11 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 		this.consultarSedesCriterio();
 	}
 
+	cambiarSedeCriterio()
+	{
+		this.consultarDepartamentosCriterio();
+	}
+
 	
 	consultarEmpresasCriterio()
 	{
@@ -65,12 +71,24 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 	consultarSedesCriterio()
 	{
 		this.cargandoOpciones("#sedeSelectCriterio");
+		this.cargandoOpciones("#departamentoSelectCriterio");
 		this.presentador.consultarSedesCriterio();
+	}
+	
+	consultarDepartamentosCriterio()
+	{
+		this.cargandoOpciones("#departamentoSelectCriterio");
+		this.presentador.consultarDepartamentosCriterio();
 	}
 	
 	set sedesCriterio(registros)
 	{		
 		this.cargarOpciones('#sedeSelectCriterio', registros);
+	}
+	
+	set departamentosCriterio(registros)
+	{		
+		this.cargarOpciones('#departamentoSelectCriterio', registros);
 		/*if(this.consultoGrid==false)
 		{
 			this.consultar();
@@ -91,13 +109,14 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 		{
 			empresaId:  $('#empresaSelectCriterio').val(),
 			sedeId:  $('#sedeSelectCriterio').val(),
+			departamentoId:  $('#departamentoSelectCriterio').val(),
 			mes:  $('#mesSelectCriterio').val(),
 			ano: $('#anoSelectCriterio').val()
 		};
 		return criteriosSeleccion;
 	}
 
-	set porcentajesEmpresas(porcentajesAreas)
+	set porcentajesUsuarios(porcentajesAreas)
 	{
 		am4core.ready(function() {
 
@@ -125,12 +144,10 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 				  return text.replace(/ \(.*/, "");
 				});
 			
-			
 			let label = categoryAxis.renderer.labels.template;
 			label.wrap = true;
-			label.maxWidth = 120;
-			
-			
+
+		
 			
 
 			var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
@@ -149,7 +166,9 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 				{
 					try
 					{
-						//categoryAxis.zoomToIndexes(0, 6);
+						var zoom = 6;
+						//if(_this.porcentajesAreas.lengh>=zoom)
+						//categoryAxis.zoomToIndexes(0, zoom);
 					}
 					catch(e)
 					{
@@ -168,7 +187,7 @@ class GraficaEvidenciasSedeVista extends CatalogoVista
 	
 }
 
-var vista = new GraficaEvidenciasSedeVista(this);	
+var vista = new GraficaEvidenciasCertificacionVista(this);	
 $(document).ready(function() 
 {
 	vista.inicializar();

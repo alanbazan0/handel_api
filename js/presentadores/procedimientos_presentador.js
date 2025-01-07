@@ -91,8 +91,25 @@ class ProcedimientosPresentador extends CatalogoPresentador
 			}
 			else
 				this.vista.mostrarMensaje("Error",resultado.mensajeError);
-		 },{estatus:1});
+		 },{estatus:1},false);
 	 }
+	 
+	 consultarCertificacionesCriterio()	
+	 {
+		 var repositorio = new CertificacionesRepositorio(this);		
+		 repositorio.consultar(this,function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.certificacionesCriterio = resultado.valor;
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },{estatus:1},true);
+	 }
+	 
+	 
 	 
 	
 	

@@ -55,7 +55,7 @@ try
                 $resultado = $repositorio->actualizar($modelo) ;
             break;
             case 'consultar':
-                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));               
                 $resultado = $repositorio->consultar($criteriosSeleccion);
             break;
             case 'consultarPorEmpresaSede':

@@ -185,7 +185,7 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
         ini_set('max_execution_time', 300);
         $resultado = new Resultado();
         $registros = array();
-        $filtros = array();
+        $filtros = array(); 
         $where='';
         if($criteriosSeleccion!=null)
         {
@@ -200,6 +200,11 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
             {
                 if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'P','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+            }
+            if(isset($criteriosSeleccion->certificacionId))
+            {
+                if($criteriosSeleccion->certificacionId!="" && $criteriosSeleccion->certificacionId!=null)
+                    array_push($filtros,(object)['tipo'=>'estatico','texto'=>"EXISTS (SELECT id FROM procedimientos_certificaciones PC WHERE PC.procedimiento_id = P.id AND certificacion_id = $criteriosSeleccion->certificacionId)"]);
             }
         }
         array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'E','campo'=>'estatus','valor'=>1]);
@@ -218,6 +223,7 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
                             $registro = $this->crearRegistro($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre,$fechaAlta, $fechaModificacion, $estatus);
                             array_push($registros,$registro);
                         }
+                       
                         $resultado->valor = $registros;
                     }
                     else

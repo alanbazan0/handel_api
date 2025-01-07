@@ -36,11 +36,8 @@ class GraficaRevisionProcesosDepartamentoVista extends CatalogoVista
 	{
 		var fecha = new Date();
 		
-		if(anos.length==0)
-		{
-			anos.push({id:fecha.getFullYear(), nombre:fecha.getFullYear()})
-			
-		}
+		if(anos.length==0 || !ArrayUtils.existsWithValues("id",[fecha.getFullYear()],anos))
+			anos.push({id:fecha.getFullYear(), nombre:fecha.getFullYear()});
 		anos.unshift({id:"", nombre:"Todos los años"});
 		this.cargarOpciones('#anoSelectCriterio', anos);
 		

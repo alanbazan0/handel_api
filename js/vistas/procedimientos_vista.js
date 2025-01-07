@@ -12,6 +12,7 @@ class ProcedimientosVista extends CatalogoVista
 		var _this = this;
 		super.inicializar();
 		this.consultarEmpresasCriterio();
+		this.consultarCertificacionesCriterio();
 		
 		$("#copiarButton").click(function(){
 			_this.iniciarCopia();
@@ -136,6 +137,7 @@ class ProcedimientosVista extends CatalogoVista
 		 {				    
 			empresaId: $('#empresaSelectCriterio').val(),
 			sedeId: $('#sedeSelectCriterio').val(),
+			certificacionId: $('#certificacionSelectCriterio').val(),
 			nombre:$('#nombreInputCriterio').val()
 		 }
 		 return criteriosSeleccion;
@@ -219,6 +221,12 @@ class ProcedimientosVista extends CatalogoVista
 		this.cargandoOpciones("#empresaSelectCriterio");
 		this.cargandoOpciones("#sedeSelectCriterio");
 		this.presentador.consultarEmpresasCriterio();
+	}
+	
+	consultarCertificacionesCriterio()
+	{
+		this.cargandoOpciones("#certificacionSelectCriterio");
+		this.presentador.consultarCertificacionesCriterio();
 	}
 	
 	cambiarEmpresaCriterio()
@@ -308,6 +316,11 @@ class ProcedimientosVista extends CatalogoVista
 		}
 		return certificaciones;
 		
+	}
+	
+	set certificacionesCriterio(registros)
+	{		
+		this.cargarOpciones('#certificacionSelectCriterio', registros);
 	}
 
 	

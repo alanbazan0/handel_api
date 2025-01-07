@@ -9,7 +9,7 @@ interface ICertificacionesRepositorio
     public function actualizar(Certificacion $modelo);  
     
     public function consultarPorLlaves($id); 
-    public function consultar($criteriosSeleccion);  
+    public function consultar($criteriosSeleccion, $opcional);  
     public function eliminar($llaves);
 }
 
