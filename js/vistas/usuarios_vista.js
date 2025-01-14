@@ -399,7 +399,45 @@ class UsuariosVista extends CatalogoVista
 		this.consultarEmpresas();
 		this.consultarDepartamentos();
 		this.consultarPerfiles();
+		this.consultarTiposSocioComercial();
 		
+	}
+	
+	consultarTiposSocioComercial()
+	{
+		
+		this.cargandoOpciones("#tipoSocioComercialSelect");
+		this.presentador.consultarTiposSocioComercial();
+	}
+	
+	
+	set tiposSocioComercial(registros)
+	{
+		//this.cargarOpciones('#tipoSocioComercialSelect', registros);
+		
+		var select ="#tipoSocioComercialSelect";
+		
+		$(select).empty();
+		$.each(registros, function(i, p) 
+		{
+		    $(select).append($('<option></option>').val(p.id).html(p.nombre));
+		});
+		
+		if(this.modeloEdicion!=null)
+		{
+			var sociosComercialesSeleccionados =[];
+			if(this.modeloEdicion.tiposSocioComercial!=undefined)
+			{
+				$.each(this.modeloEdicion.tiposSocioComercial, function(i, p) 
+				{
+					sociosComercialesSeleccionados.push(p.tipoSocioComercialId);
+				});
+			}
+			
+			$(select).val(sociosComercialesSeleccionados);
+		}
+		
+		$('#tipoSocioComercialSelect').select2();
 	}
 	
 	editar(id)
@@ -454,6 +492,11 @@ class UsuariosVista extends CatalogoVista
 		else
 			$("#verificadorRadio").prop('checked', false);
 		
+		if(this.modeloEdicion.visualizarAuditoriasSociosComerciales==1)
+			$("#auditoriasSociosComercialesRadio").prop('checked', true);
+		else
+			$("#auditoriasSociosComercialesRadio").prop('checked', false);
+		
 		this.cambiarPermisoCAVI();
 		this.cambiarPermisoSAHA();
 		
@@ -486,12 +529,32 @@ class UsuariosVista extends CatalogoVista
 		     recursosHumanos:$('#recursosHumanosRadio').is(':checked')?1:0,
 		     numeroEmpleado:$('#numeroEmpleadoInput').val(),
 		     verificador:$('#verificadorRadio').is(':checked')?1:0,
-		     urlDocumentos:$('#urlDocumentosInput').val()
+		     urlDocumentos:$('#urlDocumentosInput').val(),
+		     visualizarAuditoriasSociosComerciales:$('#auditoriasSociosComercialesRadio').is(':checked')?1:0,
+		     tiposSocioComercial: this.tiposSocioComercial
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
 		 return modelo;
 	 }
+	 
+	get tiposSocioComercial()
+	{
+		var sociosComerciales=[];
+		var sociosComercialesSeleccionados  = $("#tipoSocioComercialSelect").val();
+		if(sociosComercialesSeleccionados !=undefined)
+		{
+			for(var i = 0; i < sociosComercialesSeleccionados.length ; i++)
+			{
+				var socioComercialSeleccionado = sociosComercialesSeleccionados[i];
+				var socioComercial = new Object();
+				//responsable.id = i + 1;
+				socioComercial.tipoSocioComercialId = socioComercialSeleccionado;
+				sociosComerciales.push(socioComercial);
+			}
+		}
+		return sociosComerciales;
+	}
 	 
 	generarContrasena(longitud)
 	{

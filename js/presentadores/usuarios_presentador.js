@@ -179,91 +179,6 @@ class UsuariosPresentador extends CatalogoPresentador
 	 }
 	 
 	
-	 
-//	
-//	 insertar()
-//	 {
-//		 this.vista.mostrarIndicador();	
-//		 var repositorio = new UsuariosRepositorio(this);			 
-//		 repositorio.insertar(this,this.insertarResultado,this.vista.modelo);	
-//	 }
-//	 
-//	 insertarResultado(resultado)
-//	 {
-//		this.vista.ocultarIndicador();	
-//		if(resultado.mensajeError=="")
-//		{	
-//			this.vista.mostrarMensaje("Notificación","La información se guardó correctamente. Id: " + resultado.valor);
-//			this.vista.salirFormulario();
-//			this.consultar();
-//		}
-//		else
-//			this.vista.mostrarMensaje("Error","Ocurrió un error al guardar el registro. " + resultado.mensajeError);			
-//			
-//	 }	
-//	 
-//	 actualizar()
-//	 {
-//		 this.vista.mostrarIndicador();	
-//		 var repositorio = new UsuariosRepositorio(this);		
-//		 repositorio.actualizar(this,this.actualizarResultado,this.vista.modelo);
-//	 }
-//	 
-//	 actualizarResultado(resultado)
-//	 {
-//		 this.vista.ocultarIndicador();	
-//		 if(resultado.mensajeError=="")
-//		 {	
-//			this.vista.mostrarMensaje("Notificación","La información se actualizó correctamente.");
-//			this.vista.salirFormulario();
-//			this.consultar();
-//		 }
-//		 else
-//			this.vista.mostrarMensaje("Error","Ocurrió un error al actualizar el registro. " + resultado.mensajeError);			
-//	 }
-//	   
-//	 consultarPorLlaves()
-//	 {
-//		 this.vista.mostrarIndicador();	
-//		 var repositorio = new UsuariosRepositorio(this);		
-//		 repositorio.consultarPorLlaves(this,this.consultarPorLlavesResultado,this.vista.llaves);
-//	 }
-//	 
-//	 consultarPorLlavesResultado(resultado)
-//	 {		
-//		 this.vista.ocultarIndicador();	
-//		 if(resultado.mensajeError=="")
-//		 {
-//			 this.vista.modelo = resultado.valor;
-//		 }
-//		 else
-//			 this.vista.mostrarMensaje("Error","Ocurrió un error al consultar el registro. " + resultado.mensajeError);
-//	 }
-//	 
-//	 eliminar()
-//	 {
-//		 this.vista.mostrarIndicador();	
-//		 var repositorio = new UsuariosRepositorio(this);		
-//		 repositorio.eliminar(this,this.eliminarResultado,this.vista.llaves);
-//	 }
-//	 
-//	 eliminarResultado(resultado)
-//	 {		
-//		 this.vista.ocultarIndicador();	
-//		 if(resultado.mensajeError=="")
-//		 {
-//			 this.vista.mostrarMensaje("Notificación","El registro se eliminó correctamente.");
-//			 this.consultar();
-//		 }
-//		 else
-//		 {
-//			 if(resultado.codigoError==1451)
-//				 this.vista.mostrarMensajeError("Error","No se puede eliminar el registro porque esta relacionado con otro catálogo. ") ;
-//			 else
-//				 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar el registro. " + resultado.mensajeError);
-//		 }
-//	 }
-	 
 
 	 consultarEmpresasCriterio()	
 	 {
@@ -327,7 +242,39 @@ class UsuariosPresentador extends CatalogoPresentador
 		 },{nombreUsuario:this.vista._registroSeleccionado.nombreUsuario});
 	 }
 	 
+	 consultarTiposSocioComercial()	
+	 {
+		 var repositorio = new TiposSocioComercialRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.tiposSocioComercial = resultado.valor;
+				//this.vista.cambiarEmpresaCriterio();
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },{estatus:1},true);
+	 }
 	
-	
+	 insertarResultado(resultado)
+	 {
+		this.vista.ocultarIndicador();	
+		if(resultado.mensajeError=="")
+		{	
+			this.vista.mostrarMensaje("Notificación","La información se guardó correctamente. Id: " + resultado.valor);
+			this.vista.salirFormulario();
+		}
+		else
+			this.vista.mostrarMensajeError("Error","Ocurrió un error al guardar el registro. " + resultado.mensajeError, resultado.codigoError);	
+		
+		 setTimeout(function()
+		{
+			 this.vista.guardando = false;
+         }, 2000);
+		
+			
+	 }	
 	 
 }

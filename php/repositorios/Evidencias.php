@@ -125,6 +125,10 @@ try
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarPorcentajesUsuarios($usuario,$criteriosSeleccion);
                 break;
+                case 'consultarPorcentajesUsuariosCertificaciones':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarPorcentajesUsuariosCertificaciones($usuario,$criteriosSeleccion);
+                break;
                 case 'consultarPorcentajesCertificaciones':
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarPorcentajesCertificaciones($usuario,$criteriosSeleccion);

@@ -1,3 +1,4 @@
+
 class EmpresasPresentador extends CatalogoPresentador
 {
 	 constructor(vista)
@@ -49,7 +50,7 @@ class EmpresasPresentador extends CatalogoPresentador
 		if(resultado.mensajeError=="")
 		{
 			this.vista.empresas = resultado.valor;
-			this.vista.cambiarEmpresa();
+			//this.vista.cambiarEmpresa();
 			
 		}
 		else
@@ -295,6 +296,51 @@ class EmpresasPresentador extends CatalogoPresentador
 			else
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		 });
+	 }
+	 
+	 consultarTiposSocioComercial()	
+	 {
+		 //this.vista.mostrarIndicador();
+		 var repositorio = new TiposSocioComercialRepositorio(this);		
+		 repositorio.consultar(this,function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.tiposSocioComercial = resultado.valor;		
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 });
+	 }
+	 
+	 consultarServicios()	
+	 {
+		 //this.vista.mostrarIndicador();
+		 var repositorio = new ServiciosRepositorio(this);		
+		 repositorio.consultar(this,function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.servicios = resultado.valor;		
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 });
+	 }
+	 
+	 consultarPlantillas()	
+	 {
+		 //this.vista.mostrarIndicador();
+		 var repositorio = new PlantillasRepositorio(this);		
+		 repositorio.consultar(this,function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.plantillas = resultado.valor;		
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },null,false,true);
 	 }
 	 
 }

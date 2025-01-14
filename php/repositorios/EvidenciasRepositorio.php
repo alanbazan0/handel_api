@@ -981,6 +981,20 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'S', 'campo'=>'id','valor'=> $criteriosSeleccion->sedeId]);
         if(isset($criteriosSeleccion->departamentoId) && $criteriosSeleccion->departamentoId!="")
             array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'D', 'campo'=>'id','valor'=> $criteriosSeleccion->departamentoId]);
+        if(isset($criteriosSeleccion->certificacionId) && $criteriosSeleccion->certificacionId!="")
+        {
+            if(is_array($criteriosSeleccion->certificacionId))
+            {
+                if(count($criteriosSeleccion->certificacionId)>0)
+                {
+                    $certificaciones = join(",",$criteriosSeleccion->certificacionId);
+                    array_push($filtros,(object)["operator" => "IN", 'tipoDato'=>'int','tabla' => 'C', 'campo'=>'id','valor'=> $certificaciones]);
+                }
+            }
+            else
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'C', 'campo'=>'id','valor'=> $criteriosSeleccion->departamentoId]);
+        }
+            
         if($agregarFiltrosFecha)
         {
             if(isset($criteriosSeleccion->ano)  && $criteriosSeleccion->ano!="")
@@ -1069,6 +1083,84 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             $resultado->mensajeError = __FUNCTION__.'. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
         return $resultado;
     }
+    
+    public function consultarPorcentajesUsuariosCertificaciones($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        //         $filtros = $this->getFiltros($criteriosSeleccion);
+        //         $and = $this->and($filtros);
+        $filtros = $this->getFiltrosN($usuario, $criteriosSeleccion,false);
+        $and = $this->and($filtros);
+        $consulta = "SELECT id, nombre, nombreUsuario,apellido, tipoUsuarioId, empresaId, empresaNombre, sedeId, sedeNombre, areaId, areaNombre, departamentoId, departamentoNombre, SUM(justificadas)justificadas, SUM(enviadas)enviadas, SUM(pendientes)pendientes ".
+            "\nFROM(" .
+            $this->getConsultaEvidenciasBaseUsuariosCertificaciones($usuario,$criteriosSeleccion,$and)  .
+            "\n) AS A " .
+            "\nGROUP BY id, nombre, nombreUsuario,apellido, tipoUsuarioId, empresaId, empresaNombre, sedeId, sedeNombre, areaId, areaNombre, departamentoId, departamentoNombre".
+            "\nORDER BY  FIELD(id,$usuario->id) DESC, nombre,apellido";
+            
+          
+            
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($this->bind_param($sentencia, $filtros))
+                {
+                    if($sentencia->execute())
+                    {
+                        if($sentencia->bind_result($id, $nombre, $nombreUsuario, $apellido, $tipoUsuarioId, $empreasaId,$empresaNombre, $sedeId, $sedeNombre, $areaId, $areaNombre, $departamentoId, $departamentoNombre, $justificadas, $enviadas, $pendientes))
+                        {
+                            while($sentencia->fetch())
+                            {
+                                
+                                $registro= (object) [
+                                    'id' =>  $id,
+                                    'nombreUsuario' => $nombreUsuario,
+                                    'nombre' =>  $nombre,
+                                    'apellido' =>  $apellido,
+                                    'tipoUsuarioId' =>  $tipoUsuarioId,
+                                    'empresaId' =>  $empreasaId,
+                                    'empresaNombre' =>  $empresaNombre,
+                                    'sedeId' =>  $sedeId,
+                                    'sedeNombre' =>  $sedeNombre,
+                                    'areaId' =>  $areaId,
+                                    'areaNombre' =>  $areaNombre,
+                                    'departamentoId' =>  $departamentoId,
+                                    'departamentoNombre' =>  $departamentoNombre,
+                                    'justificadas' =>  $justificadas,
+                                    'enviadas' =>  $enviadas,
+                                    'pendientes' =>  $pendientes
+                                ];
+                                
+                                
+                                
+                                $this->calcularPorcentaje($registro);
+                                
+                                $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
+                                $registro->nombreId =  $registro->nombreCompleto ." (".$registro->id.")";
+                                $registro->fotoPerfil =  "../fotos/usuario". $registro->id .".jpg";
+                                if(file_exists($registro->fotoPerfil))
+                                    $registro->fotoPerfil =  "php/fotos/usuario". $registro->id .".jpg";
+                                    else
+                                        $registro->fotoPerfil =  "php/fotos/default.jpg";
+                                        
+                                        array_push($registros,$registro);
+                            }
+                            $resultado->valor = $registros;
+                            $sentencia->close();
+                        }
+                        else
+                            $resultado->mensajeError = __FUNCTION__.'. Falló el enlace del resultado.';
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__.' .Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__.'. Falló el enlace de parámetros';
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__.'. Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                return $resultado;
+    }
    
     
     public function consultarPorcentajesCertificaciones($usuario,$criteriosSeleccion)
@@ -1084,7 +1176,6 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             "\nGROUP BY certificacionId, certificacionNombre".
             "\nORDER BY certificacionNombre";
             
-        //echo $consulta;
             
             if($sentencia = $this->conexion->prepare($consulta))
             {
@@ -2203,6 +2294,140 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             $consulta .="\n".$this->groupBy($camposGroupBy);
         else
             $consulta .="\n".$this->groupBy($campos);
+        
+        
+                
+        return $consulta;
+    }
+    
+    public function getConsultaEvidenciasBaseUsuariosCertificaciones($usuario,$criteriosSeleccion,$and,$camposGroupBy=null)
+    {
+        
+        
+        $campos = array();
+        array_push($campos,(object)['tabla'=>'U','campo'=>'id','alias'=>'id']);
+        array_push($campos,(object)['tabla'=>'U','campo'=>'nombre','alias'=>'nombre']);
+        array_push($campos,(object)['tabla'=>'U','campo'=>'nombre_usuario','alias'=>'nombreUsuario']);
+        array_push($campos,(object)['tabla'=>'U','campo'=>'apellido','alias'=>'apellido']);
+        array_push($campos,(object)['tabla'=>'U','campo'=>'tipo_usuario_id','alias'=>'tipoUsuarioId']);
+        array_push($campos,(object)['tabla'=>'EM','campo'=>'id','alias'=>'empresaId']);
+        array_push($campos,(object)['tabla'=>'EM','campo'=>'nombre','alias'=>'empresaNombre']);
+        array_push($campos,(object)['tabla'=>'EM','campo'=>'nombre_corto','alias'=>'empresaNombreCorto']);
+        array_push($campos,(object)['tabla'=>'S','campo'=>'id','alias'=>'sedeId']);
+        array_push($campos,(object)['tabla'=>'S','campo'=>'nombre','alias'=>'sedeNombre']);
+        array_push($campos,(object)['tabla'=>'S','campo'=>'nombre_corto','alias'=>'sedeNombreCorto']);
+        array_push($campos,(object)['tabla'=>'A','campo'=>'id','alias'=>'areaId']);
+        array_push($campos,(object)['tabla'=>'A','campo'=>'nombre','alias'=>'areaNombre']);
+        array_push($campos,(object)['tabla'=>'D','campo'=>'id','alias'=>'departamentoId']);
+        array_push($campos,(object)['tabla'=>'D','campo'=>'nombre','alias'=>'departamentoNombre']);
+        //array_push($campos,(object)['tabla'=>'C','campo'=>'id','alias'=>'certificacionId']);
+        //array_push($campos,(object)['tabla'=>'C','campo'=>'nombre','alias'=>'certificacionNombre']);
+        
+        $primerDiaMes = "$criteriosSeleccion->ano-$criteriosSeleccion->mes-1";
+        $ultimoDiaMes = date("Y-m-t", strtotime($primerDiaMes));
+        $filtroAno1 = "";
+        $filtroMes1 = "";
+        $filtroAno2 = "";
+        $filtroMes2 = "";
+        if(isset($criteriosSeleccion->ano))
+        {
+            $filtroAno1 = "AND YEAR(E1.fecha_alta) = $criteriosSeleccion->ano";
+            $filtroAno2 = "AND YEAR(E2.fecha_alta) = $criteriosSeleccion->ano";
+        }
+        if(isset($criteriosSeleccion->mes))
+        {
+            $filtroMes1 = "AND MONTH(E1.fecha_alta) = $criteriosSeleccion->mes";
+            $filtroMes2 = "AND MONTH(E2.fecha_alta) = $criteriosSeleccion->mes";
+        }
+        
+        $select = $this->selectAlias($campos);
+        $consulta = $select.",
+                    (
+                    	SELECT count(*) numero
+                    	FROM evidencias E1
+                    		INNER JOIN usuarios_procedimientos UP1 ON UP1.id = E1.usuario_procedimiento_id
+                    		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                    		INNER JOIN sedes S1 ON S1.id = U1.sede_id
+                    		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                    		LEFT JOIN areas A1 ON A1.id = U1.area_id
+                            INNER JOIN departamentos D1 ON D1.id = U1.departamento_id
+                            INNER JOIN procedimientos P1 ON P1.id = UP1.procedimiento_id
+                            INNER JOIN procedimientos_certificaciones PC1 ON PC1.procedimiento_id = P1.id
+                            INNER JOIN certificaciones C1 ON C1.id = PC1.certificacion_id
+                    	WHERE justificacion_id IS NOT NULL AND EM1.id = EM.id AND A1.id = A.id AND D1.id = D.id AND U1.id = U.id AND C1.id = C.id
+                            $filtroAno1 $filtroMes1
+                    ) justificadas,
+                    (
+                    	SELECT count(*) numero
+                    	FROM evidencias E1
+                    		INNER JOIN usuarios_procedimientos UP1 ON UP1.id = E1.usuario_procedimiento_id
+                    		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                    		INNER JOIN sedes S1 ON S1.id = U1.sede_id
+                    		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                    		LEFT JOIN areas A1 ON A1.id = U1.area_id
+                            INNER JOIN departamentos D1 ON D1.id = U1.departamento_id
+                            INNER JOIN procedimientos P1 ON P1.id = UP1.procedimiento_id
+                            INNER JOIN procedimientos_certificaciones PC1 ON PC1.procedimiento_id = P1.id
+                            INNER JOIN certificaciones C1 ON C1.id = PC1.certificacion_id
+                    	WHERE justificacion_id IS NULL AND EM1.id = EM.id AND A1.id = A.id AND D1.id = D.id AND U1.id = U.id AND C1.id = C.id
+                            $filtroAno1 $filtroMes1
+                    ) enviadas,
+                    (
+                    	SELECT count(*)
+                    	FROM usuarios_procedimientos UP1
+                    		INNER JOIN procedimientos P1 ON P1.id = UP1.procedimiento_id
+                    		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
+                    		INNER JOIN sedes S1 ON S1.id = U1.sede_id
+                    		INNER JOIN empresas EM1 ON EM1.id = S1.empresa_id
+                    		LEFT JOIN areas A1 ON A1.id = U1.area_id
+                            INNER JOIN departamentos D1 ON D1.id = U1.departamento_id
+                            INNER JOIN procedimientos_certificaciones PC1 ON PC1.procedimiento_id = P1.id
+                            INNER JOIN certificaciones C1 ON C1.id = PC1.certificacion_id
+                    	 WHERE P1.estatus = 1 AND ((UP1.estatus = 1 AND UP1.fecha_alta  <=  '$ultimoDiaMes') OR (UP1.estatus = 0 AND MONTH(UP1.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP1.fecha_alta) <= $criteriosSeleccion->ano AND MONTH(UP1.fecha_cancelacion) > $criteriosSeleccion->mes AND  YEAR(UP1.fecha_cancelacion) >= $criteriosSeleccion->ano))
+                                AND EM1.id = EM.id AND A1.id = A.id AND D1.id = D.id AND U1.id = U.id AND C1.id = C.id
+                    		AND UP1.id NOT IN(
+                    				SELECT usuario_procedimiento_id
+                    				FROM evidencias E2
+                    					INNER JOIN usuarios_procedimientos UP2 ON UP2.id = E2.usuario_procedimiento_id
+                    					INNER JOIN usuarios U2 ON U2.id = UP2.usuario_id
+                    					INNER JOIN sedes S2 ON S2.id = U2.sede_id
+                    					INNER JOIN empresas EM2 ON EM2.id = S2.empresa_id
+                    					LEFT JOIN areas A2 ON A2.id = U2.area_id
+                                        INNER JOIN departamentos D2 ON D2.id = U2.departamento_id
+                                        INNER JOIN procedimientos P2 ON P2.id = UP2.procedimiento_id
+                                        INNER JOIN procedimientos_certificaciones PC2 ON PC2.procedimiento_id = P2.id
+                                        INNER JOIN certificaciones C2 ON C2.id = PC2.certificacion_id
+                    				WHERE  EM2.id = EM1.id AND A2.id = A1.id AND D2.id = D1.id AND U1.id = U.id AND C2.id = C.id
+                                        $filtroAno2 $filtroMes2
+                    				)
+                    				
+                    )pendientes
+                    FROM usuarios U
+                    	INNER JOIN usuarios_procedimientos UP ON U.id = UP.usuario_id
+                    	INNER JOIN sedes S ON S.id = U.sede_id
+                    	INNER JOIN empresas EM ON EM.id = S.empresa_id
+                    	LEFT JOIN areas A ON A.id = U.area_id
+                        INNER JOIN departamentos D ON D.id = U.departamento_id
+                        INNER JOIN procedimientos P ON P.id = UP.procedimiento_id
+                        INNER JOIN procedimientos_certificaciones PC ON PC.procedimiento_id = P.id
+                        INNER JOIN certificaciones C ON C.id = PC.certificacion_id
+                    WHERE UP.estatus = 1
+                        AND U.estatus = 1
+                        AND S.estatus = 1
+                        AND EM.estatus = 1
+                        AND A.estatus = 1
+                        AND D.estatus = 1
+                        AND U.permiso_saha = 1
+                  ";
+                                        
+        $consulta .=  $and . " ";
+        
+        if($camposGroupBy!=null)
+            $consulta .="\n".$this->groupBy($camposGroupBy);
+        else
+            $consulta .="\n".$this->groupBy($campos);
+                
+                
                 
         return $consulta;
     }

@@ -84,7 +84,9 @@ try
             break;
             case 'consultar':
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
-                $resultado = $repositorio->consultar($criteriosSeleccion);               
+                $ordenarPorNombre = REQUEST('ordenarPorNombre');
+                $resultado = $repositorio->consultar($criteriosSeleccion,$ordenarPorNombre);       
+                
             break;
             case 'ordenarPreguntas':
                 $plantillaId = REQUEST('plantillaId');

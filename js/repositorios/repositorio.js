@@ -75,7 +75,7 @@ class Repositorio
 //		this.functionRetorno.call(this.contexto,JSON.parse(resultado));
 //	}
 	
-	consultar(contexto,funcion, criteriosSeleccion, opcional)
+	consultar(contexto,funcion, criteriosSeleccion, opcional , ordenarPorNombre)
 	{		
 
 		
@@ -83,7 +83,7 @@ class Repositorio
 		 $.ajax({
             url: url,
             type: 'POST',
-            data: {accion : "consultar", criteriosSeleccion: JSON.stringify(criteriosSeleccion), opcional: opcional},
+            data: {accion : "consultar", criteriosSeleccion: JSON.stringify(criteriosSeleccion), opcional: opcional, ordenarPorNombre: ordenarPorNombre},
             success: function( data, textStatus, jQxhr )
             {
                 funcion.call(contexto,data);

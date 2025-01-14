@@ -1,4 +1,6 @@
 <?php
+/*version 2.0 Jan 11 2025*/
+
 use php\clases\AdministradorConexion;
 use php\clases\JsonMapper;
 use php\repositorios\CamposRepositorio;
@@ -21,72 +23,90 @@ include 'CamposRepositorio.php';
 // header('Access-Control-Allow-Origin: '.$origin);
 // header('Content-Type: application/json; charset=UTF-8');
 // header('Access-Control-Allow-Credentials: true');
-
-$administrador_conexion = new AdministradorConexion();
-$resultado = new Resultado();
-$conexion=null;
-try
+$tabla = REQUEST('tabla');
+$singular = REQUEST('singular');
+if($tabla!="" && $singular!="")
 {
-    $conexion = $administrador_conexion->abrir();
-    if($conexion)
+    $administrador_conexion = new AdministradorConexion();
+    $resultado = new Resultado();
+    $conexion=null;
+    try
     {
-        $tabla = REQUEST('tabla');
-        $singular = REQUEST('singular');
-        $repositorio = new CamposRepositorio($conexion);
-        
-        $resultado = $repositorio->consultarCampos($tabla);
-        if($resultado->mensajeError=="")
+        $conexion = $administrador_conexion->abrir();
+        if($conexion)
         {
-            $campos = $resultado->valor;
-            $html = generarFormulario($tabla,$singular,$campos);
-            crearArchivo("codigos/$tabla/html/formularios", strtolower($tabla).".php",$html);
-            //echo $html;
             
-            division();
+            $repositorio = new CamposRepositorio($conexion);
             
-            $html = generarModelo($tabla,$singular,$campos);
-            crearArchivo("codigos/$tabla/php/modelos",upperCamelCase($singular).".php",$html);
-            //echo $html;
-            
-            division();
-          
-            $html = generarInterface($tabla,$singular,$campos);
-            crearArchivo("codigos/$tabla/php/interfaces","I".upperCamelCase($tabla)."Repositorio.php",$html);
-            //echo $html;
-            
-            division();
-            
-            $html = generarRepositorio($tabla,$singular,$campos);
-            crearArchivo("codigos//$tabla/php/repositorios",upperCamelCase($tabla)."Repositorio.php",$html);
-           // echo $html;
-            
-            division();
-            
-            $html = generarControlador($tabla,$singular,$campos);
-            crearArchivo("codigos/$tabla/php/repositorios",upperCamelCase($tabla).".php",$html);
-          //  echo $html;
-            
-            crearZipDescargar($tabla,$singular);
-          
+            $resultado = $repositorio->consultarCampos($tabla);
+            if($resultado->mensajeError=="")
+            {
+                $campos = $resultado->valor;
+                $html = generarFormulario($tabla,$singular,$campos);
+                crearArchivo("codigos/$tabla/html/formularios", strtolower($tabla).".php",$html);
+                //echo $html;
+                
+                division();
+                
+                $html = generarModelo($tabla,$singular,$campos);
+                crearArchivo("codigos/$tabla/php/modelos",upperCamelCase($singular).".php",$html);
+                //echo $html;
+                
+                division();
+              
+                $html = generarInterface($tabla,$singular,$campos);
+                crearArchivo("codigos/$tabla/php/interfaces","I".upperCamelCase($tabla)."Repositorio.php",$html);
+                //echo $html;
+                
+                division();
+                
+                $html = generarRepositorio($tabla,$singular,$campos);
+                crearArchivo("codigos//$tabla/php/repositorios",upperCamelCase($tabla)."Repositorio.php",$html);
+               
+                
+                division();
+                
+                $html = generarControlador($tabla,$singular,$campos);
+                crearArchivo("codigos/$tabla/php/repositorios",upperCamelCase($tabla).".php",$html);
+                
+                division();
+                
+                $html = generarRepositorioJS($tabla,$singular,$campos);
+                crearArchivo("codigos/$tabla/js/repositorios",strtolower($tabla)."_repositorio.js",$html);
+                
+                division();
+             
+                $html = generarPresentadorJS($tabla,$singular,$campos);
+                crearArchivo("codigos/$tabla/js/presentadores",strtolower($tabla)."_presentador.js",$html);
+                
+                division();
+                
+                $html = generarVistaJS($tabla,$singular,$campos);
+                crearArchivo("codigos/$tabla/js/vistas",strtolower($tabla)."_vista.js",$html);
+                
+                 //echo $html;
+                crearZipDescargar($tabla,$singular);
+              
+            }
         }
+        
     }
-    
-}
-catch(Exception $e)
-{
-    $resultado->mensajeError = $e->getMessage();
-}
-finally
-{
-//     if($resultado!=null)
-//     {
-//         $json = json_encode($resultado, JSON_UNESCAPED_UNICODE);
-//         if (FALSE === $json)
-//             echo '{"mensajeError":"' .json_last_error_msg() . '"}';
-//             else
-//                 echo $json;
-//     }
-    $administrador_conexion->cerrar($conexion);
+    catch(Exception $e)
+    {
+        $resultado->mensajeError = $e->getMessage();
+    }
+    finally
+    {
+    //     if($resultado!=null)
+    //     {
+    //         $json = json_encode($resultado, JSON_UNESCAPED_UNICODE);
+    //         if (FALSE === $json)
+    //             echo '{"mensajeError":"' .json_last_error_msg() . '"}';
+    //             else
+    //                 echo $json;
+    //     }
+        $administrador_conexion->cerrar($conexion);
+    }
 }
 
 function crearZipDescargar($tabla, $singular)
@@ -303,28 +323,34 @@ function getTiposDato($campos)
     for($i = 0 ; $i < count($campos); $i++ )
     {
         $campo = $campos[$i];
-        $tipo = "i";
-        switch($campo->tipoDato)
-        {
-            case "varchar":
-              $tipo ="s";
-                break;
-            case "datetime":
-                $tipo ="s";
-                break;
-            case "int":
-            case "bigint":
-            case "tinyint":
-                $tipo ="i";
-            break;
-            default:
-                $tipo ="s";
-            break;
-        }
+        $tipo = getTipoDato($campo);
         $tipos.= $tipo;
        
     }
     return $tipos;
+}
+
+function getTipoDato($campo)
+{
+    $tipo = "i";
+    switch($campo->tipoDato)
+    {
+        case "varchar":
+            $tipo ="s";
+            break;
+        case "datetime":
+            $tipo ="s";
+            break;
+        case "int":
+        case "bigint":
+        case "tinyint":
+            $tipo ="i";
+            break;
+        default:
+            $tipo ="s";
+            break;
+    }
+    return $tipo;
 }
 
 function generarUpdate($tabla,$camposLlave, $camposNoLlave)
@@ -366,6 +392,100 @@ function generarDelete($tabla, $camposLlave)
     }
     $sentencia = "DELETE FROM $tabla WHERE $camposLlaveTexto";
     return $sentencia;
+}
+
+function generarRepositorioJS($tabla,$singular,$campos)
+{
+    
+    $codigo = "\nclass ".upperCamelCase($tabla)."Repositorio extends Repositorio";
+    $codigo .= "\n{";
+    $codigo .= "\n  constructor()";
+    $codigo .= "\n  {";
+    $codigo .= "\n      super('php/repositorios/".upperCamelCase($tabla).".php');";
+    $codigo .= "\n  }";
+    $codigo .= "\n}";
+    return $codigo;
+}
+
+function generarPresentadorJS($tabla, $singular, $campos)
+{
+    
+    $clase = upperCamelCase($tabla);
+    $codigo = "class ".$clase."Presentador extends CatalogoPresentador
+{
+    constructor(vista)
+    {
+        super(vista,new ".$clase."Repositorio());
+    }
+}";
+    return $codigo;
+}
+
+function generarVistaJS($tabla, $singular, $campos)
+{
+    $clase = upperCamelCase($tabla);
+    $codigo = "\nclass ".$clase."Vista extends CatalogoVista";
+    $codigo .= "\n{";
+    $codigo .= "\n	constructor()";
+    $codigo .= "\n  {";
+    $codigo .= "\n      super();";
+    $codigo .= "\n      this.presentador = new ".$clase."Presentador(this);";
+    $codigo .= "\n      this._urlFormulario = 'html/formularios/".$tabla.".php';";
+    $codigo .= "\n  }";
+    $codigo .= "\n";
+    $codigo .= crearColumnasGrid($campos);
+    $codigo .= "\n";
+    //$codigo .= $this->inicializarValidacionesFormulario();
+    $codigo .= "\n";
+    //$codigo .= $this->criteriosSeleccion();
+    $codigo .= "\n";
+    //$codigo .= $this->getModelo();
+    $codigo .= "\n";
+    //$codigo .= $this->setModelo();
+    $codigo .= "\n";
+    //$codigo .= $this->limpiarFormulario();
+    $codigo .= "\n}";
+    $codigo .= "\nvar vista = new ".$clase."Vista(this);";
+    $codigo .= "\n$(document).ready(function()";
+    $codigo .= "\n{";
+    $codigo .= "\n  vista.inicializar();";
+    $codigo .= "\n});";
+    return $codigo;
+}
+
+function crearColumnasGrid($campos)
+{
+    $codigo = "\n   crearColumnasGrid()";
+    $codigo .= "\n  {";
+    $codigo .= "\n       this.tabla.columnas = [";
+	for($i = 0; $i < count($campos); $i++)
+	{
+        $campo = $campos[$i];
+	    $tipoDato = getTipoDato($campo);
+	    $alineacion = "I";
+	    if($tipoDato=="i") 
+	        $alineacion = "D";
+	    $longitud = "200";
+	    if($campo->nombre=="id")
+	        $longitud = "50";
+	    
+	    $estatus = "";
+	    if($campo->nombre == "estatus") 
+	        $estatus = ", itemRenderer:this.renderEstatus";
+        $codigo .= "\n          {longitud:".$longitud.", titulo:\"".$campo->titulo."\", alias:\"".$campo->nombre."\", alineacion:\"".$alineacion."\"$estatus}";
+	    if($i < count($campos) - 1)
+	        $codigo .=",";
+	}
+	$codigo .= "];";
+	$codigo .= "\n";
+	$codigo .= "\n      this.tabla.contenidoAdicional = \"<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>\"+";
+	$codigo .= "\n      \"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>\";";
+	$codigo .= "\n";
+	$codigo .= "\n      this.tabla.registros = [];";
+	$codigo .= "\n }";
+	
+    return $codigo;
+			    
 }
 
 function generarRepositorio($tabla,$singular,$campos)
@@ -675,7 +795,6 @@ function generarControlador($tabla,$singular,$campos)
 
 function crearArchivo($carpeta,$archivo,$texto)
 {
-  
     crearCarpeta($carpeta);
     if (file_exists($carpeta)) 
     {

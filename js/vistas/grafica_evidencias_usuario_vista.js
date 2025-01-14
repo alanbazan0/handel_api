@@ -23,7 +23,7 @@ class GraficaEvidenciasUsuarioVista extends CatalogoVista
 		this.consultoGrid = false;
 		this.consultarAnos();
 		
-		
+		$('.select2').select2();
 		
 	}
 	
@@ -45,6 +45,7 @@ class GraficaEvidenciasUsuarioVista extends CatalogoVista
 		
 		
 		this.consultarEmpresasCriterio();
+		this.consultarCertificacionesCriterio();
 		
 		//this.consultar();
 		
@@ -65,6 +66,12 @@ class GraficaEvidenciasUsuarioVista extends CatalogoVista
 	{
 		this.cargandoOpciones("#empresaSelectCriterio");
 		this.presentador.consultarEmpresasCriterio();
+	}
+	
+	consultarCertificacionesCriterio()
+	{
+		this.cargandoOpciones("#certificacionSelectCriterio");
+		this.presentador.consultarCertificacionesCriterio();
 	}
 	
 	consultarSedesCriterio()
@@ -102,6 +109,11 @@ class GraficaEvidenciasUsuarioVista extends CatalogoVista
 		this.cargarOpciones('#empresaSelectCriterio', registros);
 	}
 	
+	set certificacionesCriterio(registros)
+	{		
+		this.cargarOpciones('#certificacionSelectCriterio', registros);
+	}
+	
 	get criteriosSeleccion()
 	{
 		var criteriosSeleccion = 
@@ -110,7 +122,8 @@ class GraficaEvidenciasUsuarioVista extends CatalogoVista
 			sedeId:  $('#sedeSelectCriterio').val(),
 			departamentoId:  $('#departamentoSelectCriterio').val(),
 			mes:  $('#mesSelectCriterio').val(),
-			ano: $('#anoSelectCriterio').val()
+			ano: $('#anoSelectCriterio').val(),
+			certificacionId: $('#certificacionSelectCriterio').val()
 		};
 		return criteriosSeleccion;
 	}

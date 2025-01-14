@@ -3,6 +3,7 @@ use php\clases\AdministradorConexion;
 use php\repositorios\UsuariosRepositorio;
 use php\repositorios\EvidenciasRepositorio;
 use php\reportes\ReporteBase;
+use php\clases\Logger;
 
 
 require_once('../vendor/fpdf181/fpdf.php');
@@ -13,6 +14,7 @@ require_once('../repositorios/UsuariosRepositorio.php');
 require_once('../repositorios/EvidenciasRepositorio.php');
 require_once('../highcharts/highchartutils.php');
 require_once('../reportes/reporte_base.php');
+require_once("../clases/Logger.php");
 
 class VariableStream
 {

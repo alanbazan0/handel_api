@@ -30,6 +30,8 @@ class Usuario
     public $numeroEmpleado;
     public $verificador;
     public $urlDocumentos;
+    public $visualizarAuditoriasSociosComerciales;
+    public $tiposSocioComercial;
     
 }
 

@@ -8,7 +8,7 @@ class GraficaEvidenciasUsuarioPresentador extends CatalogoPresentador
 	 consultar()
 	 {
 		 this.vista.mostrarIndicador();
-		 this._repositorio.consultarPorcentajesUsuarios(this,function(resultado)
+		 this._repositorio.consultarPorcentajesUsuariosCertificaciones(this,function(resultado)
 		 {
 			 this.vista.ocultarIndicador();	
 				if(resultado.mensajeError=="")
@@ -28,6 +28,22 @@ class GraficaEvidenciasUsuarioPresentador extends CatalogoPresentador
 			{
 				this.vista.empresasCriterio = resultado.valor;
 				this.vista.cambiarEmpresaCriterio();
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		 },{estatus:1},true);
+	 }
+	 
+	 consultarCertificacionesCriterio()	
+	 {
+		 var repositorio = new CertificacionesRepositorio(this);		
+		 repositorio.consultar(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.certificacionesCriterio = resultado.valor;
+				//this.vista.cambiarEmpresaCriterio();
 			}
 			else
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);

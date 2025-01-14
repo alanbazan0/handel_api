@@ -9,7 +9,7 @@ interface IPlantillasRepositorio
     public function actualizar(Plantilla $modelo);  
     
     public function consultarPorLlaves($id); 
-    public function consultar($criteriosSeleccion);  
+    public function consultar($criteriosSeleccion,$ordenarPorNombre="false");  
     public function eliminar($llaves);
 }
 

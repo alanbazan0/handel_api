@@ -1453,7 +1453,7 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
        return $resultado;
     }
     
-    public function consultar($criteriosSeleccion)
+    public function consultar($criteriosSeleccion,$ordenarPorNombre="false")
     {
         $resultado = new Resultado();
         $registros = array();
@@ -1470,10 +1470,13 @@ class PlantillasRepositorio extends RepositorioBase implements IPlantillasReposi
             }
             $where = $this->where($filtros);
         }
-        $consulta = $this->consultaBase .
-        $where . " order by UNIX_TIMESTAMP(P.fecha_alta) desc";
+        $consulta = $this->consultaBase . $where;
         
-      
+        if($ordenarPorNombre=="true")
+            $consulta .= " ORDER BY nombre";
+        else
+            $consulta .= " ORDER BY UNIX_TIMESTAMP(P.fecha_alta) DESC";
+        
         
         if($sentencia = $this->conexion->prepare($consulta))
         {

@@ -168,6 +168,23 @@
 					</div>
 					
 					<div class="form-group">
+						<label class="control-label mb-1">Visualizar auditorías de socios comerciales</label> <label
+							class="switch switch-3d switch-success mr-3"> <input
+							id="auditoriasSociosComercialesRadio" name="estatus" type="checkbox"
+							class="switch-input" > <span
+							class="switch-label"></span> <span class="switch-handle"></span>
+						</label>
+					</div>
+					
+					<div class="form-group">
+                           <label for="tipoSocioComercialSelect" class="control-label mb-1">Tipos de socio comercial</label>
+                            <select class="form-control select2" multiple="multiple" data-placeholder=""
+                                    style="width: 100%;" id="tipoSocioComercialSelect" name="tipoSocioComercialSelect">
+                              
+                            </select>
+                      </div>
+					
+					<div class="form-group">
 						<label class="control-label mb-1">Activo</label> <label
 							class="switch switch-3d switch-success mr-3"> <input
 							id="estatusRadio" name="estatus" type="checkbox"

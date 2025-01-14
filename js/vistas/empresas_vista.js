@@ -287,8 +287,6 @@ class EmpresasVista extends CatalogoVista
 	agregar()
 	{
 		super.agregar();
-		
-		
 	}
 	
 	consultarCombos()
@@ -311,7 +309,37 @@ class EmpresasVista extends CatalogoVista
     	$("#fechaInicioTemporadaInput").datepicker({language: 'es'}).on('change', function(){
        	 	$('.datepicker').hide();
     	});
+    	//$("#empresasSelect").chosen();
+    	this.consultarEmpresas();
+    	this.consultarTiposSocioComercial();
+    	this.consultarServicios();
+    	this.consultarPlantillas();
 	}
+	
+	consultarTiposSocioComercial()
+	{
+		this.cargandoOpciones("#tipoSocioComercialSelect");
+		this.presentador.consultarTiposSocioComercial();
+	}
+	
+	consultarServicios()
+	{
+		this.cargandoOpciones("#servicioSelect");
+		this.presentador.consultarServicios();
+	}
+	
+	consultarPlantillas()
+	{
+		this.cargandoOpciones("#plantillaSelect");
+		this.presentador.consultarPlantillas();
+	}
+	
+	consultarEmpresas()
+	{
+		this.cargandoOpciones("#empresaSelect");
+		this.presentador.consultarEmpresas();
+	}
+	
 	
 	
 	
@@ -410,6 +438,24 @@ class EmpresasVista extends CatalogoVista
 		
 		$('#calificacionMinimaInput').val(this.modeloEdicion.calificacionMinima);
 		$('#fechaInicioTemporadaInput').val(this.modeloEdicion.fechaInicioTemporada);
+		
+		if(this.modeloEdicion.socioComercial==1)
+			$("#socioComercialRadio").prop('checked', true);
+		else
+			$("#socioComercialRadio").prop('checked', false);
+		
+		if(this.modeloEdicion.autoevaluacion==1)
+			$("#autoevaluacionRadio").prop('checked', true);
+		else
+			$("#autoevaluacionRadio").prop('checked', false);
+		
+		if(this.modeloEdicion.permitirUsuarioPlantilla==1)
+			$("#permitirUsuarioPlantillaSelectRadio").prop('checked', true);
+		else
+			$("#permitirUsuarioPlantillaSelectRadio").prop('checked', false);
+		
+		
+		
 		this.consultarCombos();
 	}
 	
@@ -433,7 +479,14 @@ class EmpresasVista extends CatalogoVista
 			 perfilId:$('#perfilSelect').val(),
 			 estatus:$('#estatusRadio').is(':checked')?1:0,
 			 calificacionMinima:$('#calificacionMinimaInput').val(),
-			 fechaInicioTemporada: this.formatoFecha($('#fechaInicioTemporadaInput').val())
+			 fechaInicioTemporada: this.formatoFecha($('#fechaInicioTemporadaInput').val()),
+			 socioComercial: $('#socioComercialRadio').is(':checked')?1:0,
+			 tipoSocioComercialId: $('#tipoSocioComercialSelect').val(),
+			 servicioId: $('#servicioSelect').val(),
+			 autoevaluacion: $('#autoevaluacionRadio').is(':checked')?1:0,
+			 plantillaId: $('#plantillaSelect').val(),
+			 permitirUsuarioPlantilla: $('#permitirUsuarioPlantillaSelectRadio').is(':checked')?1:0,
+			 sociosComerciales : this.sociosComerciales
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
@@ -441,6 +494,23 @@ class EmpresasVista extends CatalogoVista
 	 }
 	 
 	
+	get sociosComerciales()
+	{
+		var sociosComerciales=[];
+		var sociosComercialesSeleccionados  = $("#empresaSelect").val();
+		if(sociosComercialesSeleccionados !=undefined)
+		{
+			for(var i = 0; i < sociosComercialesSeleccionados.length ; i++)
+			{
+				var socioComercialSeleccionado = sociosComercialesSeleccionados[i];
+				var socioComercial = new Object();
+				//responsable.id = i + 1;
+				socioComercial.socioComercialId = socioComercialSeleccionado;
+				sociosComerciales.push(socioComercial);
+			}
+		}
+		return sociosComerciales;
+	}
 	
 
 	limpiarFormulario()
@@ -536,6 +606,55 @@ class EmpresasVista extends CatalogoVista
 	set perfiles(registros)
 	{	
 		this.cargarOpciones('#perfilSelect', registros, this.modo, this.modeloEdicion, 'perfilId',"");
+		
+	}
+	
+	set tiposSocioComercial(registros)
+	{	
+		this.cargarOpciones('#tipoSocioComercialSelect', registros, this.modo, this.modeloEdicion, 'tipoSocioComercialId',"");
+		
+	}
+	
+	set servicios(registros)
+	{	
+		this.cargarOpciones('#servicioSelect', registros, this.modo, this.modeloEdicion, 'servicioId',"");
+		
+	}
+	
+	set plantillas(registros)
+	{	
+		this.cargarOpciones('#plantillaSelect', registros, this.modo, this.modeloEdicion, 'plantillaId',"");
+		
+	}
+	
+	set empresas(registros)
+	{	
+		var select = "#empresaSelect";
+		$(select).empty();
+		var fecha = new Date();
+		var time = fecha.getTime();
+		$.each(registros, function(i, p) 
+		{
+			var icono = HANDEL_API+ "/php/logos_empresas/"+p.icono+"?"+time;
+		    $(select).append($('<option data-img-src="'+icono+'"></option>').val(p.id).html(p.nombre));
+		});
+		
+		var sociosComercialesSeleccionados =[];
+		if(this.modeloEdicion.sociosComerciales!=undefined)
+		{
+			$.each(this.modeloEdicion.sociosComerciales, function(i, p) 
+			{
+				sociosComercialesSeleccionados.push(p.empresaId);
+			});
+		}
+		
+		$(select).val(sociosComercialesSeleccionados);
+		
+		$(select).chosen();
+		$(".chosen-search-input").height(50);
+		//$(".chosen-search-input").val("");
+		
+		$(select+"_chosen").css("width","100%");
 		
 	}
 	

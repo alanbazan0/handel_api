@@ -21,5 +21,13 @@ class Empresa
     public $administradorIdProcesos;
     public $calificacionMinima;
     public $fechaInicioTemporada;
+    
+    public $socioComercial;
+    public $tipoSocioComercialId;
+    public $servicioId;
+    public $autoevaluacion;
+    public $plantillaId;
+    public $permitirUsuarioPlantilla;
+    public $sociosComerciales;
 }
 

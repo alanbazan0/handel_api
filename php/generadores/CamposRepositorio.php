@@ -109,6 +109,18 @@ class CamposRepositorio extends RepositorioBase
             'longitud' => $longitud,
             'comentario' => $comentario
         ];
+        
+          
+        if($registro->comentario!="")
+        {
+            $registro->titulo = $registro->comentario;
+        }
+        else
+        {
+            $registro->titulo = str_replace("_"," ",$registro->nombre);
+            $registro->titulo = ucfirst($registro->titulo);
+        }
+        
         return $registro;
     }
     

@@ -28,7 +28,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         $this->consultaBase = "SELECT M.id, titulo, descripcion, IFNULL(DATE_FORMAT(M.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, usuario_id, terminada, IFNULL(DATE_FORMAT(M.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, IFNULL(DATE_FORMAT(M.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion, U.nombre, U.apellido,
                                 (SELECT count(*) FROM minutas_tareas T WHERE T.minuta_id = M.id AND T.tipo='t') total,
                                (SELECT count(*) FROM minutas_tareas T WHERE T.minuta_id = M.id AND T.terminada=1) terminadas, acuerdos, participantes, color,
-                                U.empresa_id, E.nombre, plantilla, plantilla_id, numero_plantilla
+                                U.empresa_id, E.nombre, plantilla, M.plantilla_id, numero_plantilla
                                 FROM minutas M
                                     INNER JOIN usuarios U ON U.id = M.usuario_id
                                     INNER JOIN empresas E ON E.id = U.empresa_id";
