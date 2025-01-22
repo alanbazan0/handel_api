@@ -309,6 +309,7 @@ class PDF extends FPDF
     
     private function calcularFolio()
     {
+        $folio ="";
       /*  $folio ="";
         $folio.=$this->modelo->empresaNombreCorto;
                 
@@ -1219,6 +1220,7 @@ class PDF extends FPDF
         $this->SetLeftMargin(20);
         $this->fontSizes = array(9, 9, 9, 9);
         $this->fontWeights = array("B","B","B","B");
+        $this->fontNames = array($this->font, $this->font, $this->font, $this->font);
         $this->aligns = array("C","C","C","C");
         $this->widths = array(15, 45, 35, 75);
         $this->textColors = array("#000000","#000000","#000000","#000000");
@@ -1354,6 +1356,7 @@ class PDF extends FPDF
             $this->SetLeftMargin(20);
             $this->fontSizes = array(10);
             $this->fontWeights = array("");
+            $this->fontNames = array($this->font);
             $this->aligns = array("L");
             $this->widths = array(170);
             $this->textColors = array("#000000");
@@ -1409,6 +1412,7 @@ class PDF extends FPDF
             $this->SetLeftMargin(20);
             $this->fontSizes = array(10);
             $this->fontWeights = array("");
+            $this->fontNames = array($this->font);
             $this->aligns = array("L");
             $this->widths = array(170);
             $this->textColors = array("#000000");

@@ -144,7 +144,14 @@
                                           <label class='control-label mb-1'>Fecha de inicio de temporada</label>
                                           <input  id='fechaInicioTemporadaInput' name='fechaInicioTemporadaInput' type='text' class='form-control' >
                                       </div>
-                              	</div>
+                              		</div>
+                              		
+                              		<div class="form-group">
+                              		<div>
+                                  	 	<label for="servicioSelect" class="control-label mb-1">Servicio contratado</label>
+                                  	 	<select name="servicioSelect" id="servicioSelect" class="form-control"></select>
+                                  	 </div> 
+                                  </div>  
                                   <div class="form-group">
                                   		<label class="control-label mb-1">Activo</label>
                                  		<label class="switch switch-3d switch-success mr-3">
@@ -170,12 +177,7 @@
                                   	 	<select name="tipoSocioComercialSelect" id="tipoSocioComercialSelect" class="form-control"></select>
                                   	 </div> 
                                   </div>  
-							 	<div class="form-group">
-                              		<div>
-                                  	 	<label for="servicioSelect" class="control-label mb-1">Servicio contratado</label>
-                                  	 	<select name="servicioSelect" id="servicioSelect" class="form-control"></select>
-                                  	 </div> 
-                                  </div>  
+							 	
                                   <div class="form-group">
                               		<div>
                               			<label for="empresaSelect" class="control-label mb-1">Empresas</label>

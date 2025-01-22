@@ -97,6 +97,68 @@ class SeguimientoVista extends CatalogoVista
 			this.recomendacionesTabla.registros = [];
 			this.recomendacionesTabla.textoTablaVacia = "No hay recomendaciones";
 		}
+		
+		if($("#auditoriasSociosComercialesTabla").length!=0)
+		{
+			this.auditoriasSociosComercialesTabla = new Tabla("auditoriasSociosComercialesTabla");
+			this.auditoriasSociosComercialesTabla.columnas = [
+					{longitud:50, 	titulo:"",   	alias:"icono", alineacion:"D", itemRenderer:this.renderIcono},
+					{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"D" },
+					//{longitud:200, 	titulo:"Plantilla",   alias:"plantillaNombre", alineacion:"I" }, 
+					//{longitud:200, 	titulo:"Seguimiento iniciado",   alias:"seguimiento", alineacion:"D", itemRenderer:this.renderSeguimiento},		
+					{longitud:300, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" }, 
+					{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" }, 	
+					{longitud:250, 	titulo:"Fecha de auditoría",   alias:"fecha", alineacion:"C",itemRenderer:this.renderFechaAuditoria },
+					//{longitud:250, 	titulo:"Hora",   alias:"hora", alineacion:"C" },
+					//{longitud:250, 	titulo:"Fecha de auditoria",   alias:"fechaEjecucion", alineacion:"I" },
+					{longitud:50, 	titulo:"Puntuación",   alias:"puntuacion", alineacion:"C", itemRenderer: this.rendererPuntuacion },
+					{longitud:50, 	titulo:"Total de acciones recomendadas",   	alias:"recomendacionesTotal", alineacion:"C" },
+					{longitud:50, 	titulo:"Acciones pendientes",   alias:"recomendacionesPendientes", alineacion:"C" },
+					{longitud:50, 	titulo:"Avance",   alias:"porcentajeAvance", alineacion:"C",itemRenderer: this.rendererAvance },
+					//{longitud:50, 	titulo:"Número",   alias:"contadorEmpresa", alineacion:"C" },
+					//{longitud:200, 	titulo:"Referencia",   alias:"referencia", alineacion:"I" },
+					
+					];
+					
+			this.crearBotonesSociosComerciales();	
+					
+			/*if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR || this.usuario.tipoUsuarioId == TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId == TipoUsuario.SUPERVISOR)
+			{
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporte});
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderExportarActionTracker});
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporteSeguimiento});
+			}
+			this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderRecomendaciones});
+			*/
+		
+
+			this.auditoriasSociosComercialesTabla.registros = [];	
+		}
+	}
+	
+	crearBotonesSociosComerciales()
+	{
+		switch(this.usuario.servicioId)
+		{
+			case  Servicio.SOLO_AUDITORIA:
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporte});
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderCartaNotificacionHallazgos});
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporteSeguimientoGris});
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderRecomendacionesGris});
+			break;
+			case  Servicio.PORTAL_DE_SEGUIMIENTO:
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporte});
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderCartaNotificacionHallazgos});
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporteSeguimiento});
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderRecomendacionesGris});
+			break;
+			case  Servicio.PORTAL_DE_SEGUIMIENTO_CON_REVISION:
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporte});
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderCartaNotificacionHallazgos});
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporteSeguimiento});
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderRecomendaciones});
+			break;
+		}	
 	}
 	
 	renderEditarRecomendacion(renglon)
@@ -162,16 +224,35 @@ class SeguimientoVista extends CatalogoVista
 	    return contenido;
 	}
 	
+	renderReporteSeguimientoGris(renglon, type, set)
+	{    
+		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Reporte de seguimiento'  type='button' class='btn-circle mr-0 botones-icon btn btn-sm  text-white ' style='background-color:gray'><span  data-toggle='tooltip' class='fas fa-file-pdf fa-lg'></span></button>";
+	    return contenido;
+	}
+	
 	renderExportarActionTracker(renglon, type, set)
 	{
 		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Action Tracker'  type='button' class='exportarActionTracker btn-circle mr-0 botones-icon btn btn-sm  btn-info '><span  data-toggle='tooltip' class='fa fa-file-excel fa-lg'></span></button>";
 		return contenido;
 	}
 	
+	renderCartaNotificacionHallazgos(renglon, type, set)
+	{
+		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Carta notificación de hallazgos'  type='button' class='exportarCartaNotificacionHallazgos btn-circle mr-0 botones-icon btn btn-sm  btn-info '><span  data-toggle='tooltip' class='fa fa-file-excel fa-lg'></span></button>";
+		return contenido;
+	}
+	
+	
 	
 	renderRecomendaciones(renglon, type, set)
 	{
 		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Ver acciones recomendadas'  type='button' class='recomendaciones btn-circle mr-0 botones-icon btn btn-sm btn-primary '><span  data-toggle='tooltip' class='fa fa-list fa-lg'></span></button>";
+		return contenido;
+	}
+	
+	renderRecomendacionesGris(renglon, type, set)
+	{
+		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Ver acciones recomendadas'  type='button' class='btn-circle mr-0 botones-icon btn btn-sm text-white ' style='background-color:gray'><span  data-toggle='tooltip' class='fa fa-list fa-lg'></span></button>";
 		return contenido;
 	}
 	
@@ -1047,7 +1128,17 @@ class SeguimientoVista extends CatalogoVista
 		this.auditoriasTabla.registros = auditorias;	
 		this.inicializarEventosTabla("#" + this.auditoriasTabla._id+"Table tbody",this.auditoriasTabla.datatable.DataTable());
 		
-		$("#auditoriasTabla").find(".dt-buttons").html("<label class='ml-2'>Mis auditorías</label>");
+		$("#auditoriasTabla").find(".dt-buttons").html("<label class='ml-2'></label>");
+		
+	}
+	
+	set auditoriasSociosComerciales(auditorias)
+	{
+		this.auditoriasSociosComercialesTabla.alto =  $("body").height() - 230;
+		this.auditoriasSociosComercialesTabla.registros = auditorias;	
+		this.inicializarEventosTabla("#" + this.auditoriasSociosComercialesTabla._id+"Table tbody",this.auditoriasSociosComercialesTabla.datatable.DataTable());
+		
+		//$("#auditoriasSociosComercialesTabla").find(".dt-buttons").html("<label class='ml-2'>Mis auditorías</label>");
 		
 	}
 	
@@ -1793,6 +1884,8 @@ class SeguimientoVista extends CatalogoVista
 	{
 		if($("#auditoriasTabla").length!=0)
 			this.presentador.consultarAuditorias();
+		if($("#auditoriasSociosComercialesTabla").length!=0)
+			this.presentador.consultarAuditoriasSociosComerciales();
 	}
 
 	consultarAvances()

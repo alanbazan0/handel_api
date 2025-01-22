@@ -67,6 +67,10 @@ try
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarActivasPorUsuario($criteriosSeleccion,$usuario);
                 break;
+                case 'consultarAuditoriasSociosComerciales':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarAuditoriasSociosComerciales($criteriosSeleccion,$usuario);
+                break;
                 case 'consultarRecomendacionesPendientesUsuario':
                     $llaves = json_decode(REQUEST('llaves'));
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));

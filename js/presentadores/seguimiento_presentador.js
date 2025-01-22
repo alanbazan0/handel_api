@@ -113,6 +113,21 @@ class SeguimientoPresentador extends CatalogoPresentador
 		});
 	}	
 	
+	consultarAuditoriasSociosComerciales()
+	{
+		vista.mostrarIndicador();
+		var repositorio = new AuditoriasRepositorio();
+		repositorio.consultarAuditoriasSociosComerciales(this, function(resultado){
+			vista.ocultarIndicador();
+			if(resultado.mensajeError=="")
+			{
+				vista.auditoriasSociosComerciales = resultado.valor;
+			}
+			else
+				vista.mostrarMensajeError("Error",resultado.mensajeError)
+		});
+	}	
+	
 	consultarRecomendaciones()
 	{
 		vista.mostrarIndicador();
