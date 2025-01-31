@@ -2061,7 +2061,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                             $hallazgo= (object) [
                                 'id' =>  $id,
                                 'titulo' => $titulo,
-                                'responsableId' => $responsaleId,
+                                'responsableId' => $responsableId,
                                 'responsableNombre' => $responsableNombre,
                                 'responsableApellido' => $responsableApellido,
                                 'fechaAlta' => $fechaAlta,

@@ -143,18 +143,21 @@ class SeguimientoVista extends CatalogoVista
 			case  Servicio.SOLO_AUDITORIA:
 				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporte});
 				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderCartaNotificacionHallazgos});
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderPlanAccion});
 				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporteSeguimientoGris});
 				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderRecomendacionesGris});
 			break;
 			case  Servicio.PORTAL_DE_SEGUIMIENTO:
 				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporte});
 				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderCartaNotificacionHallazgos});
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderPlanAccion});
 				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporteSeguimiento});
 				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderRecomendacionesGris});
 			break;
 			case  Servicio.PORTAL_DE_SEGUIMIENTO_CON_REVISION:
 				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporte});
 				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderCartaNotificacionHallazgos});
+				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderPlanAccion});
 				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer: this.renderReporteSeguimiento});
 				this.auditoriasSociosComercialesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"C" ,itemRenderer:this.renderRecomendaciones});
 			break;
@@ -238,7 +241,13 @@ class SeguimientoVista extends CatalogoVista
 	
 	renderCartaNotificacionHallazgos(renglon, type, set)
 	{
-		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Carta notificación de hallazgos'  type='button' class='exportarCartaNotificacionHallazgos btn-circle mr-0 botones-icon btn btn-sm  btn-info '><span  data-toggle='tooltip' class='fa fa-file-excel fa-lg'></span></button>";
+		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Carta notificación de hallazgos'  type='button' class='exportarCartaNotificacionHallazgos btn-circle mr-0 botones-icon btn btn-sm  btn-info '><span  data-toggle='tooltip' class='fa fa-file-pdf fa-lg'></span></button>";
+		return contenido;
+	}
+	
+	renderPlanAccion(renglon, type, set)
+	{
+		var contenido = "<button data-toggle='tooltip' data-placemen='bottom' title='Plan de acción'  type='button' class='exportarPlanAccion btn-circle mr-0 botones-icon btn btn-sm  btn-info '><span  data-toggle='tooltip' class='fa fa-file-excel fa-lg'></span></button>";
 		return contenido;
 	}
 	
@@ -1178,6 +1187,39 @@ class SeguimientoVista extends CatalogoVista
 			}
 		});
 		
+		$(tbody).on("click", "button.exportarCartaNotificacionHallazgos", function()
+		{			
+			var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.exportarCartaNotificacionHallazgos();
+			}
+		});
+		
+		$(tbody).on("click", "button.exportarPlanAccion", function()
+		{			
+			var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				_this._llaves = _this.copiarPropiedadesObjeto(_this._registroSeleccionado, ["id"]);
+				_this.exportarPlanAccion();
+			}
+		});
+		
+		
 		$(tbody).on("click", "button.reporteSeguimiento", function()
 		{			
 			var tr = $(this).closest('tr');
@@ -1198,6 +1240,22 @@ class SeguimientoVista extends CatalogoVista
 	imprimirReporte()
 	{
 		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/reporte_auditoria.php");
+		this.createNewFormElement(submitForm, "auditoriaId", JSON.stringify(this._llaves.id));	 
+	    submitForm.target= "_blank";
+	    submitForm.submit();
+	}
+	
+	exportarCartaNotificacionHallazgos()
+	{
+		var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/reportes/carta_notificacion_hallazgos.php");
+		this.createNewFormElement(submitForm, "auditoriaId", JSON.stringify(this._llaves.id));	 
+	    submitForm.target= "_blank";
+	    submitForm.submit();
+	}
+	
+	exportarPlanAccion()
+	{
+	    var submitForm = this.getNewSubmitForm(HANDEL_API+"/php/excel/plan_accion.php");
 		this.createNewFormElement(submitForm, "auditoriaId", JSON.stringify(this._llaves.id));	 
 	    submitForm.target= "_blank";
 	    submitForm.submit();
