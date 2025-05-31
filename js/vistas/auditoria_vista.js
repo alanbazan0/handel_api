@@ -883,7 +883,7 @@ class AuditoriaVista extends Vista
 	
 	mostrarFinalizacion()
 	{
-		 swal({
+		/* swal({
 	            title: "Auditoria terminada",
 	            text: "",
 	            html: true,
@@ -896,7 +896,49 @@ class AuditoriaVista extends Vista
 	        },
 	        function(){
 	        	window.close();
-	        });
+	        });*/
+	        
+	        
+	        
+	 	var _this = this;
+	 	$(document).off('click', '.noSalirButton');
+	    $(document).on('click', '.noSalirButton', function() {
+	        //nothing
+	    });
+	    $(document).off('click', '.salirButton');
+	    $(document).on('click', '.salirButton', function() {
+	        window.close();
+	    });
+	    $(document).off('click', '.notificarButton');
+	    $(document).on('click', '.notificarButton', function() {
+	        _this.notificarCliente();
+	         //window.close();
+	    });
+	    
+	    var html =  "<br>" +
+		            '<button type="button" role="button" tabindex="0" class="noSalirButton customSwalBtn" style="background-color:#C1C1C1">No salir</button>' +
+		            '<button type="button" role="button" tabindex="0" class="salirButton customSwalBtn" style="background-color:#DD6B55">Salir de auditoría</button>';
+		            
+		if(this.modeloEdicion.tipoAuditoriaId == TipoAuditoria.SOCIO_COMERCIAL)
+		     html+='<button type="button" role="button" tabindex="0" class="notificarButton customSwalBtn" style="background-color:#60a15f">Notificar a cliente y salir de auditoría</button>';
+	        
+	        
+        swal({
+	        title: "Auditoría terminada",
+	        html: true,
+	        text: html ,
+	        showCancelButton: false,
+	        showConfirmButton: false
+	    });
+		    
+		    
+		    
+		  
+	}
+	
+	notificarCliente()
+	{
+		this.presentador.notificarCliente();
 	}
 	
 	mostrarAnterior()

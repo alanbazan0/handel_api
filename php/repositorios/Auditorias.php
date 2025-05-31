@@ -191,6 +191,10 @@ try
                     $llaves = json_decode(REQUEST('llaves'));
                     $resultado = $repositorio->consultarHallazgosSecciones($llaves);
                 break; 
+                case "enviarNotificacionCliente":
+                    $auditoriaId =  REQUEST('auditoriaId');
+                    $resultado = $repositorio->enviarNotificacionCliente($usuario,$auditoriaId);
+                break;
                 default:
                     $resultado->mensajeError = "Acción no implementada";
                 break;

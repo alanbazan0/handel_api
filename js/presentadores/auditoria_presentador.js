@@ -282,4 +282,24 @@ class AuditoriaPresentador extends CatalogoPresentador
 		 }
 		,this.vista.auditoriaId, this.vista.plantillaId, this.vista.referencia, this.vista.hallazgos, this.vista.usuariosCorreo, this.vista.usuarioXRay, this.vista.empresaId, this.vista.sedeId, this.vista.fecha);
 	}
+	
+	notificarCliente()
+	{
+		this.vista.mostrarIndicador();	
+		 var repositorio = new AuditoriasRepositorio(this);		
+		 repositorio.enviarNotificacionCliente(this, function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+			{
+				this.vista.mostrarMensaje("Notificación","Enviado");
+				 window.close();
+				//this.vista.cerrarModal("correoXRayModal");
+				//this.vista.usuariosCorreo = resultado.valor;			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		,this.vista.auditoriaId);
+	}
 }

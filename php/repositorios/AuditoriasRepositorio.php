@@ -2168,6 +2168,105 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
             
             return $resultado;
     }
+    
+    private function consultarPregunta($plantillaId,$auditoriaId,$texto)
+    {
+        
+        $resultado = new Resultado();
+       // $preguntas = array();
+        $consulta = "SELECT A.seccion_id, pregunta_id, RTRIM(texto) texto, P.peso, RTRIM(tipo) tipo, RTRIM(hallazgo) hallazgo, RTRIM(recomendacion)recomendacion, RTRIM(practicas)practicas, RTRIM(observaciones)observaciones, RTRIM(valor) valor, responsable_id, reporte, notificacion, D.id, D.nombre departamentoNombre, U.nombre, U.apellido
+            FROM auditoria_preguntas A
+            INNER JOIN preguntas P ON A.plantilla_id = P.plantilla_id AND A.seccion_id = P.seccion_id AND A.pregunta_id = P.id
+            LEFT JOIN usuarios U ON A.responsable_id = U.id
+            LEFT JOIN departamentos D ON U.departamento_id = D.id
+            WHERE A.plantilla_id  = ? AND A.auditoria_id = ? AND A.texto = ? ";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            
+            if($sentencia->bind_param("iis",$plantillaId,$auditoriaId, $texto))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($seccionId, $preguntaId, $texto, $peso, $tipo , $hallazgo, $recomendacion, $practicas, $observaciones, $valor, $responsable, $reporte, $notificacion, $departamentoId, $departamentoNombre, $responsableNombre, $reponsableApellido))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            
+                            $pregunta= (object) [
+                                'seccionId' =>  $seccionId,
+                                'preguntaId' => $preguntaId,
+                                'texto' => $texto,
+                                'peso' => $peso,
+                                'tipo' => $tipo,
+                                'hallazgo' => $hallazgo,
+                                'recomendacion' => $recomendacion,
+                                'practicas' => $practicas,
+                                'observaciones' => $observaciones,
+                                'valor' => $valor,
+                                'responsable' => $responsable,
+                                'reporte' => $reporte,
+                                'notificacion' => $notificacion,
+                                'departamentoId' => $departamentoId,
+                                'departamentoNombre' => $departamentoNombre,
+                                'responsableNombre' => $responsableNombre,
+                                'responsableApellido' => $reponsableApellido
+                            ];
+                            $pregunta->responsableNombreCompleto = $pregunta->responsableNombre . " " . $pregunta->responsableApellido;
+                            $pregunta->fotoPerfil =  "../fotos/usuario". $pregunta->responsable .".jpg";
+                            if(file_exists($pregunta->fotoPerfil))
+                                $pregunta->fotoPerfil =  "php/fotos/usuario". $pregunta->responsable .".jpg";
+                            else
+                                $pregunta->fotoPerfil =  "php/fotos/default.jpg";
+                            
+                            $resultado->valor = $pregunta;
+                        }
+                        
+                        
+                        $sentencia->close();
+                        
+                       /* for($i=0; $i < count($preguntas);$i++)
+                        {
+                            $pregunta = $preguntas[$i];
+                            $resultadoRespuestas = $this->consultarRespuestasSi($auditoriaId,$plantillaId,$seccionId,$pregunta->preguntaId);
+                            if($resultadoRespuestas->mensajeError=="")
+                            {
+                                $pregunta->respuestas_si = $resultadoRespuestas->valor;
+                            }
+                            else
+                            {
+                                $resultado->mensajeError = $resultadoRespuestas->mensajeError;
+                                break;
+                            }
+                            
+                            $resultadoRespuestas = $this->consultarRespuestasNo($auditoriaId,$plantillaId,$seccionId,$pregunta->preguntaId);
+                            if($resultadoRespuestas->mensajeError=="")
+                            {
+                                $pregunta->respuestas_no = $resultadoRespuestas->valor;
+                            }
+                            else
+                            {
+                                $resultado->mensajeError = $resultadoRespuestas->mensajeError;
+                                break;
+                            }
+                        }*/
+                        
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        return $resultado;
+    }
  
     private function consultarPreguntas($plantillaId,$auditoriaId,$seccionId)
     {
@@ -2203,7 +2302,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                                 'hallazgo' => $hallazgo,
                                 'recomendacion' => $recomendacion,
                                 'practicas' => $practicas,
-                                'observciones' => $observaciones,
+                                'observaciones' => $observaciones,
                                 'valor' => $valor,
                                 'responsable' => $responsable,
                                 'reporte' => $reporte,
@@ -2362,7 +2461,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                                 'hallazgo' => $hallazgo,
                                 'recomendacion' => $recomendacion,
                                 'practicas' => $practicas,
-                                'observciones' => $observaciones,
+                                'observaciones' => $observaciones,
                                 'valor' => $valor
                             ];
                             array_push($preguntas,$pregunta);
@@ -4093,6 +4192,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                         AND E.tipo_socio_comercial_id IN (SELECT tipo_socio_comercial_id 
                                                     FROM usuarios_tipos_socio_comercial
                                                     WHERE usuario_id = $usuario->id)
+                        AND A.tipo_auditoria_id = 'SC'
                     	)
             
             ORDER BY UNIX_TIMESTAMP(fecha) desc, hora desc
@@ -5658,6 +5758,161 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
         return false;
     }
     
+    
+    public function enviarNotificacionCliente($usuarioAuditor,$auditoriaId)
+    {
+        ini_set('max_execution_time', 0);
+        $resultado = new Resultado();
+        
+        $usuarios = array();
+        //array_push($usuarios,(object)["nombreUsuario" => "alanbazan@apps-handel.com"]);
+   
+        
+        $resultado = $this->consultarPorLlaves((object)["id"=> $auditoriaId]);
+        if($resultado->correcto())
+        {
+            $auditoria = $resultado->valor;
+            //TODO: consultar usuarios a los que se les enviara el correo
+            
+            $empresasRepositorio = new EmpresasRepositorio($this->conexion);
+            $resultado = $empresasRepositorio->consultarPorLlaves((object)["id"=>$auditoria->empresaId]);
+            if($resultado->correcto())
+            {
+              
+                $sociosComerciales = $resultado->valor->sociosComerciales;
+                $usuariosRepositorios = new UsuariosRepositorio($this->conexion);
+                for($i = 0; $i < count($sociosComerciales); $i++)
+                {
+                   $socioComercial = $sociosComerciales[$i];
+                   $resultadoUsuarios = $usuariosRepositorios->consultar($usuarioAuditor,(object)["empresaId"=>$socioComercial->empresaId,"visualizarSociosComerciales"=>1],false);
+                   if($resultadoUsuarios->correcto())
+                   {
+                       $usuarios = array_merge($resultadoUsuarios->valor,$usuarios);
+                   }
+                }
+                
+              
+                
+               // var_dump($usuarios);
+                $usuariosEnvio = array();
+                
+               // $enviarA = "contact@alanbazan.com.mx";
+                $enviarA = "";
+                $numeroUsuarios = 0;
+                $enviados = 0;
+                
+                if(count($usuarios)>0)
+                {
+                   
+                    $contador = 0;
+                    for ($i = 0; $i < count($usuarios); $i++)
+                    {
+                        $usuario = $usuarios[$i];
+                        
+                            
+                            
+                        if($numeroUsuarios<=0)
+                            array_push($usuariosEnvio,$usuario);
+                        else
+                        {   
+                            if($contador < $numeroUsuarios)
+                                array_push($usuariosEnvio,$usuario);
+                            else
+                                break;
+                        }
+                        $contador++;
+                    }
+                    
+                 
+                    for ($i = 0; $i < count($usuariosEnvio); $i++)
+                    {
+                        
+                        $usuario = $usuariosEnvio[$i];
+                        //$usuario->recursosHumanos = 0;
+                        //var_dump($usuario);
+                        
+                        //$contenido =  file_get_contents('notificacion_auditoria.html');
+                        //$mensaje=  str_replace("@nombre",$usuario->nombre,$mensaje);
+                        //$mensaje=  str_replace("@contenido",$contenido,$mensaje);
+                        
+                        $enviados++;
+                        $usuariosCorreo = array();
+                        
+                        array_push($usuariosCorreo,$usuario);
+                        
+                        $asunto  = "Notificación de Evaluación de Socio Comercial $auditoria->empresaNombre y Siguientes Pasos";
+                        $titulo = "";
+                        
+                        $parametros = (object)[
+                            "nombreCliente" => $usuario->nombreCompleto,
+                            "nombreSocioComercial" => $auditoria->empresaNombre,
+                            "porcentaje" => $auditoria->puntuacion,
+                            "correoUsuarioAutorizado" => $usuario->nombreUsuario,
+                            "nombreAuditor" => $usuarioAuditor->nombreCompleto
+                        ];
+                        
+                        $resultado = $this->enviarNotificacion("notificacion_auditoria",$usuariosCorreo, $asunto, $parametros,false, $enviarA);
+                        if($resultado->correcto())
+                        {
+                            Logger::log("log_envio","$i Correo enviado a ".$usuario->nombreUsuario,"envios_notificacion_auditoria/");
+                        }
+                        sleep(10);
+                    }
+                    
+                }
+                
+                if($resultado->correcto())
+                {
+                    $resultado->valor = (object) ["usuarios" => count($usuarios), "usuariosFiltrados" => count($usuariosEnvio), "enviados" => $enviados];
+                }
+                
+            }
+            
+            
+            
+        }
+        
+    
+        
+        return $resultado;
+    }
+    
+    public function enviarNotificacion($tipo, $usuarios, $asunto, $parametros, $imprimir, $enviarA)
+    {
+        $asuntoCorreo="=?UTF-8?B?".base64_encode($asunto)."?=";
+        
+        $mensaje= file_get_contents('../plantillas_correo/notificacion_auditoria.html');
+        
+        $mensaje=  str_replace("@nombreCliente",$parametros->nombreCliente,$mensaje);
+        $mensaje=  str_replace("@nombreSocioComercial",$parametros->nombreSocioComercial,$mensaje);
+        $mensaje=  str_replace("@porcentaje",$parametros->porcentaje,$mensaje);
+        
+        if($parametros->porcentaje>0 && $parametros->porcentaje<=70)
+            $riesgo = "<span style='font-weight: bold; color: #ee220d;'>riesgo alto</span>";
+        else if($parametros->porcentaje>70 && $parametros->porcentaje<=80)
+            $riesgo = "<span style='font-weight: bold; color: #feae03;'>riesgo medio</span>";
+        else 
+            $riesgo = "<span style='font-weight: bold; color: #017101;'>riesgo bajo</span>";
+        
+        $mensaje=  str_replace("@riesgo",$riesgo,$mensaje);
+        $mensaje=  str_replace("@correoUsuarioAutorizado",$parametros->correoUsuarioAutorizado,$mensaje);
+        $mensaje=  str_replace("@nombreAuditor",$parametros->nombreAuditor,$mensaje);
+       
+       
+            
+        if($enviarA!=null && $enviarA!="")
+        {
+            for ($i = 0; $i < count($usuarios); $i++)
+            {
+                $usuario = $usuarios[$i];
+                $usuario->nombreUsuario = $enviarA;
+            }
+        }
+           
+        
+        $administrador_correo = new AdministradorCorreo();
+        return  $administrador_correo->enviarCorreoUsuarios($tipo,$usuarios,$asuntoCorreo, $mensaje, "", "SIVAH",$imprimir);
+    }
     
 }
 

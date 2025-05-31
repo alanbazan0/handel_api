@@ -883,6 +883,13 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
                 if($criteriosSeleccion->contrasena!="" && $criteriosSeleccion->contrasena!=null)
                     array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'contrasena','valor'=>$criteriosSeleccion->contrasena]);
             }
+            if(isset($criteriosSeleccion->visualizarSociosComerciales))
+            {
+                if($criteriosSeleccion->visualizarSociosComerciales!="" && $criteriosSeleccion->visualizarSociosComerciales!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'visualizar_socios_comerciales','valor'=>$criteriosSeleccion->visualizarSociosComerciales]);
+            }
+            
+            
             //$where = $this->where($filtros);
         }
         array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'E','campo'=>'estatus','valor'=>1]);
@@ -1319,8 +1326,10 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             $empresasIds = implode(",", $resultado->valor);
             
             $consulta =   $this->consultaBase .
-            " WHERE (U.empresa_id IN ($empresasIds)) " .
-            " OR U.tipo_usuario_id = 1  order by U.nombre, U.apellido";
+            " WHERE (U.empresa_id IN ($empresasIds) AND U.estatus = 1) " .
+            " OR (U.tipo_usuario_id = 1 AND U.estatus = 1)
+                
+            ORDER BY U.nombre, U.apellido";
         }
         
         if($sentencia = $this->conexion->prepare($consulta))

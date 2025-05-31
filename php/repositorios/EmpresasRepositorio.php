@@ -446,7 +446,7 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
         $sociosComerciales = array();
         $consulta = "SELECT ESC.id, socio_comercial_id, E.nombre " .
             "FROM empresas_socios_comerciales ESC
-                INNER JOIN empresas E ON E.id = ESC.empresa_id
+                INNER JOIN empresas E ON E.id = ESC.socio_comercial_id
              WHERE empresa_id = ? ".
              "ORDER BY ESC.id";
         if($sentencia = $this->conexion->prepare($consulta))
