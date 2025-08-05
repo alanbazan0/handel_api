@@ -2,6 +2,9 @@
 namespace php\repositorios;
 
 use DateTime;
+use DateInterval;
+use TipoReporte;
+
 use php\interfaces\IMinutasRepositorio;
 use php\modelos\Minuta;
 use php\modelos\Resultado;
@@ -11,12 +14,15 @@ use php\clases\AdministradorCorreo;
 include '../interfaces/IMinutasRepositorio.php';
 include '../modelos/Minuta.php';
 require_once('RepositorioBase.php');
+require_once('AuditoriasRepositorio.php');
 require_once('../clases/Resultado.php');
 require_once('../clases/Porcentaje.php');
 require_once('../clases/AdministradorCorreo.php');
 require_once('FrasesRepositorio.php');
 require_once('UsuariosRepositorio.php');
+require_once('../clases/Mes.php');
 require_once('TareasComentariosRepositorio.php');
+require_once('CursosRepositorio.php');
 
 class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
 {
@@ -1453,28 +1459,28 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                         
                         $tipo = "minuta" .$minuta->id ."tarea" . $tarea->id;
                         $info = "";
-                        $mensaje= file_get_contents('../plantillas_correo/notificacion_tarea.html');
+                        $texto= file_get_contents('../plantillas_correo/notificacion_tarea.html');
                         
                         
-                        $mensaje=  str_replace("@nombreUsuario",$nombreUsuario,$mensaje);
-                        $mensaje=  str_replace("@accion",$accion,$mensaje);
-                        $mensaje=  str_replace("@fotoPerfil",$fotoPerfil,$mensaje);
-                        $mensaje=  str_replace("@nombreMinuta",$minuta->titulo,$mensaje);
-                        $mensaje=  str_replace("@nombreTarea",$tarea->titulo,$mensaje);
-                        $mensaje=  str_replace("@fechaVencimiento",$tarea->fechaCompromiso,$mensaje);
+                        $texto=  str_replace("@nombreUsuario",$nombreUsuario,$texto);
+                        $texto=  str_replace("@accion",$accion,$texto);
+                        $texto=  str_replace("@fotoPerfil",$fotoPerfil,$texto);
+                        $texto=  str_replace("@nombreMinuta",$minuta->titulo,$texto);
+                        $texto=  str_replace("@nombreTarea",$tarea->titulo,$texto);
+                        $texto=  str_replace("@fechaVencimiento",$tarea->fechaCompromiso,$texto);
                         
-                        $mensaje=  str_replace("@minutaId",$minuta->id,$mensaje);
-                        $mensaje=  str_replace("@tareaId",$tarea->id,$mensaje);
-                        $mensaje=  str_replace("@texto","",$mensaje);
+                        $texto=  str_replace("@minutaId",$minuta->id,$texto);
+                        $texto=  str_replace("@tareaId",$tarea->id,$texto);
+                        $texto=  str_replace("@texto","",$texto);
                         
                         
-                        $mensaje=  str_replace("@frase",$frase->texto,$mensaje);
-                        $mensaje=  str_replace("@autor",$frase->autor,$mensaje);
+                        $texto=  str_replace("@frase",$frase->texto,$texto);
+                        $texto=  str_replace("@autor",$frase->autor,$texto);
                         
                        
                         
                         $administrador_correo = new AdministradorCorreo();
-                        $resultado = $administrador_correo->enviarCorreoUsuarios($tipo,$usuarios,$asunto, $mensaje, $info, "SAHA: Tareas");
+                        $resultado = $administrador_correo->enviarCorreoUsuarios($tipo,$usuarios,$asunto, $texto, $info, "SAHA: Tareas");
                    //}
                 }
             }
@@ -1520,31 +1526,31 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                     
                     $tipo = "minuta" .$minuta->id ."tarea" . $tarea->id;
                     $info = "";
-                    $mensaje= file_get_contents('../plantillas_correo/notificacion_tarea.html');
+                    $texto= file_get_contents('../plantillas_correo/notificacion_tarea.html');
                     
                    
                     
-                    $mensaje=  str_replace("@nombreUsuario",$nombreUsuario,$mensaje);
-                    $mensaje=  str_replace("@accion",$accion,$mensaje);
-                    $mensaje=  str_replace("@fotoPerfil",$fotoPerfil,$mensaje);
-                    $mensaje=  str_replace("@nombreMinuta",$minuta->titulo,$mensaje);
-                    $mensaje=  str_replace("@nombreTarea",$tarea->titulo,$mensaje);
-                    $mensaje=  str_replace("@fechaVencimiento",$tarea->fechaCompromiso,$mensaje);
+                    $texto=  str_replace("@nombreUsuario",$nombreUsuario,$texto);
+                    $texto=  str_replace("@accion",$accion,$texto);
+                    $texto=  str_replace("@fotoPerfil",$fotoPerfil,$texto);
+                    $texto=  str_replace("@nombreMinuta",$minuta->titulo,$texto);
+                    $texto=  str_replace("@nombreTarea",$tarea->titulo,$texto);
+                    $texto=  str_replace("@fechaVencimiento",$tarea->fechaCompromiso,$texto);
                     
-                    $mensaje=  str_replace("@minutaId",$minuta->id,$mensaje);
-                    $mensaje=  str_replace("@tareaId",$tarea->id,$mensaje);
+                    $texto=  str_replace("@minutaId",$minuta->id,$texto);
+                    $texto=  str_replace("@tareaId",$tarea->id,$texto);
                     
                     $porcentaje = $minuta->porcentaje;
-                    $mensaje=  str_replace("@texto","<br>Con ésta tarea cumplida, el avance de la minuta es $porcentaje%",$mensaje);
+                    $texto=  str_replace("@texto","<br>Con ésta tarea cumplida, el avance de la minuta es $porcentaje%",$texto);
                     
                     
-                    $mensaje=  str_replace("@frase",$frase->texto,$mensaje);
-                    $mensaje=  str_replace("@autor",$frase->autor,$mensaje);
+                    $texto=  str_replace("@frase",$frase->texto,$texto);
+                    $texto=  str_replace("@autor",$frase->autor,$texto);
                     
                     
                     
                     $administrador_correo = new AdministradorCorreo();
-                    $resultado = $administrador_correo->enviarCorreoUsuarios($tipo,$usuarios,$asunto, $mensaje, $info, "SAHA: Tareas");
+                    $resultado = $administrador_correo->enviarCorreoUsuarios($tipo,$usuarios,$asunto, $texto, $info, "SAHA: Tareas");
                 }
                 //}
             }
@@ -1578,27 +1584,27 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                     
                     $tipo = "minuta" .$minuta->id;
                     $info = "";
-                    $mensaje= file_get_contents('../plantillas_correo/notificacion_minuta.html');
+                    $texto= file_get_contents('../plantillas_correo/notificacion_minuta.html');
                     
                     
-                    $mensaje=  str_replace("@nombreUsuario",$nombreUsuario,$mensaje);
-                    $mensaje=  str_replace("@accion",$accion,$mensaje);
-                    $mensaje=  str_replace("@fotoPerfil",$fotoPerfil,$mensaje);
-                    $mensaje=  str_replace("@nombreMinuta",$minuta->titulo,$mensaje);
-                    //$mensaje=  str_replace("@nombreTarea","",$mensaje);
-                    //$mensaje=  str_replace("@fechaVencimiento",$tarea->fechaCompromiso,$mensaje);
+                    $texto=  str_replace("@nombreUsuario",$nombreUsuario,$texto);
+                    $texto=  str_replace("@accion",$accion,$texto);
+                    $texto=  str_replace("@fotoPerfil",$fotoPerfil,$texto);
+                    $texto=  str_replace("@nombreMinuta",$minuta->titulo,$texto);
+                    //$texto=  str_replace("@nombreTarea","",$texto);
+                    //$texto=  str_replace("@fechaVencimiento",$tarea->fechaCompromiso,$texto);
                     
-                    $mensaje=  str_replace("@minutaId",$minuta->id,$mensaje);
-                    //$mensaje=  str_replace("@tareaId",$tarea->id,$mensaje);
+                    $texto=  str_replace("@minutaId",$minuta->id,$texto);
+                    //$texto=  str_replace("@tareaId",$tarea->id,$texto);
                     
                     
-                    $mensaje=  str_replace("@frase",$frase->texto,$mensaje);
-                    $mensaje=  str_replace("@autor",$frase->autor,$mensaje);
+                    $texto=  str_replace("@frase",$frase->texto,$texto);
+                    $texto=  str_replace("@autor",$frase->autor,$texto);
                     
                     
                     
                     $administrador_correo = new AdministradorCorreo();
-                    $resultado = $administrador_correo->enviarCorreoUsuarios($tipo,$usuarios,$asunto, $mensaje, $info, "SAHA: Tareas");
+                    $resultado = $administrador_correo->enviarCorreoUsuarios($tipo,$usuarios,$asunto, $texto, $info, "SAHA: Tareas");
                     //}
                 }
             }
@@ -2506,5 +2512,421 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         return $resultado;
     }
     
+    public function generarAutoMinuta($usuario, $criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        
+        $texto= file_get_contents('../plantillas_texto/minuta_del_mes.txt');
+        
+        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+        $resultado = $usuariosRepositorio->consultarPorLLaves((object)["id"=>$criteriosSeleccion->administradorId]);
+        if($resultado->correcto())
+        {
+            
+            $inicial = substr($resultado->valor->nombre,0,1) . ".";
+            $nombreAdministrador = $inicial . " " . $resultado->valor->apellido;
+            
+           
+            
+            $dia = date("d");
+            $mes = date("m");
+            $ano = date("Y");
+            
+            $anoSAHA = 0;
+            $mesSAHA = 0;
+            if($dia < 28)
+            {
+                $fecha = new DateTime();
+                $fecha->setDate($ano,$mes,1);
+                $fecha->sub(new DateInterval('P1M'));
+                
+                $anoSAHA = $fecha->format("Y");
+                $mesSAHA = $fecha->format("m");
+            }
+            else
+            {
+                $anoSAHA = $ano;
+                $mesSAHA = $mes;
+            }
+            $fecha = new DateTime();
+            $fecha->setDate($anoSAHA,$mesSAHA,1);
+            $fecha->sub(new DateInterval('P1M'));
+            
+            $anoAnterior = $fecha->format("Y");
+            $mesAnterior = $fecha->format("m");
+            
+            $nombreMes = \Mes::getNombre($mesSAHA);
+            $nombreMesAnterior = \Mes::getNombre($mesAnterior);
+            
+            $fechaReporte = new DateTime();
+            $fechaReporte->setDate($ano,$mes,1);
+            $nombreMesReporte = \Mes::getNombre($mes);
+            
+         
+            
+            $criteriosSeleccionActual= (object) [
+                'mes' =>  $mesSAHA,
+                'ano' =>  $anoSAHA,
+                "empresaId" => $criteriosSeleccion->empresaId
+            ];
+            
+            $fecha = new DateTime();
+            $fecha->setDate($anoSAHA,$mesSAHA,1);
+            $fecha->sub(new DateInterval('P1M'));
+            
+            $anoAnterior = $fecha->format("Y");
+            $mesAnterior = $fecha->format("m");
+            $criteriosSeleccionAnterior= (object) [
+                'mes' =>   $mesAnterior,
+                'ano' => $anoAnterior,
+                "empresaId" => $criteriosSeleccion->empresaId
+            ];
+            
+            $repositorioEmpresas = new EmpresasRepositorio($this->conexion);
+            $resultado  = $repositorioEmpresas->consultarPorLlaves((object)["id" => $criteriosSeleccion->empresaId]);
+            if($resultado->correcto())
+            {
+                $empresa = $resultado->valor;
+            
+                $texto = $this->resultadoGlobalSAHA($texto, $empresa, $usuario, $criteriosSeleccionActual, $criteriosSeleccionAnterior);
+                $texto = $this->resultadoSedesSAHA($texto, $usuario, $criteriosSeleccionActual, $criteriosSeleccionAnterior);
+                $texto = $this->resultadoDepartamentosSAHA($texto, $usuario, $criteriosSeleccionActual, $criteriosSeleccionAnterior);
+                $texto = $this->resultadoUsuariosSAHA($texto, $usuario, $criteriosSeleccionActual, $criteriosSeleccionAnterior);
+                $texto = $this->resultadoGlobalCAVI($texto, $empresa, $usuario, $criteriosSeleccion);
+                $texto = $this->resultadoSedesCAVI($texto, $usuario, $criteriosSeleccion);
+                $texto = $this->resultadoDepartamentosCAVI($texto, $usuario, $criteriosSeleccion);
+                $texto = $this->resultadosSIVAH($texto, $usuario, $criteriosSeleccion);
+                
+                
+                $texto=  str_replace("@nombreMesReportado",$nombreMesReporte . " " . $ano,$texto);
+                $texto=  str_replace("@nombreMesActual",$nombreMes . " " . $anoSAHA,$texto);
+                $texto=  str_replace("@nombreMesAnterior",$nombreMesAnterior. " ". $anoAnterior,$texto);
+                $texto=  str_replace("@administrador",$nombreAdministrador,$texto);
+                
+                
+                
+                $resultado->valor = $texto;
+            }
+        }
+        
+       
+        
+        return $resultado;
+    }
+    
+    
+    function resultadoGlobalCAVI($texto, $empresa, $usuario, $criteriosSeleccion)
+    {
+        
+        $criteriosSeleccion= (object) [
+            'fechaInicial' =>  $empresa->fechaInicioTemporada,
+            'fechaFinal' =>  date("d/m/Y"),
+            "empresaId" => $empresa->id
+        ];
+        
+        
+        $repositorio = new CursosRepositorio($this->conexion);
+        $criteriosSeleccionAprovechamiento = clone $criteriosSeleccion;
+        $criteriosSeleccionAprovechamiento->tipoReporte = TipoReporte::CAPACITACION_INICIADA;
+        $resultado = $repositorio->consultarResultados($usuario, $criteriosSeleccionAprovechamiento);
+        $aprovechamiento=0;
+        if($resultado->correcto())
+        {
+            if(count($resultado->valor)>0)
+            {
+                $registro = $resultado->valor[0];
+                $aprovechamiento=  $registro->porcentaje;
+            }
+        }
+        
+        $criteriosSeleccionAvance = clone $criteriosSeleccion;
+        $criteriosSeleccionAvance->tipoReporte = TipoReporte::TODOS;
+        $resultado = $repositorio->consultarResultados($usuario, $criteriosSeleccionAvance);
+        $avance=0;
+        if($resultado->correcto())
+        {
+            if(count($resultado->valor)>0)
+            {
+                $registro = $resultado->valor[0];
+                $avance=  $registro->porcentajeAvance;
+            }
+        }
+        
+        $texto=  str_replace("@avanceCAVI",$avance,$texto);
+        $texto=  str_replace("@aprovechamientoCAVI",$aprovechamiento,$texto);
+        return $texto;
+    }
+    
+    
+    function resultadoSedesSAHA($texto, $usuario, $criteriosSeleccionActual, $criteriosSeleccionAnterior)
+    {
+        $repositorio = new EvidenciasRepositorio($this->conexion);
+        $resultado = $repositorio->consultarPorcentajesSedes($usuario, $criteriosSeleccionActual);
+        if($resultado->correcto())
+        {
+            $sedes = $resultado->valor;
+            $resultadoSedes = "";
+            for($i = 0; $i < count($sedes); $i++)
+            {
+                $sede = $sedes[$i];
+                $resultadoSedes .= $sede->nombre . " - " . $sede->porcentajeCumplimiento . "% de cumplimiento con " . $sede->porcentajeJustificadas . "% Justificadas";
+                
+                if($i <  count($sedes) - 1)
+                    $resultadoSedes .= ", ";
+            }
+            $texto=  str_replace("@resultadoSedesSAHA",$resultadoSedes,$texto);
+        }
+        else
+            $texto=  str_replace("@resultadoSedesSAHA",$resultado->mensajeError,$texto);
+        return $texto;
+    }
+    
+    function resultadoSedesCAVI($texto, $usuario, $criteriosSeleccion)
+    {
+        $repositorio = new CursosRepositorio($this->conexion);
+        $criteriosSeleccion->tipoReporte = TipoReporte::TODOS;
+        $resultado = $repositorio->consultarResultadosSedes($usuario, $criteriosSeleccion);
+        if($resultado->correcto())
+        {
+            $sedes = $resultado->valor;
+            $resultadoSedes = "";
+            for($i = 0; $i < count($sedes); $i++)
+            {
+                $sede = $sedes[$i];
+                $resultadoSedes .= $sede->nombre . " - " . $sede->porcentajeAvance . "%";
+                
+                if($i <  count($sedes) - 1)
+                    $resultadoSedes .= ", ";
+            }
+            $texto=  str_replace("@resultadoSedesCAVI",$resultadoSedes,$texto);
+        }
+        else
+            $texto=  str_replace("@resultadoSedesCAVI",$resultado->mensajeError,$texto);
+        return $texto;
+    }
+    
+    function resultadosSIVAH($texto, $usuario, $criteriosSeleccion)
+    {
+        $repositorio = new AuditoriasRepositorio($this->conexion);
+        $resultado = $repositorio->consultarAuditoriasRecientesEmpresa($criteriosSeleccion->empresaId);
+        if($resultado->correcto())
+        {
+            $auditorias = $resultado->valor;
+            if(count($auditorias)>0)
+            {
+                $resultado = $repositorio->consultarAuditorias($auditorias);
+                if($resultado->correcto())
+                {
+                    $auditorias = $resultado->valor;
+                    if(count($auditorias)>0)
+                    {
+                        $textoSIVAH = "@administrador comenta los resultados de las auditorías recientes incluyendo los porcentajes obtenidos en la auditoría y el avance de cierre, en resumen se tiene: @resultadoSedesSIVAH
+Se verifica el avance de cierre de auditoría por departamento con los siguientes resultados: @resultadosDepartamentosSIVAH
+@administrador verifica y comenta con comité de seguridad la gráfica de avance de cierre de auditoría por usuario, donde se observan usuarios que tienen hallazgos asignados derivados de la auditoría y su cierre: @resultadosUsuariosSIVAH"; 
+                        $texto=  str_replace("@resultadoSIVAH",$textoSIVAH,$texto);
+                        
+                        $texto = $this->resultadoSedesSIVAH($texto, $usuario, $criteriosSeleccion, $auditorias);
+                    }
+                    else
+                        $texto=  str_replace("@resultadoSIVAH","",$texto);
+                }
+                else
+                    $texto=  str_replace("@resultadoSIVAH","consultarAuditorias ". $resultado->mensajeError,$texto);
+            }
+            else
+                $texto=  str_replace("@resultadoSIVAH","",$texto);
+        }
+        else 
+            $texto=  str_replace("@resultadoSIVAH","consultarAuditoriasRecientesEmpresa " .$resultado->mensajeError,$texto);
+        return $texto;
+       
+    }
+    
+    function resultadoSedesSIVAH($texto, $usuario, $criteriosSeleccion, $auditorias)
+    {
+        $resultadoSedes = "";
+        for($i = 0; $i < count($auditorias); $i++)
+        {
+            $sede = $auditorias[$i];
+            $resultadoSedes .= $sede->sedeNombre . " auditado en ". $sede->fecha ." - Puntuación " . $sede->puntuacion . "% y un ". $sede->porcentajeAvance ."% de avance en el cierre de auditoría";
+            
+            if($i <  count($auditorias) - 1)
+                $resultadoSedes .= ", ";
+        }
+        $texto=  str_replace("@resultadoSedesSIVAH",$resultadoSedes,$texto);
+        return $texto;
+    }
+    
+    function resultadoDepartamentosCAVI($texto, $usuario, $criteriosSeleccion)
+    {
+        $repositorio = new CursosRepositorio($this->conexion);
+        $criteriosSeleccion->tipoReporte = TipoReporte::TODOS;
+        $resultado = $repositorio->consultarResultadosDepartamentos($usuario, $criteriosSeleccion);
+        if($resultado->correcto())
+        {
+            $registros = $resultado->valor;
+            $contenido = "";
+            for($i = 0; $i < count($registros); $i++)
+            {
+                $registro = $registros[$i];
+                $contenido .= $registro->nombre . " - " . $registro->porcentajeAvance . "%";
+                
+                if($i <  count($registros) - 1)
+                    $contenido .= ", ";
+            }
+            $texto=  str_replace("@resultadoDepartamentosCAVI",$contenido,$texto);
+        }
+        else
+          $texto=  str_replace("@resultadoDepartamentosCAVI",$resultado->mensajeError,$texto);
+        return $texto;
+    }
+    
+    function resultadoDepartamentosSAHA($texto, $usuario, $criteriosSeleccionActual, $criteriosSeleccionAnterior)
+    {
+        $repositorio = new EvidenciasRepositorio($this->conexion);
+        $resultado = $repositorio->consultarPorcentajesAreas($usuario, $criteriosSeleccionActual);
+        if($resultado->correcto())
+        {
+            $departamentos = $resultado->valor;
+            $resultadoDepartamentos = "";
+            for($i = 0; $i < count($departamentos); $i++)
+            {
+                $departamento = $departamentos[$i];
+                $resultadoDepartamentos .= $departamento->nombre . " - " . $departamento->porcentajeCumplimiento . "% de cumplimiento con " . $departamento->porcentajeJustificadas . "% Justificadas";
+                
+                if($i <  count($departamentos) - 1)
+                    $resultadoDepartamentos .= ", ";
+            }
+            $texto=  str_replace("@resultadoDepartamentosSAHA",$resultadoDepartamentos,$texto);
+        }
+        else
+            $texto=  str_replace("@resultadoDepartamentosSAHA",$resultado->mensajeError,$texto);
+        return $texto;
+    }
+    
+    function resultadoUsuariosSAHA($texto, $usuario, $criteriosSeleccionActual, $criteriosSeleccionAnterior)
+    {
+        $repositorio = new EvidenciasRepositorio($this->conexion);
+        $resultado = $repositorio->consultarPorcentajesUsuarios($usuario, $criteriosSeleccionActual);
+        if($resultado->correcto())
+        {
+            $usuarios = $resultado->valor;
+            
+            $usuariosPendientes = array();
+            for($i = 0; $i < count($usuarios); $i++)
+            {
+                $usuarioSAHA = $usuarios[$i];
+                if($usuarioSAHA->porcentajeCumplimiento != 100)
+                    array_push($usuariosPendientes, $usuarioSAHA);
+            }
+            
+            $resultadoUsuarios = "";
+            if(count($usuariosPendientes)>0)
+            {
+                $resultadoUsuarios = "Los siguientes usuarios no enviaron o justificaron sus evidencias para llegar al 100% - ";
+                for($i = 0; $i < count($usuariosPendientes); $i++)
+                {
+                    $usuarioSAHA = $usuariosPendientes[$i];
+                    $resultadoUsuarios .= $usuarioSAHA->nombre . " - " . $usuarioSAHA->porcentajePendientes . "% de evidencias faltantes";
+                    
+                    if($i <  count($usuariosPendientes) - 1)
+                        $resultadoUsuarios .= ", ";
+                }
+            }
+            else 
+            {
+                $inicial = substr($usuario->nombre,0,1) . ".";
+                $nombreAdministrador = $inicial . " " . $usuario->apellido;
+                
+                $texto=  str_replace("@administrador",$nombreAdministrador,$texto);
+                $resultadoUsuarios = "En esta ocasión todos los usuarios presentaron en tiempo y forma sus evidencias, ". $nombreAdministrador ." felicita al equipo de trabajo y solicita se mantenga el esfuerzo.";
+            }
+            
+            
+            $texto=  str_replace("@resultadoUsuariosPendientesSAHA",$resultadoUsuarios,$texto);
+        }
+        else
+            $texto=  str_replace("@resultadoUsuariosPendientesSAHA",$resultado->mensajeError,$texto);
+            return $texto;
+    }
+    
+  
+    
+    function resultadoGlobalSAHA($texto, $empresa, $usuario, $criteriosSeleccionActual, $criteriosSeleccionAnterior)
+    {
+        $repositorio = new EvidenciasRepositorio($this->conexion);
+        
+        
+        $texto=  str_replace("@nombreEmpresa",$empresa->nombre,$texto);
+        
+        $resultado = $repositorio->consultarPorcentajesEvidencias($usuario, $criteriosSeleccionActual);
+        $porcentajesActual = null;
+        $porcentajesAnterior = null;
+        if($resultado->correcto())
+        {
+            $porcentajesActual = (object)[
+                "enviadas" => $resultado->valor[0]->valor + $resultado->valor[2]->valor,
+                "pendientes" => $resultado->valor[1]->valor,
+                "justificadas" => $resultado->valor[2]->valor
+            ];
+            $porcentajesActual->total = $porcentajesActual->enviadas + $porcentajesActual->pendientes;
+            
+            Porcentaje::calcularPorcentaje($porcentajesActual, "enviadas", "total", "porcentajeEnviadas");
+            Porcentaje::calcularPorcentaje($porcentajesActual, "justificadas", "total", "porcentajeJustificadas");
+            
+            $texto=  str_replace("@enviadasActual",$porcentajesActual->porcentajeEnviadas,$texto);
+            $texto=  str_replace("@justificadasActual",$porcentajesActual->porcentajeJustificadas,$texto);
+        }
+        
+        $resultado = $repositorio->consultarPorcentajesEvidencias($usuario, $criteriosSeleccionAnterior);
+        if($resultado->correcto())
+        {
+            $porcentajesAnterior = (object)[
+                "enviadas" => $resultado->valor[0]->valor + $resultado->valor[2]->valor,
+                "pendientes" => $resultado->valor[1]->valor,
+                "justificadas" => $resultado->valor[2]->valor
+            ];
+            $porcentajesAnterior->total = $porcentajesAnterior->enviadas + $porcentajesAnterior->pendientes;
+            
+            Porcentaje::calcularPorcentaje($porcentajesAnterior, "enviadas", "total", "porcentajeEnviadas");
+            Porcentaje::calcularPorcentaje($porcentajesAnterior, "justificadas", "total", "porcentajeJustificadas");
+            
+            $texto=  str_replace("@enviadasAnterior",$porcentajesAnterior->porcentajeEnviadas,$texto);
+            $texto=  str_replace("@justificadasAnterior",$porcentajesAnterior->porcentajeJustificadas,$texto);
+        }
+        
+        $mejorPeorMes = "";
+        if($porcentajesActual->porcentajeEnviadas > $porcentajesAnterior->porcentajeEnviadas)
+            $mejorPeorMes = " se tuvo un mejor mes";
+        else if($porcentajesActual->porcentajeEnviadas < $porcentajesAnterior->porcentajeEnviadas)
+            $mejorPeorMes = " se tuvo un peor mes";
+        else 
+            $mejorPeorMes = " se tuvo un mes similar";
+                
+        $texto=  str_replace("@mejorPeorMes",$mejorPeorMes,$texto);
+                
+                
+        $conclusionSAHA = "";
+        if($porcentajesActual->porcentajeJustificadas > 15)
+            $conclusionSAHA = "Se recuerda a Comité de seguridad que a fin de mantener operándonosla adecuadamente el sistema de gestion de la certificación es recomendación del Equipo Handel que las justificaciones se mantengan debajo de 15%, se solicita hacer lo posible a fin de reducir las justificaciones dentro de SAHA.";
+        else if($porcentajesActual->porcentajeEnviadas == 100)
+            $conclusionSAHA = "Se felicita a comité de seguridad por el cumplimiento del mes y se solicita la ayuda continua para mantener ese resultado de 100% de entregas en los siguientes meses";
+        else
+            $conclusionSAHA = "Dado que el cumplimiento del mes fue inferior al 100% se solicita a comité de seguridad el apoyo a fin de conseguir en los meses siguientes el 100% de cumplimiento";
+        $texto=  str_replace("@conclusionSAHA",$conclusionSAHA,$texto);
+        
+        $nivelRiesgoSAHA = "";
+        if($porcentajesActual->porcentajeEnviadas <= 70)
+            $nivelRiesgoSAHA = "alto";
+        if($porcentajesActual->porcentajeEnviadas >= 71 && $porcentajesActual->porcentajeEnviadas <= 85)
+            $nivelRiesgoSAHA = "medio";
+        else
+            $nivelRiesgoSAHA = "bajo";
+        
+        $texto=  str_replace("@nivelRiesgoSAHA",$nivelRiesgoSAHA,$texto);
+        
+        
+        return $texto;
+    }
     
 }

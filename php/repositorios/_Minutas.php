@@ -15,7 +15,7 @@ include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/MinutasRepositorio.php';
 include '../modelos/Tarea.php';
-include '../clases/CodigoError.php';
+require_once ('../clases/CodigoError.php');
 
 
 $origin = "*";

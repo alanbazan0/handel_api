@@ -6,6 +6,8 @@ use php\interfaces\IEvidenciasRepositorio;
 use php\modelos\Evidencia;
 use php\modelos\EvidenciaComentario;
 use php\modelos\Resultado;
+use php\clases\ArrayUtils;
+
 
 require_once('../interfaces/IEvidenciasRepositorio.php');
 require_once('../modelos/Evidencia.php');
@@ -16,6 +18,7 @@ require_once("../clases/TipoReporteEvidencias.php");
 require_once('../clases/Resultado.php');
 require_once('../clases/Porcentaje.php');
 require_once('../repositorios/EvidenciasComentariosRepositorio.php');
+require_once('../clases/ArrayUtils.php');
 
 class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasRepositorio
 {
@@ -639,6 +642,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         $registro->cero = 0;
         Porcentaje::calcularPorcentaje($registro,'justificadas','total',"porcentajeJustificadas",2);
         Porcentaje::calcularPorcentaje($registro,'enviadas','total',"porcentajeEnviadas",2);
+        Porcentaje::calcularPorcentaje($registro,'pendientes','total',"porcentajePendientes",2);
     }
     
     public function consultarPorcentajesSedes($usuario,$criteriosSeleccion)
@@ -1227,6 +1231,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
         $resultado = $usuariosRepositorio->consultarPorLLaves((object) ["id"=>$criteriosSeleccion->supervisorCoordinadorId]);
         if($resultado->correcto())
         {
+          
             $usuario = $resultado->valor;
             $filtros = $this->getFiltrosN($usuario,$criteriosSeleccion,false);
             $where = $this->where($filtros);
@@ -1245,7 +1250,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                     ORDER BY ano, mes
                     LIMIT 1";
             
-           // echo $consulta;
+           // echo $where;
             
             
             if($sentencia = $this->conexion->prepare($consulta))
@@ -1268,6 +1273,28 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                                 
                                 $registros = $this->calcularMeses($primerMes);
                                 $resultado->valor = $registros;
+                            }
+                            else
+                            {
+                                $resultado->valor = null;
+                                $texto = "";
+                                if($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR)
+                                {
+                                    $filtroUsuarios = ArrayUtils::searchGroup((object)["tabla"=>"U","campo"=>"id"], array("tabla","campo"), $filtros);
+                                    $usuariosId = $filtroUsuarios->valor;
+                                    $texto =" de los usuarios: " . $usuariosId;
+                                    
+                                    $repositorioUsuarios = new UsuariosRepositorio($this->conexion);
+                                    $resultadoUsuarios = $repositorioUsuarios->consultarUsuarios($usuariosId);
+                                    if($resultadoUsuarios->correcto())
+                                    {
+                                        $usuarios = $resultadoUsuarios->valor;
+                                        $resultado->codigoError = 3;
+                                        $resultado->valor = $usuarios;
+                                    }
+                                }
+                                
+                                $resultado->mensajeError = "No se encontraron evidencias" . $texto;
                             }
                             
                         }

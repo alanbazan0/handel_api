@@ -1076,6 +1076,60 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
             return $resultado;
     }
     
+    public function consultarUsuarios($usuariosIds)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $where="";
+        $filtros = array();
+        array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'U', 'campo'=>'id','operador'=>'IN','valor'=>$usuariosIds]);
+        $where = $this->where($filtros);
+    
+        
+        $consulta = $this->consultaBaseSimple .
+        $where .
+        " ORDER BY nombre, apellido";
+        
+        //var_dump($consulta);
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            //if($sentencia->bind_param("ss",$criteriosSeleccion->nombre,$criteriosSeleccion->apellido))
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $nombre, $apellido)  )
+                    {
+                        while($row = $sentencia->fetch())
+                        {
+                            $registro = (object)[
+                                "id" => $id,
+                                "nombre" => $nombre,
+                                "apellido" => $apellido
+                            ];
+                            $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado.";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            
+            return $resultado;
+    }
+    
     
     public function consultarPorPermiso($usuario,$criteriosSeleccion,$opcional)
     {
@@ -1163,6 +1217,7 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
 //         }
 
         array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'tipo_usuario_id','valor'=> \TipoUsuario::ADMINISTRADOR]);
+        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'estatus','valor'=> 1]);
         $where = $this->where($filtros);
         
         $consulta =  $this->consultaBase .

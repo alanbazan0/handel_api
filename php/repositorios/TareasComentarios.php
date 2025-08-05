@@ -11,7 +11,7 @@ ini_set('display_errors', 1);
 
 include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
-include '../clases/CodigoError.php';
+require_once ('../clases/CodigoError.php');
 include '../clases/AdministradorConexion.php';
 include '../repositorios/TareasComentariosRepositorio.php';
 

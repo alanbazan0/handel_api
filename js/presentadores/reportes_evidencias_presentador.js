@@ -18,6 +18,31 @@ class ReportesEvidenciasPresentador extends CatalogoPresentador
 					this.validarMeses(resultado.valor);
 					this.vista.datos = resultado.valor;
 				}
+				else if(resultado.codigoError == 3)
+				{
+					var html ="No se encontraron evidencias de los usuarios:<br>";
+					for(var i = 0; i < resultado.valor.length; i++)
+					{
+						var usuario = resultado.valor[i];
+						html+="<br>"+ usuario.id + " - " + usuario.nombreCompleto;
+					}
+					swal({
+			            title: "",
+			            text: html,
+						html: true,
+			            type: "warning",
+			            showCancelButton: false,
+			            confirmButtonColor: "#3c8dbc",
+			            confirmButtonText: "Aceptar",
+						cancelButtonColor: "#DD6B55",
+			            closeOnConfirm: true,
+			            closeOnCancel: true,
+			        },
+			        function(isConfirm)
+			        {
+			            
+			        });
+				}
 				else
 					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 			 },{supervisorCoordinadorId: this.vista.criteriosSeleccion.supervisorCoordinadorId});

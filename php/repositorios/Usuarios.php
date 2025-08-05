@@ -232,12 +232,16 @@ try
                         {
                             switch($aplicacionId)
                             {
+                                case "APPS":
+                                    $tienePermiso = true;
+                                   // $tienePermiso =  $resultado->valor->permisoSAHA==1?true:false;
+                                break;
                                 case "SAHA":
                                     $tienePermiso =  $resultado->valor->permisoSAHA==1?true:false;
-                                    break;
+                                break;
                                 case "SIVAH":
                                     $tienePermiso =  $resultado->valor->permisoSIVAH==1?true:false;
-                                    break;
+                                break;
                                 case "10y7":
                                     $tienePermiso =  $resultado->valor->permiso10y7==1?true:false;
                                 break;
@@ -257,6 +261,11 @@ try
                         {
                                 switch($aplicacionId)
                                 {
+                                    case "APPS":
+                                        $_SESSION['usuario']=$resultado->valor;
+                                        $historialAccesoRepositorio = new HistorialAccesoRepositorio($conexion);
+                                        $historialAccesoRepositorio->insertar($nombreUsuario,$aplicacionId,$aplicacionVersion);
+                                    break;
                                     case "SAHA":
                                         if($resultado->valor->tipoUsuarioId == TipoUsuario::ADMINISTRADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::COORDINADOR || $resultado->valor->tipoUsuarioId == TipoUsuario::SUPERVISOR ||  $resultado->valor->tipoUsuarioId == TipoUsuario::USUARIO)
                                         {

@@ -292,8 +292,15 @@ class AuditoriaPresentador extends CatalogoPresentador
 			this.vista.ocultarIndicador();	
 			if(resultado.mensajeError=="")
 			{
-				this.vista.mostrarMensaje("Notificación","Enviado");
-				 window.close();
+				if(resultado.valor.sociosComerciales.length==0)
+				{
+					his.vista.mostrarMensajeAdvertencia("Advertencia","No fue enviada la notificación, la emmpresa " + resultado.valor.empresaNombre + "no tiene socios comerciales configurados");
+				}
+				else
+				{
+					this.vista.mostrarMensaje("Notificación","Enviado");
+					 window.close();
+				 }
 				//this.vista.cerrarModal("correoXRayModal");
 				//this.vista.usuariosCorreo = resultado.valor;			
 			}

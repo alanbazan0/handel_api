@@ -4764,6 +4764,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         
         $consulta = $this->getConsultaBase($filtros,$filtroCapacitacion,$criteriosSeleccion,$usuario) . " order by tipoUsuarioOrden, nombre, apellido";
         
+        //echo $consulta;
         
         if($sentencia = $this->conexion->prepare($consulta))
         {

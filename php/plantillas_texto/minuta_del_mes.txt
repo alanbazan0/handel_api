@@ -1,0 +1,10 @@
+@administrador apertura la reunión de comité de seguridad del mes de @nombreMesReportado en @nombreEmpresa con el orden del día programado incluyendo la revisión de KCI (Key Compliance Indicators): 1. Resultados de SAHA 2. Avance en CAVI 3. Avance en SIVAH 4. Simulacro mensual 5. Actividades previas 6. Varios
+@administrador informa sobre los resultados del mes de @nombreMesActual en SAHA, se tuvo un cumplimiento de @enviadasActual% incluyendo @justificadasActual% de evidencias justificadas. Con respecto al mes anterior @nombreMesAnterior en el que se tuvo @enviadasAnterior% incluyéndose @justificadasAnterior% justificadas@mejorPeorMes. @conclusionSAHA
+Respecto del cumplimiento de cada sede @administrador comenta que se tuvieron los siguientes resultados: @resultadoSedesSAHA
+En referencia del cumplimiento de cada departamento @administrador comenta que se tuvieron los siguientes resultados: @resultadoDepartamentosSAHA
+@resultadoUsuariosPendientesSAHA
+El nivel de riesgo obtenido en el mes de @nombreMesActual se estima se encuentra en @nivelRiesgoSAHA
+Respecto de los resultados del sistema de capacitación CAVI, @administrador reporta un avance a la fecha de @avanceCAVI% y un aprovechamiento en el periodo de @aprovechamientoCAVI%.
+Las sedes presentan un porcentaje de avance de acuerdo a lo siguiente: @resultadoSedesCAVI
+En cuanto a los departamentos @administrador reporta que se tienen los siguientes avances: @resultadoDepartamentosCAVI
+@resultadoSIVAH

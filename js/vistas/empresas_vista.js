@@ -639,22 +639,25 @@ class EmpresasVista extends CatalogoVista
 		    $(select).append($('<option data-img-src="'+icono+'"></option>').val(p.id).html(p.nombre));
 		});
 		
-		var sociosComercialesSeleccionados =[];
-		if(this.modeloEdicion.sociosComerciales!=undefined)
+		if(this.modeloEdicion!=null)
 		{
-			$.each(this.modeloEdicion.sociosComerciales, function(i, p) 
+			var sociosComercialesSeleccionados =[];
+			if(this.modeloEdicion.sociosComerciales!=undefined)
 			{
-				sociosComercialesSeleccionados.push(p.empresaId);
-			});
+				$.each(this.modeloEdicion.sociosComerciales, function(i, p) 
+				{
+					sociosComercialesSeleccionados.push(p.empresaId);
+				});
+			}
+			
+			$(select).val(sociosComercialesSeleccionados);
+			
+			$(select).chosen();
+			$(".chosen-search-input").height(50);
+			//$(".chosen-search-input").val("");
+			
+			$(select+"_chosen").css("width","100%");
 		}
-		
-		$(select).val(sociosComercialesSeleccionados);
-		
-		$(select).chosen();
-		$(".chosen-search-input").height(50);
-		//$(".chosen-search-input").val("");
-		
-		$(select+"_chosen").css("width","100%");
 		
 	}
 	

@@ -1246,7 +1246,7 @@ abstract class PDF extends FPDF
         
         if (file_exists($filename))
         {
-            header('Location:'. $filename);
+           header('Location:'. $filename);
         }
     }
     

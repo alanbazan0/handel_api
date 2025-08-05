@@ -11,7 +11,7 @@ include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/TiposUsuarioRepositorio.php';
-include '../clases/CodigoError.php';
+require_once ('../clases/CodigoError.php');
 
 $origin = "*";
 if(isset($_SERVER['HTTP_ORIGIN']))

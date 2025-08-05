@@ -1158,6 +1158,7 @@ abstract class PDF extends FPDF
        
         $repositorio = new CursosRepositorio($this->conexion);
         $resultado = $repositorio->consultarResultadosUsuarios($this->usuario, $this->criteriosSeleccion);
+        //var_dump($resultado);
         if($resultado->correcto())
         {
             $registros = $resultado->valor;
@@ -1377,7 +1378,7 @@ try
             $reporte->setConexion($conexion);
             $reporte->AliasNbPages();
             $reporte->generar($usuario,$criteriosSeleccion);
-           $reporte->imprimir();
+           //$reporte->imprimir();
         
         }
     }

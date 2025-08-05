@@ -15,7 +15,7 @@ include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/MinutasRepositorio.php';
 include '../modelos/Tarea.php';
-include '../clases/CodigoError.php';
+require_once ('../clases/CodigoError.php');
 
 
 $origin = "*";
@@ -143,6 +143,10 @@ try
                     $llaves = json_decode(REQUEST('llaves'));
                     $titulo = REQUEST('titulo');
                     $resultado = $repositorio->copiar($usuario,$llaves,$titulo);
+                break;
+                case 'generarAutoMinuta':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->generarAutoMinuta($usuario,$criteriosSeleccion);
                 break;
                 default:
                     $resultado->mensajeError = 'Acción no implementada';

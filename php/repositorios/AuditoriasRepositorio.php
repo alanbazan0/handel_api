@@ -5793,10 +5793,10 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                 
               
                 
-               // var_dump($usuarios);
+               
                 $usuariosEnvio = array();
                 
-               // $enviarA = "contact@alanbazan.com.mx";
+               //$enviarA = "contact@alanbazan.com.mx";
                 $enviarA = "";
                 $numeroUsuarios = 0;
                 $enviados = 0;
@@ -5863,7 +5863,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                 
                 if($resultado->correcto())
                 {
-                    $resultado->valor = (object) ["usuarios" => count($usuarios), "usuariosFiltrados" => count($usuariosEnvio), "enviados" => $enviados];
+                    $resultado->valor = (object) ["empresaId"=>$auditoria->empresaId, "empresaNombre" => $auditoria->empresaNombre, "sociosComerciales"=> $sociosComerciales ,"usuarios" => count($usuarios), "usuariosFiltrados" => count($usuariosEnvio), "enviados" => $enviados];
                 }
                 
             }

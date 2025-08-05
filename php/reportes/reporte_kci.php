@@ -23,7 +23,7 @@ require_once('../repositorios/SedesRepositorio.php');
 require_once('../repositorios/CursosRepositorio.php');
 require_once('../highcharts/highchartutils.php');
 require_once('../reportes/reporte_base.php');
-include "../clases/ArrayUtils.php";
+require_once('../clases/ArrayUtils.php');
 
  class ReporteKCI extends ReporteBase
 {
@@ -605,6 +605,8 @@ include "../clases/ArrayUtils.php";
             "empresaId" => $this->empresa->id
         ];
         
+        //var_dump($criteriosSeleccion);
+        //var_dump($this->usuario);
         
         $fecha = new DateTime();
         $fecha->setDate($this->anoSAHA,$this->mesSAHA,1);
@@ -630,6 +632,7 @@ include "../clases/ArrayUtils.php";
         if($resultado->correcto())
         {
             $porcentajes = $resultado->valor;
+            var_dump($porcentajes);
             $colores = [ "#00a65a", "#dd4b39", "#f39c12"];
             $image = toPieChartWithLabels("Porcentaje de cumplimiento global del área <br>($nombreMes)",'Porcentaje','Areas',$porcentajes,"nombre","valor",$colores,20);
             if($image!='')
@@ -2068,7 +2071,7 @@ include "../clases/ArrayUtils.php";
         
         if (file_exists($filename))
         {
-            header('Location:'. $filename);
+           header('Location:'. $filename);
         }
     }
     
