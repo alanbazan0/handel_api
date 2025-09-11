@@ -16,7 +16,11 @@ class EmpresasVista extends CatalogoVista
 		$("#estructuraButton").click(function(){
 			_this.consultarEstructura();
 		});
+		
+		
 	}
+	
+	
 	
 	consultarEstructura()
 	{
@@ -120,7 +124,8 @@ class EmpresasVista extends CatalogoVista
 			{longitud:200, 	titulo:"País",   alias:"pais", alineacion:"I" },
 			{longitud:200, 	titulo:"Estado",   alias:"estado", alineacion:"I" },
 			{longitud:200, 	titulo:"Ciudad",   alias:"ciudad", alineacion:"I" },
-			{longitud:200, 	titulo:"Corporativo",   alias:"corporativo", alineacion:"I" },				
+			{longitud:200, 	titulo:"Corporativo",   alias:"corporativo", alineacion:"I" },	
+			{longitud:100, 	titulo:"Tokens",   alias:"tokens", alineacion:"D" },				
 			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
 			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
 			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
@@ -154,37 +159,6 @@ class EmpresasVista extends CatalogoVista
 			}
 		});
 	}
-	
-//	datosValidos()
-//	{
-//		var nombre = $("#nombreInput"),
-//		 nombreCorto = $("#nombreCortoInput"),
-//			direccion = $("#direccionInput"),
-//			telefono = $("#telefonoInput"),
-//			tipoEmpresa = $("#tipoEmpresaSelect"),
-//			pais = $("#paisSelect"),
-//			estado = $("#estadoSelect"),
-//			ciudad = $("#ciudadSelect");		
-//        
-//        var allFields = $( [] ).add(nombre).add(nombreCorto).add(direccion).add(telefono).add(tipoEmpresa).add(pais).add(estado).add(ciudad);
-//        var tips = $( ".validateTips" );
-//		tips.text("");
-//		
-//		var valid = true;
-//		allFields.removeClass("ui-state-error");
-//		
-//		valid = valid && this.validaciones.checkValue( nombre, "nombre", tips );	
-//		valid = valid && this.validaciones.checkValue( nombreCorto, "nombre corto", tips );	
-//		valid = valid && this.validaciones.checkValue( telefono, "teléfono", tips );
-//		valid = valid && this.validaciones.checkValue( tipoEmpresa, "tipo de empresa", tips );
-//	    valid = valid && this.validaciones.checkValue( direccion, "dirección", tips );
-//	    valid = valid && this.validaciones.checkValue( pais, "país", tips );
-//	    valid = valid && this.validaciones.checkValue( estado, "estado", tips );
-//	    valid = valid && this.validaciones.checkValue( ciudad, "ciudad", tips );
-//	   
-//	    
-//		return valid;
-//	}	
 	
 	inicializarValidacionesFormulario()
 	{
@@ -226,6 +200,12 @@ class EmpresasVista extends CatalogoVista
                 },
                 "ciudadSelect": {
                     required: !0
+                },
+                "minutaAnalisisRiesgoInput": {
+                    number: true
+                },
+                 "tokensInput": {
+                    number: true
                 }
                
             },
@@ -237,8 +217,9 @@ class EmpresasVista extends CatalogoVista
                 "tipoEmpresaSelect": "Por favor ingrese un tipo de empresa",
                 "paisSelect": "Por favor ingrese un país",
                 "estadoSelect": "Por favor ingrese un estao",
-                "ciudadSelect": "Por favor ingrese una ciudad"
-                	
+                "ciudadSelect": "Por favor ingrese una ciudad",
+                "minutaAnalisisRiesgoInput": {number:"Por favor ingrese solo numeros"},
+                "tokensInput": {number:"Por favor ingrese solo numeros"}
                 
             },
             submitHandler:function (form) {
@@ -314,6 +295,16 @@ class EmpresasVista extends CatalogoVista
     	this.consultarTiposSocioComercial();
     	this.consultarServicios();
     	this.consultarPlantillas();
+    	//this.consultarMinutas();
+    	
+    	$("#minutaAnalisisRiesgoInput").off("change",this.cambiarMinutaAnalisisRiesgo);
+    	$("#minutaAnalisisRiesgoInput").on("change",this.cambiarMinutaAnalisisRiesgo);
+    	this.errorMinutaElement = null;
+	}
+	
+	cambiarMinutaAnalisisRiesgo()
+	{
+		vista.presentador.consultarMinutaAnalisisRiesgo();
 	}
 	
 	consultarTiposSocioComercial()
@@ -334,14 +325,28 @@ class EmpresasVista extends CatalogoVista
 		this.presentador.consultarPlantillas();
 	}
 	
+	consultarMinutas()
+	{
+		this.cargandoOpciones("#minutaAnalisisRiesgoSelect");
+		this.presentador.consultarMinutas();
+		this.crearAutocompleteMinutas();
+	}
+	
+	crearAutocompleteMinutas()
+	{
+		$('#minutaAnalisisRiesgoInput').autocomplete({
+		    serviceUrl: HANDEL_API + '/php/repositorios/Minutas.php?accion=autocompletar&id=' + $('#minutaAnalisisRiesgoInput').val(),
+		    onSelect: function (suggestion) {
+		        alert('You selected: ' + suggestion.value + ', ' + suggestion.data);
+		    }
+		});
+	}
+	
 	consultarEmpresas()
 	{
 		this.cargandoOpciones("#empresaSelect");
 		this.presentador.consultarEmpresas();
 	}
-	
-	
-	
 	
 	cambiarCalificacionMinima(event)
 	{
@@ -360,63 +365,6 @@ class EmpresasVista extends CatalogoVista
 
 				
 	}
-	
-//	consultar()
-//	{	
-//		this.presentador.consultar();
-//	}	
-	
-//	guardar()
-//	{		
-//		 if(this.datosValidos())
-//		 {
-//			if(this.modo=='ALTA')
-//				this.presentador.insertar();
-//			else
-//				this.presentador.actualizar();
-//		 }		
-//		
-//	}
-//	
-//	btnSalir_onClick()
-//	{
-//		var confirmacion = confirm("¿Esta seguro que desea salir?")
-//	    if (confirmacion)
-//	    	{
-//		    	
-//	    	}
-//	}
-//	
-//	btnSalirFormulario_onClick()
-//	{		
-//		this.salirFormulario();
-//	}	
-
-//	get llaves()
-//	{
-////		var llaves =
-////		{
-////			id:this.grid._selectedItem.id	
-////		}
-////		return llaves;
-//		return this._llaves;
-//	}
-	
-//	get criteriosSeleccion()
-//	{
-//		 var criteriosSeleccion = 
-//		 {				    
-//			nombre:$('#nombreInputCriterio').val()
-//			
-//		 }
-//		 return criteriosSeleccion;
-//	}		
-
-//	set datos(datos)
-//	{
-//		this.tabla.registros = datos;	
-//		this.tabla.renderizar();
-//	}
 	
 	set modelo(valor)
 	{		
@@ -454,10 +402,17 @@ class EmpresasVista extends CatalogoVista
 		else
 			$("#permitirUsuarioPlantillaSelectRadio").prop('checked', false);
 		
+		$('#minutaAnalisisRiesgoInput').val(this.modeloEdicion.analisisRiesgoMinutaId);
+		
+		if(this.modeloEdicion.tokens=="")
+			this.modeloEdicion.tokens = 0;
+		$('#tokensInput').val(this.modeloEdicion.tokens);
+		
 		
 		
 		this.consultarCombos();
 	}
+	
 	
 	get modelo()
 	{
@@ -485,7 +440,9 @@ class EmpresasVista extends CatalogoVista
 			 servicioId: $('#servicioSelect').val(),
 			 autoevaluacion: $('#autoevaluacionRadio').is(':checked')?1:0,
 			 plantillaId: $('#plantillaSelect').val(),
+			 analisisRiesgoMinutaId: $('#minutaAnalisisRiesgoInput').val(),
 			 permitirUsuarioPlantilla: $('#permitirUsuarioPlantillaSelectRadio').is(':checked')?1:0,
+			 tokens: $('#tokensInput').val(),
 			 sociosComerciales : this.sociosComerciales
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
@@ -624,7 +581,11 @@ class EmpresasVista extends CatalogoVista
 	set plantillas(registros)
 	{	
 		this.cargarOpciones('#plantillaSelect', registros, this.modo, this.modeloEdicion, 'plantillaId',"");
-		
+	}
+	
+	set minutas(registros)
+	{	
+		this.cargarOpciones('#minutaAnalisisRiesgoSelect', registros, this.modo, this.modeloEdicion, 'analisisRiesgoMinutaId',"","titulo");
 	}
 	
 	set empresas(registros)
@@ -660,7 +621,6 @@ class EmpresasVista extends CatalogoVista
 		}
 		
 	}
-	
 	
 	cambiarEstado()
 	{

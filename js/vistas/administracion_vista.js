@@ -322,7 +322,8 @@ class AdministracionVista extends CatalogoVista
                 "apellidoInput": "Por favor ingrese un apellido",
                 "empresaSelect": "Por favor seleccione una empresa",
                 "sedeSelect": "Por favor seleccione una sede",
-                "puestoSelect": "Por favor seleccione un puesto",
+                "puestoSelect": "Por favor seleccione un puesto"
+                //"departamentoSelect": "Por favor seleccione un departamento",
               //  "areaSelect": "Por favor seleccione un área"
                 	
                 

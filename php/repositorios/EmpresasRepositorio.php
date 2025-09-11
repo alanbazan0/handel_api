@@ -20,7 +20,7 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
     {
         $this->conexion = $conexion;
         $this->consultaBase = " SELECT E.id, E.nombre, IFNULL(E.nombre_corto,'') nombre_corto , E.tipo_empresa_id, T.nombre tipo_empresa, E.direccion, E.pais_id, P.nombre pais, E.estado_id, ES.nombre estado, E.ciudad_id, C.nombre ciudad, E.telefono, E.corporativo_id , IFNULL(CO.nombre,'') corporativo, IFNULL(DATE_FORMAT(E.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(E.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, E.estatus, U.id administradorId, U.nombre usuarioNombre,  U.apellido usuarioApellido, E.perfil_id,  US.id administradorIdSIVAH, US.nombre usuarioNombreSIVAH,  US.apellido usuarioApellidoSIVAH,E.mes_revision_procesos,UP.id administradorIdProcesos, UP.nombre usuarioNombreProcesos,  UP.apellido usuarioApellidoProcesos, E.calificacion_minima, IFNULL(DATE_FORMAT( E.fecha_inicio_temporada,'%d/%m/%Y'),'')fecha_inicio_temporada,
-                                E.socio_comercial, E.tipo_socio_comercial_id, E.servicio_id,E.autoevaluacion, E.plantilla_id, E.permitir_usuario_plantilla
+                                E.socio_comercial, E.tipo_socio_comercial_id, E.servicio_id,E.autoevaluacion, E.plantilla_id, E.permitir_usuario_plantilla, E.analisis_riesgo_minuta_id, E.tokens
                              FROM empresas E 
                                LEFT JOIN tipos_empresa T ON T.id = E.tipo_empresa_id 
                                LEFT JOIN paises P ON P.id = E.pais_id 
@@ -53,14 +53,18 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
             $modelo->servicioId=null;
         if($modelo->plantillaId=="")
             $modelo->plantillaId=null;
+        if($modelo->analisisRiesgoMinutaId=="")
+            $modelo->analisisRiesgoMinutaId=null;
+        if($modelo->tokens=="")
+            $modelo->tokens=0;
         if($resultado->mensajeError=="")
         {
             $id = $resultado->valor;           
-            $consulta = "INSERT INTO empresas(id, nombre, nombre_corto, tipo_empresa_id, direccion, pais_id, estado_id, ciudad_id, telefono, corporativo_id, fecha_alta, fecha_modificacion, estatus, administrador_id, perfil_id, administrador_sivah_id, mes_revision_procesos,administrador_procesos_id, calificacion_minima, fecha_inicio_temporada, socio_comercial, tipo_socio_comercial_id, servicio_id, autoevaluacion, plantilla_id, permitir_usuario_plantilla) " .
-                        "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $consulta = "INSERT INTO empresas(id, nombre, nombre_corto, tipo_empresa_id, direccion, pais_id, estado_id, ciudad_id, telefono, corporativo_id, fecha_alta, fecha_modificacion, estatus, administrador_id, perfil_id, administrador_sivah_id, mes_revision_procesos,administrador_procesos_id, calificacion_minima, fecha_inicio_temporada, socio_comercial, tipo_socio_comercial_id, servicio_id, autoevaluacion, plantilla_id, permitir_usuario_plantilla,analisis_riesgo_minuta_id, tokens) " .
+                        "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if( $sentencia->bind_param("issisiiiisiiiiiiisiiiiii", $id, $modelo->nombre,$modelo->nombreCorto, $modelo->tipoEmpresaId, $modelo->direccion, $modelo->paisId, $modelo->estadoId, $modelo->ciudadId, $modelo->telefono, $modelo->corporativoId, $modelo->estatus, $modelo->administradorId, $modelo->perfilId, $modelo->admintradorIdSIVAH, $modelo->mesRevisionProcesos, $modelo->admintradorIdProcesos, $modelo->calificacionMinima, $modelo->fechaInicioTemporada, $modelo->socioComercial, $modelo->tipoSocioComercialId, $modelo->servicioId, $modelo->autoevaluacion, $modelo->plantillaId, $modelo->permitirUsuarioPlantilla))
+                if( $sentencia->bind_param("issisiiiisiiiiiiisiiiiiiii", $id, $modelo->nombre,$modelo->nombreCorto, $modelo->tipoEmpresaId, $modelo->direccion, $modelo->paisId, $modelo->estadoId, $modelo->ciudadId, $modelo->telefono, $modelo->corporativoId, $modelo->estatus, $modelo->administradorId, $modelo->perfilId, $modelo->admintradorIdSIVAH, $modelo->mesRevisionProcesos, $modelo->admintradorIdProcesos, $modelo->calificacionMinima, $modelo->fechaInicioTemporada, $modelo->socioComercial, $modelo->tipoSocioComercialId, $modelo->servicioId, $modelo->autoevaluacion, $modelo->plantillaId, $modelo->permitirUsuarioPlantilla, $modelo->analisisRiesgoMinutaId, $modelo->tokens))
                 {
                     if($sentencia->execute())       
                     {
@@ -177,6 +181,12 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
             $modelo->servicioId=null;
         if($modelo->plantillaId=="")
             $modelo->plantillaId=null;
+        if($modelo->plantillaId=="")
+            $modelo->plantillaId=null;
+        if($modelo->analisisRiesgoMinutaId=="")
+            $modelo->analisisRiesgoMinutaId=null;
+        if($modelo->tokens=="")
+            $modelo->tokens=0;
         $resultado = new Resultado();
         $consulta = " UPDATE empresas " .
                      "SET nombre = ?, " .
@@ -202,12 +212,14 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
                         servicio_id = ?,
                         autoevaluacion = ?,
                         plantilla_id = ?,
-                        permitir_usuario_plantilla = ? " .
-                     "WHERE id = ? ";    
+                        permitir_usuario_plantilla = ?,
+                        analisis_riesgo_minuta_id = ?,
+                        tokens = ?
+                     WHERE id = ? ";    
 
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if( $sentencia->bind_param("ssisiiisiiiiiiiisiiiiiii", $modelo->nombre, $modelo->nombreCorto, $modelo->tipoEmpresaId,$modelo->direccion,$modelo->paisId,$modelo->estadoId,$modelo->ciudadId, $modelo->telefono, $modelo->corporativoId, $modelo->estatus,$modelo->administradorId,$modelo->perfilId,$modelo->administradorIdSIVAH,$modelo->mesRevisionProcesos,$modelo->administradorIdProcesos,$modelo->calificacionMinima,$modelo->fechaInicioTemporada, $modelo->socioComercial, $modelo->tipoSocioComercialId, $modelo->servicioId, $modelo->autoevaluacion, $modelo->plantillaId, $modelo->permitirUsuarioPlantilla,$modelo->id ))
+            if( $sentencia->bind_param("ssisiiisiiiiiiiisiiiiiiiii", $modelo->nombre, $modelo->nombreCorto, $modelo->tipoEmpresaId,$modelo->direccion,$modelo->paisId,$modelo->estadoId,$modelo->ciudadId, $modelo->telefono, $modelo->corporativoId, $modelo->estatus,$modelo->administradorId,$modelo->perfilId,$modelo->administradorIdSIVAH,$modelo->mesRevisionProcesos,$modelo->administradorIdProcesos,$modelo->calificacionMinima,$modelo->fechaInicioTemporada, $modelo->socioComercial, $modelo->tipoSocioComercialId, $modelo->servicioId, $modelo->autoevaluacion, $modelo->plantillaId, $modelo->permitirUsuarioPlantilla, $modelo->analisisRiesgoMinutaId, $modelo->tokens, $modelo->id ))
             {
                 if($sentencia->execute())
                 {
@@ -233,23 +245,7 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
         return $resultado;
     }    
   
-  /*  private function filtrarDesactivados($filtros, $criteriosSeleccion)
-    {
-        if($criteriosSeleccion!=null)
-        {
-            if(isset($criteriosSeleccion->desactivado))
-            {
-                if(!$criteriosSeleccion->desactivado)
-                    array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'estatus','valor'=>1]);
-                    
-            }
-            else
-                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'estatus','valor'=>1]);
-        }
-        else
-            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'estatus','valor'=>1]);
-            
-    }*/
+ 
     public function consultar($criteriosSeleccion,$opcional, $usuario)
     {     
         $resultado = new Resultado();
@@ -319,11 +315,11 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
             {
                 if($sentencia->execute())
                 {                
-                    if ($sentencia->bind_result($id, $nombre, $nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono, $corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima, $fechaInicioTemporada,  $socioComercial, $tipoSocioComercialId, $servicioId, $autoevaluacion, $plantillaId, $permitirUsuarioPlantilla))
+                    if ($sentencia->bind_result($id, $nombre, $nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono, $corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima, $fechaInicioTemporada,  $socioComercial, $tipoSocioComercialId, $servicioId, $autoevaluacion, $plantillaId, $permitirUsuarioPlantilla, $analisisRiesgoMinutaId,$tokens))
                     {                    
                         while($row = $sentencia->fetch()) 
                         {
-                            $registro = $this->crearRegistro($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono, $corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima, $fechaInicioTemporada, $socioComercial, $tipoSocioComercialId, $servicioId, $autoevaluacion, $plantillaId, $permitirUsuarioPlantilla);
+                            $registro = $this->crearRegistro($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono, $corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima, $fechaInicioTemporada, $socioComercial, $tipoSocioComercialId, $servicioId, $autoevaluacion, $plantillaId, $permitirUsuarioPlantilla, $analisisRiesgoMinutaId,$tokens);
                       
                             array_push($registros,$registro);
                         }
@@ -366,11 +362,11 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
             {
                 if($sentencia->execute())
                 {                    
-                    if ($sentencia->bind_result($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono,$corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima,$fechaInicioTemporada,$socioComercial, $tipoSocioComercialId, $servicioId, $autoevaluacion, $plantillaId, $permitirUsuarioPlantilla))
+                    if ($sentencia->bind_result($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono,$corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima,$fechaInicioTemporada,$socioComercial, $tipoSocioComercialId, $servicioId, $autoevaluacion, $plantillaId, $permitirUsuarioPlantilla, $analisisRiesgoMinutaId,$tokens))
                     {                        
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombre, $nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono, $corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima,$fechaInicioTemporada,$socioComercial, $tipoSocioComercialId, $servicioId, $autoevaluacion, $plantillaId, $permitirUsuarioPlantilla);
+                            $registro = $this->crearRegistro($id, $nombre, $nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono, $corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima,$fechaInicioTemporada,$socioComercial, $tipoSocioComercialId, $servicioId, $autoevaluacion, $plantillaId, $permitirUsuarioPlantilla, $analisisRiesgoMinutaId,$tokens);
                             
                             $sentencia->close();
                             
@@ -414,11 +410,11 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono,$corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima, $fechaInicioTemporada, $socioComercial, $tipoSocioComercialId, $servicioId, $autoevaluacion, $plantillaId, $permitirUsuarioPlantilla))
+                    if ($sentencia->bind_result($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono,$corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima, $fechaInicioTemporada, $socioComercial, $tipoSocioComercialId, $servicioId, $autoevaluacion, $plantillaId, $permitirUsuarioPlantilla, $analisisRiesgoMinutaId,$tokens))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono, $corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima, $fechaInicioTemporada, $socioComercial, $tipoSocioComercialId, $servicioId, $autoevaluacion, $plantillaId, $permitirUsuarioPlantilla);
+                            $registro = $this->crearRegistro($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono, $corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre, $administradorApellido, $perfilId,$administradorIdSIVAH, $administradorNombreSIVAH, $administradorApellidoSIVAH,$mesRevisionProcesos,$administradorIdProcesos, $administradorNombreProcesos, $administradorApellidoProcesos,$calificacionMinima, $fechaInicioTemporada, $socioComercial, $tipoSocioComercialId, $servicioId, $autoevaluacion, $plantillaId, $permitirUsuarioPlantilla, $analisisRiesgoMinutaId,$tokens);
                             
                            
                             array_push($registros,$registro);
@@ -485,7 +481,7 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
         return $resultado;
     }
     
-    private function crearRegistro($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono,$corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre,$administradorApellido,$perfilId=null,$administradorIdSIVAH=null, $administradorNombreSIVAH=null, $administradorApellidoSIVAH=null, $mesRevisionProcesos=null,$administradorIdProcesos=null, $administradorNombreProcesos=null, $administradorApellidoProcesos=null, $calificacionMinima=null, $fechaInicioTemporada=null, $socioComercial=null, $tipoSocioComercialId=null, $servicioId=null, $autoevaluacion=null, $plantillaId=null, $permitirUsuarioPlantilla=null)
+    private function crearRegistro($id, $nombre,$nombreCorto, $tipo_empresa_id, $tipo_empresa, $direccion, $pais_id, $pais, $estado_id, $estado, $ciudad_id, $ciudad, $telefono,$corporativo_id, $corporativo, $fecha_alta, $fecha_modificacion, $estatus,$administradorId,$administradorNombre,$administradorApellido,$perfilId=null,$administradorIdSIVAH=null, $administradorNombreSIVAH=null, $administradorApellidoSIVAH=null, $mesRevisionProcesos=null,$administradorIdProcesos=null, $administradorNombreProcesos=null, $administradorApellidoProcesos=null, $calificacionMinima=null, $fechaInicioTemporada=null, $socioComercial=null, $tipoSocioComercialId=null, $servicioId=null, $autoevaluacion=null, $plantillaId=null, $permitirUsuarioPlantilla=null, $analisisRiesgoMinutaId=null, $tokens=null)
     {
         $archivoIcono = '../../php/logos_empresas/logo'.$id.'.png';
         $icono = 'default.png';
@@ -531,7 +527,9 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
             'servicioId' => $servicioId, 
             'autoevaluacion' => $autoevaluacion, 
             'plantillaId' => $plantillaId, 
-            'permitirUsuarioPlantilla' => $permitirUsuarioPlantilla
+            'permitirUsuarioPlantilla' => $permitirUsuarioPlantilla,
+            'analisisRiesgoMinutaId' => $analisisRiesgoMinutaId,
+            'tokens' => $tokens
         ];
         $registro->nodeId = $id;
         $registro->parentId = $registro->corporativoId;
@@ -666,6 +664,34 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
         }
         else
             $resultado->valor = "";
+        return $resultado;
+        
+    }
+    
+    
+    public function descontarTokens($empresaId)
+    {
+        $resultado = new Resultado();
+        $consulta = " UPDATE empresas " .
+                     "SET 
+                        tokens = tokens - 1
+                     WHERE id = ? ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("i", $empresaId))
+            {
+                if($sentencia->execute())
+                {
+                    $sentencia->close();
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else  $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
         return $resultado;
     }
 

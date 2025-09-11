@@ -4,10 +4,11 @@ namespace php\repositorios;
 use php\interfaces\IProcedimientosRepositorio;
 use php\modelos\Procedimiento;
 use php\modelos\Resultado;
+use php\modelos\UsuarioProcedimiento;
 
 include '../interfaces/IProcedimientosRepositorio.php';
 include '../modelos/Procedimiento.php';
-include 'RepositorioBase.php';
+require_once('RepositorioBase.php');
 require_once('../clases/Resultado.php');
 
 class ProcedimientosRepositorio extends RepositorioBase implements IProcedimientosRepositorio
@@ -121,6 +122,70 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
         
         return $resultado;
     }
+    
+   /* public function copiarProcedimientosUsuario($destinoUsuarioId,$procedimientos)
+    {
+        $resultado = new Resultado();
+        
+        $usuariosProcedimientosRepositorio = new UsuariosProcedimientosRepositorio($this->conexion);
+        
+        for($i = 0; $i < count($procedimientos); $i++)
+        {
+            $procedimiento = $procedimientos[$i];
+            $resultado = $this->calcularId('id','procedimientos');
+            if($resultado->mensajeError=='')
+            {
+                $id = $resultado->valor;
+                $consulta = "INSERT INTO procedimientos(id, codigo, nombre, descripcion, ruta_archivo, empresa_id, sede_id, fecha_alta, fecha_modificacion, estatus)VALUES(?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), 1)";
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if($sentencia->bind_param('issssii', $id, $procedimiento->codigo, $procedimiento->nombre, $procedimiento->descripcion, $procedimiento->rutaArchivo, $procedimiento->empresaId, $procedimiento->sedeId))
+                    {
+                        if($sentencia->execute())
+                        {
+                            $resultado = $this->copiarCertificaciones($procedimiento->id, $id);
+                            if($resultado->correcto())
+                            {
+                                $modelo = new UsuarioProcedimiento($procedimiento);
+                                $modelo->procedimientoId = $id;
+                                $modelo->usuarioId = $destinoUsuarioId;
+                                $resultado = $usuariosProcedimientosRepositorio->insertar($modelo);
+                            }
+                            else
+                            {
+                                $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        $resultado->mensajeError = 'Falló el enlace de parámetros';
+                        break;
+                    }
+                    
+                }
+                else
+                {
+                    $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' .$this->conexion->error;
+                    break;
+                }
+                
+            }
+        }
+        
+       // if($resultado->correcto())
+         //   $this->conexion->commit();
+            
+        return $resultado;
+    }*/
+       
+  
     
     public function copiarCertificaciones($procedimientoOrigenId, $procedimientoDestinoId)
     {
@@ -348,6 +413,7 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
                         {
                             $certificacion= (object) [
                                 'id' =>  $id,
+                                'certificacionId' =>  $id,
                                 'nombre' => $nombre
                             ];
                             array_push($certificaciones,$certificacion);
@@ -469,8 +535,8 @@ class ProcedimientosRepositorio extends RepositorioBase implements IProcedimient
                 if($resultado->correcto())
                 {
                     $id = $resultado->valor;
-                    $consulta = "INSERT INTO procedimientos_certificaciones(id, procedimiento_id, certificacion_id) " .
-                        "VALUE(?, ?, ?)";
+                    $consulta = "INSERT INTO procedimientos_certificaciones(id, procedimiento_id, certificacion_id, fecha_alta) " .
+                        "VALUE(?, ?, ?, NOW())";
                     if($sentencia = $this->conexion->prepare($consulta))
                     {
                         if($sentencia->bind_param("iii",$id, $procedimientoId,$certificacion->certificacionId))

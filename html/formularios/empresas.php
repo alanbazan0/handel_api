@@ -152,6 +152,21 @@
                                   	 	<select name="servicioSelect" id="servicioSelect" class="form-control"></select>
                                   	 </div> 
                                   </div>  
+                                  
+                                  <div class="form-group">
+                              		<div>
+                                  	 	<label for="minutaAnalisisRiesgoInput" class="control-label mb-1">Minuta de Análisis de Riesgo OEA</label>
+                                  	 	<!-- <select name="minutaAnalisisRiesgoSelect" id="minutaAnalisisRiesgoSelect" class="form-control"></select> -->
+                                  	 	<input type="text"  class='form-control' name="minutaAnalisisRiesgoInput" id="minutaAnalisisRiesgoInput"/>
+                                  	 </div> 
+                                  </div>  
+                                  
+                                   <div class="form-group">
+                                  	  <div>
+                                        <label for="tokensInput" class="control-label mb-1">Tokens</label>
+                                        <input id="tokensInput" name="tokensInput" type="text" class="form-control" aria-required="true" aria-invalid="false" >
+                                      </div> 
+                                  </div>
                                   <div class="form-group">
                                   		<label class="control-label mb-1">Activo</label>
                                  		<label class="switch switch-3d switch-success mr-3">
@@ -210,6 +225,9 @@
                                          <span class="switch-handle"></span>
                                        </label>
                                   </div>  
+                                  
+                                  
+                                   
     						</div>
 						
 

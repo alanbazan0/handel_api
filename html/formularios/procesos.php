@@ -1,3 +1,4 @@
+
 <?php
 $origin = '*';
 if(isset($_SERVER['HTTP_ORIGIN']))
@@ -87,7 +88,20 @@ header('Access-Control-Allow-Credentials: true');
 							class="switch-input" checked="true"> <span
 							class="switch-label"></span> <span class="switch-handle"></span>
 						</label>
-					</div>
+						
+				</div>
+				
+			<!--  	<div class="form-group">
+    				<div>
+						<button id='adjuntarArchivoButton' type="button" class='btn btn-primary pull-let' onclick="$('#file').trigger('click')"><i class='fas fa-paperclip'></i> Adjuntar archivo</button>
+                       <input type="file" id="file"  name="file" style='display:none' onchange='vista.cambiarLogo(this);' />
+    				</div> 
+				</div> 
+				<div class="form-group">
+					<div class="col-sm-12 text-center">
+                        <img id="logoImage" src="php/logos_empresas/default.png" alt="Logo" class="img-responsive img-thumbnail w-25" style='width:200px' onclick="$('#file').trigger('click')"  />
+                   </div>
+              	</div> -->
               </form>
           </div>
           <div class='modal-footer'>

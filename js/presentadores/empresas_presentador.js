@@ -343,4 +343,70 @@ class EmpresasPresentador extends CatalogoPresentador
 		 },null,false,true);
 	 }
 	 
+	consultarMinutas()
+	 {
+		 //this.vista.mostrarIndicador();
+		 var repositorio = new MinutasRepositorio(this);		
+		 repositorio.consultarTodas(this,function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.minutas = resultado.valor;		
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },null,false,true);
+	 }
+	 
+	 consultarMinutaAnalisisRiesgo()
+	 {
+		var repositorio = new MinutasRepositorio(this);		
+		repositorio.consultarEncabezadoPorLlaves(this, function(resultado)
+		{		
+			 this.vista.ocultarIndicador();	
+			 var mensaje = "No existe la minuta " + this.vista.modelo.analisisRiesgoMinutaId;
+			 var div = "<div class='invalid-feedback animated fadeInDown'>"+mensaje+"</div>";
+			 if(resultado.mensajeError=="")
+			 {
+				 if(resultado.valor==null)
+				 {
+					 if(this.errorMinutaElement==null)
+					 {
+						 this.errorMinutaElement = $(div);
+					 	jQuery("#minutaAnalisisRiesgoInput").parents(".form-group > div").append(this.errorMinutaElement);
+				 	}
+					 else
+						 this.errorMinutaElement.html(mensaje);
+					 
+					// this.vista.mostrarMensajeError("Error",mensaje);
+				 }
+				 else
+				 {
+					 if(this.errorMinutaElement!=null)
+					 {
+					 	this.errorMinutaElement.closest(".form-group").removeClass("is-invalid"); 
+					 	this.errorMinutaElement.remove();
+				 	}
+				 }
+			 }
+			 else
+			 {
+				 if(this.errorMinutaElement==null)
+				 {
+					  this.errorMinutaElement = $(div);
+				 	jQuery("#minutaAnalisisRiesgoInput").parents(".form-group > div").append(this.errorMinutaElement);
+			 	}
+				 else
+					 this.errorMinutaElement.html(mensaje);
+					 
+				// this.vista.mostrarMensajeError("Error",mensaje);
+		 	 }
+			 
+		 },{id:this.vista.modelo.analisisRiesgoMinutaId});
+	 }
+	 
+	
+		
+	 
+	 
 }

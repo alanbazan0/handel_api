@@ -501,6 +501,9 @@ class UsuariosVista extends CatalogoVista
 		this.cambiarPermisoSAHA();
 		
 		$('#urlDocumentosInput').val(this.modeloEdicion.urlDocumentos);
+		
+		this.reemplazaUsuarioId = valor.reemplazaUsuarioId;
+		 
 	}
 	
 	get modelo()
@@ -531,7 +534,8 @@ class UsuariosVista extends CatalogoVista
 		     verificador:$('#verificadorRadio').is(':checked')?1:0,
 		     urlDocumentos:$('#urlDocumentosInput').val(),
 		     visualizarAuditoriasSociosComerciales:$('#auditoriasSociosComercialesRadio').is(':checked')?1:0,
-		     tiposSocioComercial: this.tiposSocioComercial
+		     tiposSocioComercial: this.tiposSocioComercial,
+		     reemplazaUsuarioId: $("#reemplazaUsuarioSelect").val()
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
@@ -586,6 +590,8 @@ class UsuariosVista extends CatalogoVista
 		this.cargandoOpciones('#supervisor1Select');
 		this.cargandoOpciones('#supervisor2Select');
 		this.cargandoOpciones('#supervisor3Select');
+		this.cargandoOpciones('#reemplazaUsuarioSelect');
+		
 	}
 	
 	consultarEmpresas()
@@ -644,12 +650,13 @@ class UsuariosVista extends CatalogoVista
 		this.cargandoOpciones("#supervisor1Select");
 		this.cargandoOpciones("#supervisor2Select");
 		this.cargandoOpciones("#supervisor3Select");
+		this.cargandoOpciones("#reemplazaUsuarioSelect");
 	
 		this.consultarSedes();
 		
 		//this.consultarPuestos();
 		this.consultarSupervisores();
-		
+		this.consultarUsuariosReemplaza();
 	}
 	
 	cambiarPermisoCAVI()
@@ -802,9 +809,20 @@ class UsuariosVista extends CatalogoVista
 		this.presentador.consultarSupervisores();
 	}
 	
+	consultarUsuariosReemplaza()
+	{
+		this.presentador.consultarUsuariosReemplaza();	
+	}
+	
 	set supervisores1(registros)
 	{
 		this.cargarSupervisores('#supervisor1Select', registros, this.modo, this.modeloEdicion, 'supervisor1Id',"");
+
+	}
+	
+	set reemplazaUsuario(registros)
+	{
+		this.cargarSupervisores('#reemplazaUsuarioSelect', registros, this.modo, this.modeloEdicion, 'reemplazaUsuarioId',"");
 
 	}
 	

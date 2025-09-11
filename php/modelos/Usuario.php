@@ -32,6 +32,6 @@ class Usuario
     public $urlDocumentos;
     public $visualizarAuditoriasSociosComerciales;
     public $tiposSocioComercial;
-    
+    public $reemplazaUsuarioId;
 }
 

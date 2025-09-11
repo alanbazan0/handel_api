@@ -60,12 +60,17 @@ try
                 $modelo = $mapper->map($json, new Usuario());     
                 
              
-                $resultado = $repositorio->insertar($usuario,$modelo);     
+                $resultado = $repositorio->insertar($usuario,$modelo,true);     
                 if($resultado->mensajeError=="")
                 {
+                    $valor = $resultado->valor;
                     $administrador_correo = new AdministradorCorreo();
                     if($modelo->nombreUsuario!="" && $modelo->nombreUsuario!=null && $modelo->tipoUsuarioId!=TipoUsuario::CAPACITADO)
+                    {
                         $resultado = $administrador_correo->enviarCorreoBienvenida($modelo);
+                        if($resultado->correcto())
+                            $resultado->valor = $valor;
+                    }
                 }
             break;
             case 'reenviarCorreo':
@@ -481,6 +486,15 @@ try
                 if(isset($_SESSION['usuario']))
                     $usuario = $_SESSION['usuario'];
                 $resultado = $repositorio->ajustarCamposUsuarios($usuario);
+            break;
+            case 'reemplazarUsuario':
+                session_start();
+                $usuario = null;
+                $origenUsuarioId = REQUEST('origenUsuarioId');
+                $destinoUsuarioId = REQUEST('destinoUsuarioId');
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                    $resultado = $repositorio->reemplazarUsuario($usuario, $origenUsuarioId, $destinoUsuarioId);
             break;
 //             case 'enviarNotificacion':
 //                 session_start();

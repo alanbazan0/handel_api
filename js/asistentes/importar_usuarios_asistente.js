@@ -550,30 +550,30 @@ class ImportarUsuariosAsistente
 			_this._contexto.ocultarIndicador();
 			if(resultado.mensajeError=="")
 			{
-				var texto="";
-				if(resultado.valor==0)
-					texto = "\nNo se detectaron usuario nuevos";
-				if(resultado.valor==1)
-					texto = "\n"+resultado.valor + " usuario importado.";
-				else
-					texto = "\n"+resultado.valor + " usuarios importados.";
-				swal({
-		            title: "Terminado",
-		            text: "La importación se realizó correctamente. " + texto,
-		            type: "success",
-		            confirmButtonColor: "#DD6B55",
-		            confirmButtonText: "Cerrar",
-		            closeOnConfirm: true
-			        },
-			        function(isConfirm)
-			        {
-			        	$("#"+_this._modal).modal("hide");
-			        	_this._contexto.consultar();
-			        	//$("#"+_this._modal +"wizard").smartWizard('goToStep', 1);
-			        });
+				
 			}
 			else
 				_this._contexto.mostrarMensajeError("Error",resultado.mensajeError);
+				
+			var texto="";
+			if(resultado.valor.insertados==1)
+				texto = "\n"+resultado.valor.insertados + " usuario importado.";
+			else
+				texto = "\n"+resultado.valor.insertados + " usuarios importados.";
+			swal({
+	            title: "Terminado",
+	            text: "Importación terminada " + texto + ", tokens restantes: " + resultado.valor.tokensRestantes,
+	            type: "success",
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Cerrar",
+	            closeOnConfirm: true
+		        },
+		        function(isConfirm)
+		        {
+		        	$("#"+_this._modal).modal("hide");
+		        	//_this._contexto.consultar();
+		        });	
+				
 		},empresaId, sedeId, departamentoId, perfilId, supervisor1Id, this.archivo);
 
 	}

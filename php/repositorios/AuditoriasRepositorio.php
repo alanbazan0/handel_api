@@ -5497,13 +5497,113 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
         return $resultado;
     }
     
+    public function reemplazarUsuarioHallazgos($origenUsuarioId,$destinoUsuarioId)
+    {
+        $resultado = new Resultado();
+        $resultado = $this->consultarMisHallazgosNoTerminados($origenUsuarioId);
+        $hallazgos = array();
+        if($resultado->correcto())
+        {
+            $hallazgos = $resultado->valor;
+            for($i = 0; $i < count($hallazgos); $i++)
+            {
+                $hallazgo = $hallazgos[$i];
+                $resultado = $this->asignarUsuario($hallazgo->id, $destinoUsuarioId);
+                if($resultado->error())
+                {
+                    break;
+                }
+            }
+            $resultado->valor = $hallazgos;
+         }
+         
+        return $resultado;
+    }
+    
+    public function asignarUsuario($id, $usuarioId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta = " UPDATE recomendaciones
+            SET responsable_id = ?
+            WHERE id = ?";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("ii", $usuarioId, $id))
+            {
+                if($sentencia->execute())
+                {
+                    $resultado->valor=true;
+                    $sentencia->close();
+                }
+                else
+                    $resultado->mensajeError =__FUNCTION__." Falló la ejecución actualizar(" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
+    public function consultarMisHallazgosNoTerminados($usuarioId)
+    {
+        $resultado = new Resultado();
+        $hallazgos = array();
+        
+        $consulta = "SELECT id, titulo FROM appshand_saha.recomendaciones
+                    WHERE terminada = 0 
+                    AND responsable_id = ?";
+            
+            
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$usuarioId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $titulo))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $hallazgo= (object) [
+                                'id' =>  $id,
+                                'titulo' => $titulo
+                            ];
+                                        
+                            array_push($hallazgos,$hallazgo);
+                        }
+                        $resultado->valor = $hallazgos;
+                        
+                        $sentencia->close();
+                            
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
     function consultarHallazgosUsuarios($auditoriaId)
     {
         $resultado = new Resultado();
         $registros = array();
         
         
-        $consulta = "SELECT U.id, U.nombre, U.apellido, count(*) hallazgos,
+        $consulta = "SELECT U.id, U.nombre, U.apellido, D.nombre, count(*) hallazgos,
                     (SELECT count(*)
                     FROM recomendaciones R1
                         WHERE R1.auditoria_id = R.auditoria_id AND R1.responsable_id = U.id AND R1.estatus_validacion_id=2) validados,
@@ -5512,8 +5612,9 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                         WHERE R1.auditoria_id = R.auditoria_id AND R1.responsable_id = U.id AND R1.estatus_validacion_id=1) procesoValidacion
                     FROM recomendaciones R
                     	INNER JOIN usuarios U ON U.id = R.responsable_id
+                        INNER JOIN departamentos D ON U.departamento_id = D.id
                     WHERE auditoria_id = ?
-                    GROUP BY U.id, U.nombre, U.apellido
+                    GROUP BY U.id, U.nombre, U.apellido, D.nombre
                     ORDER BY U.nombre";
         
         
@@ -5523,13 +5624,14 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $nombre, $apellido, $total, $validadas, $proceso))
+                    if($sentencia->bind_result($id, $nombre, $apellido,$departamentoNombre, $total, $validadas, $proceso))
                     {
                         while($sentencia->fetch())
                         {
                             $registro= (object) [
                                 'id' =>  $id,
                                 'nombre' =>  $nombre,
+                                'departamentoNombre' => $departamentoNombre,
                                 'apellido' => $apellido,
                                 'total' =>  $total,
                                 'validadas' =>  $validadas,

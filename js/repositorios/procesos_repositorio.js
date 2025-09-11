@@ -49,6 +49,26 @@ class ProcesosRepositorio extends Repositorio
 	   });
 	}
 	
+	adjuntarArchivo(contexto,funcion, llaves, archivo)
+	{		
+		var data = new FormData();
+		data.append("accion", "adjuntar");
+		data.append("llaves", JSON.stringify(llaves));
+		if(archivo!=undefined)
+    		data.append("file", archivo );
+    	var url = HANDEL_API + "/" + this.servicio;
+        var xhr = new XMLHttpRequest();
+        xhr.open( 'POST', url, true );
+		xhr.onreadystatechange = function ( resultado ) 
+		{
+		    if (this.readyState == 4 && this.status == 200) 
+		    {
+		    	var datos = JSON.parse(resultado.target.response);
+		    	funcion.call(contexto,datos);
+		    }
+		};
+		xhr.send( data ); 
+	}
 	
 	
 

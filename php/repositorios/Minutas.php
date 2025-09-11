@@ -60,6 +60,10 @@ try
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultar($usuario,$criteriosSeleccion);
                 break;
+                case 'consultarTodas':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarTodas($usuario,$criteriosSeleccion);
+                break;
                 case 'consultarMisTareas':
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->consultarMisTareas($usuario,$criteriosSeleccion);
@@ -70,6 +74,10 @@ try
                 case 'consultarPorLlaves':
                     $llaves = json_decode(REQUEST('llaves'));
                     $resultado = $repositorio->consultarPorLlaves($llaves,true);
+                break;
+                case 'consultarEncabezadoPorLlaves':
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarPorLlaves($llaves,false);
                 break;
                 case 'consultarTareaPorLlaves':
                     $llaves = json_decode(REQUEST('llaves'));

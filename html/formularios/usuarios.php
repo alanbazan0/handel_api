@@ -182,7 +182,14 @@
                                     style="width: 100%;" id="tipoSocioComercialSelect" name="tipoSocioComercialSelect">
                               
                             </select>
-                      </div>
+                    </div>
+                    
+					<div class="form-group">
+						<div>
+							<label for="reemplazaUsuarioSelect" class="control-label mb-1">Este usuario reemplaza a otro usuario</label> 
+							<select name="reemplazaUsuarioSelect" id="reemplazaUsuarioSelect" class="form-control"></select>
+						</div>
+					</div>
 					
 					<div class="form-group">
 						<label class="control-label mb-1">Activo</label> <label

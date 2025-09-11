@@ -11,7 +11,8 @@ class EmpresasRepositorio extends Repositorio
 		var data = new FormData();
 		data.append("accion", "insertar");
 		data.append("modelo", JSON.stringify(modelo));
-    	data.append("file", logo );
+		if(logo!=undefined)
+    		data.append("file", logo );
     	var url = HANDEL_API + "/" + this.servicio;
         var xhr = new XMLHttpRequest();
         xhr.open( 'POST', url, true );
@@ -31,7 +32,8 @@ class EmpresasRepositorio extends Repositorio
 		var data = new FormData();
 		data.append("accion", "actualizar");
 		data.append("modelo", JSON.stringify(modelo));
-    	data.append("file", logo );
+		if(logo!=undefined)
+    		data.append("file", logo );
     	var url = HANDEL_API + "/" + this.servicio;
         var xhr = new XMLHttpRequest();
         xhr.open( 'POST',url, true );

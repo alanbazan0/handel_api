@@ -4,6 +4,8 @@ namespace php\repositorios;
 use php\interfaces\IProcesosRepositorio;
 use php\modelos\Proceso;
 use php\modelos\Resultado;
+use php\modelos\UsuarioProceso;
+use php\clases\AdministradorArchivos;
 
 include '../interfaces/IProcesosRepositorio.php';
 include '../modelos/Proceso.php';
@@ -17,7 +19,7 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = "SELECT P.id, RTRIM(codigo) as codigo, RTRIM(P.nombre) as nombre, RTRIM(P.descripcion) as descripcion, RTRIM(ruta_archivo) as ruta_archivo, P.empresa_id, E.nombre, P.sede_id,S.nombre,IFNULL(DATE_FORMAT(P.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(P.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, P.estatus, oea, ctpat, wrap, ipm 
+        $this->consultaBase = "SELECT P.id, RTRIM(codigo) as codigo, RTRIM(P.nombre) as nombre, RTRIM(P.descripcion) as descripcion, RTRIM(ruta_archivo) as ruta_archivo, P.empresa_id, E.nombre, P.sede_id,S.nombre,IFNULL(DATE_FORMAT(P.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(P.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, P.estatus, oea, ctpat, wrap, ipm, IFNULL(archivo,'') 
                             FROM procesos P
                                 LEFT JOIN empresas E ON E.id = P.empresa_id
                                 LEFT JOIN sedes S ON S.id = P.sede_id";
@@ -45,6 +47,8 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
         }
         return $resultado;
     }
+    
+    
     
     public function copiarProcesos($empresaIdOrigen, $sedeIdOrigen, $procedimientos, $empresaIdDetino, $sedeIdDestino)
     {
@@ -161,11 +165,11 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus, $oea, $ctpat, $wrap, $ipm))
+                    if($sentencia->bind_result($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus, $oea, $ctpat, $wrap, $ipm, $archivo))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre,$fechaAlta, $fechaModificacion, $estatus, $oea, $ctpat, $wrap, $ipm);
+                            $registro = $this->crearRegistro($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre,$fechaAlta, $fechaModificacion, $estatus, $oea, $ctpat, $wrap, $ipm, $archivo);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -286,8 +290,54 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
         }
         return $resultado;
     }
+    
+    public function adjuntarArchivo($llaves, $archivo)
+    {
+        
+        $adminstradorArchivos = new AdministradorArchivos();
+        
+        $carpeta = "archivos_procesos/".$llaves->id;
+        $resultado = $adminstradorArchivos->limpiarCarpeta($carpeta);
+        if($resultado->correcto())
+        {
+            $resultado=$adminstradorArchivos->subirArchivo($carpeta,$archivo);
+            if($resultado->correcto())
+            {
+                $resultado = $this->actualizarArchivo($llaves, $archivo["name"]);
+            }
+        }
+        
+       return $resultado;
+    }
+    
+    private function actualizarArchivo($llaves, $nombreArchivo)
+    {
+        $resultado = new Resultado();
+        $consulta = "UPDATE procesos
+                     SET
+                        archivo = ?
+                     WHERE id = ?";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param('si',$nombreArchivo, $llaves->id))
+            {
+                if($sentencia->execute())
+                {
+                    
+                    $resultado->valor=(object)["id" => $llaves->id, "archivo" => $nombreArchivo];
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        return $resultado;
+    }
 
-    private function crearRegistro($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus, $oea, $ctpat, $wrap, $ipm)
+    private function crearRegistro($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus, $oea, $ctpat, $wrap, $ipm, $archivo)
     {
         $registro= (object) 
         [
@@ -306,7 +356,8 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
             'oea' => $oea,
             'ctpat' => $ctpat,
             'wrap' => $wrap,
-            'ipm' => $ipm
+            'ipm' => $ipm,
+            'archivo' => $archivo
         ];
         return $registro;
     }

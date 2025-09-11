@@ -79,4 +79,21 @@ class ProcesosPresentador extends CatalogoPresentador
 		
 	 }
 	 
+	 subirArchivo(llaves, archivo)
+	 {
+		  this.vista.mostrarIndicador();
+		 this._repositorio.adjuntarArchivo(this,function(resultado)
+		 {
+			  this.vista.ocultarIndicador();
+			if(resultado.mensajeError=="")
+			{
+				this.vista.mostrarMensaje("Notificación","Se adjuntó el archivo " + resultado.valor.archivo);
+				this.vista.marcarArchivoSubido(resultado.valor.id, resultado.valor.archivo);			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },llaves, archivo);
+		 
+	 }
+	 
 }

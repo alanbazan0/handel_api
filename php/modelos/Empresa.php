@@ -29,5 +29,8 @@ class Empresa
     public $plantillaId;
     public $permitirUsuarioPlantilla;
     public $sociosComerciales;
+    
+    public $analisisRiesgoMinutaId;
+    public $tokens;
 }
 

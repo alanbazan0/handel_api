@@ -10,6 +10,7 @@ use php\modelos\Minuta;
 use php\modelos\Resultado;
 use php\clases\Porcentaje;
 use php\clases\AdministradorCorreo;
+use php\clases\ArrayUtils;
 
 include '../interfaces/IMinutasRepositorio.php';
 include '../modelos/Minuta.php';
@@ -17,6 +18,7 @@ require_once('RepositorioBase.php');
 require_once('AuditoriasRepositorio.php');
 require_once('../clases/Resultado.php');
 require_once('../clases/Porcentaje.php');
+require_once('../clases/ArrayUtils.php');
 require_once('../clases/AdministradorCorreo.php');
 require_once('FrasesRepositorio.php');
 require_once('UsuariosRepositorio.php');
@@ -173,6 +175,49 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         else
             $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
         return $resultado;
+    }
+    
+    public function consultarTodas($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = array();
+        $where='';
+      
+        
+        $consulta = $this->consultaBase . $where . " ORDER BY titulo";
+        
+        
+        
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($id, $descripcion, $titulo, $fechaAlta, $usuarioId, $terminada, $fechaTermino, $fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas, $acuerdos, $participantes, $color, $empresaId, $empresaNombre, $plantilla, $plantillaId, $numeroPlantilla))
+                    {
+                        while($row = $sentencia->fetch())
+                        {
+                            $registro = $this->crearRegistro($id,$descripcion, $titulo,$fechaAlta, $usuarioId, $terminada, $fechaTermino,$fechaModificacion,$usuarioNombre, $usuarioApellido, $total, $terminadas, $acuerdos, $participantes, $color, $empresaId, $empresaNombre, $plantilla, $plantillaId, $numeroPlantilla);
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = 'Falló el enlace del resultado.';
+                }
+                else
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+            return $resultado;
     }
 
     public function consultarPorLlaves($llaves,$consultarDetalle)
@@ -419,6 +464,37 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             return $resultado;
     }
     
+    public function asignarUsuario($minutaId, $tareaId, $id, $usuarioId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta = " UPDATE minutas_tareas_responsables 
+            SET usuario_id = ?
+            WHERE minuta_id = ?
+                AND tarea_id = ?
+                AND id = ? ";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if( $sentencia->bind_param("iiii", $usuarioId, $minutaId, $tareaId, $id))
+            {
+                if($sentencia->execute())
+                {
+                    $resultado->valor=true;
+                    $sentencia->close();
+                }
+                else
+                    $resultado->mensajeError =__FUNCTION__." Falló la ejecución actualizar(" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        return $resultado;
+    }
+    
     private function consultarTareas($minutaId)
     {
         $resultado = new Resultado();
@@ -516,6 +592,117 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             return $resultado;
     }
     
+    private function consultarTareasUsuarios($minutaId)
+    {
+        $resultado = new Resultado();
+        $tareas = array();
+        $consulta = "SELECT  UT.usuario_id, U.nombre, U.apellido,
+                    (
+                    	SELECT COUNT(*)
+                    	FROM minutas_tareas T1
+                    		INNER JOIN minutas M1 ON M1.id = T1.minuta_id
+                    		INNER JOIN minutas_tareas_responsables UT1 ON UT1.minuta_id = T1.minuta_id AND UT1.tarea_id = T1.id
+                    		INNER JOIN usuarios U1 ON UT1.usuario_id = U1.id
+                    	WHERE T1.tipo = 'T' 
+                    	AND T1.minuta_id  = T.minuta_id
+                        AND U1.id = U.id) asignadas,
+                    (
+                    	SELECT COUNT(*)
+                    	FROM minutas_tareas T1
+                    		INNER JOIN minutas M1 ON M1.id = T1.minuta_id
+                    		INNER JOIN minutas_tareas_responsables UT1 ON UT1.minuta_id = T1.minuta_id AND UT1.tarea_id = T1.id
+                    		INNER JOIN usuarios U1 ON UT1.usuario_id = U1.id
+                    	WHERE T1.tipo = 'T' 
+                    	AND T1.minuta_id  = T.minuta_id
+                        AND U1.id = U.id
+                    	AND T1.terminada = 1) terminadas
+                    FROM minutas_tareas T
+                    	INNER JOIN minutas M ON M.id = T.minuta_id
+                        INNER JOIN minutas_tareas_responsables UT ON UT.minuta_id = T.minuta_id AND UT.tarea_id = T.id
+                        INNER JOIN usuarios U ON UT.usuario_id = U.id
+                    WHERE tipo = 'T'
+                    	AND T.minuta_id  = ?
+                    GROUP BY UT.usuario_id, U.nombre, U.apellido
+                    ORDER BY U.nombre, U.apellido";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$minutaId))
+            {
+                if($sentencia->execute())
+                {
+                    //$valores = array();
+                    if ($sentencia->bind_result($usuarioId, $usuarioNombre, $usuarioApellido, $asignadas, $terminadas))
+                    //if ($sentencia->bind_result($valores))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $tarea= (object) [
+                                'usuarioId' => $usuarioId,
+                                'usuarioNombre' => $usuarioNombre,
+                                'usuarioApellido' => $usuarioApellido,
+                                'asignadas' => $asignadas,
+                                'terminadas' => $terminadas,
+                            ];
+                            
+                        
+                            $tarea->usuarioNombreCompleto = $tarea->usuarioNombre . " " . $tarea->usuarioApellido;
+                            $tarea->fotoPerfil =  "../fotos/usuario". $tarea->usuarioId .".jpg";
+                            if(file_exists($tarea->fotoPerfil))
+                                $tarea->fotoPerfil =  "php/fotos/usuario". $tarea->usuarioId .".jpg";
+                            else
+                                $tarea->fotoPerfil =  "php/fotos/default.jpg";
+                                    
+                            array_push($tareas,$tarea);
+                        }
+                        $resultado->valor = $tareas;
+                        
+                        
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
+    public function remplazarUsuarioTareas($origenUsuarioId,$destinoUsuarioId)
+    {
+        $resultado = new Resultado();
+        $usuario = (object)["id" => $origenUsuarioId];
+        $criteriosSeleccion = (object)["terminada" => "0"];
+        $resultado = $this->consultarMisTareas($usuario, $criteriosSeleccion);
+        $tareas = array();
+        if($resultado->correcto())
+        {
+            $tareas = $resultado->valor;
+            $resultado = $this->consultarRegistrosResponsables($origenUsuarioId);
+            if($resultado->correcto())
+            {
+                $registros = $resultado->valor;
+                for($i = 0; $i < count($registros); $i++)
+                {
+                    $registro = $registros[$i];
+                    $resultado = $this->asignarUsuario($registro->minutaId, $registro->tareaId, $registro->id, $destinoUsuarioId);
+                    if($resultado->error())
+                    {
+                        break;
+                    }
+                }
+                $resultado->valor = $tareas;
+            }
+        }
+        return $resultado;
+    }
+    
     public function consultarMisTareas($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();
@@ -525,7 +712,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         $and='';
         if($criteriosSeleccion!=null)
         {
-            //var_dump($criteriosSeleccion);
+          
             if(isset($criteriosSeleccion->terminada) && $criteriosSeleccion->terminada!="")
                 array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'T','campo'=>'terminada','valor'=>$criteriosSeleccion->terminada]);
                 
@@ -545,7 +732,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             $and
             ORDER BY UNIX_TIMESTAMP(fecha_compromiso)";
         
-        
+         
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -845,6 +1032,49 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             $resultado->mensajeError = __FUNCTION__. ". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             
             return $resultado;
+    }
+    
+    private function consultarRegistrosResponsables($usuarioId)
+    {
+        $resultado = new Resultado();
+        $responsables = array();
+        $consulta = "SELECT R.minuta_id, R.tarea_id, R.id 
+                    FROM minutas_tareas_responsables R
+                    	INNER JOIN minutas_tareas T ON T.id = R.tarea_id AND T.minuta_id = R.minuta_id
+                     WHERE T.terminada = 0 AND R.usuario_id = ? ";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            
+            if($sentencia->bind_param("i",$usuarioId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($minutaId, $tareaId, $id))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $responsable= (object) [
+                                'minutaId' =>  $minutaId,
+                                'tareaId' =>  $tareaId,
+                                'id' => $id,
+                            ];
+                        }
+                        $resultado->valor = $responsables;
+                        $sentencia->close();
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__. ". Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__. ". Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. ". Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__. ". Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        return $resultado;
     }
     
 //     private function consultarDuenoTarea($minutaId,$tareaId)
@@ -2548,19 +2778,29 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                 $anoSAHA = $ano;
                 $mesSAHA = $mes;
             }
+            
+            
+            
             $fecha = new DateTime();
             $fecha->setDate($anoSAHA,$mesSAHA,1);
             $fecha->sub(new DateInterval('P1M'));
             
-            $anoAnterior = $fecha->format("Y");
+            $anoAnteriorSAHA = $fecha->format("Y");
             $mesAnterior = $fecha->format("m");
             
             $nombreMes = \Mes::getNombre($mesSAHA);
-            $nombreMesAnterior = \Mes::getNombre($mesAnterior);
+            $nombreMesAnteriorSAHA = \Mes::getNombre($mesAnterior);
             
             $fechaReporte = new DateTime();
             $fechaReporte->setDate($ano,$mes,1);
             $nombreMesReporte = \Mes::getNombre($mes);
+            
+            $fechaReporteAnterior = new DateTime();
+            $fechaReporteAnterior->setDate($ano,$mes,1);
+            $fechaReporteAnterior->sub(new DateInterval('P1M'));
+            $anoReporteAnterior = $fechaReporteAnterior->format("Y");
+            $mesReporteAnterior = $fechaReporteAnterior->format("m");
+            $nombreMesReporteAnterior = \Mes::getNombre($mesReporteAnterior);
             
          
             
@@ -2574,11 +2814,11 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             $fecha->setDate($anoSAHA,$mesSAHA,1);
             $fecha->sub(new DateInterval('P1M'));
             
-            $anoAnterior = $fecha->format("Y");
+            $anoAnteriorSAHA = $fecha->format("Y");
             $mesAnterior = $fecha->format("m");
             $criteriosSeleccionAnterior= (object) [
                 'mes' =>   $mesAnterior,
-                'ano' => $anoAnterior,
+                'ano' => $anoAnteriorSAHA,
                 "empresaId" => $criteriosSeleccion->empresaId
             ];
             
@@ -2596,11 +2836,13 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                 $texto = $this->resultadoSedesCAVI($texto, $usuario, $criteriosSeleccion);
                 $texto = $this->resultadoDepartamentosCAVI($texto, $usuario, $criteriosSeleccion);
                 $texto = $this->resultadosSIVAH($texto, $usuario, $criteriosSeleccion);
+                $texto = $this->resultadoAnalisisRiesgo($texto,$empresa, $usuario, $criteriosSeleccion);
                 
                 
                 $texto=  str_replace("@nombreMesReportado",$nombreMesReporte . " " . $ano,$texto);
                 $texto=  str_replace("@nombreMesActual",$nombreMes . " " . $anoSAHA,$texto);
-                $texto=  str_replace("@nombreMesAnterior",$nombreMesAnterior. " ". $anoAnterior,$texto);
+                $texto=  str_replace("@nombreMesAnteriorSAHA",$nombreMesAnteriorSAHA. " ". $anoAnteriorSAHA,$texto);
+                $texto=  str_replace("@nombreMesReporteAnterior",$nombreMesReporteAnterior. " ". $anoReporteAnterior,$texto);
                 $texto=  str_replace("@administrador",$nombreAdministrador,$texto);
                 
                 
@@ -2614,6 +2856,37 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         return $resultado;
     }
     
+    function resultadoAnalisisRiesgo($texto, $empresa, $usuario, $criteriosSeleccion)
+    {
+        $analisisRiesgo="";
+       
+        if($empresa->analisisRiesgoMinutaId!=null && $empresa->analisisRiesgoMinutaId!="")
+        {
+            $resultado = $this->consultarTareasUsuarios($empresa->analisisRiesgoMinutaId);
+            if($resultado->correcto())
+            {
+                $usuarios = $resultado->valor;
+                $analisisRiesgo = "Se verifica el avance del Análisis de Riesgo OEA (ISO 31010) En el cual se desglosa el avance de personal que cuenta con acciones asignadas en la minuta: ";
+                
+                for ($i = 0; $i < count($usuarios); $i++) 
+                {
+                    $usuarioMinuta = $usuarios[$i];
+                    $textoAsignadas = $usuarioMinuta->asignadas == 1 ? "acción asignada" : "acciones asignadas";
+                    $textoTerminadas = $usuarioMinuta->terminadas == 1 ? "acción concluida" : "acciones concluidas";
+                    
+                    $analisisRiesgo .= $usuarioMinuta->usuarioNombreCompleto. " " . $usuarioMinuta->asignadas . " " . $textoAsignadas . " - " . $usuarioMinuta->terminadas . " "  .$textoTerminadas ;
+                    
+                    if($i <  count($usuarios) - 1)
+                        $analisisRiesgo .= ", ";
+                }
+                
+                $analisisRiesgo .= ". Se solicita a todos los usuarios verificar las tareas asignadas en el análisis de riesgo e indicar en el globo de mensaje de la tarea el estado del mismo así como indicar las acciones que se encuentran cerradas marcarlas como terminadas.";
+                
+            }
+        }
+        $texto=  str_replace("@analisisRiesgo",$analisisRiesgo,$texto);
+        return $texto;
+    }
     
     function resultadoGlobalCAVI($texto, $empresa, $usuario, $criteriosSeleccion)
     {
@@ -2623,7 +2896,6 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             'fechaFinal' =>  date("d/m/Y"),
             "empresaId" => $empresa->id
         ];
-        
         
         $repositorio = new CursosRepositorio($this->conexion);
         $criteriosSeleccionAprovechamiento = clone $criteriosSeleccion;
@@ -2721,11 +2993,14 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
                     if(count($auditorias)>0)
                     {
                         $textoSIVAH = "@administrador comenta los resultados de las auditorías recientes incluyendo los porcentajes obtenidos en la auditoría y el avance de cierre, en resumen se tiene: @resultadoSedesSIVAH
-Se verifica el avance de cierre de auditoría por departamento con los siguientes resultados: @resultadosDepartamentosSIVAH
-@administrador verifica y comenta con comité de seguridad la gráfica de avance de cierre de auditoría por usuario, donde se observan usuarios que tienen hallazgos asignados derivados de la auditoría y su cierre: @resultadosUsuariosSIVAH"; 
+Se verifica el avance de cierre de auditoría por departamento con los siguientes resultados: @resultadoDepartamentosSIVAH
+@administrador verifica y comenta con comité de seguridad la gráfica de avance de cierre de auditoría por usuario, donde se observan usuarios que tienen hallazgos asignados derivados de la auditoría y su cierre: @resultadoUsuariosSIVAH
+@resultadoUsuarios100SIVAH"; 
                         $texto=  str_replace("@resultadoSIVAH",$textoSIVAH,$texto);
                         
                         $texto = $this->resultadoSedesSIVAH($texto, $usuario, $criteriosSeleccion, $auditorias);
+                        $texto = $this->resultadoDepartamentosSIVAH($texto, $usuario, $criteriosSeleccion, $auditorias);
+                        $texto = $this->resultadoUsuariosSIVAH($texto, $usuario, $criteriosSeleccion, $auditorias);
                     }
                     else
                         $texto=  str_replace("@resultadoSIVAH","",$texto);
@@ -2754,6 +3029,105 @@ Se verifica el avance de cierre de auditoría por departamento con los siguiente
                 $resultadoSedes .= ", ";
         }
         $texto=  str_replace("@resultadoSedesSIVAH",$resultadoSedes,$texto);
+        return $texto;
+    }
+    
+    function resultadoDepartamentosSIVAH($texto, $usuario, $criteriosSeleccion, $auditorias)
+    {
+       
+        $repositorio = new AuditoriasRepositorio($this->conexion);
+        $departamentos = array();
+        for($i = 0; $i < count($auditorias); $i++)
+        {
+            $auditoria = $auditorias[$i];
+            $resultado = $repositorio->consultarHallazgosDepartamento($auditoria->id);
+          
+            if($resultado->correcto())
+            {
+                $departamentos = array_merge($departamentos, $resultado->valor);
+            }
+        }
+        
+        $departamentos = ArrayUtils::groupBySUM("nombre", "total,validadas,proceso", $departamentos);
+        $departamentos =  ArrayUtils::orderBy($departamentos);
+        
+        $resultadoDepartamentos = "";
+        for($j = 0; $j < count($departamentos); $j++)
+        {
+            $departamento = $departamentos[$j];
+            $textoHallazgos = $departamento->total == 1 ? "hallazgo" : "hallazgos";
+            $textoValidadas = $departamento->validadas == 1 ? "se tiene ". $departamento->validadas . " hallazgo validado" : "se tienen ". $departamento->validadas . " hallazgos validados";
+            $textoProceso = $departamento->proceso == 0 ? " sin evidencias en proceso de validación": " así como " . $departamento->proceso . " en proceso de validación";
+            $resultadoDepartamentos .= $departamento->nombre . " - " . $departamento->total . " " . $textoHallazgos . " de los cuales " . $textoValidadas .  $textoProceso;
+            if($j <  count($departamentos) - 1)
+                $resultadoDepartamentos .= ", ";
+        }
+        
+        if(count($auditorias) > 1)
+        {
+            $resultadoDepartamentos .= ". estos resultados engloban los hallazgos de " . count($auditorias) . " sedes auditadas.";
+        }
+            
+        
+        $texto=  str_replace("@resultadoDepartamentosSIVAH",$resultadoDepartamentos,$texto);
+        return $texto;
+    }
+    
+    function resultadoUsuariosSIVAH($texto, $usuario, $criteriosSeleccion, $auditorias)
+    {
+        
+        $repositorio = new AuditoriasRepositorio($this->conexion);
+        $usuarios = array();
+        for($i = 0; $i < count($auditorias); $i++)
+        {
+            $auditoria = $auditorias[$i];
+            $resultado = $repositorio->consultarHallazgosUsuarios($auditoria->id);
+            
+            if($resultado->correcto())
+            {
+                $usuarios = array_merge($usuarios, $resultado->valor);
+            }
+        }
+        
+        $usuarios = ArrayUtils::groupBySUM("nombreCompleto,departamentoNombre", "total,validadas,proceso", $usuarios);
+        $usuarios = ArrayUtils::orderByNombreCompleto($usuarios);
+        
+        $resultadoUsuarios = "";
+        $usuarios100 = array();
+        for($j = 0; $j < count($usuarios); $j++)
+        {
+            $usuarioSIVAH = $usuarios[$j];
+            $textoHallazgos = $usuarioSIVAH->total == 1 ? $usuarioSIVAH->total . " hallazgo encontrado" :$usuarioSIVAH->total . " hallazgos encontrados";
+            $textoValidados = $usuarioSIVAH->validadas == 1 ? " y ". $usuarioSIVAH->validadas . " validado" :  " y ". $usuarioSIVAH->validadas . " validados";
+            $resultadoUsuarios .= $usuarioSIVAH->nombreCompleto . " - " . $textoHallazgos . $textoValidados;
+            
+            if($j <  count($usuarios) - 1)
+                $resultadoUsuarios .= ", ";
+            
+            if($usuarioSIVAH->total > 0 && $usuarioSIVAH->total == $usuarioSIVAH->validadas)   
+                array_push($usuarios100, $usuarioSIVAH);
+        }
+        
+       
+        
+        $texto=  str_replace("@resultadoUsuariosSIVAH",$resultadoUsuarios,$texto);
+        
+        $resultadoUsuarios100 = "";
+        if(count($usuarios100) > 0)
+        {
+            $resultadoUsuarios100 = "@administrador comenta con comité de seguridad la gráfica de avance de cierre de auditoría por usuario, donde se observan usuarios que concluyeron con el cierre de auditoría: ";
+            for($j = 0; $j < count($usuarios100); $j++)
+            {
+                $usuarioSIVAH = $usuarios100[$j];
+                $resultadoUsuarios100 .= $usuarioSIVAH->nombreCompleto . " - " . $usuarioSIVAH->departamentoNombre;
+                if($j <  count($usuarios100) - 1)
+                    $resultadoUsuarios100 .= ", ";
+                
+            }
+        }
+        $texto=  str_replace("@resultadoUsuarios100SIVAH",$resultadoUsuarios100,$texto);
+        
+        
         return $texto;
     }
     
@@ -2827,7 +3201,7 @@ Se verifica el avance de cierre de auditoría por departamento con los siguiente
                 for($i = 0; $i < count($usuariosPendientes); $i++)
                 {
                     $usuarioSAHA = $usuariosPendientes[$i];
-                    $resultadoUsuarios .= $usuarioSAHA->nombre . " - " . $usuarioSAHA->porcentajePendientes . "% de evidencias faltantes";
+                    $resultadoUsuarios .= $usuarioSAHA->nombreCompleto . " - " . $usuarioSAHA->porcentajePendientes . "% de evidencias faltantes";
                     
                     if($i <  count($usuariosPendientes) - 1)
                         $resultadoUsuarios .= ", ";

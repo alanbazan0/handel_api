@@ -37,7 +37,7 @@ class AdministradorArchivos
         return $resultado;
     }
     
-    public function subirImagen($carpeta,$archivo,$nombreArchivo)
+    public function subirImagen($carpeta,$archivo,$nombreArchivo=null)
     {
         $resultado = new Resultado();
         if($archivo!=null)
@@ -45,7 +45,8 @@ class AdministradorArchivos
             if(file_exists("../".$carpeta."/") || @mkdir("../".$carpeta."/"))
             {
                 
-                $file_name = $archivo['name'];
+                if($nombreArchivo==null)
+                    $nombreArchivo = $archivo['name'];
                 $file_size =$archivo['size'];
                 $file_tmp =$archivo['tmp_name'];
                 $file_type=$archivo['type'];
@@ -86,15 +87,38 @@ class AdministradorArchivos
         return rmdir($dir);
     }
     
-    public function subirArchivo($carpeta,$archivo,$nombreArchivo)
+    public function limpiarCarpeta($carpeta)
+    {
+        $resultado = new Resultado();
+        try
+        {
+            if(file_exists("../".$carpeta."/"))
+            {
+                $files = glob("../".$carpeta."/*"); // get all file names
+                foreach($files as $file){ // iterate files
+                    if(is_file($file)) {
+                        unlink($file); // delete file
+                    }
+                }
+            }
+            
+        }
+        catch(\Exception $e)
+        {
+            $resultado->mensajeError = $e->getMessage();
+        }
+        return $resultado;
+    }
+    
+    public function subirArchivo($carpeta,$archivo,$nombreArchivo=null)
     {
         $resultado = new Resultado();
         if($archivo!=null)
         {
             if(file_exists("../".$carpeta."/") || @mkdir("../".$carpeta."/"))
             {
-                
-                $file_name = $archivo['name'];
+                if($nombreArchivo==null)
+                    $nombreArchivo = $archivo['name'];
                 $file_size =$archivo['size'];
                 $file_tmp =$archivo['tmp_name'];
                 $file_type=$archivo['type'];

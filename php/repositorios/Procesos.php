@@ -1,5 +1,6 @@
 <?php
 use php\clases\AdministradorConexion;
+
 use php\clases\JsonMapper;
 use php\modelos\Proceso;
 use php\repositorios\ProcesosRepositorio;
@@ -12,6 +13,7 @@ include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
 include '../repositorios/ProcesosRepositorio.php';
+include '../clases/AdministradorArchivos.php';
 
 $origin = "*";
 if(isset($_SERVER['HTTP_ORIGIN']))
@@ -67,10 +69,15 @@ try
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->consultarPorLlaves($llaves);
             break;
-          
             case 'eliminar':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->eliminar($llaves);
+            break;
+            case 'adjuntar':
+                $llaves = json_decode(REQUEST('llaves'));
+                $archivo = FILES("file");
+                $resultado = $repositorio->adjuntarArchivo($llaves,$archivo);
+                
             break;
             default:
                 $resultado->mensajeError = 'Acción no válida';
