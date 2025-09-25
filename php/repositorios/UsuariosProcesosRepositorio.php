@@ -259,7 +259,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'id','valor'=>$usuario->id]);
         
         $where = $this->where($filtros);
-        $consulta = $this->consultaBase .$where ." order by P.nombre, P.ruta_archivo";
+        $consulta = $this->consultaBase .$where ." order by P.ruta_archivo";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($this->bind_param($sentencia, $filtros))

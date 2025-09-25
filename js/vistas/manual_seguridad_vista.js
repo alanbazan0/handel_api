@@ -5,6 +5,7 @@ class ManualSeguridadVista extends CatalogoVista
 		super(ventana);
 		this.presentador = new ManualSeguridadPresentador(this);
 		this._urlFormulario = "html/formularios/usuarios_procesos.php";
+		this.formatosTabla = new Tabla("formatosTabla");	
 	}
 	
 	inicializar()
@@ -21,33 +22,45 @@ class ManualSeguridadVista extends CatalogoVista
 	{
 		this.tabla.columnas = [
 			{longitud:70, 	titulo:"Id",   alias:"id", alineacion:"D", class: "desc" }, 
-		//	{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoPerfil},
-		//	{longitud:200, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I", class: "desc" }, 
 			{longitud:70, 	titulo:"Id proceso",   alias:"procedimientoId", alineacion:"D", class: "desc" }, 
 			{longitud:500, 	titulo:"Proceso",   alias:"nombre", alineacion:"I", itemRenderer: this.renderNombre}, 
 			{longitud:200, 	titulo:"Sección en manual",alias:"rutaArchivo", alineacion:"I"},
 			{longitud:100, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I"  },		
 			{longitud:100, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
-			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus},
-		//	{longitud:200, 	titulo:"Archivo",alias:"nombreArchivo", alineacion:"I", itemRenderer:this.renderArchivos},		
-			//{longitud:200, 	titulo:"Fecha de cancelación",   alias:"fechaCancelacion", alineacion:"C",itemRenderer:this.renderFechaCancelacion },
-			//{longitud:200, 	titulo:"Limite de justificaciones",   alias:"limiteJusiticaciones", alineacion:"C",itemRenderer:this.renderLimiteJustificaciones }	
+			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
 			
-		]
-		
-		//this.tabla.contenidoAdicional = "<button data-toggle='tooltip' data-placemen='bottom' title='Editar'  type='button' class='editar btn-circle mr-0 botones-icon btn btn-sm float-left btn-info active'><span  data-toggle='tooltip' class='fa fa-edit fa-lg'></span></button>" +
-		//								"<button data-toggle='tooltip' data-placemen='bottom' title='Eliminar'  type='button' class='eliminar btn-circle mr-0 botones-icon btn btn-sm float-left btn-danger active'><span  data-toggle='tooltip' class='fa fa-minus-circle fa-lg'></span></button>"; 
-
-		//this.habilitarExportacionExcel();
+		];
 		this.tabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderSinCambios});
 		this.tabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderObservacion});
+		this.tabla.registros = [];	
 		
-
-		this.tabla.registros = [];		
+		this.formatosTabla.columnas = [
+			{longitud:70, 	titulo:"Id",   alias:"id", alineacion:"D", class: "desc" }, 
+			{longitud:70, 	titulo:"Id formato",   alias:"formatoId", alineacion:"D", class: "desc" }, 
+			{longitud:500, 	titulo:"Formato",   alias:"nombre", alineacion:"I", itemRenderer: this.renderFormatoNombre}, 
+			{longitud:200, 	titulo:"Sección en manual",alias:"rutaArchivo", alineacion:"I"},
+			{longitud:100, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I"  },		
+			{longitud:100, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
+			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
+			
+		];
+		this.formatosTabla.registros = [];		
 	}
 	
 	
 	renderNombre(renglon, type, set)
+	{    
+		var contenido = "";
+		if(renglon.archivo != "" && renglon.archivo != null)
+		{
+			contenido = "<div class='archivo'><a href='#' onclick='event.preventDefault();'>"+renglon.nombre+"</a></div>";
+		}
+		else
+			contenido = renglon.nombre;
+	    return contenido;
+	}
+	
+	renderFormatoNombre(renglon, type, set)
 	{    
 		var contenido = "";
 		if(renglon.archivo != "" && renglon.archivo != null)
@@ -793,6 +806,42 @@ class ManualSeguridadVista extends CatalogoVista
     		 row.remove();
          }, 1000);
 	}
+	
+	set datosFormatos(datos)
+	{
+		this.formatosTabla.registros = datos;	
+		this.inicializarEventosFormatosTabla("#" + this.formatosTabla._id+"Table tbody",this.formatosTabla.datatable.DataTable());
+	}
+	
+	inicializarEventosFormatosTabla(tbody, table, nombresCamposLlave)
+	{
+		//super.inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave);
+		var _this = this;
+		$(tbody).on("click", "div.archivo", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+			
+			_this._indiceArchivoSeleccionado = table.row( tr ).index(); 
+
+			_this._registroSeleccionado  = table.row( tr ).data();
+			if (_this._registroSeleccionado != undefined)
+			{
+				if(_this._registroSeleccionado.archivo!="")
+				{
+					var vistaPrevia = new VistaPreviaArchivo();
+					vistaPrevia.visualizar(_this, "php/archivos_formatos", _this._registroSeleccionado.formatoId, _this._registroSeleccionado.archivo);
+				}
+			}
+		});
+		
+	
+		
+	}
+	
 	
 	
 }

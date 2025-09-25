@@ -259,7 +259,7 @@ class UsuariosFormatosRepositorio extends RepositorioBase implements IUsuariosFo
             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'id','valor'=>$usuario->id]);
         
         $where = $this->where($filtros);
-        $consulta = $this->consultaBase .$where ." order by P.nombre, P.ruta_archivo";
+        $consulta = $this->consultaBase .$where ." order by P.ruta_archivo";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($this->bind_param($sentencia, $filtros))
@@ -1013,9 +1013,9 @@ class UsuariosFormatosRepositorio extends RepositorioBase implements IUsuariosFo
             'usuarioId' => $usuarioId,
             'usuarioNombre' => $usuarioNombre,
             'usuarioApellido' => $usuarioApellido,
-            'procedimientoId' => $procedimientoId,
+            'formatoId' => $procedimientoId,
             'nombre' => $procedimientoNombre,
-            'procedimientoNombre' => $procedimientoNombre,
+            'formatoNombre' => $procedimientoNombre,
             'codigo' => $codigo,
             'fechaAlta' => $fechaAlta,
             'fechaCancelacion' => $fechaCancelacion,
@@ -1023,7 +1023,7 @@ class UsuariosFormatosRepositorio extends RepositorioBase implements IUsuariosFo
             'empresaId' => $empresaId,
             'sedeId' => $usuarioSedeId,
             'usuarioSedeId' => $usuarioSedeId,
-            'procedimientoSedeId' => $procedimientoSedeId,
+            'formatoSedeId' => $procedimientoSedeId,
             'fechaModificacion' => $fechaModificacion,
             'tipo' => "pendiente",
             'rutaArchivo' => $rutaArchivo,

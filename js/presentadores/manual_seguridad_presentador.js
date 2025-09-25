@@ -117,12 +117,24 @@ class ManualSeguridadPresentador extends CatalogoPresentador
 	 
 	 consultar()
 	 {
-		 this.vista.mostrarIndicador();	
+		this.vista.mostrarIndicador();	
 	   	this._repositorio.consultarManualSeguridad(this,function(resultado){
 			this.vista.ocultarIndicador();	
 			if(resultado.mensajeError=="")
 			{
 				this.vista.datos = resultado.valor;				
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			
+		},this.vista.criteriosSeleccion);
+		
+		var formatosRepositorio = new UsuariosFormatosRepositorio(this);
+		formatosRepositorio.consultarManualSeguridad(this,function(resultado){
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+			{
+				this.vista.datosFormatos = resultado.valor;				
 			}
 			else
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
