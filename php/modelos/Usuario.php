@@ -33,5 +33,7 @@ class Usuario
     public $visualizarAuditoriasSociosComerciales;
     public $tiposSocioComercial;
     public $reemplazaUsuarioId;
+    public $administradorCertificacion;
+    public $ligaAnalisisRiesgoCTPAT;
 }
 

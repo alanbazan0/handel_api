@@ -48,7 +48,7 @@ abstract class PDF extends FPDF
         
         $fecha = substr($this->proceso->fechaAlta,0,10);
         list($dia, $mes, $ano) = explode("/", $fecha);
-        $fechaInicio.=$dia."/".$mes."/".$ano;
+        $fechaInicio=$dia."/".$mes."/".$ano;
         $id = $this->proceso->id;
         
         $fecha = new DateTime();
@@ -358,6 +358,7 @@ abstract class PDF extends FPDF
             $this->fontWeights = array("","","","");
             $this->aligns = array("C","C","C","C");
             $this->widths = array(30, 50, 50, 50);
+            $this->fontNames = array($this->font, $this->font, $this->font, $this->font);
             $this->textColors = array("#000000","#000000","#000000","#000000");
             $this->borders = array(1,1,1,1);
             $this->borderColors = array("#afb2b0","#afb2b0","#afb2b0","#afb2b0");
@@ -406,6 +407,7 @@ abstract class PDF extends FPDF
             $this->aligns = array("C","C","C","C","C","C","C","C");
             $this->widths = array(30, 30, 30, 40, 27, 40, 40, 40);
             $this->textColors = array("#000000","#000000","#000000","#000000","#000000","#000000","#000000","#000000");
+            $this->fontNames = array($this->font, $this->font, $this->font, $this->font, $this->font, $this->font, $this->font, $this->font);
             $this->borders = array(1,1,1,1,1,1,1,1);
             $this->borderColors = array("#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0");
             $this->backgroundColors = array("#ffffff","#ffffff","#ffffff","#ffffff","#ffffff","#ffffff","#ffffff","#ffffff");
@@ -446,6 +448,7 @@ abstract class PDF extends FPDF
             $this->fontWeights = array("","","","","","","");
             $this->aligns = array("C","C","C","C","C","C","C");
             $this->widths = array(50, 30, 30, 40, 47, 40, 40);
+            $this->fontNames = array($this->font, $this->font, $this->font, $this->font, $this->font, $this->font, $this->font);
             $this->textColors = array("#000000","#000000","#000000","#000000","#000000","#000000","#000000");
             $this->borders = array(1,1,1,1,1,1,1);
             $this->borderColors = array("#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0","#afb2b0");
@@ -635,7 +638,7 @@ abstract class PDF extends FPDF
 
 
 
-class Reporteproceso extends PDF
+class ReporteProceso extends PDF
 {
   
    
@@ -649,7 +652,7 @@ class ReporteFabrica
 {
     public function crear()
     {
-        $reporte = new Reporteproceso();
+        $reporte = new ReporteProceso();
         return $reporte;
     }
 }

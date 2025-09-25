@@ -192,6 +192,22 @@
 					</div>
 					
 					<div class="form-group">
+						<label class="control-label mb-1">Administrador de certificación</label> <label
+							class="switch switch-3d switch-success mr-3"> 
+							<input id="administradorCertificacionRadio" name="administradorCertificacion" type="checkbox"  onchange="vista.cambiarAdministradorCertificacion()"
+							class="switch-input" > <span
+							class="switch-label"></span> <span class="switch-handle"></span>
+						</label>
+					</div>
+					
+					<div class="form-group" id='ligaAnalisisRiesgoCTPATGroup' style='display:none'>
+						<div>
+							<label for="ligaAnalisisRiesgoCTPATInput" class="control-label mb-1">Liga para Análisis de riesgo CTPAT</label>
+							<input id="ligaAnalisisRiesgoCTPATInput" name="ligaAnalisisRiesgoCTPATInput" type="text" class="form-control">
+						</div>
+					</div>
+					
+					<div class="form-group">
 						<label class="control-label mb-1">Activo</label> <label
 							class="switch switch-3d switch-success mr-3"> <input
 							id="estatusRadio" name="estatus" type="checkbox"

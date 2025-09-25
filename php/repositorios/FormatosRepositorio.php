@@ -1,18 +1,17 @@
 <?php
 namespace php\repositorios;
 
-use php\interfaces\IProcesosRepositorio;
-use php\modelos\Proceso;
+use php\interfaces\IFormatosRepositorio;
 use php\modelos\Resultado;
-use php\modelos\UsuarioProceso;
 use php\clases\AdministradorArchivos;
+use php\modelos\Formato;
 
-include '../interfaces/IProcesosRepositorio.php';
-include '../modelos/Proceso.php';
+include '../interfaces/IFormatosRepositorio.php';
+include '../modelos/Formato.php';
 require_once('RepositorioBase.php');
 require_once('../clases/Resultado.php');
 
-class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositorio
+class FormatosRepositorio extends RepositorioBase implements IFormatosRepositorio
 {
     protected $conexion;
     protected $consultaBase;
@@ -20,18 +19,18 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
     {
         $this->conexion = $conexion;
         $this->consultaBase = "SELECT P.id, RTRIM(codigo) as codigo, RTRIM(P.nombre) as nombre, RTRIM(P.descripcion) as descripcion, RTRIM(ruta_archivo) as ruta_archivo, P.empresa_id, E.nombre, P.sede_id,S.nombre,IFNULL(DATE_FORMAT(P.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(P.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, P.estatus, oea, ctpat, wrap, ipm, IFNULL(archivo,'') 
-                            FROM procesos P
+                            FROM formatos P
                                 LEFT JOIN empresas E ON E.id = P.empresa_id
                                 LEFT JOIN sedes S ON S.id = P.sede_id";
     }
 
-    public function insertar(Proceso $modelo)
+    public function insertar(Formato $modelo)
     {
-        $resultado = $this->calcularId('id','procesos');
+        $resultado = $this->calcularId('id','formatos');
         if($resultado->mensajeError=='')
         {
             $id = $resultado->valor;
-            $consulta = "INSERT INTO procesos(id, codigo, nombre, descripcion, ruta_archivo, empresa_id, sede_id, fecha_alta, fecha_modificacion, estatus, oea, ctpat, wrap, ipm)VALUES(?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?,?,?,?,?)";
+            $consulta = "INSERT INTO formatos(id, codigo, nombre, descripcion, ruta_archivo, empresa_id, sede_id, fecha_alta, fecha_modificacion, estatus, oea, ctpat, wrap, ipm)VALUES(?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?,?,?,?,?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
                 if($sentencia->bind_param('issssiiiiiii', $id, $modelo->codigo, $modelo->nombre, $modelo->descripcion, $modelo->rutaArchivo, $modelo->empresaId, $modelo->sedeId, $modelo->estatus, $modelo->oea, $modelo->ctpat, $modelo->wrap, $modelo->ipm))
@@ -50,7 +49,7 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
     
     
     
-    public function copiarProcesos($empresaIdOrigen, $sedeIdOrigen, $procedimientos, $empresaIdDetino, $sedeIdDestino)
+    public function copiarFormatos($empresaIdOrigen, $sedeIdOrigen, $procedimientos, $empresaIdDetino, $sedeIdDestino)
     {
         $resultado = new Resultado();
         
@@ -59,11 +58,11 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
         for($i = 0; $i < count($procedimientos); $i++)
         {
             $procedimiento = $procedimientos[$i];
-            $resultado = $this->calcularId('id','procesos');
+            $resultado = $this->calcularId('id','formatos');
             if($resultado->mensajeError=='')
             {
                 $id = $resultado->valor;
-                $consulta = "INSERT INTO procesos(id, codigo, nombre, descripcion, ruta_archivo, empresa_id, sede_id, fecha_alta, fecha_modificacion, estatus)VALUES(?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), 1)";
+                $consulta = "INSERT INTO formatos(id, codigo, nombre, descripcion, ruta_archivo, empresa_id, sede_id, fecha_alta, fecha_modificacion, estatus)VALUES(?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), 1)";
                 if($sentencia = $this->conexion->prepare($consulta))
                 {
                     if($sentencia->bind_param('issssii', $id, $procedimiento->codigo, $procedimiento->nombre, $procedimiento->descripcion, $procedimiento->rutaArchivo, $empresaIdDetino, $sedeIdDestino))
@@ -96,10 +95,10 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
         return $resultado;
     }
 
-    public function actualizar(Proceso $modelo)
+    public function actualizar(Formato $modelo)
     {
         $resultado = new Resultado();
-        $consulta = "UPDATE procesos
+        $consulta = "UPDATE formatos
                      SET 
                          codigo = ?,
                          nombre = ?,
@@ -265,7 +264,7 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
     public function eliminar($llaves)
     {
         $resultado = new Resultado();
-        $consulta = "DELETE FROM procesos WHERE id = ?";
+        $consulta = "DELETE FROM formatos WHERE id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param('i',$llaves->id))
@@ -296,7 +295,7 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
         
         $adminstradorArchivos = new AdministradorArchivos();
         
-        $carpeta = "archivos_procesos/".$llaves->id;
+        $carpeta = "archivos_formatos/".$llaves->id;
         $resultado = $adminstradorArchivos->limpiarCarpeta($carpeta);
         if($resultado->correcto())
         {
@@ -315,7 +314,7 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
         
         $adminstradorArchivos = new AdministradorArchivos();
         
-        $carpeta = "archivos_procesos/".$llaves->id;
+        $carpeta = "archivos_formatos/".$llaves->id;
         $resultado = $adminstradorArchivos->limpiarCarpeta($carpeta);
         if($resultado->correcto())
         {
@@ -328,7 +327,7 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
     private function actualizarArchivo($llaves, $nombreArchivo)
     {
         $resultado = new Resultado();
-        $consulta = "UPDATE procesos
+        $consulta = "UPDATE formatos
                      SET
                         archivo = ?
                      WHERE id = ?";

@@ -94,7 +94,7 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 			{*/
 				this.procedimientosPendientesTabla.columnas = [
 					{longitud:100, 	titulo:"Id",   	alias:"id", alineacion:"I" },
-					{longitud:200, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I" },
+					{longitud:200, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I"  },
 					{longitud:200, 	titulo:"Sección en manual",   	alias:"rutaArchivo", alineacion:"I" },
 					{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoUsuario},
 					{longitud:100, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I"},
@@ -124,7 +124,7 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 			
 			this.procedimientosCumplidosTabla.columnas = [
 			{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"I" },
-			{longitud:300, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I" },
+			{longitud:300, 	titulo:"Nombre",   	alias:"nombre", alineacion:"I"},
 			{longitud:200, 	titulo:"Fecha de envío",   	alias:"fecha", alineacion:"I" },
 			{longitud:30, 	titulo:"Tipo solicitud",   alias:"estatusRevisionNombre", alineacion:"C", itemRenderer:this.renderEstatusRevision},
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoUsuario},
@@ -157,6 +157,18 @@ class SolicitudRevisionProcesosVista extends CatalogoVista
 		
 		
 		
+	}
+	
+	renderNombre(renglon, type, set)
+	{    
+		var contenido = "";
+		if(renglon.archivo != "")
+		{
+			contenido = "<a href='"+HANDEL_API+"/"+renglon.archivo+"?"+vista.time+"' target='_blank'>"+renglon.nombre+"</a>";
+		}
+		else
+			contenido = renglon.nombre;
+	    return contenido;
 	}
 	
 	renderSinCambios(renglon, type, set)

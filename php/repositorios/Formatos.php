@@ -2,8 +2,8 @@
 use php\clases\AdministradorConexion;
 
 use php\clases\JsonMapper;
-use php\modelos\Proceso;
-use php\repositorios\ProcesosRepositorio;
+use php\modelos\Formato;
+use php\repositorios\FormatosRepositorio;
 use php\modelos\Resultado;
 
 error_reporting(E_ALL);
@@ -12,7 +12,7 @@ ini_set('display_errors', 1);
 include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
-include '../repositorios/ProcesosRepositorio.php';
+include '../repositorios/FormatosRepositorio.php';
 include '../clases/AdministradorArchivos.php';
 
 $origin = "*";
@@ -31,13 +31,13 @@ try
     if($conexion)
     {
         $accion = REQUEST('accion');
-        $repositorio = new ProcesosRepositorio($conexion);
+        $repositorio = new FormatosRepositorio($conexion);
         switch($accion)
         {
             case 'insertar':
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Proceso());
+                $modelo = $mapper->map($json, new Formato());
                 $resultado = $repositorio->insertar($modelo);
             break;
             case 'copiarProcesos':
@@ -48,12 +48,12 @@ try
                 $json = json_decode(REQUEST('procedimientos'));
                 $mapper = new JsonMapper();
                 $procedimientos = $mapper->mapArray($json, array());
-                $resultado = $repositorio->copiarProcesos($empresaIdOrigen, $sedeIdOrigen, $procedimientos, $empresaIdDestino,$sedeIdDestino);
+                $resultado = $repositorio->copiarFormatos($empresaIdOrigen, $sedeIdOrigen, $procedimientos, $empresaIdDestino,$sedeIdDestino);
             break;
             case 'actualizar':
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new Proceso());
+                $modelo = $mapper->map($json, new Formato());
                 $resultado = $repositorio->actualizar($modelo) ;
             break;
             case 'consultar':

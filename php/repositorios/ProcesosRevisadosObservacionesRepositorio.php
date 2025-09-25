@@ -27,7 +27,7 @@ class ProcesosRevisadosObservacionesRepositorio extends RepositorioBase implemen
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = " SELECT PRO.id, tipo_observacion_id, TOB.descripcion, PRO.descripcion, archivo, seccion, IFNULL(DATE_FORMAT(PRO.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta,IFNULL(DATE_FORMAT(PRO.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, IFNULL(DATE_FORMAT(PRO.fecha_validacion,'%d/%m/%Y %H:%i:%s'),'')fecha_validacion, PRO.validacion_usuario_id,U.nombre, U.apellido, comentario_validacion,
+        $this->consultaBase = " SELECT PRO.id, tipo_observacion_id, TOB.descripcion, PRO.descripcion, PRO.archivo, seccion, IFNULL(DATE_FORMAT(PRO.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta,IFNULL(DATE_FORMAT(PRO.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, IFNULL(DATE_FORMAT(PRO.fecha_validacion,'%d/%m/%Y %H:%i:%s'),'')fecha_validacion, PRO.validacion_usuario_id,U.nombre, U.apellido, comentario_validacion,
                                 (SELECT count(*) FROM procesos_revisados_observaciones_comentarios PROC WHERE PROC.proceso_revisado_id = PRO.proceso_revisado_id AND PROC.observacion_id = PRO.id)numeroComentarios, P.nombre, PRO.estatus_validacion_id, EV.descripcion, U1.nombre, U1.apellido, EV.icono, EV.color, U1.id, U1.nombre_usuario, seccion_admin, descripcion_admin
                             FROM procesos_revisados_observaciones PRO
                             	INNER JOIN tipos_observacion TOB ON PRO.tipo_observacion_id = TOB.id 

@@ -2,63 +2,63 @@
 namespace php\repositorios;
 
 use Mes;
-use php\interfaces\IUsuariosProcesosRepositorio;
-use php\modelos\UsuarioProceso;
+use php\interfaces\IUsuariosFormatosRepositorio;
+use php\modelos\UsuarioFormato;
 use php\modelos\Resultado;
 use php\clases\AdministradorCorreo;
 use php\clases\Token;
 use php\clases\Porcentaje;
 
-include '../interfaces/IUsuariosProcesosRepositorio.php';
-include '../modelos/UsuarioProceso.php';
+include '../interfaces/IUsuariosFormatosRepositorio.php';
+include '../modelos/UsuarioFormato.php';
 require_once('RepositorioBase.php');
-require_once('ProcesosRepositorio.php');
+require_once('FormatosRepositorio.php');
 require_once('UsuariosRepositorio.php');
 require_once("../clases/TipoUsuario.php");
 require_once("../clases/Token.php");
 require_once('../highcharts/highchartutils.php');
 require_once('../clases/Resultado.php');
-define('ROOTPATH', __DIR__);
-class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosProcesosRepositorio
+//define('ROOTPATH', __DIR__);
+class UsuariosFormatosRepositorio extends RepositorioBase implements IUsuariosFormatosRepositorio
 {
     protected $conexion;
     protected $consultaBase;
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = "SELECT UP.id, usuario_id usuarioId,U.nombre usuarioNombre, proceso_id, P.nombre, IFNULL(DATE_FORMAT(UP.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(UP.fecha_cancelacion,'%d/%m/%Y'),'')fecha_cancelacion, UP.estatus,codigo, U.apellido usuarioApellido, U.empresa_id empresaId, U.sede_id sedeId, P.sede_id procedimientoSedeId,IFNULL(DATE_FORMAT(UP.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,P.ruta_archivo, U.nombre_usuario nombreUsuario, U.tipo_usuario_id tipoUsuarioId,EM.mes_revision_procesos mesRevision, EM.administrador_procesos_id administradorId, UA.nombre administradorNombre, UA.apellido administradorApellido, UA.nombre_usuario administradorNombreUsuario,oea,ctpat,wrap,ipm,P.archivo 
-                                FROM usuarios_procesos UP
+        $this->consultaBase = "SELECT UP.id, usuario_id usuarioId,U.nombre usuarioNombre, formato_id, P.nombre, IFNULL(DATE_FORMAT(UP.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(UP.fecha_cancelacion,'%d/%m/%Y'),'')fecha_cancelacion, UP.estatus,codigo, U.apellido usuarioApellido, U.empresa_id empresaId, U.sede_id sedeId, P.sede_id procedimientoSedeId,IFNULL(DATE_FORMAT(UP.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,P.ruta_archivo, U.nombre_usuario nombreUsuario, U.tipo_usuario_id tipoUsuarioId,EM.mes_revision_procesos mesRevision, EM.administrador_procesos_id administradorId, UA.nombre administradorNombre, UA.apellido administradorApellido, UA.nombre_usuario administradorNombreUsuario,oea,ctpat,wrap,ipm,P.archivo 
+                                FROM usuarios_formatos UP
                                     LEFT JOIN usuarios U ON U.id = UP.usuario_id
                                     LEFT JOIN empresas E ON E.id = U.empresa_id
                                     LEFT JOIN sedes S ON S.id = U.sede_id
                                     LEFT JOIN empresas EM ON U.empresa_id = EM.id
-                                    LEFT JOIN procesos P ON P.id = UP.proceso_id
+                                    LEFT JOIN formatos P ON P.id = UP.formato_id
                                     LEFT JOIN areas A ON A.id = U.area_id
                                     LEFT JOIN departamentos D ON D.id = U.departamento_id
                                     INNER JOIN tipos_usuario TU ON TU.id = U.tipo_usuario_id
                                     LEFT JOIN usuarios UA ON UA.id = EM.administrador_procesos_id ";
         
-        $this->consultaBasePendientesRevisados = "SELECT * FROM(SELECT UP.id usuario_proceso_id,U.empresa_id,EM.nombre, U.sede_id, S.nombre, usuario_id ,U.nombre,U.apellido,
-                                                proceso_id, P.nombre, IFNULL(DATE_FORMAT(UP.fecha_alta,'%d/%m/%Y'),'')fecha_alta,IFNULL(DATE_FORMAT(UP.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,P.ruta_archivo,
+        $this->consultaBasePendientesRevisados = "SELECT * FROM(SELECT UP.id usuario_formato_id,U.empresa_id,EM.nombre, U.sede_id, S.nombre, usuario_id ,U.nombre,U.apellido,
+                                                formato_id, P.nombre, IFNULL(DATE_FORMAT(UP.fecha_alta,'%d/%m/%Y'),'')fecha_alta,IFNULL(DATE_FORMAT(UP.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,P.ruta_archivo,
                                                 null  
-                                                FROM usuarios_procesos UP
+                                                FROM usuarios_formatos UP
                                                 	LEFT JOIN usuarios U ON U.id = UP.usuario_id
                                                 	LEFT JOIN sedes S ON S.id = U.sede_id
                                                 	LEFT JOIN empresas EM ON U.empresa_id = EM.id
-                                                	LEFT JOIN procesos P ON P.id = UP.proceso_id
+                                                	LEFT JOIN procesos P ON P.id = UP.formato_id
                                                 	LEFT JOIN areas A ON A.id = U.area_id
                                                 	LEFT JOIN departamentos D ON D.id = U.departamento_id
                                                 	INNER JOIN tipos_usuario TU ON TU.id = U.tipo_usuario_id 
                                                 UNION    
-                                SELECT usuario_proceso_id, U.empresa_id, EM.nombre, U.sede_id, S.nombre, U.id, U.nombre, U.apellido , 
+                                SELECT usuario_formato_id, U.empresa_id, EM.nombre, U.sede_id, S.nombre, U.id, U.nombre, U.apellido , 
                                 P.id, P.nombre, IFNULL(DATE_FORMAT(E.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha,IFNULL(DATE_FORMAT(E.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha, P.ruta_archivo,
                                 E.estatus_revision_id
                                 FROM procesos_revisados E
-                                	INNER JOIN  usuarios_procesos UP ON UP.id = E.usuario_proceso_id
+                                	INNER JOIN  usuarios_formatos UP ON UP.id = E.usuario_formato_id
                                 	INNER JOIN usuarios U ON U.id = UP.usuario_id
                                 	LEFT JOIN sedes S ON S.id = U.sede_id
                                 	LEFT JOIN empresas EM ON EM.id = S.empresa_id
-                                	INNER JOIN procesos P ON P.id = UP.proceso_id
+                                	INNER JOIN procesos P ON P.id = UP.formato_id
                                 	LEFT JOIN usuarios V ON V.id = EM.administrador_id
                                 	LEFT JOIN usuarios VL ON VL.id = E.validacion_usuario_id
                                     INNER JOIN estatus_validacion_procesos EV ON E.estatus_validacion_id = EV.id
@@ -66,13 +66,13 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                                 )A";
     }
 
-    public function insertar(UsuarioProceso $modelo)
+    public function insertar(UsuarioFormato $modelo)
     {
-        $resultado = $this->calcularId('id','usuarios_procesos');
+        $resultado = $this->calcularId('id','usuarios_formatos');
         if($resultado->mensajeError=='')
         {
             $id = $resultado->valor;
-            $consulta = "INSERT INTO usuarios_procesos(id, usuario_id, proceso_id, fecha_alta, fecha_modificacion,estatus)VALUES(?, ?, ?, NOW(),NOW(), 1)";
+            $consulta = "INSERT INTO usuarios_formatos(id, usuario_id, formato_id, fecha_alta, fecha_modificacion,estatus)VALUES(?, ?, ?, NOW(),NOW(), 1)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
                 if($sentencia->bind_param('iii', $id, $modelo->usuarioId, $modelo->procedimientoId))
@@ -89,7 +89,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         return $resultado;
     }
 
-    public function actualizar(UsuarioProceso $modelo)
+    public function actualizar(UsuarioFormato $modelo)
     {
         $resultado = new Resultado();
         
@@ -97,7 +97,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         if($modelo->estatus==0)
             $fechaCancelacion="NOW()";
         
-        $consulta = "UPDATE usuarios_procesos
+        $consulta = "UPDATE usuarios_formatos
                      SET 
                         usuario_id = ?,
                         estatus = ?,
@@ -298,7 +298,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         
         $consulta = "SELECT count(*) 
                 FROM evidencias E 
-                WHERE usuario_proceso_id= ?
+                WHERE usuario_formato_id= ?
                 	AND MONTH(fecha_alta) = MONTH(NOW()) AND YEAR(fecha_alta) = YEAR(NOW())";
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -365,7 +365,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
 
 //         $consulta = $this->consultaBase .
 //                    " WHERE UP.estatus = 1 AND (U.tipo_usuario_id=4 OR U.tipo_usuario_id=5) 
-//                     	AND UP.id NOT IN(SELECT usuario_proceso_id FROM evidencias E WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) ) " . $and . " " .
+//                     	AND UP.id NOT IN(SELECT usuario_formato_id FROM evidencias E WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) ) " . $and . " " .
 //                     	"ORDER BY U.nombre, P.nombre";
 
         $primerDiaMes = "$criteriosSeleccion->ano-$criteriosSeleccion->mes-1";
@@ -373,7 +373,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         
 //         $consulta = $this->consultaBase .
 //         " WHERE UP.estatus = 1 
-//                     	AND UP.id NOT IN(SELECT usuario_proceso_id FROM evidencias E WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) ) " . $and . " " .
+//                     	AND UP.id NOT IN(SELECT usuario_formato_id FROM evidencias E WHERE MONTH(E.fecha_alta) = MONTH(NOW()) AND YEAR(E.fecha_alta) = YEAR(NOW()) ) " . $and . " " .
 //                     	"ORDER BY  TU.orden,U.nombre, P.nombre";
 
         
@@ -390,7 +390,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                 AND U.permiso_saha = 1
                 AND P.estatus = 1
                 AND ((UP.estatus = 1 AND UP.fecha_alta  <=  '$ultimoDiaMes') OR (UP.estatus = 0 AND MONTH(UP.fecha_alta)  <=  $criteriosSeleccion->mes AND  YEAR(UP.fecha_alta) <= $criteriosSeleccion->ano AND MONTH(UP.fecha_cancelacion) > $criteriosSeleccion->mes AND  YEAR(UP.fecha_cancelacion) >= $criteriosSeleccion->ano))
-                AND UP.id NOT IN(SELECT usuario_proceso_id FROM evidencias E WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " " .
+                AND UP.id NOT IN(SELECT usuario_formato_id FROM evidencias E WHERE MONTH(E.fecha_alta) = $criteriosSeleccion->mes AND YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " " .
                 "ORDER BY TU.orden, U.nombre, P.nombre";
         
         
@@ -487,7 +487,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                 AND U.permiso_saha = 1
                 AND P.estatus = 1
                 AND UP.estatus = 1 
-                AND UP.id NOT IN(SELECT usuario_proceso_id FROM procesos_revisados E WHERE YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " ";
+                AND UP.id NOT IN(SELECT usuario_formato_id FROM procesos_revisados E WHERE YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " ";
         
 //         if($usuario->tipoUsuarioId==\TipoUsuario::ADMINISTRADOR)
 //             $consulta.=" ORDER BY TU.orden, U.nombre, P.nombre";
@@ -556,7 +556,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                 AND U.permiso_saha = 1
                 AND P.estatus = 1
                 AND UP.estatus = 1
-                AND UP.id NOT IN(SELECT usuario_proceso_id FROM procesos_revisados E WHERE YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " ";
+                AND UP.id NOT IN(SELECT usuario_formato_id FROM procesos_revisados E WHERE YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " ";
         
        
             $consulta.=" ORDER BY FIELD(U.id,$usuario->id) DESC,U.nombre, P.nombre";
@@ -623,7 +623,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                 AND U.permiso_saha = 1
                 AND P.estatus = 1
                 AND UP.estatus = 1
-                AND UP.id NOT IN(SELECT usuario_proceso_id FROM procesos_revisados E WHERE YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " ";
+                AND UP.id NOT IN(SELECT usuario_formato_id FROM procesos_revisados E WHERE YEAR(E.fecha_alta) = $criteriosSeleccion->ano ) " . $and . " ";
         
         //         if($usuario->tipoUsuarioId==\TipoUsuario::ADMINISTRADOR)
             //             $consulta.=" ORDER BY TU.orden, U.nombre, P.nombre";
@@ -673,11 +673,11 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         
         $consulta= "SELECT U.id, U.nombre, U.apellido, U.nombre_usuario, U.empresa_id empresaId, EM.nombre empresaNombre, U.sede_id sedeId, S.nombre sedeNombre, U.departamento_id departamentoId, D.nombre departamentoNombre,
                     (SELECT count(*) numeroProcesos
-                    FROM usuarios_procesos UP1
+                    FROM usuarios_formatos UP1
                         LEFT JOIN usuarios U1 ON U1.id = UP1.usuario_id
                         LEFT JOIN sedes S1 ON S1.id = U1.sede_id
                         LEFT JOIN empresas EM1 ON U1.empresa_id = EM1.id
-                        LEFT JOIN procesos P1 ON P1.id = UP1.proceso_id
+                        LEFT JOIN procesos P1 ON P1.id = UP1.formato_id
                         LEFT JOIN areas A1 ON A1.id = U1.area_id
                         LEFT JOIN departamentos D1 ON D1.id = U1.departamento_id
                         LEFT JOIN tipos_usuario TU1 ON TU1.id = U1.tipo_usuario_id
@@ -694,11 +694,11 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                             ) pendientes,
                     (SELECT count(*)
                         FROM procesos_revisados PR1
-                            INNER JOIN usuarios_procesos UP1 ON UP1.id = PR1.usuario_proceso_id
+                            INNER JOIN usuarios_formatos UP1 ON UP1.id = PR1.usuario_formato_id
                                 LEFT JOIN usuarios U1 ON U1.id = UP1.usuario_id
                                 LEFT JOIN sedes S1 ON S1.id = U1.sede_id
                                 LEFT JOIN empresas EM1 ON U1.empresa_id = EM1.id
-                                LEFT JOIN procesos P1 ON P1.id = UP1.proceso_id
+                                LEFT JOIN procesos P1 ON P1.id = UP1.formato_id
                                 LEFT JOIN areas A1 ON A1.id = U1.area_id
                                 LEFT JOIN departamentos D1 ON D1.id = U1.departamento_id
                             WHERE U1.id = U.id
@@ -712,7 +712,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                             AND P1.estatus = 1
                             $filtroFecha
                     ) revisados
-                    FROM usuarios_procesos UP
+                    FROM usuarios_formatos UP
                         INNER JOIN usuarios U ON U.id = UP.usuario_id
                         LEFT JOIN empresas EM ON EM.id = U.empresa_id
                         LEFT JOIN sedes S ON S.id = U.sede_id
@@ -979,7 +979,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
     public function eliminar($llaves)
     {
         $resultado = new Resultado();
-        $consulta = "DELETE FROM usuarios_procesos WHERE id = ?";
+        $consulta = "DELETE FROM usuarios_formatos WHERE id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             if($sentencia->bind_param('i',$llaves->id))
@@ -1079,7 +1079,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
                 AND U.permiso_saha = 1
                 AND P.estatus = 1
                 AND UP.estatus = 1
-                AND UP.id NOT IN(SELECT usuario_proceso_id FROM procesos_revisados E WHERE YEAR(E.fecha_alta) = $ano )  
+                AND UP.id NOT IN(SELECT usuario_formato_id FROM procesos_revisados E WHERE YEAR(E.fecha_alta) = $ano )  
                 $and 
           ORDER BY U.nombre, U.apellido)A 
             GROUP BY usuarioId, usuarioNombre,usuarioApellido, nombreUsuario,tipoUsuarioId, mesRevision, empresaId, sedeId";
@@ -1567,7 +1567,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         for($i = 0; $i < count($procesos); $i++)
         {
             $proceso = $procesos[$i];
-            $modelo = UsuarioProceso::crear($proceso);
+            $modelo = UsuarioFormato::crear($proceso);
             $modelo->usuarioId = $destinoUsuarioId;
             $resultado = $this->insertar($modelo);
             if($resultado->correcto())
@@ -1587,7 +1587,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
     {
         $resultado = new Resultado();
         
-        $consulta = "UPDATE usuarios_procesos
+        $consulta = "UPDATE usuarios_formatos
                  SET
                      estatus = 0,
                      fecha_cancelacion = NOW(),

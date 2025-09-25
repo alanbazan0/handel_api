@@ -7,7 +7,7 @@
     header('Access-Control-Allow-Credentials: true');
 ?>
 <div class="modal fade" id="archivoModal" tabindex="-1" role="dialog" aria-labelledby="scrollmodalLabel" aria-hidden="true">
-	<div class="modal-dialog " role="document" style='max-width: 90%;'> 
+	<div class="modal-dialog modal-lg" role="document" style='width: 90%;'> 
 		<div class="modal-content" >
 			<div class="modal-header">
 				<h6 class="modal-title" id="scrollmodalLabel">Archivo</h6>
@@ -19,7 +19,7 @@
 				<div class="form-group" id='contenedorEvidenciaImage'>
                 	<div class='row'>
     					<div class="col-sm-12 text-center">
-                        	<img id="evidenciaImage"  alt="Evidencia" class="img-responsive img-thumbnail " style='' onclick="vista.vistaPrevia(this)"  />
+                        	<img id="evidenciaImage"  alt="Archivo" class="img-responsive img-thumbnail " style='' onclick="vista.vistaPrevia(this)"  />
                   	 	</div>
     				</div>
     			

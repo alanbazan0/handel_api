@@ -1,8 +1,8 @@
-class ProcesosRepositorio extends Repositorio
+class FormatosRepositorio extends Repositorio
 {	
 	constructor()
 	{
-		super("php/repositorios/Procesos.php");
+		super("php/repositorios/Formatos.php");
 	}
 	
 	consultarPorEmpresaSede(contexto,funcion, empresaId, sedeId)

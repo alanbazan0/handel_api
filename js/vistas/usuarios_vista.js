@@ -82,6 +82,7 @@ class UsuariosVista extends CatalogoVista
 			{longitud:100, 	titulo:"SIVAH",   alias:"permisoSIVAH", alineacion:"D", itemRenderer:this.renderPermisoSIVAH},
 			{longitud:100, 	titulo:"10 Y 7",   alias:"permiso10y7", alineacion:"D", itemRenderer:this.renderPermiso10y7},
 			{longitud:100, 	titulo:"CAVI",   alias:"permisoCAVI", alineacion:"D", itemRenderer:this.renderpermisoCAVI},
+			{longitud:100, 	titulo:"Administrador de certificación",   alias:"administradorCertificacion", alineacion:"D", itemRenderer:this.renderAdministradorCertificacion},
 			{longitud:100, 	titulo:"Perfil",   alias:"perfilNombre", alineacion:"I" }	
 	
 		]
@@ -376,6 +377,16 @@ class UsuariosVista extends CatalogoVista
 	    return contenido;
 	}
 	
+	renderAdministradorCertificacion(renglon, type, set)
+	{
+		var contenido = "";
+		if (renglon.administradorCertificacion == 1)
+			contenido += "<center><span class='fa fa-check fa-lg text-success'></span></center>";
+		else
+			contenido += "<center><span class='fa fa-close fa-lg text-danger'></span></center>";
+		return contenido;
+	}
+	
 	renderpermisoCAVI(renglon, type, set)
 	{    
 		var contenido = "";
@@ -503,6 +514,15 @@ class UsuariosVista extends CatalogoVista
 		$('#urlDocumentosInput').val(this.modeloEdicion.urlDocumentos);
 		
 		this.reemplazaUsuarioId = valor.reemplazaUsuarioId;
+		
+		if(this.modeloEdicion.administradorCertificacion==1)
+			$("#administradorCertificacionRadio").prop('checked', true);
+		else
+			$("#administradorCertificacionRadio").prop('checked', false);
+			
+		$('#ligaAnalisisRiesgoCTPATInput').val(this.modeloEdicion.ligaAnalisisRiesgoCTPAT);
+		
+		this.cambiarAdministradorCertificacion();
 		 
 	}
 	
@@ -535,7 +555,9 @@ class UsuariosVista extends CatalogoVista
 		     urlDocumentos:$('#urlDocumentosInput').val(),
 		     visualizarAuditoriasSociosComerciales:$('#auditoriasSociosComercialesRadio').is(':checked')?1:0,
 		     tiposSocioComercial: this.tiposSocioComercial,
-		     reemplazaUsuarioId: $("#reemplazaUsuarioSelect").val()
+		     reemplazaUsuarioId: $("#reemplazaUsuarioSelect").val(),
+		     administradorCertificacion: $("#administradorCertificacionRadio").is(':checked')?1:0,
+		     ligaAnalisisRiesgoCTPAT: $('#ligaAnalisisRiesgoCTPATInput').val()
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
@@ -666,6 +688,15 @@ class UsuariosVista extends CatalogoVista
 			$('#perfilGroup').fadeIn();
 		else
 			$('#perfilGroup').fadeOut();
+	}
+	
+	cambiarAdministradorCertificacion()
+	{
+		 var administradorCetificacion=$('#administradorCertificacionRadio').is(':checked')?1:0;
+		if(administradorCetificacion)
+			$('#ligaAnalisisRiesgoCTPATGroup').fadeIn();
+		else
+			$('#ligaAnalisisRiesgoCTPATGroup').fadeOut();
 	}
 	
 	cambiarPermisoSAHA()

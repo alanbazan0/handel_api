@@ -1,8 +1,8 @@
-class ProcesosPresentador extends CatalogoPresentador
+class FormatosPresentador extends CatalogoPresentador
 { 
 	 constructor(vista)
 	 {
-		 super(vista,new ProcesosRepositorio());
+		 super(vista,new FormatosRepositorio());
 	 }
 	 
 

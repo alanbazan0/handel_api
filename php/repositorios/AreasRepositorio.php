@@ -38,6 +38,7 @@ class AreasRepositorio extends RepositorioBase implements IAreasRepositorio
                 {
                     if(!$sentencia->execute())
                         $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    
                 }
                 else
                     $resultado->mensajeError = "Falló el enlace de parámetros";

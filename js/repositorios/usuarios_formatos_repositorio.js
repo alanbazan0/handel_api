@@ -1,8 +1,8 @@
-class UsuariosProcesosRepositorio extends Repositorio
+class UsuariosFormatosRepositorio extends Repositorio
 {	
 	constructor()
 	{
-		super("php/repositorios/UsuariosProcesos.php");
+		super("php/repositorios/UsuariosFormatos.php");
 	}
 	
 	

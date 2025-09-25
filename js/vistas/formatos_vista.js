@@ -1,10 +1,10 @@
-class ProcesosVista extends CatalogoVista
+class FormatosVista extends CatalogoVista
 {		
 	constructor(ventana)
 	{	
 		super(ventana);
-		this.presentador = new ProcesosPresentador(this);
-		this._urlFormulario = "html/formularios/procesos.php";
+		this.presentador = new FormatosPresentador(this);
+		this._urlFormulario = "html/formularios/formatos.php";
 	}
 	
 	inicializar()
@@ -30,7 +30,7 @@ class ProcesosVista extends CatalogoVista
 	
 	iniciarCopia()
 	{
-		this._copiarProcedimientosModal = new CopiarProcesosAsistente();
+		this._copiarProcedimientosModal = new CopiarFormatosAsistente();
 		this._copiarProcedimientosModal.mostrar(this, this.copiar);
 	}
 	
@@ -350,7 +350,7 @@ class ProcesosVista extends CatalogoVista
 				if(_this._registroSeleccionado.archivo!="")
 				{
 					var vistaPrevia = new VistaPreviaArchivo();
-					vistaPrevia.visualizar(_this, "php/archivos_procesos", _this._registroSeleccionado.id, _this._registroSeleccionado.archivo);
+					vistaPrevia.visualizar(_this, "php/archivos_formatos", _this._registroSeleccionado.id, _this._registroSeleccionado.archivo);
 				}
 				else
 					_this.mostrarMensajeAdvertencia("","Para visualizar archivos es necesario guardar la información.")
@@ -458,7 +458,7 @@ class ProcesosVista extends CatalogoVista
 	
 	
 }
-var vista = new ProcesosVista(this);
+var vista = new FormatosVista(this);
 $(document).ready(function() 
 {
 	vista.inicializar();

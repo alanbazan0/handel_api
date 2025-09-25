@@ -1,8 +1,8 @@
 <?php
 use php\clases\AdministradorConexion;
 use php\clases\JsonMapper;
-use php\modelos\UsuarioProceso;
-use php\repositorios\UsuariosProcesosRepositorio;
+use php\modelos\UsuarioFormato;
+use php\repositorios\UsuariosFormatosRepositorio;
 use php\modelos\Resultado;
 
 error_reporting(E_ALL);
@@ -11,7 +11,7 @@ ini_set('display_errors', 1);
 include '../clases/JsonMapper.php';
 include '../clases/Utilidades.php';
 include '../clases/AdministradorConexion.php';
-include '../repositorios/UsuariosProcesosRepositorio.php';
+include '../repositorios/UsuariosFormatosRepositorio.php';
 
 $origin = "*";
 if(isset($_SERVER['HTTP_ORIGIN']))
@@ -29,19 +29,19 @@ try
     if($conexion)
     {
         $accion = REQUEST('accion');
-        $repositorio = new UsuariosProcesosRepositorio($conexion);
+        $repositorio = new UsuariosFormatosRepositorio($conexion);
         switch($accion)
         {
             case 'insertar':
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new UsuarioProceso());
+                $modelo = $mapper->map($json, new UsuarioFormato());
                 $resultado = $repositorio->insertar($modelo);
             break;
             case 'actualizar':
                 $json = json_decode(REQUEST('modelo'));
                 $mapper = new JsonMapper();
-                $modelo = $mapper->map($json, new UsuarioProceso());
+                $modelo = $mapper->map($json, new UsuarioFormato());
                 $resultado = $repositorio->actualizar($modelo) ;
             break;
             case 'consultar':

@@ -1,8 +1,8 @@
-class ProcesosPresentador extends CatalogoPresentador
+class UsuariosFormatosPresentador extends CatalogoPresentador
 { 
 	 constructor(vista)
 	 {
-		 super(vista,new ProcesosRepositorio());
+		 super(vista,new UsuariosFormatosRepositorio());
 	 }
 	 
 
@@ -22,7 +22,7 @@ class ProcesosPresentador extends CatalogoPresentador
 			
 		}
 		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			this.vista.mostrarMensaje("Error",resultado.mensajeError);
 		
 	 }
 	 
@@ -72,52 +72,47 @@ class ProcesosPresentador extends CatalogoPresentador
 	 {
 		if(resultado.mensajeError=="")
 		{
-			this.vista.sedes = resultado.valor;				
+			this.vista.sedes = resultado.valor;		
+			this.vista.cambiarSede();
+			this.vista.cambiarSedeProcedimiento();
 		}
 		else
-			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+			this.vista.mostrarMensaje("Error",resultado.mensajeError);
 		
 	 }
 	 
-	 subirArchivo(llaves, archivo)
+	 consultarUsuarios()	
 	 {
-		  this.vista.mostrarIndicador();
-		 this._repositorio.adjuntarArchivo(this,function(resultado)
-		 {
-			  this.vista.ocultarIndicador();
-			if(resultado.mensajeError=="")
-			{
-				this.vista.mostrarMensaje("Notificación","Se adjuntó el archivo " + resultado.valor.archivo);
-				this.vista.marcarArchivoSubido(resultado.valor.id, resultado.valor.archivo);
-							
-			}
-			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-		 },llaves, archivo);
-		 
+		 var repositorio = new UsuariosRepositorio(this);		
+		 repositorio.consultarPorEmpresaSede(this,this.consultarUsuariosResultado,this.vista.modelo.empresaId,this.vista.modelo.sedeIdUsuario);
 	 }
 	 
-	  eliminarArchivo()
+	 consultarUsuariosResultado(resultado)
 	 {
-		 this.vista.mostrarIndicador();	
-		 this._repositorio.eliminarArchivo(this,function(resultado)
-		 {		
-			 this.vista.ocultarIndicador();	
-			 this.vista.cerrarConfirmacionEliminar();
-			 if(resultado.mensajeError=="")
-			 {
-				
-				 this.vista.mostrarMensaje("Notificación","El archivo se eliminó correctamente.");
-				 this.vista.marcarArchivoSubido(resultado.valor.id, resultado.valor.archivo);
-			 }
-			 else
-			 {
-				 this.vista.mostrarMensajeError("Error","Ocurrió un error al eliminar el archivo. " + resultado.mensajeError, resultado.codigoError);
-			 }
-		 },this.vista.llaves);
+		if(resultado.mensajeError=="")
+		{
+			this.vista.usuarios = resultado.valor;				
+		}
+		else
+			this.vista.mostrarMensaje("Error",resultado.mensajeError);
+		
 	 }
 	 
-	
+	 consultarProcesos()	
+	 {
+		 var repositorio = new FormatosRepositorio(this);		
+		 repositorio.consultarPorEmpresaSede(this,this.consultarProcedimientosResultado,this.vista.modelo.empresaId,this.vista.modelo.sedeIdProcedimiento);
+	 }
 	 
+	 consultarProcedimientosResultado(resultado)
+	 {
+		if(resultado.mensajeError=="")
+		{
+			this.vista.procedimientos = resultado.valor;				
+		}
+		else
+			this.vista.mostrarMensaje("Error",resultado.mensajeError);
+		
+	 }
 	 
 }
