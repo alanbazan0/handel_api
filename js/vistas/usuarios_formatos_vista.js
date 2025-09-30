@@ -23,7 +23,7 @@ class UsuariosFormatosVista extends CatalogoVista
 			{longitud:200, 	titulo:"Id",   alias:"id", alineacion:"I", class: "desc" }, 
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoPerfil},
 			{longitud:200, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I", class: "desc" }, 
-			{longitud:200, 	titulo:"Id formato",   alias:"procedimientoId", alineacion:"D", class: "desc" }, 
+			{longitud:200, 	titulo:"Id formato",   alias:"formatoId", alineacion:"D", class: "desc" }, 
 			{longitud:200, 	titulo:"Formato",   alias:"nombre", alineacion:"I"}, 
 			{longitud:200, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I",  },		
 			{longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },

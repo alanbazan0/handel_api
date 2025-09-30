@@ -37,6 +37,48 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
                INNER JOIN tipo_inspeccion TI ON I.tipo_inspeccion_id = TI.id";
     }
     
+    private function consultarUsuarioMasUsado($sedeId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta = "SELECT usuario_id, count(*) c
+                    FROM inspecciones 
+                    WHERE sede_id = ?
+                    GROUP BY usuario_id
+                    ORDER BY c DESC
+                    LIMIT 1";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$sedeId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($usuarioId, $count))
+                    {
+                        if($sentencia->fetch())
+                        {
+                            $resultado->valor = $usuarioId;
+                            
+                            $sentencia->close();
+                        }
+                        else
+                            $resultado->mensajeError = "No se encontró ningún resultado.";
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        
+        return $resultado;
+    }
+    
     public function insertar(Inspeccion $modelo)
     {
         $this->conexion->autocommit(FALSE);
@@ -44,6 +86,14 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
         
         if($modelo->inspectorAleatorioId==0 || $modelo->inspectorAleatorioId=="")
             $modelo->inspectorAleatorioId = null;
+        
+            
+        if($modelo->usuarioId==0)
+        {
+            $resultado = $this->consultarUsuarioMasUsado($modelo->sedeId);
+            if($resultado->correcto())
+                $modelo->usuarioId = $resultado->valor;
+        }
        
         $resultado =  $this->calcularId("id","inspecciones");
      
