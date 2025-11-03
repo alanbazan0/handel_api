@@ -372,13 +372,15 @@ class Vista
 	    return form;
 	}
 
-	createNewFormElement(formInput, elementName, elementValue) 
+	createNewFormElement(formInput, elementName, elementValue, type) 
 	{
 		var input = document.createElement('input');
 		input.id = elementName;
 		input.name = elementName;
 		input.value = elementValue;
 		input.style.display = 'none';
+		if(type!=undefined)
+			input.type = type;
 		formInput.appendChild(input);
 		return input;
 	}

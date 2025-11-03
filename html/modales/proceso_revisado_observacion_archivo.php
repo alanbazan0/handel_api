@@ -45,8 +45,13 @@
                             </div>
                      	 </div>
     				</form>
+    				  <div class="col-lg-8 col-md-8 col-xs-12" id="sinArchivoContenedor" style='display:none;'>
+                       	<span>Sin archivo</span>
+                       </div>
                       <div class="col-lg-8 col-md-8 col-xs-12" id="contenedorArchivo" style='display:none;'>
-                       
+                       <div>
+                       		<span id="nombreArchivoSpan"></span>
+                       </div>
                        	<div class="form-group" id='contenedorEvidenciaImage'>
                         	<div class='row'>
             					<div class="col-sm-12 text-center">

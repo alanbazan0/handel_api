@@ -61,10 +61,10 @@ class EmpresasRepositorio extends RepositorioBase implements IEmpresasRepositori
         {
             $id = $resultado->valor;           
             $consulta = "INSERT INTO empresas(id, nombre, nombre_corto, tipo_empresa_id, direccion, pais_id, estado_id, ciudad_id, telefono, corporativo_id, fecha_alta, fecha_modificacion, estatus, administrador_id, perfil_id, administrador_sivah_id, mes_revision_procesos,administrador_procesos_id, calificacion_minima, fecha_inicio_temporada, socio_comercial, tipo_socio_comercial_id, servicio_id, autoevaluacion, plantilla_id, permitir_usuario_plantilla,analisis_riesgo_minuta_id, tokens) " .
-                        "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if( $sentencia->bind_param("issisiiiisiiiiiiisiiiiiiii", $id, $modelo->nombre,$modelo->nombreCorto, $modelo->tipoEmpresaId, $modelo->direccion, $modelo->paisId, $modelo->estadoId, $modelo->ciudadId, $modelo->telefono, $modelo->corporativoId, $modelo->estatus, $modelo->administradorId, $modelo->perfilId, $modelo->admintradorIdSIVAH, $modelo->mesRevisionProcesos, $modelo->admintradorIdProcesos, $modelo->calificacionMinima, $modelo->fechaInicioTemporada, $modelo->socioComercial, $modelo->tipoSocioComercialId, $modelo->servicioId, $modelo->autoevaluacion, $modelo->plantillaId, $modelo->permitirUsuarioPlantilla, $modelo->analisisRiesgoMinutaId, $modelo->tokens))
+                if( $sentencia->bind_param("issisiiiisiiiiiiisiiiiiiii", $id, $modelo->nombre,$modelo->nombreCorto, $modelo->tipoEmpresaId, $modelo->direccion, $modelo->paisId, $modelo->estadoId, $modelo->ciudadId, $modelo->telefono, $modelo->corporativoId, $modelo->estatus, $modelo->administradorId, $modelo->perfilId, $modelo->administradorIdSIVAH, $modelo->mesRevisionProcesos, $modelo->admintradorIdProcesos, $modelo->calificacionMinima, $modelo->fechaInicioTemporada, $modelo->socioComercial, $modelo->tipoSocioComercialId, $modelo->servicioId, $modelo->autoevaluacion, $modelo->plantillaId, $modelo->permitirUsuarioPlantilla, $modelo->analisisRiesgoMinutaId, $modelo->tokens))
                 {
                     if($sentencia->execute())       
                     {

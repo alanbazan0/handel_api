@@ -517,13 +517,18 @@ class ManualSeguridadVista extends CatalogoVista
 		this.modoObservacion = modo;
 		this.mostrarFormularioHTML(HANDEL_API+"/html/modales/proceso_revisado_observacion_archivo.php",this, null, function()
 		{
+			$("#observacionModal").find(".modal-dialog").addClass("modal-lg").css("width","90%");
 			if(usuarioProceso.archivo!="" && usuarioProceso.archivo!=null)
 			{
-				$("#observacionModal").find(".modal-dialog").addClass("modal-lg").css("width","90%");
 				$("#contenedorArchivo").show();
+				$("#nombreArchivoSpan").html(usuarioProceso.archivo);
 				var vistaPrevia = new VistaPreviaArchivo();
 				vistaPrevia.vistaPreviaArchivo(_this, "php/archivos_procesos", usuarioProceso.procedimientoId, usuarioProceso.archivo);
 
+			}
+			else
+			{
+				$("#sinArchivoContenedor").show();
 			}
 				
 			

@@ -6,12 +6,34 @@ use php\modelos\Resultado;
 class AdministradorArchivos
 {
     
+    public function getExtension($type)
+    {
+        if($type=="image/jpeg")
+            return "jpg";
+        else  if($type=="image/png")
+            return "png";
+        else
+            return "";
+    }
+    
     public function eliminar($carpeta, $nombreArchivo)
     {
         $archivo = "../".$carpeta . "/" . $nombreArchivo;
         if(file_exists($archivo)) 
             unlink($archivo); 
+        else
+            echo "No se puede eliminar, no existe el archivo " . $archivo;
     }
+    
+    public function eliminarArchivo($nombreArchivo)
+    {
+        $archivo = "../".$nombreArchivo;
+        if(file_exists($archivo))
+            unlink($archivo);
+        else
+            echo "No se puede eliminar, no existe el archivo " . $archivo;
+    }
+    
     
     public function crearBase64($base64, $carpeta, $nombreArchivo)
     {
