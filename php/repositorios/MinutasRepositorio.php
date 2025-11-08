@@ -592,7 +592,7 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
             return $resultado;
     }
     
-    private function consultarTareasUsuarios($minutaId)
+    public function consultarTareasUsuarios($minutaId)
     {
         $resultado = new Resultado();
         $tareas = array();
@@ -2886,6 +2886,106 @@ class MinutasRepositorio extends RepositorioBase implements IMinutasRepositorio
         }
         $texto=  str_replace("@analisisRiesgo",$analisisRiesgo,$texto);
         return $texto;
+    }
+    
+    public function graficaAvance($rows, $xField, $titulo)
+    {
+        $showInLegend = true;
+        
+        $categories = array();
+        $data = array();
+        
+        $data = array();
+        
+        $data1 = array();
+        $data2 = array();
+        $data3 = array();
+        
+        //$fecha = new DateTime();
+        // $mesActual = (int)$fecha->format("m");
+        
+        for ($i = 0; $i < count($rows); $i++)
+        {
+            $row = $rows[$i];
+            
+           
+            
+            $newRow1= (object) [
+                'name' =>  $row->$xField,
+                'y' => (float)$row->asignadas,
+                // 'color' => "#3c8dbc"
+            ];
+            
+            $newRow2= (object) [
+                'name' =>  $row->$xField,
+                'y' => (float)$row->terminadas,
+                //'color' => "#f39c12"
+            ];
+         
+            
+            array_push($categories, $row->$xField);
+            array_push($data1, $newRow1);
+            array_push($data2, $newRow2);
+            // array_push($data3, $newRow3);
+        }
+        
+        $yAxis = (object) [ 'title' => (object) [ 'text'=> ""]];
+        
+        //         $yAxis->min= 0;
+        //         $yAxis->max= 100;
+        //         $yAxis->tickInterval= 10;
+        
+        
+        
+        $rotacion = 0;
+        if(count($rows)>=10)
+            $rotacion = -90;
+            
+            
+            
+            $highchart = (object)
+            [
+                'chart' => (object) [ 'type' => "column"],
+                'title' => (object) [ 'text'=> $titulo],
+                'credits' => (object) ['enabled' => false],
+                'xAxis' => (object) [ 'categories' => $categories],
+                'plotOptions' => (object)
+                [
+                    'column'=> (object)[
+                        // 'stacking' => 'normal',
+                        'dataLabels'=>(object)
+                        [
+                            'enabled'=>true,
+                            //                         'crop'=>false,
+                            //                         'overflow' =>'none',
+                            //                         "inside"=> false,
+                            'color'=> 'black',
+                            'style'=> (object)
+                            [
+                                'fontSize' => 10,
+                                'textOutline' => '0px'
+                            ],
+                            //                         'rotation' => $rotacion,
+                            //                         'format'=>"{point.y:.1f} %",
+                            // 'format'=>"{point.y} %",
+                            'verticalAlign' => 'bottom'
+                            
+                        ]
+                    ]
+                ],
+                'yAxis' => $yAxis,
+                'series' => array(
+                    (object) ['name' => "Asignados", 'data' => $data1,  'showInLegend' => $showInLegend, "color"=>"#4575c3"],
+                    (object) ['name' => "Terminadas", 'data' => $data2,  'showInLegend' => $showInLegend, "color"=>"#fb7535"],
+                    //(object) ['name' => "En proceso de validación", 'data' => $data3,  'showInLegend' => $showInLegend, "color"=>"#919191"]
+                )
+            ];
+            
+            $chartURL = getHightchartsURL($highchart);
+            return $chartURL;
+            
+            //  return 'ok';
+            
     }
     
     function resultadoGlobalCAVI($texto, $empresa, $usuario, $criteriosSeleccion)

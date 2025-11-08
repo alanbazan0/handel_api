@@ -530,11 +530,11 @@ class ReporteKCI extends ReporteBase
         $this->Cell(0,6,$this->texto($texto),0,2,'C');
     }
     
-    function temasReunion()
+    protected function temasReunion()
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("Orden del día");
+        $this->tituloPagina("Orden del día",0);
         
         $this->subtitulo("Temas de reunión");
         
@@ -563,7 +563,7 @@ class ReporteKCI extends ReporteBase
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("Resultados SAHA");
+        $this->tituloPagina("Resultados SAHA",0);
         $this->logoApp("../imagenes/logo_saha02.png", 30);
         
         
@@ -637,7 +637,7 @@ class ReporteKCI extends ReporteBase
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("Resultados SAHA");
+        $this->tituloPagina("Resultados SAHA",0);
         $this->subtitulo("Cumplimiento por usuario");
         $this->logoApp("../imagenes/logo_saha02.png", 30);
         
@@ -668,7 +668,7 @@ class ReporteKCI extends ReporteBase
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("Resultados SAHA");
+        $this->tituloPagina("Resultados SAHA",0);
         $this->subtitulo("Cumplimiento por departamento");
         $this->logoApp("../imagenes/logo_saha02.png", 30);
         
@@ -698,7 +698,7 @@ class ReporteKCI extends ReporteBase
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("Resultados SAHA");
+        $this->tituloPagina("Resultados SAHA",0);
         $this->subtitulo("Cumplimiento por sede");
         $this->logoApp("../imagenes/logo_saha02.png", 30);
         
@@ -954,7 +954,7 @@ class ReporteKCI extends ReporteBase
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("Resultados SAHA");
+        $this->tituloPagina("Resultados SAHA",0);
         $this->subtitulo("Nivel de riesgo");
         $this->logoApp("../imagenes/logo_saha02.png", 30);
         
@@ -1033,7 +1033,7 @@ class ReporteKCI extends ReporteBase
                     $this->Image("../imagenes/caricatura/caricatura03.png", 35, 119, 67);
     }
     
-    protected function tituloPagina($titulo)
+    protected function tituloPagina($titulo, $y)
     {
         
         $this->SetLeftMargin(5);
@@ -1110,7 +1110,7 @@ class ReporteKCI extends ReporteBase
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("Resultados CAVI");
+        $this->tituloPagina("Resultados CAVI",0);
         $this->subtitulo("Avance CAVI por sede");
         $this->logoApp("../imagenes/triangulo_cavi.png", 30);
         $this->Image("../imagenes/caricatura/caricatura05.png", 50, 135, 50);
@@ -1149,7 +1149,7 @@ class ReporteKCI extends ReporteBase
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("Resultados CAVI");
+        $this->tituloPagina("Resultados CAVI",0);
         $this->subtitulo("Aprovechamiento CAVI por departamento");
         $this->logoApp("../imagenes/triangulo_cavi.png", 30);
         
@@ -1181,7 +1181,7 @@ class ReporteKCI extends ReporteBase
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("Resultados CAVI");
+        $this->tituloPagina("Resultados CAVI",0);
         $this->subtitulo("Avance CAVI por departamento");
         $this->logoApp("../imagenes/triangulo_cavi.png", 30);
         $this->Image("../imagenes/caricatura/caricatura06.png", 50, 135, 50);
@@ -1213,7 +1213,7 @@ class ReporteKCI extends ReporteBase
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("Seguimiento de auditoría");
+        $this->tituloPagina("Seguimiento de auditoría",0);
         $this->subtitulo("Avance de cierre de auditoría");
         $this->logoApp("../imagenes/logoSIVAH.png", 30);
         $this->Image("../imagenes/caricatura/caricatura07.png", 50, 120, 45);
@@ -1264,7 +1264,7 @@ class ReporteKCI extends ReporteBase
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("CAVI");
+        $this->tituloPagina("CAVI",0);
         $this->subtitulo("Avance global");
         $this->logoApp("../imagenes/triangulo_cavi.png", 30);
         $this->Image("../imagenes/caricatura/caricatura04.png", 50, 120, 50);
@@ -1374,7 +1374,7 @@ class ReporteKCI extends ReporteBase
         $hallazgosPendientes = 0;
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("Seguimiento de auditoría");
+        $this->tituloPagina("Seguimiento de auditoría",0);
         $this->subtitulo("Avance de cierre de auditoría por sede");
         $this->logoApp("../imagenes/logoSIVAH.png", 30);
         $this->Image("../imagenes/caricatura/caricatura05.png", 50, 135, 50);
@@ -1448,7 +1448,7 @@ class ReporteKCI extends ReporteBase
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("Seguimiento de auditoría");
+        $this->tituloPagina("Seguimiento de auditoría",0);
         $this->subtitulo("Avance de cierre de auditoría por departamento");
         $this->logoApp("../imagenes/logoSIVAH.png", 30);
         $this->Image("../imagenes/caricatura/caricatura02.png", 50, 120, 50);
@@ -1516,7 +1516,7 @@ class ReporteKCI extends ReporteBase
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("Seguimiento de auditoría");
+        $this->tituloPagina("Seguimiento de auditoría",0);
         $this->subtitulo("Avance de cierre de auditoría por usuario");
         $this->logoApp("../imagenes/logoSIVAH.png", 30);
         $this->Image("../imagenes/caricatura/caricatura02.png", 50, 120, 50);

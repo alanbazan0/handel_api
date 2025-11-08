@@ -1,6 +1,12 @@
 <?php
 use php\clases\AdministradorConexion;
 use php\repositorios\EmpresasRepositorio;
+use php\repositorios\UsuariosProcedimientosRepositorio;
+use php\repositorios\UsuariosProcesosRepositorio;
+use php\clases\Token;
+use php\clases\AdministradorArchivos;
+use php\repositorios\MinutasRepositorio;
+
 require_once('../reportes_pdf/reporte_kci.php');
 require_once('../clases/AdministradorConexion.php');
 require_once('../repositorios/EmpresasRepositorio.php');
@@ -61,9 +67,9 @@ require_once('../repositorios/EmpresasRepositorio.php');
                 
                 /*01*/
                 $this->portada();
-                //$this->saha();
-                //$this->cavi();
-                //$this->sivah();
+                $this->saha();
+                $this->cavi();
+                $this->sivah();
                 $this->adicionales();
             }
             
@@ -139,7 +145,11 @@ require_once('../repositorios/EmpresasRepositorio.php');
         if($this->imagenSimulacros!="")
             $this->simulacros();
         
-        $this->revisionProcesos();    
+        
+        
+        $this->revisionProcesos();   
+        
+        
         $this->analisisRiesgos();
         
         if($this->imagenNovedades!="")
@@ -152,9 +162,97 @@ require_once('../repositorios/EmpresasRepositorio.php');
         $this->ayuda();
     }
     
-    private function analisisRiesgos()
+    protected function tituloPagina($titulo, $y)
     {
         
+        $this->SetLeftMargin(5);
+        $this->SetX(0);
+        $this->SetY($this->h/2 - $y);
+        $this->fontSizes = array(28);
+        $this->fontWeights = array("B");
+        $this->fontNames = array($this->font);
+        $this->aligns = array("C");
+        $this->widths = array(80);
+        $this->textColors = array("#ffffff");
+        $this->borders = array(0);
+        $this->backgroundColors = array("#ffffff");
+        $this->RowTransparent(array($this->texto($titulo)),10);
+        
+        
+    }
+    
+    private function avanceRevisionProcesos($titulo)
+    {
+        $this->AddPage();
+        $this->fondoPlantilla();
+        $this->tituloPagina($titulo,30);
+        
+        $repositorio = new UsuariosProcesosRepositorio($this->conexion);
+        $administradorArchivos = new AdministradorArchivos();
+        $resultado = $repositorio->consultarAvanceUsuarios($this->usuario,$this->criteriosSeleccion);
+        if($resultado->correcto())
+        {
+            $usuarios = $resultado->valor;
+            $image = $repositorio->graficaAvance($usuarios,"nombreCompleto","");
+            if($image!="")
+            {
+                $fecha = date_create();
+                $nombreArchivo = Token::getToken(30).date_timestamp_get($fecha).".jpeg";
+                file_put_contents("../archivos_temporales/".$nombreArchivo, file_get_contents($image));
+                if(file_exists("../archivos_temporales/".$nombreArchivo))
+                {
+                    $this->Image("../archivos_temporales/".$nombreArchivo, 105, 15, 160, 160);
+                    $administradorArchivos->eliminar("archivos_temporales", $nombreArchivo);
+                }
+            }
+        }
+    }
+    
+    private function analisisRiesgos()
+    {
+        if($this->empresa->analisisRiesgoMinutaId!=null && $this->empresa->analisisRiesgoMinutaId!="")
+        {
+            $this->AddPage();
+            $this->fondoPlantilla();
+            $this->tituloPagina("Análisis de riesgo OEA",20);
+            
+            $repositorio = new MinutasRepositorio($this->conexion);
+            $administradorArchivos = new AdministradorArchivos();
+            $resultado = $repositorio->consultarTareasUsuarios($this->empresa->analisisRiesgoMinutaId);
+            if($resultado->correcto())
+            {
+                $usuarios = $resultado->valor;
+                $image = $repositorio->graficaAvance($usuarios,"usuarioNombreCompleto","");
+                if($image!="")
+                {
+                    $fecha = date_create();
+                    $nombreArchivo = Token::getToken(30).date_timestamp_get($fecha).".jpeg";
+                    file_put_contents("../archivos_temporales/".$nombreArchivo, file_get_contents($image));
+                    if(file_exists("../archivos_temporales/".$nombreArchivo))
+                    {
+                        $this->Image("../archivos_temporales/".$nombreArchivo, 105, 15, 160, 160);
+                        $administradorArchivos->eliminar("archivos_temporales", $nombreArchivo);
+                    }
+                }
+                //$analisisRiesgo = "Se verifica el avance del Análisis de Riesgo OEA (ISO 31010) En el cual se desglosa el avance de personal que cuenta con acciones asignadas en la minuta: ";
+                
+                /*for ($i = 0; $i < count($usuarios); $i++)
+                {
+                    $usuarioMinuta = $usuarios[$i];
+                    $textoAsignadas = $usuarioMinuta->asignadas == 1 ? "acción asignada" : "acciones asignadas";
+                    $textoTerminadas = $usuarioMinuta->terminadas == 1 ? "acción concluida" : "acciones concluidas";
+                    
+                    $analisisRiesgo .= $usuarioMinuta->usuarioNombreCompleto. " " . $usuarioMinuta->asignadas . " " . $textoAsignadas . " - " . $usuarioMinuta->terminadas . " "  .$textoTerminadas ;
+                    
+                    if($i <  count($usuarios) - 1)
+                        $analisisRiesgo .= ", ";
+                }
+                
+                $analisisRiesgo .= ". Se solicita a todos los usuarios verificar las tareas asignadas en el análisis de riesgo e indicar en el globo de mensaje de la tarea el estado del mismo así como indicar las acciones que se encuentran cerradas marcarlas como terminadas.";
+                */
+                    
+            }
+        }
         
     }
     
@@ -172,7 +270,7 @@ require_once('../repositorios/EmpresasRepositorio.php');
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("¡Importante!");
+        $this->tituloPagina("¡Importante!",10);
         $this->SetY(30);
         if(file_exists("../imagenes/CTPAT45.png"))
             $this->Image("../imagenes/CTPAT45.png", 110, 20, 170, 140);
@@ -180,9 +278,45 @@ require_once('../repositorios/EmpresasRepositorio.php');
     
     private function revisionProcesos()
     {
+        $mes = (int) date("m");
+        
+        
+        if($this->empresa->mesRevisionProcesos == $mes)
+        {
+            $this->criteriosSeleccion->ano = date("Y");
+            $this->criteriosSeleccion->mes = date("m");
+            $this->avanceRevisionProcesos("Avance de revisión de procedimientos");
+        }
+        else if($this->empresa->mesRevisionProcesos + 1 == $mes)
+        {
+            $this->criteriosSeleccion->ano = date("Y");
+            $this->criteriosSeleccion->mes = date("m");
+            $this->avanceRevisionProcesos("¿Como concluye la revisión de procesos?");
+        }
+        else
+        {
+            $m = $this->empresa->mesRevisionProcesos - 1;
+            if($m > 0)
+            {
+                if($m == $mes)
+                    $this->textoRevisionProcesos();
+            }
+            else
+            {
+                if($mes == 12)
+                {
+                    $this->textoRevisionProcesos();
+                }
+            }
+            
+        }
+    }
+    
+    private function textoRevisionProcesos()
+    {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("Revisión de procesos");
+        $this->tituloPagina("Revisión de procesos",10);
         $this->subtitulo("Participa en esta actividad crítica");
         
         $this->SetY(50);
@@ -198,7 +332,6 @@ require_once('../repositorios/EmpresasRepositorio.php');
         
         if(file_exists("../imagenes/revision_procesos.png"))
             $this->Image("../imagenes/revision_procesos.png", 220, 50, 75, 75);
-        
     }
     
     protected function vineta($x,$texto)
@@ -243,7 +376,7 @@ require_once('../repositorios/EmpresasRepositorio.php');
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("Simulacros");
+        $this->tituloPagina("Simulacros",10);
         $this->SetY(30);
         if(file_exists("../".$this->imagenSimulacros))        
             $this->Image("../".$this->imagenSimulacros, 100, 20, 190, 150);
@@ -254,7 +387,7 @@ require_once('../repositorios/EmpresasRepositorio.php');
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina($titulo);
+        $this->tituloPagina($titulo,10);
         $this->subtitulo($subtitulo);
         
         $lineas = explode("\n", $texto);
@@ -282,10 +415,40 @@ require_once('../repositorios/EmpresasRepositorio.php');
     {
         $this->AddPage();
         $this->fondoPlantilla();
-        $this->tituloPagina("Novedades");
+        $this->tituloPagina("Novedades",10);
         $this->SetY(30);
         if(file_exists("../".$this->imagenNovedades))
             $this->Image("../".$this->imagenNovedades, 100, 20, 190, 150);
+    }
+    
+    protected function temasReunion()
+    {
+        $this->AddPage();
+        $this->fondoPlantilla();
+        $this->tituloPagina("Orden del día",0);
+        
+        $this->subtitulo("Temas de reunión");
+        
+        
+        $this->SetY(30);
+        
+        $this->textoVineta("Resultados SAHA");
+        $this->Ln();
+        $this->textoVineta("Avances CAVI");
+        $this->Ln();
+        $this->textoVineta("Avances SIVAH");
+        $this->Ln();
+        $this->textoVineta("Simulacros");
+        $this->Ln();
+        $this->textoVineta("Novedades");
+        $this->Ln();
+        $this->textoVineta("Avisos");
+        $this->Ln();
+        $this->textoVineta("Actividades previas y próximas");
+        $this->Ln();
+        $this->textoVineta("Varios");
+        
+        $this->Image("../imagenes/caricatura/caricatura01.png", 225, 130, 70);
     }
 }
 

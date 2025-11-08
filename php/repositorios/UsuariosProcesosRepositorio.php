@@ -1289,7 +1289,7 @@ class UsuariosProcesosRepositorio extends RepositorioBase implements IUsuariosPr
         return $resultado;
     }
     
-    function graficaAvance($rows, $xField, $titulo)
+    public function graficaAvance($rows, $xField, $titulo)
     {
         $showInLegend = true;
         

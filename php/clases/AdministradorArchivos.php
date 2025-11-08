@@ -18,20 +18,35 @@ class AdministradorArchivos
     
     public function eliminar($carpeta, $nombreArchivo)
     {
-        $archivo = "../".$carpeta . "/" . $nombreArchivo;
-        if(file_exists($archivo)) 
-            unlink($archivo); 
-        else
-            echo "No se puede eliminar, no existe el archivo " . $archivo;
+        try 
+        {
+            $archivo = "../".$carpeta . "/" . $nombreArchivo;
+            if(file_exists($archivo))
+                unlink($archivo);
+            else
+                echo "No se puede eliminar, no existe el archivo " . $archivo;
+        }
+        catch (Exception $e) 
+        {
+        }
     }
     
     public function eliminarArchivo($nombreArchivo)
     {
-        $archivo = "../".$nombreArchivo;
-        if(file_exists($archivo))
-            unlink($archivo);
-        else
-            echo "No se puede eliminar, no existe el archivo " . $archivo;
+        try
+        {
+            if($nombreArchivo!="")
+            {
+                $archivo = "../".$nombreArchivo;
+                if(file_exists($archivo))
+                    unlink($archivo);
+                else
+                    echo "No se puede eliminar, no existe el archivo " . $archivo;
+            }
+        }
+        catch (Exception $e)
+        {
+        }
     }
     
     
