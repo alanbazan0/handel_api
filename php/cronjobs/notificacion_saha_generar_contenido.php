@@ -5,6 +5,8 @@ use php\repositorios\UsuariosRepositorio;
 use php\modelos\Resultado;
 use php\repositorios\EvidenciasRepositorio;
 use php\repositorios\UsuariosProcedimientosRepositorio;
+use php\repositorios\CorreosRepositorio;
+use php\modelos\Correo;
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -19,7 +21,7 @@ include '../modelos/Usuario.php';
 require_once('../clases/TipoUsuario.php');
 require_once('../repositorios/UsuariosRepositorio.php');
 require_once('../repositorios/EvidenciasRepositorio.php');
-require_once('../repositorios/UsuariosProcedimientosRepositorio.php');
+require_once('../repositorios/CorreosRepositorio.php');
 //require_once('../reportes/reporte_evidencias.php');
 
 $origin = "*";
@@ -31,113 +33,63 @@ header('Access-Control-Allow-Credentials: true');
 
 ini_set('max_execution_time', 500);
 
-$debug = false;
 $imprimirMensaje = false;
 $numeroUsuarios = 3;
-$guardarEnvio = false;
 $administrador_conexion = new AdministradorConexion();
 $resultado = new Resultado();
 $conexion=null;
 $enviados = 0;
+$noEnviados = 0;
 $tamanoLote = 60;
-$pausaCorreo = 1;
-$pausaLote = 10;
-mensajeLog("log_envio","Tamaño de lote: ". $tamanoLote);
-mensajeLog("log_envio","Pausa entre cada correo: ". $pausaCorreo);
-mensajeLog("log_envio","Pausa entre cada lote: ". $pausaLote);
+$pausaCorreo = 10;
+
+
 try
 {
     $conexion = $administrador_conexion->abrir();
     if($conexion)
     {
         
+        $tamanoLote= REQUEST("tamanoLote");
+        if($tamanoLote=="" || $tamanoLote==null)
+            $tamanoLote = 1;
+        mensajeLog("notificacion_saha_generar_contenido","##----------------------------- EJECUCION -----------------------------##");
+            
+        
         $usuariosRepositorio = new UsuariosRepositorio($conexion);
-        $asociados = array();
-        $supervisores = array();
-        $coordinadores= array();
+       
+        $correos = array();
+        $repositorio = new CorreosRepositorio($conexion);
         
-        $tipoUsuarioId = REQUEST("tipoUsuarioId");
-        if($tipoUsuarioId==null || $tipoUsuarioId=="")
+        $repositorio->reiniciarColgados();
+        
+        $criteriosSeleccion = (object)["estatus"=>EstatusCorreo::CREADO, "tipo" => "saha"];
+        $resultado = $repositorio->consultar($criteriosSeleccion, $tamanoLote);
+        if($resultado->correcto())
         {
-            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::USUARIO, 'permisoSAHA' => 1, 'estatus' => 1],false);
-            if($resultado->correcto())
-                $asociados = $resultado->valor;
-            else
-                mensajeLog("error",$resultado->mensajeError);
-                    
-            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::SUPERVISOR, 'permisoSAHA' => 1, 'estatus' => 1],false);
-            if($resultado->correcto())
-                $supervisores = $resultado->valor;
-            else
-                mensajeLog("error",$resultado->mensajeError);
-                
-            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  TipoUsuario::COORDINADOR, 'permisoSAHA' => 1, 'estatus' => 1],false);
-            if($resultado->correcto())
-                $coordinadores = $resultado->valor;
-            else
-                mensajeLog("error",$resultado->mensajeError);
-            
-            
-            $usuarios = array_merge($asociados, $supervisores,$coordinadores);
-            mensajeLog("log_envio","Usuarios: ". count($asociados));
-            mensajeLog("log_envio","Supervisores: ". count($supervisores));
-            mensajeLog("log_envio","Coordinadores: ". count($coordinadores));
-            mensajeLog("log_envio","Total: ". count($usuarios));
+            $correos = $resultado->valor;
         }
-        else 
-        {
-            $resultado = $usuariosRepositorio->consultar(null,(object) ['tipoUsuarioId' =>  $tipoUsuarioId, 'permisoSAHA' => 1, 'estatus' => 1],false);
-            if($resultado->correcto())
-                $asociados = $resultado->valor;
-            else
-                mensajeLog("error",$resultado->mensajeError);
-            
-            $usuarios = $asociados;
-            
-            mensajeLog("log_envio","Tipo usuario: ". $tipoUsuarioId);
-            mensajeLog("log_envio","Total: ". count($usuarios));
-        }
+        else
+            mensajeLog("notificacion_saha_generar_contenido",$resultado->mensajeError);
         
         
-        
-        $resultado->valor = "";
-        
+        $numeroUsuarios= REQUEST("numeroUsuarios");
+        if($numeroUsuarios!=0 && $numeroUsuarios!="")
+            $correos = array_slice($correos,0,$numeroUsuarios);
       
-        $parametroDebug= REQUEST("debug");
-        if($parametroDebug=="true")
-            $debug=true;
-        if($debug)
-        {
-            $nombreUsuario= REQUEST("nombreUsuario");
-            if($nombreUsuario!="")
-            {
-                $resultado = $usuariosRepositorio->consultar(null,(object) ['nombreUsuario' =>  $nombreUsuario, 'permisoSAHA' => 1, 'estatus' => 1],false);
-                if($resultado->correcto())
-                    $usuarios = $resultado->valor;
-            }
-          
-            $enviarA= REQUEST("enviarA");
-            for ($i = 0; $i < count($usuarios); $i++) 
-            {
-                $usuario = $usuarios[$i];
-                if(isset($enviarA) && $enviarA!="")
-                    $usuario->nombreUsuario = $enviarA;
-            }
-            
-            $numeroUsuarios= REQUEST("numeroUsuarios");
-            if($numeroUsuarios!=0)
-                $usuarios = array_slice($usuarios,0,$numeroUsuarios);
-          
-            mensajeLog("log_envio","Total a enviar: ". count($usuarios));
+        mensajeLog("notificacion_saha_generar_contenido","Total a generar: ". count($correos));
 
-        }
-            
         
+        $horaServidor = (int) date("H");
+        $horaInicial = (int) REQUEST("horaInicial");
+        $horaFinal = (int) REQUEST("horaFinal");
         $dia = REQUEST("dia");
         if($dia==null)
             $dia = date("j");
         
-         if($dia ==1 || $dia ==14  || $dia ==21 || $dia ==27 || $dia ==28)
+        mensajeLog("notificacion_saha_generar_contenido","Dia: ". $dia);
+            
+        if((count($correos) > 0) &&( $dia ==1 || $dia ==14  || $dia ==21 || $dia ==27 || $dia ==28) && $horaServidor >= $horaInicial && $horaServidor <= $horaFinal)
          {
             $asunto = getAsunto($dia);
             
@@ -146,70 +98,92 @@ try
             
             $fileContent = file_get_contents('notificacion.html');
             
-            //for ($i = 0; $i < count($usuarios); $i++)
-            //{
-           
-            $i = 0;
-            foreach (array_chunk($usuarios, $tamanoLote) as $bloque) {
+            for ($i = 0; $i < count($correos); $i++)
+            {
+                $correo = $correos[$i];
                 
-                foreach ($bloque as $usuario) {
-                   // $usuario = $usuarios[$i];
-                  
-                    $contenido = getContenido($conexion,$usuariosRepositorio,$usuariosProcedimientosRepositorio, $evidenciasRepositorio,$usuario, $dia);
-                    //$contenido = "PRUEBA ENVIO SAHA";
-                    $mensaje="";
-                    if($contenido!="")
-                    {
-                        $mensaje= $fileContent;
-                        $mensaje=  str_replace("@nombre",$usuario->nombre,$mensaje);
-                        $mensaje=  str_replace("@contenido",$contenido,$mensaje);
-                        
-                      
-                        $cabecera = "From:  SAHA <noreply@apps-handel.com>\r\n";
-                        $cabecera .= "Bcc: bitacora_correo@apps-handel.com\r\n";
-                        $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";
-                        
-                        $errLevel = error_reporting(E_ALL ^ E_WARNING);
-                        $resultadoMail = true;
-                        $resultadoMail= mail($usuario->nombreUsuario,$asunto, $mensaje, $cabecera);
-                        error_reporting($errLevel);
-                        
-                        $error = error_get_last();
-                        
-                        if ($error!=null &&  $error["type"] == E_WARNING)
-                        {
-                            $resultado->mensajeError="No se pudo enviar el correo electrónico a $usuario->nombreUsuario.  ". htmlspecialchars_decode($error["message"]) ;
-                            $resultado->codigoError = 3;
-                            mensajeLog("error",$i. " " .$resultado->mensajeError);
-                        }
-                        else if($resultadoMail)
-                        {
-                            $resultado->valor="OK";
-                            mensajeLog("log_envio",($i +1) . " Correo enviado a ".$usuario->nombreUsuario);
-                            $enviados++;
-                        }
-                        
-                        if($guardarEnvio)
-                            guardarEnvio($usuario,$asunto,$mensaje);
-                        
-                       
-                    }
-                    else
-                    {
-                        //mensajeLog("log_envio",($i +1) . " Correo sin contenido no enviado a ".$usuario->nombreUsuario);
-                    }
-              
-                    if($imprimirMensaje)
-                        echo $mensaje;
-                    sleep($pausaCorreo);
-                    $i++;
+                $resultado = $repositorio->procesando($correo->id);
+                if(!$resultado->correcto())
+                {
+                    mensajeLog("notificacion_saha_generar_contenido",$resultado->mensajeError);
+                    break;
                 }
-                sleep($pausaLote);
+                  
+                $contenido = getContenido($conexion,$usuariosRepositorio,$usuariosProcedimientosRepositorio, $evidenciasRepositorio,$correo, $dia);
+                //$contenido = "PRUEBA ENVIO SAHA";
+                $mensaje="";
+                if($contenido!="")
+                {
+                    $mensaje= $fileContent;
+                    $mensaje=  str_replace("@nombre",$correo->nombre,$mensaje);
+                    $mensaje=  str_replace("@contenido",$contenido,$mensaje);
+                    
+                  
+                    $cabecera = "From:  SAHA <noreply@apps-handel.com>\r\n";
+                    $cabecera .= "Bcc: bitacora_correo@apps-handel.com\r\n";
+                    $cabecera .= "Content-type: text/html; charset=UTF-8\r\n";
+                    
+                    $resultado = $repositorio->procesado($correo->id, $asunto, $contenido, $cabecera);
+                    if(!$resultado->correcto())
+                    {
+                        mensajeLog("notificacion_saha_generar_contenido",$resultado->mensajeError);
+                        break;
+                    }
+                    $enviados++;
+                    //TODO: envio
+                    /*$errLevel = error_reporting(E_ALL ^ E_WARNING);
+                    $resultadoMail = true;
+                    $resultadoMail= mail($correo->nombreUsuario,$asunto, $mensaje, $cabecera);
+                    error_reporting($errLevel);
+                    
+                    $error = error_get_last();
+                    
+                    if ($error!=null &&  $error["type"] == E_WARNING)
+                    {
+                        $resultado->mensajeError="No se pudo enviar el correo electrónico a $correo->nombreUsuario.  ". htmlspecialchars_decode($error["message"]) ;
+                        $resultado->codigoError = 3;
+                        mensajeLog("error",$i. " " .$resultado->mensajeError);
+                        $repositorio->noEnviado($correo->id, $resultado->mensajeError);
+                    }
+                    else if($resultadoMail)
+                    {
+                        $resultado->valor="OK";
+                        mensajeLog("notificacion_saha_generar_contenido",($i +1) . " Correo enviado a ".$correo->nombreUsuario);
+                        $enviados++;
+                        $repositorio->enviado($correo->id);
+                    }
+                    
+                   
+                    
+                    if($guardarEnvio)
+                        guardarEnvio($correo,$asunto,$mensaje);
+                    */
+                   
+                }
+                else
+                {
+                    $error = "Contenido vacio ".$correo->nombreUsuario;
+                    mensajeLog("notificacion_saha_generar_contenido",$error);
+                    $resultado = $repositorio->omitido($correo->id, $error);
+                    if(!$resultado->correcto())
+                    {
+                        mensajeLog("notificacion_saha_generar_contenido",$resultado->mensajeError);
+                        break;
+                    }
+                    $noEnviados++;
+                }
+          
+                if($imprimirMensaje)
+                    echo $mensaje;
+                sleep($pausaCorreo);
                
             }
-            mensajeLog("log_envio","Enviados: " .$enviados);
-            mensajeLog("log_envio","Termimado!");
+            mensajeLog("notificacion_saha_generar_contenido","Con contenido: " .$enviados);
+            mensajeLog("notificacion_saha_generar_contenido","Sin contenido: " .$noEnviados);
+            mensajeLog("notificacion_saha_generar_contenido","Termimado!");
         }
+        else
+            mensajeLog("notificacion_saha_generar_contenido","No ejecutado, hora servidor: $horaServidor, hora inicial = $horaInicial, hora final = $horaFinal ");
     }
     
 }
@@ -221,15 +195,7 @@ catch(Exception $e)
 finally
 {
     $administrador_conexion->cerrar($conexion);
-//     if($resultado!=null)
-//     {
-//         $json = json_encode($resultado, JSON_UNESCAPED_UNICODE);
-//         if (FALSE === $json)
-//             echo '{"mensajeError":"' .json_last_error_msg() . '"}';
-//             else
-//                 echo $json;
-//     }
-   
+
 }
 
 function getAsunto($dia)
@@ -1052,9 +1018,13 @@ function getEvidenciasAsociado($usuario,EvidenciasRepositorio $evidenciasReposit
 
 function mensajeLog($archivo,$mensaje)
 {
-    $mensaje = date("j/n/Y h:i:s") .":".$mensaje;
-    file_put_contents('./logs/'.$archivo.'_'.date("j.n.Y").'.log',  utf8_decode("\n".$mensaje) , FILE_APPEND);
-    echo "<br>".utf8_decode($mensaje);
+    $imprimeLogs = true;
+    if($imprimeLogs)
+    {
+        $mensaje = date("j/n/Y h:i:s") .":".$mensaje;
+        file_put_contents('./logs/'.$archivo.'_'.date("j.n.Y").'.log',  utf8_decode("\n".$mensaje) , FILE_APPEND);
+        echo "<br>".utf8_decode($mensaje);
+    }
 }
 
 function guardarEnvio($usuario, $asunto, $mensaje)

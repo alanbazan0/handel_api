@@ -7,10 +7,10 @@ use mysqli_sql_exception;
 class AdministradorConexion
 {
     private $servidor = "apps-handel.com";
-    private	$basedatos = "appshand_saha";
-    private	$usuario = "appshand_saha";
-    private	$contrasena ="dt=02wq~CEzk";
-
+    private	$basedatos = "appshand_database";
+    private	$usuario = "appshand_user";
+    private	$contrasena ="+q3l8WZUq9GU";
+    //
     public function abrir()
     {
         define("MYSQL_CONN_ERROR", "Unable to connect to database.");
