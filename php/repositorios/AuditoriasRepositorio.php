@@ -5554,7 +5554,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
         $resultado = new Resultado();
         $hallazgos = array();
         
-        $consulta = "SELECT id, titulo FROM appshand_saha.recomendaciones
+        $consulta = "SELECT id, titulo FROM recomendaciones
                     WHERE terminada = 0 
                     AND responsable_id = ?";
             
