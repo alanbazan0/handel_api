@@ -2141,7 +2141,7 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
                     		INNER JOIN usuarios U1 ON U1.id = UP1.usuario_id
                     	WHERE UP1.proceso_id = P.id
                     ) usuarios
-                    FROM appshand_saha.procesos_revisados PR
+                    FROM procesos_revisados PR
                     	INNER JOIN usuarios_procesos UP ON UP.id = PR.usuario_proceso_id
                         INNER JOIN procesos P ON P.id = UP.proceso_id
                         INNER JOIN empresas EM ON EM.id = P.empresa_id

@@ -234,6 +234,9 @@ class CorreosRepositorio extends RepositorioBase implements ICorreosRepositorio
            
             if(isset($criteriosSeleccion->tipo))
                 array_push($filtros,(object)['tipoDato'=>'varchar','tabla' => 'C', 'campo'=>'tipo','valor'=>$criteriosSeleccion->tipo]);
+            
+            if(isset($criteriosSeleccion->usuarioId) && $criteriosSeleccion->usuarioId!="")
+                array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'C', 'campo'=>'usuario_id','valor'=>$criteriosSeleccion->usuarioId]);
                     
             $where = $this->where($filtros);
         }

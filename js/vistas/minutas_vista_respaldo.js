@@ -6,6 +6,21 @@ class MinutasVista extends CatalogoVista
 		this.presentador = new MinutasPresentador(this);
 		this._urlFormulario = "html/formularios/minutas.php";
 		
+		this.listaTareas = new ListaTareas("listaTareas");
+		this.listaTareasPendientes = new ListaTareas("listaTareasPendientes");
+		this.listaTareasPendientes.editar = false;
+		this.listaTareasPendientes.eliminar = false;
+		this.listaTareasPendientes.mover = false;
+		this.listaTareasPendientes.minuta = true;
+		this.listaTareasPendientes.removerTerminada = true;
+		
+		this.listaTareasTerminadas = new ListaTareas("listaTareasTerminadas");
+		this._time = new Date().getTime();
+		
+		this._consultoMinutas = false;
+		this._consultoTareasPendientes = false;
+		this._consultoTareasTerminadas = false;
+
 		this._colores = [
 			"#cdd9c5",
 			"#e7d1c8",
@@ -25,35 +40,10 @@ class MinutasVista extends CatalogoVista
 			"#f7dfed",
 			"#d2cbc1",
 			"#dbdcde"];
-			
+		
 		var fecha = new Date();
 		this._time = fecha.getTime();
 		
-		this.listaTareas = new ListaTareas("listaTareas");
-		
-		this.listaTareasPendientes = new ListaTareas("listaTareasPendientes");
-		this.listaTareasPendientes.editar = false;
-		this.listaTareasPendientes.eliminar = false;
-		this.listaTareasPendientes.mover = false;
-		this.listaTareasPendientes.minuta = true;
-		this.listaTareasPendientes.removerTerminada = true;
-		
-		this.listaTareasTerminadas = new ListaTareas("listaTareasTerminadas");
-		this._time = new Date().getTime();
-		
-		this._consultoMinutas = false;
-		this._consultoTareasPendientes = false;
-		this._consultoTareasTerminadas = false;
-		
-		this.listaTareasAsignadas = new ListaTareas("listaTareasAsignadas");
-		this.listaTareasAsignadas.editar = false;
-		this.listaTareasAsignadas.eliminar = false;
-		this.listaTareasAsignadas.mover = false;
-		this.listaTareasAsignadas.minuta = true;
-		this.listaTareasAsignadas.removerTerminada = true;
-		
-		this.crearlistaTareasPendientes();
-
 		$("#crearMinutaLink").click(function(){
 			$('.nav-tabs a[href="#minutas"]').tab('show');
 		});
@@ -82,41 +72,6 @@ class MinutasVista extends CatalogoVista
 		$("#agregarButtonPlantillas").click(function(){
 			_this.agregarPlantilla();
 		});
-		
-		this.consultarResponsables();
-	}
-	
-	crearlistaTareasPendientes()
-	{
-		this.listaTareasPendientesVencenHoy = new ListaTareas("listaTareasPendientesVencenHoy");
-		this.listaTareasPendientesVencenHoy.editar = false;
-		this.listaTareasPendientesVencenHoy.eliminar = false;
-		this.listaTareasPendientesVencenHoy.mover = false;
-		this.listaTareasPendientesVencenHoy.minuta = true;
-		this.listaTareasPendientesVencenHoy.removerTerminada = true;
-		
-		this.listaTareasPendientesVencenSiguienteSemana = new ListaTareas("listaTareasPendientesVencenSiguienteSemana");
-		this.listaTareasPendientesVencenSiguienteSemana.editar = false;
-		this.listaTareasPendientesVencenSiguienteSemana.eliminar = false;
-		this.listaTareasPendientesVencenSiguienteSemana.mover = false;
-		this.listaTareasPendientesVencenSiguienteSemana.minuta = true;
-		this.listaTareasPendientesVencenSiguienteSemana.removerTerminada = true;
-		
-		
-		this.listaTareasPendientesVencidas = new ListaTareas("listaTareasPendientesVencidas");
-		this.listaTareasPendientesVencidas.editar = false;
-		this.listaTareasPendientesVencidas.eliminar = false;
-		this.listaTareasPendientesVencidas.mover = false;
-		this.listaTareasPendientesVencidas.minuta = true;
-		this.listaTareasPendientesVencidas.removerTerminada = true;
-		
-		
-		this.listaTareasPendientesMasTiempo = new ListaTareas("listaTareasPendientesMasTiempo");
-		this.listaTareasPendientesMasTiempo.editar = false;
-		this.listaTareasPendientesMasTiempo.eliminar = false;
-		this.listaTareasPendientesMasTiempo.mover = false;
-		this.listaTareasPendientesMasTiempo.minuta = true;
-		this.listaTareasPendientesMasTiempo.removerTerminada = true;
 	}
 	
 	
@@ -135,10 +90,6 @@ class MinutasVista extends CatalogoVista
 		
 		$("#consultarTareasButton").click(function(){
 			_this.consultarMisTareas();
-		});
-		
-		$("#consultarTareasAsignadasButton").click(function(){
-			_this.consultarTareasAsignadas();
 		});
 		
 		$("#agregarButton").click(function(){
@@ -232,124 +183,17 @@ class MinutasVista extends CatalogoVista
 	    	  		if(!_this._consultoPlantillas)
 	    	  			_this.consultarPlantillas();	
 	    		break;
-	    		case "#tareas-asignadas":
-	    			_this._plantilla = false;
-    	  			_this.consultarTareasAsignadas();	
-	    		break;
 	    	  }
 	    	});
 	    
 	   $("#buscarTareaInput").on("keyup", function() {
 	        var value = $(this).val().toLowerCase();
-	         value = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-	         
-	         var mostrar = $("#tareaTerminadaSelectCriterio").val();
-			if(mostrar=="0")
-			{
-	         	$("#listaTareasPendientesVencenHoy li").filter(function() {
-					var text = $(this).text().toLowerCase();
-					text = text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-		          $(this).toggle(text.indexOf(value) > -1)
-		          _this.mostrarOcultarVencenHoy();
-		        });
-		        $("#listaTareasPendientesVencenSiguienteSemana li").filter(function() {
-					var text = $(this).text().toLowerCase();
-					text = text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-		          $(this).toggle(text.indexOf(value) > -1)
-		          _this.mostrarOcultarVencenSiguienteSemana();
-		        });
-		        $("#listaTareasPendientesVencidas li").filter(function() {
-					var text = $(this).text().toLowerCase();
-					text = text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-		          $(this).toggle(text.indexOf(value) > -1)
-		          _this.mostrarOcultarVencidas();
-		        });
-		        $("#listaTareasPendientesMasTiempo li").filter(function() {
-					var text = $(this).text().toLowerCase();
-					text = text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-		          $(this).toggle(text.indexOf(value) > -1)
-		         _this.mostrarOcultarMasTiempo();
-		        });
-	        }
-	        else
-	        {
-		        $("#listaTareasPendientes li").filter(function() {
-					var text = $(this).text().toLowerCase();
-					text = text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-		          $(this).toggle(text.indexOf(value) > -1)
-		        });
-	        }
-	        
-	      });
-	      
-	      $("#buscarTareaAsignadaInput").on("keyup", function() {
-	        var value = $(this).val().toLowerCase();
-	        value = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-	        $("#listaTareasAsignadas li").filter(function() {
-			  var text = $(this).text().toLowerCase();
-			  
-			  var images = $(this).find("img");
-			  var toggle = false;
-			  for(var i=0; i < images.length; i++)
-			  {
-				var img = images[i];
-				var title = $(img).attr("data-title").toLowerCase();
-				title = title.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-				toggle = title.indexOf(value) > -1;
-				if(toggle)
-					break;
-			  }
-			 // var f = images.title.indexOf(value) > -1;
-			  
-	          $(this).toggle(text.indexOf(value) > -1 || toggle)
+	        $("#listaTareasPendientes li").filter(function() {
+	          $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
 	        });
 	      });
 	    
 	}
-	mostrarOcultarVencenHoy()
-	{
-		var count = $("#listaTareasPendientesVencenHoy li:visible").length;
-      if(count>0)
-      	$("#vencenHoyTitulo").show();
-      else
-      	$("#vencenHoyTitulo").hide();
-	}
-	
-	mostrarOcultarVencenSiguienteSemana()
-	{
-		var count = $("#listaTareasPendientesVencenSiguienteSemana li:visible").length;
-       	if(count>0)
-      		$("#vencenEnUnaSemanaTitulo").show();
-      	else
-      		$("#vencenEnUnaSemanaTitulo").hide();
-	}
-	
-	mostrarOcultarVencidas()
-	{
-		var count = $("#listaTareasPendientesVencidas li:visible").length;
-       if(count>0)
-      	$("#vencidadTitulo").show();
-      else
-      	$("#vencidadTitulo").hide();
-	}
-	
-	mostrarOcultarMasTiempo()
-	{
-		 var count = $("#listaTareasPendientesMasTiempo li:visible").length;
-       if(count>0)
-      	$("#conMasTiempoTitulo").show();
-      else
-      	$("#conMasTiempoTitulo").hide();
-	}
-	
-	mostrarOcultarTitulos()
-	{
-		this.mostrarOcultarVencenHoy();
-		this.mostrarOcultarVencenSiguienteSemana();
-		this.mostrarOcultarVencidas();
-		this.mostrarOcultarMasTiempo();
-	}
-	
 	
 	consultar()
 	{
@@ -367,15 +211,6 @@ class MinutasVista extends CatalogoVista
 	{
 		this._consultoTareasPendientes = true;
 		this.presentador.consultarMisTareas();
-		
-		this.consultarNumeroMensajesNoLeidos();
-		this.consultarTareasPendientes();
-	}
-	
-	consultarTareasAsignadas()
-	{
-		this._consultoTareasAsignadas = true;
-		this.presentador.consultarTareasAsignadas();
 		
 		this.consultarNumeroMensajesNoLeidos();
 		this.consultarTareasPendientes();
@@ -674,15 +509,6 @@ class MinutasVista extends CatalogoVista
 		 }
 		 return criteriosSeleccion;
 	}		
-	
-	get criteriosSeleccionTareasAsignadas()
-	{
-		 var criteriosSeleccion = 
-		 {				    
-			terminada: $('#tareaTerminadaAsignadaSelectCriterio').val()
-		 }
-		 return criteriosSeleccion;
-	}		
 
 
 	set modelo(valor)
@@ -727,14 +553,8 @@ class MinutasVista extends CatalogoVista
 		$("#colorInput").data("color",this.modeloEdicion.color);
 		
 		
-		
-		/*if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
-		{
-			this.listaTareas.responsables = this._responsables;
-			this.listaTareas.tareas= this.modeloEdicion.tareas;
-			this.calcularPorcentajesEncabezados();
-		}*/
 		this.consultarResponsables();
+		
 		
 		
 		
@@ -783,7 +603,6 @@ class MinutasVista extends CatalogoVista
 		{
 			
 		}
-		this.listaTareasAsignadas.responsables = this._responsables;
 		
 		this.usuariosCompartir = responsables;
 		
@@ -810,15 +629,12 @@ class MinutasVista extends CatalogoVista
 		});
 		
 		var usuariosSeleccionados =[];
-		if(this.modeloEdicion!=null)
+		if(this.modeloEdicion.usuarios!=undefined)
 		{
-			if(this.modeloEdicion.usuarios!=undefined)
+			$.each(this.modeloEdicion.usuarios, function(i, p) 
 			{
-				$.each(this.modeloEdicion.usuarios, function(i, p) 
-				{
-					usuariosSeleccionados.push(p.usuarioId);
-				});
-			}
+				usuariosSeleccionados.push(p.usuarioId);
+			});
 		}
 		
 		$("#usuariosCompartirSelect").val(usuariosSeleccionados);
@@ -829,9 +645,8 @@ class MinutasVista extends CatalogoVista
 		
 		$("#usuariosCompartirSelect_chosen").css("width","100%");
 		
-		if(this.modeloEdicion!= null)
-			if(this.modeloEdicion.usuarioId == this.usuario.id)
-				$("#compartirGroup").fadeIn();
+		if(this.modeloEdicion.usuarioId == this.usuario.id)
+			$("#compartirGroup").fadeIn();
 		
 //		var responsablesSeleccionados =[];
 //		if(this.registro.responsables!=undefined)
@@ -1409,15 +1224,15 @@ class MinutasVista extends CatalogoVista
 	
 	set misTareasPendientes(misTareasPendientes)
 	{
-		//this.listaTareasPendientes.tareas= misTareasPendientes;
-		
-		this.agruparTareasPendientes(misTareasPendientes);	
-	}
-	
-	set tareasAsignadas(tareas)
-	{
-		this.listaTareasAsignadas.tareas= tareas;
-		
+		this.listaTareasPendientes.tareas= misTareasPendientes;
+		/*if(misTareasPendientes.length==0)
+		{
+			var mostrar = $("tareaTerminadaSelectCriterio").val();
+			if(mostrar=="0")
+				$("#tareasPendientesDiv").fadeIn();
+		}
+		else
+			$("#tareasPendientesDiv").hide();*/
 			
 	}
 	
@@ -1649,84 +1464,7 @@ class MinutasVista extends CatalogoVista
 				}
 				
 			});
-			
 	}
-	
-	
-	agruparTareasPendientes(tareas)
-	{
-		var mostrar = $("#tareaTerminadaSelectCriterio").val();
-		if(mostrar=="0")
-		{
-			var vencenHoy = [];
-			var vencenSiguienteSemana = [];
-			var vencidas = [];
-			var masTiempo = [];
-			for(var i=0; i < tareas.length; i++)
-			{
-				var tarea = tareas[i];
-				var fecha = new Date();
-				fecha.setHours(0);
-				fecha.setMinutes(0);
-				fecha.setSeconds(0);
-				fecha.setMilliseconds(0);
-				var hoy = moment(fecha,"DD/MM/YYYY");
-				var fechaVencimiento =  moment(tarea.fechaCompromiso,"DD/MM/YYYY");
-				var days = hoy.diff(fechaVencimiento, 'days') 
-				if(days == 0)
-					vencenHoy.push(tarea);
-				else if(days > 0)
-				{
-					vencidas.push(tarea);
-				}
-				else if(days > -7)
-				{
-					vencenSiguienteSemana.push(tarea);
-				}
-				else if(-7 > days && 0 < days)
-				{
-					
-				}
-				else
-					masTiempo.push(tarea);
-				
-			}
-			this.listaTareasPendientesVencenHoy.tareas = vencenHoy;
-			this.listaTareasPendientesVencenSiguienteSemana.tareas = vencenSiguienteSemana;
-			this.listaTareasPendientesVencidas.tareas = vencidas;
-			this.listaTareasPendientesMasTiempo.tareas = masTiempo;
-			$("#listaTareasPendientesVencenHoy").fadeIn();
-			$("#listaTareasPendientesVencenSiguienteSemana").fadeIn();
-			$("#listaTareasPendientesVencidas").fadeIn();
-			$("#listaTareasPendientesMasTiempo").fadeIn();
-			$("#listaTareasPendientes").fadeOut();
-			$(".etiquetaGrupo").hide();
-			
-			if(vencenHoy.length > 0)
-				$("#vencenHoyTitulo").fadeIn();
-			if(vencenSiguienteSemana.length > 0)
-				$("#vencenEnUnaSemanaTitulo").fadeIn();
-			if(vencidas.length > 0)
-				$("#vencidadTitulo").fadeIn();
-			if(masTiempo.length > 0)
-				$("#conMasTiempoTitulo").fadeIn();
-		}
-		else
-		{
-			$("#listaTareasPendientesVencenHoy").fadeOut();
-			$("#listaTareasPendientesVencenSiguienteSemana").fadeOut();
-			$("#listaTareasPendientesVencidas").fadeOut();
-			$("#listaTareasPendientesMasTiempo").fadeOut();	
-			$("#listaTareasPendientes").fadeIn();
-			$(".etiquetaGrupo").fadeOut();
-			this.listaTareasPendientes.tareas = tareas;
-			
-		}
-		
-	}
-	
-	
-
 	
 	
 }

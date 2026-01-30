@@ -463,6 +463,16 @@ class UsuariosPresentador extends CatalogoPresentador
 			}
 		}
 		
+		if(resumen.supervisados.length > 0)
+		{
+			html+="</br></br><strong>Personal:</strong><br>";
+			for(var i = 0; i < resumen.supervisados.length; i++)
+			{
+				var proceso = resumen.supervisados[i];
+				html+="<br>"+ proceso.nombreCompleto;
+			}
+		}
+		
 		html+="</div>";
 		html+="</div>";
 		

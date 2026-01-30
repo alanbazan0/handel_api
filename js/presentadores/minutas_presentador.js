@@ -360,6 +360,18 @@ class MinutasPresentador extends CatalogoPresentador
 	 }
 	 
 	 
+	 consultarTareasAsignadas()
+	 {
+		 var repositorio = new MinutasRepositorio(this);		
+		 repositorio.consultarTareasAsignadas(this,function(resultado){
+			 if(resultado.mensajeError=="")
+			{
+				this.vista.tareasAsignadas = resultado.valor;
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError, resultado.codigoError);
+		 },this.vista.criteriosSeleccionTareasAsignadas);
+	 }
 	
 	 
 }

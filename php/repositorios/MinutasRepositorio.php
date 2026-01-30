@@ -3403,4 +3403,116 @@ Se verifica el avance de cierre de auditoría por departamento con los siguiente
         return $texto;
     }
     
+    public function consultarTareasAsignadas($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $tareas = array();
+        
+        $filtros = array();
+        $and='';
+        if($criteriosSeleccion!=null)
+        {
+            
+            if(isset($criteriosSeleccion->terminada) && $criteriosSeleccion->terminada!="")
+                array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'T','campo'=>'terminada','valor'=>$criteriosSeleccion->terminada]);
+                
+        }
+        
+        
+        $and = $this->and($filtros);
+        
+        $consulta = "SELECT M.id, M.titulo, M.color, T.id, RTRIM(T.titulo) titulo, IFNULL(DATE_FORMAT(T.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, IFNULL(DATE_FORMAT(T.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_modificacion,
+            IFNULL(DATE_FORMAT(T.fecha_compromiso,'%d/%m/%Y'),'') as fecha_compromiso,
+            IFNULL(DATE_FORMAT(T.fecha_finalizacion,'%d/%m/%Y %H:%i:%s'),'') as fecha_finalizacion, T.terminada, T.usuario_id, U.nombre, U.apellido,
+            (SELECT count(*) FROM minutas_tareas_comentarios MTC WHERE MTC.minuta_id = T.minuta_id AND MTC.tarea_id = T.id) numeroComentarios
+            FROM minutas_tareas T
+                INNER JOIN usuarios U ON U.id = T.usuario_id
+                INNER JOIN minutas M ON M.id = T.minuta_id
+             WHERE T.tipo = 't' AND M.plantilla!=1 AND U.id = $usuario->id 
+            $and
+            ORDER BY UNIX_TIMESTAMP(fecha_compromiso)";
+            
+            
+            
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            //if($sentencia->bind_param("i",$usuario->id))
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    //$valores = array();
+                    if ($sentencia->bind_result($minutaId, $minutaTitulo, $minutaColor, $id, $titulo, $fechaAlta, $fechaModificacion, $fechaCompromiso, $fechaFinalizacion, $terminada, $usuarioId, $usuarioNombre, $usuarioApellido, $numeroComentarios))
+                    //if ($sentencia->bind_result($valores))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $tarea= (object) [
+                                'minutaId' =>  $minutaId,
+                                'minutaTitulo' => $minutaTitulo,
+                                'minutaColor' => $minutaColor,
+                                'id' =>  $id,
+                                'titulo' => $titulo,
+                                'fechaAlta' => $fechaAlta,
+                                'fechaModificacion' => $fechaModificacion,
+                                'fechaCompromiso' => $fechaCompromiso,
+                                'fechaFinalizacion' => $fechaFinalizacion,
+                                'terminada' => $terminada,
+                                'usuarioId' => $usuarioId,
+                                'usuarioNombre' => $usuarioNombre,
+                                'usuarioApellido' => $usuarioApellido,
+                                'numeroComentarios' => $numeroComentarios
+                            ];
+                            
+                            if($tarea->minutaColor=="" || $tarea->minutaColor==null)
+                                $tarea->minutaColor="#000000";
+                            
+                            $tarea->usuarioNombreCompleto = $tarea->usuarioNombre . " " . $tarea->usuarioApellido;
+                            $tarea->fotoPerfil =  "../fotos/usuario". $tarea->usuarioId .".jpg";
+                            if(file_exists($tarea->fotoPerfil))
+                                $tarea->fotoPerfil =  "php/fotos/usuario". $tarea->usuarioId .".jpg";
+                            else
+                                $tarea->fotoPerfil =  "php/fotos/default.jpg";
+                            
+                            
+                                
+                                
+                            array_push($tareas,$tarea);
+                        }
+                        $resultado->valor = $tareas;
+                        
+                        $sentencia->close();
+                        
+                        for($i=0; $i < count($tareas);$i++)
+                        {
+                            $tarea = $tareas[$i];
+                            $resultadoCategorias = $this->consultarResponsablesTarea($tarea->minutaId,$tarea->id);
+                            if($resultadoCategorias->correcto())
+                            {
+                                $tarea->responsables = $resultadoCategorias->valor;
+                            }
+                            else
+                            {
+                                $resultado->mensajeError = $resultadoCategorias->mensajeError;
+                                break;
+                            }
+                        }
+                        
+                           
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__." Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__." Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__." Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__." Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                
+        return $resultado;
+    }
+    
 }

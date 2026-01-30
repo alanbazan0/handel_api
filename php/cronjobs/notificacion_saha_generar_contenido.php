@@ -7,6 +7,7 @@ use php\repositorios\EvidenciasRepositorio;
 use php\repositorios\UsuariosProcedimientosRepositorio;
 use php\repositorios\CorreosRepositorio;
 use php\modelos\Correo;
+use php\clases\Porcentaje;
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -17,6 +18,7 @@ include '../clases/Utilidades.php';
 include '../configuracion.php';
 include '../clases/AdministradorConexion.php';
 include '../clases/AdministradorCorreo.php';
+require_once('../clases/Porcentaje.php');
 include '../modelos/Usuario.php';
 require_once('../clases/TipoUsuario.php');
 require_once('../repositorios/UsuariosRepositorio.php');
@@ -31,7 +33,7 @@ header('Access-Control-Allow-Origin: '.$origin);
 header('Content-Type: html; charset=UTF-8');
 header('Access-Control-Allow-Credentials: true');
 
-ini_set('max_execution_time', 500);
+set_time_limit(600); 
 
 $imprimirMensaje = false;
 $numeroUsuarios = 3;
@@ -63,7 +65,10 @@ try
         
         $repositorio->reiniciarColgados();
         
-        $criteriosSeleccion = (object)["estatus"=>EstatusCorreo::CREADO, "tipo" => "saha"];
+        $usuarioId = REQUEST("usuarioId");
+       
+        
+        $criteriosSeleccion = (object)["estatus"=>EstatusCorreo::CREADO, "tipo" => "saha", "usuarioId" => $usuarioId];
         $resultado = $repositorio->consultar($criteriosSeleccion, $tamanoLote);
         if($resultado->correcto())
         {
@@ -129,6 +134,7 @@ try
                         mensajeLog("notificacion_saha_generar_contenido",$resultado->mensajeError);
                         break;
                     }
+                    mensajeLog("notificacion_saha_generar_contenido","GENERADO " .  $correo->nombreUsuario);
                     $enviados++;
                     //TODO: envio
                     /*$errLevel = error_reporting(E_ALL ^ E_WARNING);
@@ -162,7 +168,7 @@ try
                 }
                 else
                 {
-                    $error = "Contenido vacio ".$correo->nombreUsuario;
+                    $error = "VACIO ".$correo->nombreUsuario;
                     mensajeLog("notificacion_saha_generar_contenido",$error);
                     $resultado = $repositorio->omitido($correo->id, $error);
                     if(!$resultado->correcto())
@@ -263,22 +269,27 @@ function getCaricatura($caricatura,$width)
 
 function getContenido($conexion,UsuariosRepositorio $usuariosRepositorio,UsuariosProcedimientosRepositorio $usuariosProcedimientosRepositorio,EvidenciasRepositorio $evidenciasRepositorio,$usuario,$dia)
 {
-
-
     $contenido ="";
     if($usuario->tipoUsuarioId == TipoUsuario::COORDINADOR)
         $contenido = getContenidoCoordinador($conexion,$usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
     if($usuario->tipoUsuarioId == TipoUsuario::SUPERVISOR)
-        $contenido = getContenidoSupervisor($conexion,$usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
+    {
+        $resultado = $usuariosRepositorio->consultar($usuario,  (object) ['supervisor1Id' =>  $usuario->usuarioId], false);
+        if($resultado->correcto())
+        {
+            $usuariosACargo = $resultado->valor;
+            if(count($usuariosACargo)>0)
+                $contenido = getContenidoSupervisor($conexion,$usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
+        }
+    }
     else if($usuario->tipoUsuarioId == TipoUsuario::USUARIO)
     {
-        $resultado = $usuariosProcedimientosRepositorio->consultar((object)['usuarioId' => $usuario->id, 'estatus' => 1]);
+        $resultado = $usuariosProcedimientosRepositorio->consultar((object)['usuarioId' => $usuario->usuarioId, 'estatus' => 1]);
         $numeroEvidenciasActivas = 0;
         if($resultado->correcto())
         {
             $numeroEvidenciasActivas = count($resultado->valor);
         }
-      //  echo "numeroEvidenciasActivas " .$numeroEvidenciasActivas;
         if($numeroEvidenciasActivas>0)
             $contenido = getContenidoUsuario($usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia) .  "numeroEvidenciasActivas " .$numeroEvidenciasActivas;
         else
@@ -302,7 +313,7 @@ function getContenidoCoordinador($conexion,UsuariosRepositorio $usuariosReposito
             
             $ano=  date("Y");
             $mes = date("m");
-            $contenido .="<br>" .getImageLink("Descargar","https://api.apps-handel.com/php/reportes/reporte_evidencias.php?usuarioId=$usuario->id&mes=$mes&ano=$ano");
+            $contenido .="<br>" .getImageLink("Descargar","https://api.apps-handel.com/php/reportes/reporte_evidencias.php?usuarioId=$usuario->usuarioId&mes=$mes&ano=$ano");
            
             $contenido .= "<br>".getCaricatura("https://api.apps-handel.com/images/caricatura/Little_Business_Girl-78.png",160);
             $contenido .= "<br>".getGracias();
@@ -314,7 +325,7 @@ function getContenidoCoordinador($conexion,UsuariosRepositorio $usuariosReposito
         case 14:
         case 21:
         case 27:
-            $resultado = $usuariosRepositorio->consultar($usuario,  (object) ['supervisor1Id' =>  $usuario->id], false);
+            $resultado = $usuariosRepositorio->consultar($usuario,  (object) ['supervisor1Id' =>  $usuario->usuarioId], false);
             if($resultado->correcto())
             {
                 $usuariosACargo = $resultado->valor;
@@ -356,6 +367,7 @@ function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,UsuariosPr
                 $cumplidas = $enviadas +  $jusitificadas;
                 if($total!=0)
                     $porcentajeCumplimiento = $cumplidas *100 / $total;
+                
                     
             }
             else
@@ -363,6 +375,7 @@ function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,UsuariosPr
                 mensajeLog("error", $resultadoPorcentajes->mensajeError);
             }
             
+            $porcentaje = Porcentaje::formatear($porcentajeCumplimiento, 2);
             
             $contenido = getTextoConLogo("¡Hola! SAHA se encuentra abierto desde este momento para recibir las evidencias del mes, es importante que tomes unos minutos para identiﬁcarlas, organizarlas y subirlas así evitando olvidar enviarlas después.");
             
@@ -370,7 +383,7 @@ function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,UsuariosPr
                         <div style='text-align:left; display: inline-block; width:90%'>";
             
             $contenido .= "<br>Agradecemos tu colaboración para tener el mejor desempeño de la compañía con la certiﬁcación.";
-            $contenido.= "<br><br><label>El mes anterior tu cumplimiento de evidencias fue $porcentajeCumplimiento%</label>";
+            $contenido.= "<br><br><label>El mes anterior tu cumplimiento de evidencias fue $porcentaje%</label>";
             $contenido.= getCaricatura("https://api.apps-handel.com/images/caricatura/Little_Business_Girl-03.png",100);
             $contenido.= "<br><br>PD<br><label style=' font-style: italic;'>No olvides que puedes utilizar las apps de IOS y Android para facilitar la subida de tus evidencias.</label>";
             $contenido .= "</div>
@@ -391,15 +404,18 @@ function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,UsuariosPr
                 $cumplidas = $enviadas +  $jusitificadas;
                 if($total!=0)
                     $porcentajeCumplimiento = $cumplidas *100 / $total;
-                    
+                
+                
+                
             }
             else
             {
                 mensajeLog("error", $resultadoPorcentajes->mensajeError);
             }
             
+            $porcentaje = Porcentaje::formatear($porcentajeCumplimiento, 2);
             
-            $contenido .= getTextoConLogo("Este es un recordatorio de SAHA, a la fecha tu cumplimiento es $porcentajeCumplimiento%, en caso de que tengas evidencias por cumplir, por favor considera que quedan menos de 2 semanas para poder enviarlas.");
+            $contenido .= getTextoConLogo("Este es un recordatorio de SAHA, a la fecha tu cumplimiento es $porcentaje%, en caso de que tengas evidencias por cumplir, por favor considera que quedan menos de 2 semanas para poder enviarlas.");
             
             $contenido.="<div style='text-align:center;width:100%'>
                         <div style='text-align:left; display: inline-block; width:90%'>";
@@ -430,13 +446,13 @@ function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,UsuariosPr
                 $cumplidas = $enviadas +  $jusitificadas;
                 if($total!=0)
                     $porcentajeCumplimiento = $cumplidas *100 / $total;
-                    
             }
             else
             {
                 mensajeLog("error", $resultadoPorcentajes->mensajeError);
             }
             
+            $porcentaje = Porcentaje::formatear($porcentajeCumplimiento, 2);
             
             $contenido .= getTextoConLogo("El tiempo pasa volando; trabajo, reuniones, reportes, es fácil olvidar algunas tareas durante el mes, que SAHA no sea una de ellas.
                                 Estamos en esa parte del mes que llega el recordatorio de 6 días, la fecha límite se acerca pero aún estás a tiempo de poder cumplir. ");
@@ -444,7 +460,7 @@ function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,UsuariosPr
             $contenido.="<div style='text-align:center;width:100%'>
                         <div style='text-align:left; display: inline-block; width:90%'>";
             
-            $contenido.= "<br><br><label>Al día de hoy tu cumplimiento es $porcentajeCumplimiento%</label>";
+            $contenido.= "<br><br><label>Al día de hoy tu cumplimiento es $porcentaje%</label>";
             $contenido .= "<br><br>".getEvidenciasEnviadas($usuario,$evidenciasRepositorio);
             $contenido .= "<br>".getEvidenciasPendientes($usuario,$usuariosProcedimientosRepositorio);
             $contenido .= "<br>".getCaricatura("https://api.apps-handel.com/images/caricatura/Little_Business_Girl-46.png",100);
@@ -477,6 +493,8 @@ function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,UsuariosPr
                 mensajeLog("error", $resultadoPorcentajes->mensajeError);
             }
             
+            $porcentaje = Porcentaje::formatear($porcentajeCumplimiento, 2);
+            
             
             $contenido .= getTextoConLogo("!Hola!, en SAHA queremos que cada mes estes al 100%, por ello queremos recordarte que es el último día para subir evidencias,
                                             luego de hoy el sistema no recibirá más, es importante que tomes unos minutos para veriﬁcar las enviadas y en caso de que aún te falten, subirlas.
@@ -485,7 +503,7 @@ function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,UsuariosPr
             $contenido.="<div style='text-align:center;width:100%'>
                         <div style='text-align:left; display: inline-block; width:90%'>";
             
-            $contenido.= "<br><br><label>Al día de hoy tu cumplimiento es $porcentajeCumplimiento%</label>";
+            $contenido.= "<br><br><label>Al día de hoy tu cumplimiento es $porcentaje%</label>";
             $contenido .= "<br><br>".getEvidenciasEnviadas($usuario,$evidenciasRepositorio);
             $contenido .= "<br>".getEvidenciasPendientes($usuario,$usuariosProcedimientosRepositorio);
             $contenido .= "<br>".getCaricatura("https://api.apps-handel.com/images/caricatura/Little_Business_Girl-69.png",100);
@@ -766,7 +784,7 @@ function getContenidoSupervisor($conexion,UsuariosRepositorio $usuariosRepositor
             
             $ano=  date("Y");
             $mes = date("m");
-            $contenido .="<br>" .getImageLink("Descargar","https://api.apps-handel.com/php/reportes/reporte_evidencias.php?usuarioId=$usuario->id&mes=$mes&ano=$ano");
+            $contenido .="<br>" .getImageLink("Descargar","https://api.apps-handel.com/php/reportes/reporte_evidencias.php?usuarioId=$usuario->usuarioId&mes=$mes&ano=$ano");
             
             
             $contenido .= "<br>".getCaricatura("https://api.apps-handel.com/images/caricatura/Little_Business_Girl-78.png",160);

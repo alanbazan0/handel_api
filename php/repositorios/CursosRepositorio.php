@@ -4696,7 +4696,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             
         $lecciones = array();
         $consulta = "SELECT  LR.usuario_id, U.nombre, U.apellido
-                FROM appshand_saha.usuarios_cursos_lecciones_reprobadas LR
+                FROM usuarios_cursos_lecciones_reprobadas LR
                 	INNER JOIN usuarios U ON U.id = LR.usuario_id
                 	INNER JOIN cursos C ON C.id = LR.curso_id
                     INNER JOIN cursos_lecciones L ON L.id = LR.leccion_id AND L.curso_id = LR.curso_id
@@ -6692,7 +6692,7 @@ public function consultarAvanceCapacitaciones($usuario,$criteriosSeleccion)
         $lecciones = array();
         $filtros = $this->getFiltroEstructura($usuario,(object)[]);
         $consulta = "SELECT LR.id, LR.usuario_id, U.nombre, U.apellido, LR.curso_id, C.descripcion, LR.leccion_id, L.titulo, fecha, calificacion
-                    FROM appshand_saha.usuarios_cursos_lecciones_reprobadas LR
+                    FROM usuarios_cursos_lecciones_reprobadas LR
                     	INNER JOIN usuarios U ON U.id = LR.usuario_id
                     	INNER JOIN cursos C ON C.id = LR.curso_id
                         INNER JOIN cursos_lecciones L ON L.id = LR.leccion_id AND L.curso_id = LR.curso_id".
@@ -6763,7 +6763,7 @@ public function consultarAvanceCapacitaciones($usuario,$criteriosSeleccion)
             
         $filtros = $this->getFiltroEstructura($usuario,(object)[]);
         $consulta = "SELECT COUNT(*)
-                    FROM appshand_saha.usuarios_cursos_lecciones_reprobadas LR
+                    FROM usuarios_cursos_lecciones_reprobadas LR
                     	INNER JOIN usuarios U ON U.id = LR.usuario_id
                     	INNER JOIN cursos C ON C.id = LR.curso_id
                     	INNER JOIN cursos_lecciones L ON L.id = LR.leccion_id AND L.curso_id = LR.curso_id
@@ -6805,7 +6805,7 @@ public function consultarAvanceCapacitaciones($usuario,$criteriosSeleccion)
         $notificaciones = array();
         $filtros = $this->getFiltroEstructura($usuario,(object)[]);
         $consulta = "SELECT LR.id
-                    FROM appshand_saha.usuarios_cursos_lecciones_reprobadas LR
+                    FROM usuarios_cursos_lecciones_reprobadas LR
                     	INNER JOIN usuarios U ON U.id = LR.usuario_id
                     	INNER JOIN cursos C ON C.id = LR.curso_id
                     	INNER JOIN cursos_lecciones L ON L.id = LR.leccion_id AND L.curso_id = LR.curso_id
@@ -6961,7 +6961,7 @@ public function consultarAvanceCapacitaciones($usuario,$criteriosSeleccion)
                         SELECT LR.curso_id, C.descripcion, LR.leccion_id, L.titulo, C.token,
                         	(SELECT count(*) FROM usuarios_cursos_lecciones UCL WHERE UCL.usuario_id = LR.usuario_id AND UCL.curso_id = LR.curso_id AND UCL.leccion_id = LR.leccion_id AND UCL.terminado = 0)  pendiente,
                             (SELECT count(*) FROM usuarios_cursos_lecciones UCL WHERE UCL.usuario_id = LR.usuario_id AND UCL.curso_id = LR.curso_id AND UCL.leccion_id = LR.leccion_id)  contestando
-                        FROM appshand_saha.usuarios_cursos_lecciones_reprobadas LR
+                        FROM usuarios_cursos_lecciones_reprobadas LR
                         	INNER JOIN usuarios U ON U.id = LR.usuario_id
                         	INNER JOIN cursos C ON C.id = LR.curso_id
                         	INNER JOIN cursos_lecciones L ON L.id = LR.leccion_id AND L.curso_id = LR.curso_id

@@ -92,6 +92,8 @@ try
             mensajeLog("log_envio","Total: ". count($usuarios));
         }
         
+        
+        
         $resultado->valor = "";
       
         $parametroDebug= REQUEST("debug");

@@ -156,6 +156,10 @@ try
                     $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                     $resultado = $repositorio->generarAutoMinuta($usuario,$criteriosSeleccion);
                 break;
+                case 'consultarTareasAsignadas':
+                    $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                    $resultado = $repositorio->consultarTareasAsignadas($usuario,$criteriosSeleccion);
+                break;
                 default:
                     $resultado->mensajeError = 'Acción no implementada';
                 break;
