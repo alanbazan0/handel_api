@@ -4653,6 +4653,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
         
         $filtrosSub = array();
         
+       // echo $consulta;
        
         
         //echo "TIPOREPORTE:".$criteriosSeleccion->tipoReporte;
@@ -4663,6 +4664,12 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
             break;
             case \TipoReporte::CAPACITACION_INICIADA:
                 array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>'fechaUltimaCapacitacion is not null']);
+            break;
+            case \TipoReporte::CAPACITACION_COMPLETADA:
+                array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>'(capacitacionesTotal!=0 AND capacitacionesTotal=capacitacionesTerminadas)']);
+            break;
+            case \TipoReporte::CAPACITACION_NO_COMPLETADA:
+                array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>'((fechaUltimaCapacitacion is not null) OR (capacitacionesTerminadas<capacitacionesTotal))']);
             break;
             default:
                 

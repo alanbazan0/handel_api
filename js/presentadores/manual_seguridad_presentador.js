@@ -55,7 +55,7 @@ class ManualSeguridadPresentador extends CatalogoPresentador
 		if(resultado.mensajeError=="")
 		{
 			this.vista.sedesCriterio = resultado.valor;		
-			//this.vista.cambiarSedeCriterio();
+			this.vista.cambiarSedeCriterio();
 		}
 		else
 			this.vista.mostrarMensajeError("Error",resultado.mensajeError);
@@ -83,8 +83,9 @@ class ManualSeguridadPresentador extends CatalogoPresentador
 	 
 	 consultarUsuarios()	
 	 {
-		 var repositorio = new UsuariosRepositorio(this);		
-		 repositorio.consultarPorEmpresaSede(this,this.consultarUsuariosResultado,this.vista.modelo.empresaId,this.vista.modelo.sedeIdUsuario);
+		 //var repositorio = new UsuariosRepositorio(this);		
+		 var repositorio = new UsuariosProcesosRepositorio();
+		 repositorio.consultarUsuariosManualSeguridadPorEmpresaSede(this,this.consultarUsuariosResultado,this.vista.modelo.empresaId,this.vista.modelo.sedeIdUsuario);
 	 }
 	 
 	 consultarUsuariosResultado(resultado)
@@ -118,28 +119,58 @@ class ManualSeguridadPresentador extends CatalogoPresentador
 	 consultar()
 	 {
 		this.vista.mostrarIndicador();	
-	   	this._repositorio.consultarManualSeguridad(this,function(resultado){
-			this.vista.ocultarIndicador();	
-			if(resultado.mensajeError=="")
-			{
-				this.vista.datos = resultado.valor;				
-			}
-			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-			
-		},this.vista.criteriosSeleccion);
 		
-		var formatosRepositorio = new UsuariosFormatosRepositorio(this);
-		formatosRepositorio.consultarManualSeguridad(this,function(resultado){
-			this.vista.ocultarIndicador();	
-			if(resultado.mensajeError=="")
-			{
-				this.vista.datosFormatos = resultado.valor;				
-			}
-			else
-				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		if(this.vista.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
+		{
+			this._repositorio.consultarManualSeguridadAgrupados(this,function(resultado){
+				this.vista.ocultarIndicador();	
+				if(resultado.mensajeError=="")
+				{
+					this.vista.datos = resultado.valor;				
+				}
+				else
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				
+			},this.vista.criteriosSeleccion);
 			
-		},this.vista.criteriosSeleccion);
+			var formatosRepositorio = new UsuariosFormatosRepositorio(this);
+			formatosRepositorio.consultarManualSeguridadAgrupados(this,function(resultado){
+				this.vista.ocultarIndicador();	
+				if(resultado.mensajeError=="")
+				{
+					this.vista.datosFormatos = resultado.valor;				
+				}
+				else
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				
+			},this.vista.criteriosSeleccion);
+			
+		}
+		else
+		{
+		   	this._repositorio.consultarManualSeguridad(this,function(resultado){
+				this.vista.ocultarIndicador();	
+				if(resultado.mensajeError=="")
+				{
+					this.vista.datos = resultado.valor;				
+				}
+				else
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				
+			},this.vista.criteriosSeleccion);
+			
+			var formatosRepositorio = new UsuariosFormatosRepositorio(this);
+			formatosRepositorio.consultarManualSeguridad(this,function(resultado){
+				this.vista.ocultarIndicador();	
+				if(resultado.mensajeError=="")
+				{
+					this.vista.datosFormatos = resultado.valor;				
+				}
+				else
+					this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+				
+			},this.vista.criteriosSeleccion);
+		}
 	 }
 	 
 	 reportarSinCambios(usuarioProceso)
@@ -229,6 +260,52 @@ class ManualSeguridadPresentador extends CatalogoPresentador
 	            }
 	        });
 	}
+	
+	 consultarDepartamentosCriterio()	
+	 {
+		 var repositorio = new DepartamentosRepositorio(this);		
+		 repositorio.consultarPorEmpresaSede(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.departamentosCriterio = resultado.valor;			
+				this.vista.cambiarDepartamentoCriterio();
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		,{empresaId:this.vista.criteriosSeleccion.empresaId,sedeId:this.vista.criteriosSeleccion.sedeId},true);
+	 }
+	 
+	 consultarUsuariosCriterio()	
+	 {
+		/* var repositorio = new UsuariosRepositorio(this);		
+		 repositorio.consultarPorEmpresaSedeDepartamento(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.usuariosCriterio = resultado.valor;			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		,this.vista.criteriosSeleccion.empresaId,this.vista.criteriosSeleccion.sedeId,this.vista.criteriosSeleccion.departamentoId,true);
+		*/
+		
+		var repositorio = new UsuariosProcesosRepositorio();
+		
+		//var repositorio = new UsuariosRepositorio(this);		
+		 repositorio.consultarUsuariosManualSeguridadPorEmpresaSedeDepartamento(this, function(resultado)
+		 {
+			if(resultado.mensajeError=="")
+			{
+				this.vista.usuariosCriterio = resultado.valor;			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		,this.vista.criteriosSeleccion.empresaId,this.vista.criteriosSeleccion.sedeId,this.vista.criteriosSeleccion.departamentoId,true);
+	 }
 	 
 	 
 	 

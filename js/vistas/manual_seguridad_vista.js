@@ -10,41 +10,164 @@ class ManualSeguridadVista extends CatalogoVista
 	
 	inicializar()
 	{
-		super.inicializar();
+		super.inicializar(false);
 		
 		
-		this.consultarEmpresasCriterio();
+		
+		
+		if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
+		{
+			$("#criteriosSeleccionDiv").show();
+			this.consultarEmpresasCriterio();
+		}
 	}
 	
 	
 	
 	crearColumnasGrid()
 	{
-		this.tabla.columnas = [
-			{longitud:70, 	titulo:"Id",   alias:"id", alineacion:"D", class: "desc" }, 
-			{longitud:70, 	titulo:"Id proceso",   alias:"procedimientoId", alineacion:"D", class: "desc" }, 
-			{longitud:500, 	titulo:"Proceso",   alias:"nombre", alineacion:"I", itemRenderer: this.renderNombre}, 
-			{longitud:200, 	titulo:"Sección en manual",alias:"rutaArchivo", alineacion:"I"},
-			{longitud:100, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I"  },		
-			{longitud:100, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
-			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
-			
-		];
-		this.tabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderSinCambios});
-		this.tabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderObservacion});
-		this.tabla.registros = [];	
 		
-		this.formatosTabla.columnas = [
-			{longitud:70, 	titulo:"Id",   alias:"id", alineacion:"D", class: "desc" }, 
-			{longitud:70, 	titulo:"Id formato",   alias:"formatoId", alineacion:"D", class: "desc" }, 
-			{longitud:500, 	titulo:"Formato",   alias:"nombre", alineacion:"I", itemRenderer: this.renderFormatoNombre}, 
-			{longitud:200, 	titulo:"Sección en manual",alias:"rutaArchivo", alineacion:"I"},
-			{longitud:100, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I"  },		
-			{longitud:100, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
-			{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
+		
+		if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR)
+		{
 			
-		];
-		this.formatosTabla.registros = [];		
+			this.tabla.columnas = [
+				//{longitud:70, 	titulo:"Id",   alias:"id", alineacion:"D", class: "desc" }, 
+				{longitud:70, 	titulo:"Id proceso",   alias:"procedimientoId", alineacion:"D", class: "desc" }, 
+				{longitud:500, 	titulo:"Proceso",   alias:"nombre", alineacion:"I", itemRenderer: this.renderNombre}, 
+				{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderLogoEmpresa},
+				{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },		
+				{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" },		
+				{longitud:200, 	titulo:"Sección en manual",alias:"rutaArchivo", alineacion:"I"},
+				{longitud:200, 	titulo:"Archivo",alias:"nombreArchivo", alineacion:"I", itemRenderer:this.renderArchivos},	
+				{longitud:100, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I"  },		
+				{longitud:100, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
+			//	{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus},
+				//{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderFotoUsuario},
+				{longitud:250, 	titulo:"Usuarios",   alias:"usuariosNombres", alineacion:"I"}
+			];
+			
+			this.formatosTabla.columnas = [
+				//{longitud:70, 	titulo:"Id",   alias:"id", alineacion:"D", class: "desc" }, 
+				{longitud:70, 	titulo:"Id formato",   alias:"formatoId", alineacion:"D", class: "desc" }, 
+				{longitud:500, 	titulo:"Formato",   alias:"nombre", alineacion:"I", itemRenderer: this.renderFormatoNombre}, 
+				{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"I" ,itemRenderer:this.renderLogoEmpresa},
+				{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },		
+				{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" },		
+				{longitud:200, 	titulo:"Sección en manual",alias:"rutaArchivo", alineacion:"I"},
+				{longitud:200, 	titulo:"Archivo",alias:"nombreArchivo", alineacion:"I", itemRenderer:this.renderArchivos},	
+				{longitud:100, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I"  },		
+				{longitud:100, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
+				//{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
+				{longitud:100, 	titulo:"Usuarios",   alias:"usuariosNombres", alineacion:"I" }
+				
+			];
+			
+		}
+		else
+		{
+			this.tabla.columnas = [
+				{longitud:70, 	titulo:"Id",   alias:"id", alineacion:"D", class: "desc" }, 
+				{longitud:70, 	titulo:"Id proceso",   alias:"procedimientoId", alineacion:"D", class: "desc" }, 
+				{longitud:500, 	titulo:"Proceso",   alias:"nombre", alineacion:"I", itemRenderer: this.renderNombre}, 
+				{longitud:200, 	titulo:"Sección en manual",alias:"rutaArchivo", alineacion:"I"},
+				{longitud:100, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I"  },		
+				{longitud:100, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
+				{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
+				
+			];
+			
+			this.tabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderSinCambios});
+			this.tabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderObservacion});
+			
+			this.formatosTabla.columnas = [
+				{longitud:70, 	titulo:"Id",   alias:"id", alineacion:"D", class: "desc" }, 
+				{longitud:70, 	titulo:"Id formato",   alias:"formatoId", alineacion:"D", class: "desc" }, 
+				{longitud:500, 	titulo:"Formato",   alias:"nombre", alineacion:"I", itemRenderer: this.renderFormatoNombre}, 
+				{longitud:200, 	titulo:"Sección en manual",alias:"rutaArchivo", alineacion:"I"},
+				{longitud:100, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I"  },		
+				{longitud:100, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" },
+				{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
+				
+			];
+			
+		}
+		
+		this.habilitarExportacionExcel(this.tabla, this, this.renderExcelTabla,[0,1,3,4,5,7,8],"Manual de seguridad - Procesos");
+		
+		this.habilitarExportacionExcel(this.formatosTabla, this, this.renderExcelTabla,[0,1,3,4,5,7,8],"Manual de seguridad - Formatos");
+
+		
+		this.tabla.registros = [];	
+		this.formatosTabla.registros = [];	
+	}
+	
+	renderExcelTabla(tabla, data, row, column, node )
+	{
+		if(column==ArrayUtils.indexWithValues("alias",["estatus"],tabla.columnas))
+    	{
+		  if(data.includes("fa-check"))
+    		   return "Activo";
+    	   else
+    		   return "Inactivo";
+    	}
+    	else if(column==ArrayUtils.indexWithValues("alias",["nombre"],tabla.columnas))
+    	{
+			if(data.includes("div"))
+			{
+				var nombre = $(data).attr("data-nombre");
+			 	 return nombre;
+		 	}
+		 	else
+		 		return data;
+    	}
+    	
+    	else if(node.innerHTML.includes("button"))
+    		return "";
+		else if(node.innerHTML.includes("<label>"))
+			return "";
+    	return data;
+	}
+	
+	renderArchivos(renglon, type, set)
+	{  
+		return "<div id='archivo"+renglon.id+"'>" + vista.getArchivos(renglon) + "</div>";
+	}
+	
+	renderUsuarios(renglon, type, set)
+	{
+		return renglon.usuariosIds;
+	}
+	
+	getArchivos(renglon)
+	{
+		var contenido = "";
+		var tieneArchivos = renglon.archivo!=""?true:false;
+		if(tieneArchivos)
+		{
+			contenido = this.getContenidoArchivo(renglon.archivo);
+		
+		}
+	    return contenido;
+	}
+	
+	getContenidoArchivo(nombreArchivo)
+	{
+		var contenido = "";
+		contenido = "<div class='archivo' data-toggle='tooltip' data-placemen='bottom' title='"+nombreArchivo+"'>";
+		contenido+= "<i  class='archivos fa fa-lg fa-paperclip' style='cursor:pointer'></i>";
+		contenido+="<span  class='labelArchivo'>1</span>";
+		contenido+="</div>";
+		return contenido;
+	}
+	
+	renderLogoEmpresa(renglon, type, set)
+	{    
+		var fecha = new Date();
+		var contenido = "";
+		var icono = HANDEL_API+ "/"+renglon.empresaLogo+"?"+fecha.getTime();
+		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;border-radius: 50%'></img></center>";
+	    return contenido;
 	}
 	
 	
@@ -53,7 +176,7 @@ class ManualSeguridadVista extends CatalogoVista
 		var contenido = "";
 		if(renglon.archivo != "" && renglon.archivo != null)
 		{
-			contenido = "<div class='archivo'><a href='#' onclick='event.preventDefault();'>"+renglon.nombre+"</a></div>";
+			contenido = "<div class='archivo' data-nombre='"+renglon.nombre+"'><a href='#' onclick='event.preventDefault();'>"+renglon.nombre+"</a></div>";
 		}
 		else
 			contenido = renglon.nombre;
@@ -65,7 +188,7 @@ class ManualSeguridadVista extends CatalogoVista
 		var contenido = "";
 		if(renglon.archivo != "" && renglon.archivo != null)
 		{
-			contenido = "<div class='archivo'><a href='#' onclick='event.preventDefault();'>"+renglon.nombre+"</a></div>";
+			contenido = "<div class='archivo' data-nombre='"+renglon.nombre+"'><a href='#' onclick='event.preventDefault();'>"+renglon.nombre+"</a></div>";
 		}
 		else
 			contenido = renglon.nombre;
@@ -236,15 +359,16 @@ class ManualSeguridadVista extends CatalogoVista
 	
 	get criteriosSeleccion()
 	{
-		 var criteriosSeleccion = 
-		 {				    
-			empresaId: $('#empresaSelectCriterio').val(),
-			sedeId: $('#sedeSelectCriterio').val(),
-			nombre:$('#nombreInputCriterio').val()
-		 }
-		 return criteriosSeleccion;
-	}		
-
+		var criteriosSeleccion = 
+		{
+			empresaId:  $('#empresaSelectCriterio').val(),
+			sedeId:  $('#sedeSelectCriterio').val(),
+			departamentoId:  $('#departamentoSelectCriterio').val(),
+			usuarioId:  $('#usuarioSelectCriterio').val(),
+			estatus:  $('#estatusSelectCriterio').val(),
+		};
+		return criteriosSeleccion;
+	}
 	set modelo(valor)
 	{		
 		this.modeloEdicion = valor;
@@ -321,13 +445,33 @@ class ManualSeguridadVista extends CatalogoVista
 	consultarSedesCriterio()
 	{
 		this.cargandoOpciones("#sedeSelectCriterio");
+		this.cargandoOpciones("#departamentoSelectCriterio");
 		this.presentador.consultarSedesCriterio();
+	}
+	
+	
+	consultarDepartamentosCriterio()
+	{
+		this.cargandoOpciones("#departamentoSelectCriterio");
+		this.presentador.consultarDepartamentosCriterio();
+	}
+	
+
+	consultarUsuariosCriterio()
+	{
+		this.cargandoOpciones("#usuarioSelectCriterio");
+		this.presentador.consultarUsuariosCriterio();
+	}
+	
+	set departamentosCriterio(registros)
+	{		
+		this.cargarOpciones('#departamentoSelectCriterio', registros);
 	}
 	
 	set empresasCriterio(registros)
 	{		
 		this.cargarOpciones('#empresaSelectCriterio', registros);
-		this.consultar();
+		//this.consultar();
 	}
 	
 	set sedesCriterio(registros)
@@ -436,7 +580,15 @@ class ManualSeguridadVista extends CatalogoVista
 				if(_this._registroSeleccionado.archivo!="")
 				{
 					var vistaPrevia = new VistaPreviaArchivo();
-					vistaPrevia.visualizar(_this, "php/archivos_procesos", _this._registroSeleccionado.procedimientoId, _this._registroSeleccionado.archivo);
+					
+					
+					var usuariosAsignados = "";
+					if(_this._registroSeleccionado.fotosPerfil.length==1)
+						usuariosAsignados = "1 usuario asignado: " + _this._registroSeleccionado.usuariosNombres;
+					else
+						usuariosAsignados = _this._registroSeleccionado.fotosPerfil.length + " usuarios asignados: " + _this._registroSeleccionado.usuariosNombres;
+					
+					vistaPrevia.visualizar(_this, "php/archivos_procesos", _this._registroSeleccionado.procedimientoId, _this._registroSeleccionado.archivo, _this._registroSeleccionado.nombre, usuariosAsignados);
 				}
 				else
 					_this.mostrarMensajeAdvertencia("","Para visualizar archivos es necesario guardar la información.")
@@ -838,7 +990,14 @@ class ManualSeguridadVista extends CatalogoVista
 				if(_this._registroSeleccionado.archivo!="")
 				{
 					var vistaPrevia = new VistaPreviaArchivo();
-					vistaPrevia.visualizar(_this, "php/archivos_formatos", _this._registroSeleccionado.formatoId, _this._registroSeleccionado.archivo);
+					
+					var usuariosAsignados = "";
+					if(_this._registroSeleccionado.fotosPerfil.length==1)
+						usuariosAsignados = "1 usuario asignado: " + _this._registroSeleccionado.usuariosNombres;
+					else
+						usuariosAsignados = _this._registroSeleccionado.fotosPerfil.length + " usuarios asignados: " + _this._registroSeleccionado.usuariosNombres;
+					
+					vistaPrevia.visualizar(_this, "php/archivos_formatos", _this._registroSeleccionado.formatoId, _this._registroSeleccionado.archivo, _this._registroSeleccionado.nombre, usuariosAsignados);
 				}
 			}
 		});
@@ -847,7 +1006,35 @@ class ManualSeguridadVista extends CatalogoVista
 		
 	}
 	
+	cambiarSedeCriterio()
+	{
+		this.consultarDepartamentosCriterio();
+	}
 	
+	cambiarDepartamentoCriterio()
+	{
+		this.consultarUsuariosCriterio();
+	}
+	
+	set usuariosCriterio(registros)
+	{		
+		//this.cargarOpciones('#usuarioSelectCriterio', registros);
+		this.cargarOpciones('#usuarioSelectCriterio', registros, null, null, null, null,  "nombreCompleto");
+//		if(this.consultoGrid==false)
+//		{
+//			this.consultar();
+//			this.consultoGrid=true;
+//		}	
+	}
+	
+	renderFotoUsuario(renglon, type, set)
+	{    
+		var fecha = new Date();
+		var contenido = "";
+		var icono = HANDEL_API+ "/"+renglon.fotoPerfil+"?"+vista.time;
+		contenido += "<center><img src='" + icono + "' style='width:30px;height:30px;border-radius: 50%'></img></center>";
+	    return contenido;
+	}
 	
 }
 var vista = new ManualSeguridadVista(this);

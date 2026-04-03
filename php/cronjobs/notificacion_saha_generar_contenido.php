@@ -136,34 +136,6 @@ try
                     }
                     mensajeLog("notificacion_saha_generar_contenido","GENERADO " .  $correo->nombreUsuario);
                     $enviados++;
-                    //TODO: envio
-                    /*$errLevel = error_reporting(E_ALL ^ E_WARNING);
-                    $resultadoMail = true;
-                    $resultadoMail= mail($correo->nombreUsuario,$asunto, $mensaje, $cabecera);
-                    error_reporting($errLevel);
-                    
-                    $error = error_get_last();
-                    
-                    if ($error!=null &&  $error["type"] == E_WARNING)
-                    {
-                        $resultado->mensajeError="No se pudo enviar el correo electrónico a $correo->nombreUsuario.  ". htmlspecialchars_decode($error["message"]) ;
-                        $resultado->codigoError = 3;
-                        mensajeLog("error",$i. " " .$resultado->mensajeError);
-                        $repositorio->noEnviado($correo->id, $resultado->mensajeError);
-                    }
-                    else if($resultadoMail)
-                    {
-                        $resultado->valor="OK";
-                        mensajeLog("notificacion_saha_generar_contenido",($i +1) . " Correo enviado a ".$correo->nombreUsuario);
-                        $enviados++;
-                        $repositorio->enviado($correo->id);
-                    }
-                    
-                   
-                    
-                    if($guardarEnvio)
-                        guardarEnvio($correo,$asunto,$mensaje);
-                    */
                    
                 }
                 else
@@ -267,14 +239,29 @@ function getCaricatura($caricatura,$width)
 
 
 
-function getContenido($conexion,UsuariosRepositorio $usuariosRepositorio,UsuariosProcedimientosRepositorio $usuariosProcedimientosRepositorio,EvidenciasRepositorio $evidenciasRepositorio,$usuario,$dia)
+function getContenido($conexion,UsuariosRepositorio $usuariosRepositorio,UsuariosProcedimientosRepositorio $usuariosProcedimientosRepositorio,EvidenciasRepositorio $evidenciasRepositorio,$correo,$dia)
 {
+    
     $contenido ="";
+    
+    $usuario = clone $correo;
+    
+    /*$usuario = (object)
+    [
+        "id" => $usuario->usuarioId,
+        "tipoUsuarioId" => $usuario->tipoUsuarioId,
+        "nombre" => $usuario->nombre,
+        "apellido" => $usuario->apellido
+    ];*/
+    
+    $usuario->id = $usuario->usuarioId;
+    
+    
     if($usuario->tipoUsuarioId == TipoUsuario::COORDINADOR)
         $contenido = getContenidoCoordinador($conexion,$usuariosRepositorio,$usuariosProcedimientosRepositorio,$evidenciasRepositorio,$usuario,$dia);
     if($usuario->tipoUsuarioId == TipoUsuario::SUPERVISOR)
     {
-        $resultado = $usuariosRepositorio->consultar($usuario,  (object) ['supervisor1Id' =>  $usuario->usuarioId], false);
+        $resultado = $usuariosRepositorio->consultar($usuario,  (object) ['supervisor1Id' =>  $usuario->id], false);
         if($resultado->correcto())
         {
             $usuariosACargo = $resultado->valor;
@@ -284,7 +271,7 @@ function getContenido($conexion,UsuariosRepositorio $usuariosRepositorio,Usuario
     }
     else if($usuario->tipoUsuarioId == TipoUsuario::USUARIO)
     {
-        $resultado = $usuariosProcedimientosRepositorio->consultar((object)['usuarioId' => $usuario->usuarioId, 'estatus' => 1]);
+        $resultado = $usuariosProcedimientosRepositorio->consultar((object)['usuarioId' => $usuario->id, 'estatus' => 1]);
         $numeroEvidenciasActivas = 0;
         if($resultado->correcto())
         {
@@ -354,12 +341,15 @@ function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,UsuariosPr
             $ano =  date("Y",strtotime("-1 month"));
             $mes = date("m",strtotime("-1 month"));
             
-            $criteriosSeleccion = (object) ['ano' => $ano, "mes"=> $mes];
+            $criteriosSeleccion = (object) ['ano' => $ano, "mes"=> intval($mes)];
+            
             
             $resultadoPorcentajes = $evidenciasRepositorio->consultarPorcentajesEvidencias($usuario, $criteriosSeleccion);
+            //$resultadoPorcentajes = $evidenciasRepositorio->consultarPorcentajesUsuariosCertificaciones($usuario, $criteriosSeleccion);
             $porcentajeCumplimiento = 0;
             if($resultadoPorcentajes->correcto())
             {
+                
                 $enviadas = getValor("Enviadas",$resultadoPorcentajes->valor);
                 $jusitificadas = getValor("Justificadas",$resultadoPorcentajes->valor);
                 $pendientes = getValor("Pendientes",$resultadoPorcentajes->valor);
@@ -368,7 +358,13 @@ function getContenidoUsuario(UsuariosRepositorio $usuariosRepositorio,UsuariosPr
                 if($total!=0)
                     $porcentajeCumplimiento = $cumplidas *100 / $total;
                 
-                    
+                echo "enviadas: $enviadas;";
+                 echo "pendiendes: $pendientes;";
+                 echo "jusitificadas: $jusitificadas;";
+                 echo "total: $total;";
+                 echo "cumplidas: $cumplidas;";
+                 
+                 var_dump($resultadoPorcentajes->valor);
             }
             else
             {

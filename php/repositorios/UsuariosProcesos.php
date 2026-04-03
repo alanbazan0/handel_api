@@ -56,6 +56,14 @@ try
                     $usuario = $_SESSION['usuario'];
                 $resultado = $repositorio->consultarManualSeguridad($usuario,$criteriosSeleccion);
             break;
+            case 'consultarManualSeguridadAgrupados':
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $resultado = $repositorio->consultarManualSeguridadAgrupados($usuario,$criteriosSeleccion);
+            break;
             case 'consultarPorLlaves':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->consultarPorLlaves($llaves);
@@ -104,7 +112,19 @@ try
                     $usuario = $_SESSION['usuario'];
                 $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
                 $resultado = $repositorio->consultarAvanceEmpresas($usuario,$criteriosSeleccion);
-            break;    
+            break;   
+            
+            case 'consultarUsuariosManualSeguridadPorEmpresaSedeDepartamento':
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $opcional = REQUEST('opcional');
+                $empresaId = REQUEST('empresaId');
+                $sedeId = REQUEST('sedeId');
+                $departamentoId = REQUEST('departamentoId');
+                $resultado = $repositorio->consultarUsuariosManualSeguridadPorEmpresaSedeDepartamento($usuario,$empresaId,$sedeId,$departamentoId,$opcional);
+            break;
             default:
                 $resultado->mensajeError = 'Acción no válida';
             break;

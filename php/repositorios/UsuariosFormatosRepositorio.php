@@ -26,7 +26,7 @@ class UsuariosFormatosRepositorio extends RepositorioBase implements IUsuariosFo
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = "SELECT UP.id, usuario_id usuarioId,U.nombre usuarioNombre, formato_id, P.nombre, IFNULL(DATE_FORMAT(UP.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(UP.fecha_cancelacion,'%d/%m/%Y'),'')fecha_cancelacion, UP.estatus,codigo, U.apellido usuarioApellido, U.empresa_id empresaId, U.sede_id sedeId, P.sede_id procedimientoSedeId,IFNULL(DATE_FORMAT(UP.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,P.ruta_archivo, U.nombre_usuario nombreUsuario, U.tipo_usuario_id tipoUsuarioId,EM.mes_revision_procesos mesRevision, EM.administrador_procesos_id administradorId, UA.nombre administradorNombre, UA.apellido administradorApellido, UA.nombre_usuario administradorNombreUsuario,oea,ctpat,wrap,ipm,P.archivo 
+        $this->consultaBase = "SELECT UP.id, usuario_id usuarioId,U.nombre usuarioNombre, formato_id, P.nombre, IFNULL(DATE_FORMAT(UP.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta, IFNULL(DATE_FORMAT(UP.fecha_cancelacion,'%d/%m/%Y'),'')fecha_cancelacion, UP.estatus,codigo, U.apellido usuarioApellido, U.empresa_id empresaId, U.sede_id sedeId, P.sede_id procedimientoSedeId,IFNULL(DATE_FORMAT(UP.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion,P.ruta_archivo, U.nombre_usuario nombreUsuario, U.tipo_usuario_id tipoUsuarioId,EM.mes_revision_procesos mesRevision, EM.administrador_procesos_id administradorId, UA.nombre administradorNombre, UA.apellido administradorApellido, UA.nombre_usuario administradorNombreUsuario,oea,ctpat,wrap,ipm,P.archivo,E.nombre 
                                 FROM usuarios_formatos UP
                                     LEFT JOIN usuarios U ON U.id = UP.usuario_id
                                     LEFT JOIN empresas E ON E.id = U.empresa_id
@@ -173,11 +173,11 @@ class UsuariosFormatosRepositorio extends RepositorioBase implements IUsuariosFo
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $sedeId,$procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm, $archivo ))
+                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $sedeId,$procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm, $archivo,$empresaNombre ))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $sedeId, $procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm,$archivo );
+                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $sedeId, $procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm,$archivo,$empresaNombre );
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -266,11 +266,11 @@ class UsuariosFormatosRepositorio extends RepositorioBase implements IUsuariosFo
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $sedeId,$procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm, $archivo ))
+                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $sedeId,$procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm, $archivo,$empresaNombre ))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $sedeId, $procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm,$archivo );
+                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $sedeId, $procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm,$archivo,$empresaNombre );
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -504,11 +504,11 @@ class UsuariosFormatosRepositorio extends RepositorioBase implements IUsuariosFo
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion, $rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm,$archivo ))
+                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion, $rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm,$archivo,$empresaNombre ))
                     {
                         while($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm,$archivo );
+                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm,$archivo,$empresaNombre );
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -570,11 +570,11 @@ class UsuariosFormatosRepositorio extends RepositorioBase implements IUsuariosFo
                 {
                     if($sentencia->execute())
                     {
-                        if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion, $rutaArchivo ,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm,$archivo))
+                        if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion, $rutaArchivo ,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm,$archivo,$empresaNombre))
                         {
                             while($sentencia->fetch())
                             {
-                                $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm,$archivo);
+                                $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion,$rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm,$archivo,$empresaNombre);
                                 array_push($registros,$registro);
                             }
                             $resultado->valor = $registros;
@@ -952,11 +952,11 @@ class UsuariosFormatosRepositorio extends RepositorioBase implements IUsuariosFo
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion, $rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm,$archivo ))
+                    if($sentencia->bind_result($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido,$empresaId, $usuarioSedeId,$procedimientoSedeId,$fechaModificacion, $rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm,$archivo,$empresaNombre ))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido, $empresaId, $usuarioSedeId,$procedimientoSedeId ,$fechaModificacion, $rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm,$archivo );
+                            $registro = $this->crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus,$codigo,$usuarioApellido, $empresaId, $usuarioSedeId,$procedimientoSedeId ,$fechaModificacion, $rutaArchivo,$nombreUsuario,$tipoUsuarioId,$mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario,$oea, $ctpat, $wrap, $ipm,$archivo,$empresaNombre );
                             $resultado->valor = $registro;
                         }
                         else
@@ -1005,7 +1005,7 @@ class UsuariosFormatosRepositorio extends RepositorioBase implements IUsuariosFo
         return $resultado;
     }
 
-    private function crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus, $codigo, $usuarioApellido, $empresaId, $usuarioSedeId, $procedimientoSedeId, $fechaModificacion,$rutaArchivo ,$nombreUsuario, $tipoUsuarioId,  $mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario, $oea, $ctpat, $wrap, $ipm, $archivo)
+    private function crearRegistro($id, $usuarioId, $usuarioNombre, $procedimientoId, $procedimientoNombre, $fechaAlta, $fechaCancelacion, $estatus, $codigo, $usuarioApellido, $empresaId, $usuarioSedeId, $procedimientoSedeId, $fechaModificacion,$rutaArchivo ,$nombreUsuario, $tipoUsuarioId,  $mesRevision,$administradorId, $administradorNombre, $administradorApellido, $administradorNombreUsuario, $oea, $ctpat, $wrap, $ipm, $archivo, $empresaNombre)
     {
         $registro= (object) 
         [
@@ -1038,7 +1038,8 @@ class UsuariosFormatosRepositorio extends RepositorioBase implements IUsuariosFo
             'ctpat' => $ctpat,
             'wrap' => $wrap,
             'ipm' => $ipm,
-            'archivo' => $archivo
+            'archivo' => $archivo,
+            'empresaNombre' => $empresaNombre
         ];
         
         $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " .$registro->usuarioApellido;
@@ -1212,7 +1213,7 @@ class UsuariosFormatosRepositorio extends RepositorioBase implements IUsuariosFo
             $contenidoProcesos="<p style='font-size: 14px; line-height: 140%; text-align: justify;'>De acuerdo a nuestros registros, tienes $numeroProcesos para verificar, ya sea porque los tienes asignados directamente o porque en forma indirecta participas. Estos son los procesos:</p>
                                 $listaProcesos
                                 <p style='font-size: 14px; line-height: 140%; text-align: justify;'>&nbsp;</p>
-                                <p style='font-size: 14px; line-height: 140%; text-align: left;'>Puedes consultar los documentos en la carpeta indicada utilizando tu cuenta de <a rel='noopener' href='http://www.cloud-handel.com' target='_blank'>www.cloud-handel.com</a>.</p>
+                                <p style='font-size: 14px; line-height: 140%; text-align: left;'>Puedes consultar los documentos en la carpeta indicada utilizando tu cuenta de SAHA en Manual de seguridad localizado en el menú lateral de la izquierda.</p>
                                 <p style='font-size: 14px; line-height: 140%; text-align: left;'>&nbsp;</p>
                               ";
             
@@ -1440,7 +1441,7 @@ class UsuariosFormatosRepositorio extends RepositorioBase implements IUsuariosFo
             $contenidoProcesos="<p style='font-size: 14px; line-height: 140%; text-align: justify;'>De acuerdo a nuestros registros, tienes $numeroProcesos para verificar, ya sea porque los tienes asignados directamente o porque en forma indirecta participas. Estos son los procesos:</p>
                                 $listaProcesos
                                 <p style='font-size: 14px; line-height: 140%; text-align: justify;'>&nbsp;</p>
-                                <p style='font-size: 14px; line-height: 140%; text-align: left;'>Puedes consultar los documentos en la carpeta indicada utilizando tu cuenta de <a rel='noopener' href='http://www.cloud-handel.com' target='_blank'>www.cloud-handel.com</a>.</p>
+                                <p style='font-size: 14px; line-height: 140%; text-align: left;'>Puedes consultar los documentos en la carpeta indicada utilizando tu cuenta de SAHA en Manual de seguridad localizado en el menú lateral de la izquierda.</p>
                                 <p style='font-size: 14px; line-height: 140%; text-align: left;'>&nbsp;</p>
                               ";
                                 
@@ -1611,4 +1612,155 @@ class UsuariosFormatosRepositorio extends RepositorioBase implements IUsuariosFo
             $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
             return $resultado;
     }
+    
+    public function consultarManualSeguridadAgrupados($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = array();
+        $where='';
+        if($criteriosSeleccion!=null)
+        {
+            if(isset($criteriosSeleccion->nombre))
+                array_push($filtros,(object)['tipoDato'=>'varchar','tabla'=>'U','campo'=>'nombre','valor'=>$criteriosSeleccion->nombre]);
+            if(isset($criteriosSeleccion->empresaId))
+            {
+                if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+            }
+            if(isset($criteriosSeleccion->sedeId))
+            {
+                if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+            }
+            if(isset($criteriosSeleccion->usuarioId))
+            {
+                if($criteriosSeleccion->usuarioId!="" && $criteriosSeleccion->usuarioId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'id','valor'=>$criteriosSeleccion->usuarioId]);
+            }
+            if(isset($criteriosSeleccion->estatus))
+            {
+                if($criteriosSeleccion->estatus!="" && $criteriosSeleccion->estatus!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'UP','campo'=>'estatus','valor'=>$criteriosSeleccion->estatus]);
+            }
+            if(isset($criteriosSeleccion->usuarioEstatus))
+            {
+                if($criteriosSeleccion->usuarioEstatus!="" && $criteriosSeleccion->usuarioEstatus!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'estatus','valor'=>$criteriosSeleccion->usuarioEstatus]);
+            }
+            if(isset($criteriosSeleccion->nombreUsuario))
+            {
+                if($criteriosSeleccion->nombreUsuario!="" && $criteriosSeleccion->nombreUsuario!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'nombreUsuario','valor'=>$criteriosSeleccion->nombreUsuario
+                    ]);
+            }
+        }
+        array_push($filtros, (object) ['tipoDato' => 'int','tabla' => 'E','campo' => 'estatus','valor' => 1]);
+        array_push($filtros, (object) ['tipoDato' => 'int','tabla' => 'UP','campo' => 'estatus','valor' => 1]);
+        
+        /*if($usuario->administradorCertificacion==1)
+         {
+         $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+         $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+         if($resultado->correcto())
+         {
+         $empresasIds = implode(",", $resultado->valor);
+         array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','operador'=>'IN','valor'=>$empresasIds]);
+         }
+         }
+         else
+         array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'U','campo'=>'id','valor'=>$usuario->id]);*/
+         
+         $where = $this->where($filtros);
+         $consulta = "SELECT P.id,
+                               P.nombre,
+                               P.ruta_archivo,
+                               P.fecha_alta,
+                               P.fecha_modificacion, E.id, E.nombre, S.nombre,
+                               GROUP_CONCAT(U.id ORDER BY U.nombre, U.apellido SEPARATOR ', ') AS usuariosId,
+                               GROUP_CONCAT(
+                                   CONCAT(U.nombre, ' ', U.apellido)
+                                   ORDER BY U.nombre, U.apellido
+                                   SEPARATOR ', '
+                               ) AS usuarios, P.estatus, IFNULL(archivo,'')archivo
+                        FROM formatos P
+                        	LEFT JOIN usuarios_formatos UP ON UP.formato_id = P.id
+                            LEFT JOIN usuarios U ON UP.usuario_id = U.id
+                            LEFT JOIN departamentos D ON U.departamento_id = D.id
+                            LEFT JOIN empresas E ON P.empresa_id = E.id
+                            LEFT JOIN sedes S ON P.sede_id = S.id "
+             .$where .
+             " GROUP BY P.id, P.nombre, P.ruta_archivo, P.fecha_alta, P.fecha_modificacion
+                        ORDER BY P.ruta_archivo";
+             
+             
+             
+             if($sentencia = $this->conexion->prepare($consulta))
+             {
+                 if($this->bind_param($sentencia, $filtros))
+                 {
+                     if($sentencia->execute())
+                     {
+                         if($sentencia->bind_result($id,$nombre, $rutaArchivo, $fechaAlta, $fechaModificacion,$empresaId, $empresaNombre, $sedeNombre,$usuariosIds, $usuariosNombres, $estatus, $archivo  ))
+                         {
+                             while($row = $sentencia->fetch())
+                             {
+                                 
+                                 $registro= (object)
+                                 [
+                                     'formatoId' => $id,
+                                     'nombre' => $nombre,
+                                     'rutaArchivo' => $rutaArchivo,
+                                     'fechaAlta' => $fechaAlta,
+                                     'fechaModificacion' => $fechaModificacion,
+                                     'usuariosIds' => $usuariosIds,
+                                     'usuariosNombres' => $usuariosNombres,
+                                     'empresaId' => $empresaId,
+                                     'empresaNombre' => $empresaNombre,
+                                     'sedeNombre' => $sedeNombre,
+                                     'estatus' => $estatus,
+                                     'archivo' => $archivo
+                                 ];
+                                 
+                                 $registro->fotosPerfil = array();
+                                 
+                                 $registro->empresaLogo =  "../logos_empresas/logo". $registro->empresaId .".png";
+                                 if(file_exists($registro->empresaLogo))
+                                     $registro->empresaLogo =  "php/logos_empresas/logo". $registro->empresaId .".png";
+                                 else
+                                     $registro->empresaLogo =  "php/logos_empresas/default.png";
+                                         
+                                 $registro->fotosPerfil = array();
+                                 $usuarios = explode(",",$usuariosIds);
+                                 
+                                 for($i = 0; $i < count($usuarios); $i++)
+                                 {
+                                     $usuarioId = $usuarios[$i];
+                                     $fotoPerfil =  "../fotos/usuario". $usuarioId .".jpg";
+                                     if(file_exists($fotoPerfil))
+                                         $fotoPerfil =  "php/fotos/usuario". $usuarioId .".jpg";
+                                     else
+                                         $fotoPerfil =  "php/fotos/default.jpg";
+                                     array_push($registro->fotosPerfil,$fotoPerfil);
+                                 }
+                                  
+                                 array_push($registros,$registro);
+                             }
+                             $resultado->valor = $registros;
+                         }
+                         else
+                             $resultado->mensajeError = __FUNCTION__.' Falló el enlace del resultado.';
+                     }
+                     else
+                         $resultado->mensajeError = __FUNCTION__.' Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                 }
+                 else
+                     $resultado->mensajeError = __FUNCTION__.' Falló el enlace de parámetros';
+             }
+             else
+                 $resultado->mensajeError = __FUNCTION__.' Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                 return $resultado;
+    }
+    
+    
 }

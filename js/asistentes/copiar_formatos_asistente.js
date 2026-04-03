@@ -177,8 +177,8 @@ class CopiarFormatosAsistente
 			var  mensajeError="";
 			if($("#empresaIdOrigenSelect").val()=="")
 				mensajeError =  "Por favor ingrese una empresa origen";
-			else if($("#sedeIdOrigenSelect").val()=="")
-				mensajeError = "Por favor ingrese una sede origen";
+			/*else if($("#sedeIdOrigenSelect").val()=="")
+				mensajeError = "Por favor ingrese una sede origen";*/
         	
     		if(mensajeError!="")
     		{
@@ -248,7 +248,7 @@ class CopiarFormatosAsistente
 		var sedeId = $("#sedeIdOrigenSelect").val();
 		var repositorio = new FormatosRepositorio();
 		this._contexto.cargando = true;
-		repositorio.consultarPorEmpresaSede(this,function(resultado)
+		repositorio.consultarPorEmpresa(this,function(resultado)
 		{
 			this._contexto.cargando = false;
 			if(resultado.mensajeError=="")
@@ -257,7 +257,7 @@ class CopiarFormatosAsistente
 			}
 			else
 				this._contexto.mostrarMensajeError("Error",resultado.mensajeError);
-		},empresaId, sedeId);
+		},empresaId);
 	}
 	
 	
@@ -378,7 +378,7 @@ class CopiarFormatosAsistente
 		html+="	  <a href='#step-1'>";
 		html+="		<span class='step_no'>1</span>";
 		html+="		<span class='step_descr'>Origen<br />";
-		html+="		<small>Seleccione empresa y sede origen</small>";
+		html+="		<small>Seleccione empresa origen</small>";
 		html+="		</span>";
 		html+="	  </a>";
 		html+="	</li>";
@@ -395,7 +395,7 @@ class CopiarFormatosAsistente
 		html+="	  <a id='"+this._modal +"step3' href='#step-3'>";
 		html+="		<span class='step_no'>3</span>";
 		html+="		<span class='step_descr'>Destino<br />";
-		html+="	    <small>Seleccione empresa y sede destino</small>";
+		html+="	    <small>Seleccione empresa destino</small>";
 		html+="		</span>";
 		html+="	  </a>";
 		html+="	</li>";
@@ -409,12 +409,14 @@ class CopiarFormatosAsistente
 		html+="<select id='empresaIdOrigenSelect' name='empresaIdOrigenSelect' class='form-control'></select>";
 		html+="</div>";
 		html+="</div>";
-		html+="<div class='form-group'>";
+		
+		/*html+="<div class='form-group'>";
 		html+="<div>";
 		html+="<label class='control-label mb-1'>Sede</label>";
 		html+="<select id='sedeIdOrigenSelect' name='sedeIdOrigenSelect' class='form-control'></select>";
 		html+="</div>";
-		html+="</div>";
+		html+="</div>";*/
+		
 		html+=" </div>";
 		
 		html+="  <div id='step-2'>";
@@ -431,12 +433,13 @@ class CopiarFormatosAsistente
 		html+="<select id='empresaIdDestinoSelect' name='empresaIdOrigenSelect' class='form-control'></select>";
 		html+="</div>";
 		html+="</div>";
-		html+="<div class='form-group'>";
+		
+		/*html+="<div class='form-group'>";
 		html+="<div>";
 		html+="<label class='control-label mb-1'>Sede</label>";
 		html+="<select id='sedeIdDestinoSelect' name='sedeIdOrigenSelect' class='form-control'></select>";
 		html+="</div>";
-		html+="</div>";
+		html+="</div>";*/
 	
 		
 		html+="  </div>";
@@ -525,15 +528,15 @@ class CopiarFormatosAsistente
             	 "empresaIdOrigenSelect": {
                      required: !0
                  },
-                "sedeIdOrigenSelect": {
+              /*  "sedeIdOrigenSelect": {
                     required: !0
-                },
+                },*/
                 "empresaIdDestinoSelect": {
                     required: !0
-                },
-               "sedeIdDestinoSelect": {
+                }//,
+             /*  "sedeIdDestinoSelect": {
                    required: !0
-               }
+               }*/
             },
             messages: {
             	 "empresaIdOrigenSelect": "Por favor ingrese una empresa origen",
@@ -557,10 +560,10 @@ class CopiarFormatosAsistente
 		var  mensajeError="";
 		if($("#empresaIdDestinoSelect").val()=="")
 			mensajeError =  "Por favor ingrese una empresa destino";
-		else if($("#sedeIdDestinoSelect").val()=="")
+		/*else if($("#sedeIdDestinoSelect").val()=="")
 			mensajeError = "Por favor ingrese una sede destino";
 		else if($("#sedeIdOrigenSelect").val()==$("#sedeIdDestinoSelect").val())
-			mensajeError = "Debe seleccionar sedes distintas para el origen y destino";
+			mensajeError = "Debe seleccionar sedes distintas para el origen y destino";*/
     	
 		if(mensajeError!="")
 		{

@@ -1,13 +1,13 @@
 class VistaPreviaArchivo
 {
 	
-	visualizar(vista, carpeta, id, archivo)
+	visualizar(vista, carpeta, id, archivo, titulo, subtitulo)
 	{
 		var _this = this;
 		vista.mostrarFormularioHTML(HANDEL_API+"/html/modales/ver_archivo.php",this, null, function()
 		{
 			
-			_this.vistaPreviaArchivo(vista,carpeta,id,archivo);
+			_this.vistaPreviaArchivo(vista,carpeta,id,archivo,titulo,subtitulo);
 			
 		},null,"archivoModal","","", function()
 		{
@@ -18,9 +18,14 @@ class VistaPreviaArchivo
 		});
 	}
 	
-	vistaPreviaArchivo(vista,carpeta,id, archivo)
+	vistaPreviaArchivo(vista,carpeta,id, archivo, titulo, subtitulo)
 	{
-		 $("#pdf").hide();
+		if(titulo!="" && titulo!=null)
+			$("#tituloArchivoModal").html(titulo);
+		if(subtitulo!="" && subtitulo!=null)
+			$("#subtituloArchivoModal").html(subtitulo);
+			
+		$("#pdf").hide();
 		$("#officeDiv").hide();
 		$("#contenedorEvidenciaImage").hide();
 		var _this = this;

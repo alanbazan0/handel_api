@@ -56,6 +56,14 @@ try
                     $usuario = $_SESSION['usuario'];
                 $resultado = $repositorio->consultarManualSeguridad($usuario,$criteriosSeleccion);
             break;
+            case 'consultarManualSeguridadAgrupados':
+                $criteriosSeleccion = json_decode(REQUEST('criteriosSeleccion'));
+                session_start();
+                $usuario = null;
+                if(isset($_SESSION['usuario']))
+                    $usuario = $_SESSION['usuario'];
+                $resultado = $repositorio->consultarManualSeguridadAgrupados($usuario,$criteriosSeleccion);
+            break;
             case 'consultarPorLlaves':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->consultarPorLlaves($llaves);

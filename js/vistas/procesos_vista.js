@@ -26,7 +26,10 @@ class ProcesosVista extends CatalogoVista
 		
 		});
 		
+		$("#usuariosCompartirSelect").chosen();
 	}
+	
+	
 	
 	iniciarCopia()
 	{
@@ -47,7 +50,7 @@ class ProcesosVista extends CatalogoVista
 			{longitud:200, 	titulo:"Nombre",   alias:"nombre", alineacion:"I", class: "desc" }, 
 			//{longitud:200, 	titulo:"Descripción",   alias:"descripcion", alineacion:"I"}, 
 			{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },		
-			{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" },		
+			//{longitud:200, 	titulo:"Sede",   alias:"sedeNombre", alineacion:"I" },		
 			{longitud:200, 	titulo:"Sección en manual",alias:"rutaArchivo", alineacion:"I"},
 			{longitud:200, 	titulo:"Archivo",alias:"nombreArchivo", alineacion:"I", itemRenderer:this.renderArchivos},		
 			{longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" },	
@@ -153,7 +156,13 @@ class ProcesosVista extends CatalogoVista
 	
 	consultarCombos()
 	{
+		
 		this.consultarEmpresas();
+		if(this.modo == Modo.ALTA)
+		{
+			$("#oeaCheck").prop('checked', true);
+			$("#ctpatCheck").prop('checked', true);
+		}
 	}
 	
 	editar(id)
@@ -206,6 +215,8 @@ class ProcesosVista extends CatalogoVista
 			$("#ipmCheck").prop('checked', false);	
 			
 		this.consultarCombos();
+		
+		this._usuariosSeleccionados = valor.usuarios;
 	}
 	
 	get modelo()
@@ -224,7 +235,11 @@ class ProcesosVista extends CatalogoVista
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;
-		 return modelo;
+			 
+		modelo.usuarios = this.usuarios;
+		modelo.usuariosEliminados = this.usuariosEliminados;
+		modelo.usuariosNuevos = this.usuariosNuevos;
+		return modelo;
 	 }
 	 
 	datosValidos()
@@ -257,7 +272,7 @@ class ProcesosVista extends CatalogoVista
 	consultarEmpresas()
 	{
 		this.cargandoOpciones("#empresaIdSelect");
-		this.cargandoOpciones("#sedeIdSelect");
+		//this.cargandoOpciones("#sedeIdSelect");
 		this.presentador.consultarEmpresas();
 	}
 	
@@ -275,14 +290,14 @@ class ProcesosVista extends CatalogoVista
 	
 	cambiarEmpresaCriterio()
 	{
-		this.cargandoOpciones("#areaSelectCriterio");
-		this.consultarSedesCriterio();
+		//this.cargandoOpciones("#areaSelectCriterio");
+		//this.consultarSedesCriterio();
 	}
 	
 	consultarSedesCriterio()
 	{
-		this.cargandoOpciones("#sedeSelectCriterio");
-		this.presentador.consultarSedesCriterio();
+		//this.cargandoOpciones("#sedeSelectCriterio");
+		//this.presentador.consultarSedesCriterio();
 	}
 	
 	set empresasCriterio(registros)
@@ -293,24 +308,24 @@ class ProcesosVista extends CatalogoVista
 	
 	set sedesCriterio(registros)
 	{		
-		this.cargarOpciones('#sedeSelectCriterio', registros);
+		//this.cargarOpciones('#sedeSelectCriterio', registros);
 	}
 	
 	
 	cambiarEmpresa()
 	{
-		this.consultarSedes();
+		this.presentador.consultarResponsables();
 	}
 	
 	consultarSedes()
 	{
-		this.cargandoOpciones("#sedeIdSelect");
-		this.presentador.consultarSedes();
+		//this.cargandoOpciones("#sedeIdSelect");
+		//this.presentador.consultarSedes();
 	}
 	
 	set sedes(registros)
 	{		
-		this.cargarOpciones('#sedeIdSelect', registros, this.modo, this.modeloEdicion, 'sedeId',"");
+		//this.cargarOpciones('#sedeIdSelect', registros, this.modo, this.modeloEdicion, 'sedeId',"");
 	}
 	
 	inicializarEventosBotonesTabla(tbody, table, nombresCamposLlave)
@@ -454,8 +469,107 @@ class ProcesosVista extends CatalogoVista
 		//contenido+="</div>";
 	}
 	
+	set usuariosCompartir(responsables)
+	{
+		
+		var usuarios = ArrayUtils.copy(responsables);
+		
+		
+		var select = "#usuariosCompartirSelect";
+		$(select).empty();
+		var fecha = new Date();
+		$.each(usuarios, function(i, p) 
+		{
+			var fotoPerfil = HANDEL_API+ "/"+p.fotoPerfil+"?"+fecha.getTime();
+			var nombre  = p.nombreCompleto;
+		    $(select).append($('<option data-img-src="'+fotoPerfil+'"></option>').val(p.id).html(nombre));
+		});
+		
+		var usuariosSeleccionados =[];
+		if(this.modeloEdicion!=null)
+		{
+			if(this.modeloEdicion.usuarios!=undefined)
+			{
+				$.each(this.modeloEdicion.usuarios, function(i, p) 
+				{
+					usuariosSeleccionados.push(p.usuarioId);
+				});
+			}
+		}
+		
+		$("#usuariosCompartirSelect").chosen();
+		$("#usuariosCompartirSelect").val(usuariosSeleccionados);
+		 $('#usuariosCompartirSelect').trigger("chosen:updated");
+		$(".chosen-search-input").height(50);
+		$(".chosen-search-input").val("");
+		
+		$("#usuariosCompartirSelect_chosen").css("width","100%");
+		
 	
+		
+
+	}
 	
+	get usuarios()
+	{
+		var usuarios=[];
+		var usuariosSeleccionados  = $("#usuariosCompartirSelect").val();
+		if(usuariosSeleccionados !=undefined)
+		{
+			for(var i = 0; i < usuariosSeleccionados.length ; i++)
+			{
+				var usuarioSeleccionado = usuariosSeleccionados[i];
+				var usuario = new Object();
+				usuario.id = i + 1;
+				usuario.usuarioId = usuarioSeleccionado;
+				usuarios.push(usuario);
+			}
+		}
+		return usuarios;
+	}
+	
+	get usuariosEliminados()
+	{
+		var eliminados = [];
+		var usuarios = this.usuarios;
+		if(this._usuariosSeleccionados!=null)
+		{
+			for(var i = 0; i < this._usuariosSeleccionados.length; i++)
+			{
+				var usuario = this._usuariosSeleccionados[i];
+				if(!ArrayUtils.existsWithValues("usuarioId",[usuario.usuarioId],usuarios))
+				{
+					eliminados.push(usuario);
+				}
+			}
+		}
+		return eliminados;
+	}	
+	
+	get usuariosNuevos()
+	{
+		var nuevos = [];
+		var usuarios = this.usuarios;
+		for(var i = 0; i < this.usuarios.length; i++)
+		{
+			var usuario = this.usuarios[i];
+			if(!ArrayUtils.existsWithValues("usuarioId",[usuario.usuarioId],this._usuariosSeleccionados))
+			{
+				nuevos.push(usuario);
+			}
+		}
+		return nuevos;
+	}
+	
+	agregar()
+	{
+		super.agregar();
+	}
+	
+	editar()
+	{
+		super.editar();
+	}
 	
 }
 var vista = new ProcesosVista(this);

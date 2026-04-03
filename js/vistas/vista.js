@@ -991,6 +991,10 @@ class Vista
 				}
 				
 			}
+			if(registros!=null && registros.length == 0)
+			{
+				$(select).append($('<option></option>').val("-1").html("-No hay datos"));
+			}
 		}
 		
 	
@@ -1026,11 +1030,20 @@ class Vista
 			return "";
 		}
 		
-		habilitarExportacionExcel()
+		habilitarExportacionExcel(tabla, contexto, funcionRender,columns, nombreArchivo)
 		{
 			var _this = this;
+			
+			
+			if(tabla==null)
+				tabla = _this.tabla;
+			
 			var buttonCommon = {
 			   text:      '<i class="fa fa-file-excel-o"></i> Exportar',
+			   filename: function () {
+			        var fecha = new Date().toISOString().slice(0,10);
+			        return nombreArchivo + " - " + fecha;
+			    },
 		        exportOptions: {
 		        	 modifier: {
 	                        selected: null
@@ -1038,22 +1051,29 @@ class Vista
 		            format: {
 		                body: function ( data, row, column, node ) 
 		                {
-		                	if(column==ArrayUtils.indexWithValues("alias",["logo"],_this.tabla.columnas))
-		                	{
-		                		return "";
-		                	} 
-		                	else if(column==ArrayUtils.indexWithValues("alias",["estatus"],_this.tabla.columnas))
-		                	{
-	                		  if(data.includes("fa-check"))
-		                		   return "Activo";
-		                	   else
-		                		   return "Inactivo";
+							if(funcionRender!=null)
+							{
+								return funcionRender.call(contexto, tabla, data, row, column, node );
+							}
+							else
+							{
+			                	if(column==ArrayUtils.indexWithValues("alias",["logo"],tabla.columnas))
+			                	{
+			                		return "";
+			                	} 
+			                	else if(column==ArrayUtils.indexWithValues("alias",["estatus"],tabla.columnas))
+			                	{
+		                		  if(data.includes("fa-check"))
+			                		   return "Activo";
+			                	   else
+			                		   return "Inactivo";
+			                	}
+			                	else if(node.innerHTML.includes("button"))
+			                		return "";
+								else if(node.innerHTML.includes("<label>"))
+									return "";
+			                	return data;
 		                	}
-		                	else if(node.innerHTML.includes("button"))
-		                		return "";
-							else if(node.innerHTML.includes("<label>"))
-								return "";
-		                	return data;
 		                 
 		                }
 		            }
@@ -1061,9 +1081,14 @@ class Vista
 		    };
 		 
 		
+		if(columns!=null)
+		{
+			
+			buttonCommon.exportOptions.columns = columns;
+		}
 
 
-		 this.tabla.botones =  {
+		 tabla.botones =  {
 			      buttons: [
 			    	  $.extend( true, {}, buttonCommon, {
 			                extend: 'excel',"className": 'btn btn-success' 

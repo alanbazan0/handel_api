@@ -10,10 +10,11 @@
 	<div class="modal-dialog modal-lg" role="document" style='width: 90%;'> 
 		<div class="modal-content" >
 			<div class="modal-header">
-				<h6 class="modal-title" id="scrollmodalLabel">Archivo</h6>
+				<h5 id="tituloArchivoModal" class="modal-title" id="scrollmodalLabel">Archivo</h5>
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
+				<h6 id="subtituloArchivoModal" class="modal-title" id="scrollmodalLabel"></h6>
 			</div>
 			<div class="modal-body">
 				<div class="form-group" id='contenedorEvidenciaImage'>
@@ -22,9 +23,7 @@
                         	<img id="evidenciaImage"  alt="Archivo" class="img-responsive img-thumbnail " style='' onclick="vista.vistaPrevia(this)"  />
                   	 	</div>
     				</div>
-    			
 				</div>
-				
 				<div id='pdf' class="form-group" >
                   		<div id="pdf-contents" style='text-align:center'>
                     		<canvas id="pdf-canvas" style='width:600px;' width="600"></canvas>

@@ -529,7 +529,6 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
             $this->getConsultaEvidenciasBase($usuario,$criteriosSeleccion,$and, $camposGroupBy)  .
             "\n) AS A ";
       
-        //echo $and;  
         
             
         if($sentencia = $this->conexion->prepare($consulta))
@@ -941,6 +940,7 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
     
     public function getFiltrosN($usuario, $criteriosSeleccion, $agregarFiltrosFecha)
     {
+        
         $filtros = array();
         switch ($usuario->tipoUsuarioId)
         {

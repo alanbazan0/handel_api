@@ -65,20 +65,15 @@ class SeguimientoVista extends CatalogoVista
 			this.recomendacionesTabla = new Tabla("recomendacionesTabla");
 			
 			this.recomendacionesTabla.columnas = [
-				//º	{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"C" },
 					{longitud:70, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" }, 
-					{longitud:300, 	titulo:"Acciones",   alias:"titulo", alineacion:"I" }, 	
+					{longitud:200, 	titulo:"Acciones",   alias:"titulo", alineacion:"I", itemRenderer: this.renderAcciones }, 	
 					{longitud:110, 	titulo:"% Cumplimiento",   alias:"cumplimiento", alineacion:"C", itemRenderer: this.renderCumplimientoRecomendacion  }, 	
 					{longitud:70, 	titulo:"Fecha compromiso",   alias:"fechaVencimiento", alineacion:"C" }, 	
-					//{longitud:50, 	titulo:"Número",   alias:"contadorEmpresa", alineacion:"C" },
-					//{longitud:200, 	titulo:"Referencia",   alias:"referencia", alineacion:"I" },
 					
 					];
 					
 			if(this.usuario.tipoUsuarioId == TipoUsuario.ADMINISTRADOR || this.usuario.tipoUsuarioId == TipoUsuario.COORDINADOR || this.usuario.tipoUsuarioId == TipoUsuario.SUPERVISOR)
 			{
-				//this.recomendacionesTabla.columnas.push({longitud:40, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoUsuario});
-				//this.recomendacionesTabla.columnas.push({longitud:120, 	titulo:"Responsable",   alias:"usuarioNombreCompleto", alineacion:"I", itemRenderer: this.renderNombreUsuario});
 				this.recomendacionesTabla.columnas.push({longitud:40, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoUsuarioRecomendacion});
 				this.recomendacionesTabla.columnas.push({longitud:100, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I",itemRenderer:this.renderNombreUsuarioRecomendacion});
 
@@ -134,6 +129,14 @@ class SeguimientoVista extends CatalogoVista
 
 			this.auditoriasSociosComercialesTabla.registros = [];	
 		}
+	}
+	
+	renderAcciones(renglon)
+	{
+		return renglon.titulo.replace(
+		    /(https?:\/\/[^\s]+)/g,
+		    '<a href="$1" target="_blank">Ver enlace</a>'
+		  );	
 	}
 	
 	crearBotonesSociosComerciales()

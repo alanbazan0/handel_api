@@ -39,12 +39,12 @@ header('Access-Control-Allow-Credentials: true');
                   </div>
                     <hr style='border-top: 1px solid #3c8dbc;'>
                    <label class="control-label text-primary" style='text-align:center'><i class="fa fa-file-text-o"></i> PROCESO</label>
-                   <div class='form-group'>
+                  <!--  <div class='form-group'>
                       <div>
                           <label class='control-label mb-1'>Sede</label>
                           <select id='sedeIdSelectProcedimiento' name='sedeIdSelectProcedimiento' onchange="vista.cambiarSedeProcedimiento();" class='form-control'></select>
                       </div>
-                  </div>
+                  </div> -->
                     <div class='form-group'>
                       <div>
                           <label class='control-label mb-1'>Proceso</label>

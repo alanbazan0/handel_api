@@ -27,6 +27,28 @@ class ProcesosRepositorio extends Repositorio
 	   });
 	}
 	
+	consultarPorEmpresa(contexto,funcion, empresaId)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		   $.ajax({
+	       url: url,
+	       type: 'POST',
+	       data: {accion : "consultarPorEmpresa", empresaId: empresaId},
+	       success: function( data, textStatus, jQxhr )
+	       {
+	           funcion.call(contexto,data);
+	       },
+	       error: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       },
+	       fail: function( jqXhr, textStatus, errorThrown )
+	       {
+	      	 funcion.call(contexto,{ mensajeError : textStatus});
+	       }
+	   });
+	}
+	
 	copiarProcesos(contexto,funcion, empresaIdOrigen, sedeIdOrigen, procedimientos, empresaIdDestino, sedeIdDestino)
 	{		
 		var url = HANDEL_API + "/" + this.servicio;

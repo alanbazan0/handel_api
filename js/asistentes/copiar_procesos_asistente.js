@@ -177,8 +177,8 @@ class CopiarProcesosAsistente
 			var  mensajeError="";
 			if($("#empresaIdOrigenSelect").val()=="")
 				mensajeError =  "Por favor ingrese una empresa origen";
-			else if($("#sedeIdOrigenSelect").val()=="")
-				mensajeError = "Por favor ingrese una sede origen";
+			//else if($("#sedeIdOrigenSelect").val()=="")
+			//	mensajeError = "Por favor ingrese una sede origen";
         	
     		if(mensajeError!="")
     		{
@@ -245,10 +245,10 @@ class CopiarProcesosAsistente
 	consultarProcesos()
 	{
 		var empresaId = $("#empresaIdOrigenSelect").val();
-		var sedeId = $("#sedeIdOrigenSelect").val();
+		//var sedeId = $("#sedeIdOrigenSelect").val();
 		var repositorio = new ProcesosRepositorio();
 		this._contexto.cargando = true;
-		repositorio.consultarPorEmpresaSede(this,function(resultado)
+		repositorio.consultarPorEmpresa(this,function(resultado)
 		{
 			this._contexto.cargando = false;
 			if(resultado.mensajeError=="")
@@ -257,7 +257,8 @@ class CopiarProcesosAsistente
 			}
 			else
 				this._contexto.mostrarMensajeError("Error",resultado.mensajeError);
-		},empresaId, sedeId);
+		//},empresaId, sedeId);
+		},empresaId);
 	}
 	
 	
@@ -301,7 +302,7 @@ class CopiarProcesosAsistente
 		{
 			swal({
 	            title: "Error",
-	            text: "No exiten procesos en esta sede, seleccione una sede diferente",
+	            text: "No exiten procesos en esta empresa, seleccione una empresa diferente",
 	            type: "warning",
 	            confirmButtonColor: "#DD6B55",
 	            confirmButtonText: "Cerrar",
@@ -378,7 +379,7 @@ class CopiarProcesosAsistente
 		html+="	  <a href='#step-1'>";
 		html+="		<span class='step_no'>1</span>";
 		html+="		<span class='step_descr'>Origen<br />";
-		html+="		<small>Seleccione empresa y sede origen</small>";
+		html+="		<small>Seleccione empresa origen</small>";
 		html+="		</span>";
 		html+="	  </a>";
 		html+="	</li>";
@@ -395,7 +396,7 @@ class CopiarProcesosAsistente
 		html+="	  <a id='"+this._modal +"step3' href='#step-3'>";
 		html+="		<span class='step_no'>3</span>";
 		html+="		<span class='step_descr'>Destino<br />";
-		html+="	    <small>Seleccione empresa y sede destino</small>";
+		html+="	    <small>Seleccione empresa destino</small>";
 		html+="		</span>";
 		html+="	  </a>";
 		html+="	</li>";
@@ -409,12 +410,12 @@ class CopiarProcesosAsistente
 		html+="<select id='empresaIdOrigenSelect' name='empresaIdOrigenSelect' class='form-control'></select>";
 		html+="</div>";
 		html+="</div>";
-		html+="<div class='form-group'>";
+		/*html+="<div class='form-group'>";
 		html+="<div>";
 		html+="<label class='control-label mb-1'>Sede</label>";
 		html+="<select id='sedeIdOrigenSelect' name='sedeIdOrigenSelect' class='form-control'></select>";
 		html+="</div>";
-		html+="</div>";
+		html+="</div>";*/
 		html+=" </div>";
 		
 		html+="  <div id='step-2'>";
@@ -431,12 +432,12 @@ class CopiarProcesosAsistente
 		html+="<select id='empresaIdDestinoSelect' name='empresaIdOrigenSelect' class='form-control'></select>";
 		html+="</div>";
 		html+="</div>";
-		html+="<div class='form-group'>";
+		/*html+="<div class='form-group'>";
 		html+="<div>";
 		html+="<label class='control-label mb-1'>Sede</label>";
 		html+="<select id='sedeIdDestinoSelect' name='sedeIdOrigenSelect' class='form-control'></select>";
 		html+="</div>";
-		html+="</div>";
+		html+="</div>";*/
 	
 		
 		html+="  </div>";
@@ -557,10 +558,10 @@ class CopiarProcesosAsistente
 		var  mensajeError="";
 		if($("#empresaIdDestinoSelect").val()=="")
 			mensajeError =  "Por favor ingrese una empresa destino";
-		else if($("#sedeIdDestinoSelect").val()=="")
-			mensajeError = "Por favor ingrese una sede destino";
-		else if($("#sedeIdOrigenSelect").val()==$("#sedeIdDestinoSelect").val())
-			mensajeError = "Debe seleccionar sedes distintas para el origen y destino";
+		//else if($("#sedeIdDestinoSelect").val()=="")
+		//	mensajeError = "Por favor ingrese una sede destino";
+		//else if($("#sedeIdOrigenSelect").val()==$("#sedeIdDestinoSelect").val())
+		//	mensajeError = "Debe seleccionar sedes distintas para el origen y destino";
     	
 		if(mensajeError!="")
 		{
@@ -668,7 +669,7 @@ class CopiarProcesosAsistente
 	}
 	
 	
-	consultarSedesOrigen()
+	/*consultarSedesOrigen()
 	{
 		this._contexto.cargandoOpciones("#sedeIdOrigenSelect");
 		var repositorio = new SedesRepositorio();
@@ -685,18 +686,18 @@ class CopiarProcesosAsistente
 		}
 		else
 			this._contexto.mostrarMensajeError("Error",resultado.mensajeError);
-	}
+	}*/
 	
 	
-	consultarSedesDestino()
+	/*consultarSedesDestino()
 	{
 		this._contexto.cargandoOpciones("#sedeIdDestinoSelect");
 		var repositorio = new SedesRepositorio();
 		var  empresaId = $("#empresaIdDestinoSelect").val();
 		repositorio.consultarPorEmpresa(this,this.consultarSedesDestinoResultado,empresaId);
-	}
+	}*/
 	
-	consultarSedesDestinoResultado(resultado)
+	/*consultarSedesDestinoResultado(resultado)
 	{
 		this._contexto.cargando = false;
 		if(resultado.mensajeError=="")
@@ -705,7 +706,7 @@ class CopiarProcesosAsistente
 		}
 		else
 			this._contexto.mostrarMensajeError("Error",resultado.mensajeError);
-	}
+	}*/
 	
 	set empresas(registros)
 	{		
@@ -714,32 +715,32 @@ class CopiarProcesosAsistente
 		this._contexto.cargarOpciones('#empresaIdOrigenSelect', registros, this.modo, this.modeloEdicion, 'empresaId',"");
 		this._contexto.cargarOpciones('#empresaIdDestinoSelect', registros, this.modo, this.modeloEdicion, 'empresaId',"");
 		
-		this.consultarSedesOrigen();
-		this.consultarSedesDestino();
+		//this.consultarSedesOrigen();
+		//this.consultarSedesDestino();
 	}
 	
 	cambiarEmpresaOrigen()
 	{
 		var _this =$("#"+event.currentTarget.id).data("_this");
-		_this._contexto.cargandoOpciones("#sedeIdOrigenSelect");
-		_this.consultarSedesOrigen();
+		//_this._contexto.cargandoOpciones("#sedeIdOrigenSelect");
+		//_this.consultarSedesOrigen();
 	}
 	
 	cambiarEmpresaDestino()
 	{
 		var _this =$("#"+event.currentTarget.id).data("_this");
-		_this._contexto.cargandoOpciones("#sedeIdDestinoSelect");
-		_this.consultarSedesDestino();
+		//_this._contexto.cargandoOpciones("#sedeIdDestinoSelect");
+		//_this.consultarSedesDestino();
 	}
 	
 	set sedesOrigen(registros)
 	{		
-		this._contexto.cargarOpciones('#sedeIdOrigenSelect', registros, this.modo, this.modeloEdicion, 'sedeId',"");
+		//this._contexto.cargarOpciones('#sedeIdOrigenSelect', registros, this.modo, this.modeloEdicion, 'sedeId',"");
 	}
 	
 	set sedesDestino(registros)
 	{		
-		this._contexto.cargarOpciones('#sedeIdDestinoSelect', registros, this.modo, this.modeloEdicion, 'sedeId',"");
+		//this._contexto.cargarOpciones('#sedeIdDestinoSelect', registros, this.modo, this.modeloEdicion, 'sedeId',"");
 	}
 
 	get paginacion(){

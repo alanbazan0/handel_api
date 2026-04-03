@@ -101,7 +101,8 @@ class UsuariosFormatosPresentador extends CatalogoPresentador
 	 consultarProcesos()	
 	 {
 		 var repositorio = new FormatosRepositorio(this);		
-		 repositorio.consultarPorEmpresaSede(this,this.consultarProcedimientosResultado,this.vista.modelo.empresaId,this.vista.modelo.sedeIdProcedimiento);
+		// repositorio.consultarPorEmpresaSede(this,this.consultarProcedimientosResultado,this.vista.modelo.empresaId,this.vista.modelo.sedeIdProcedimiento);
+		 repositorio.consultarPorEmpresa(this,this.consultarProcedimientosResultado,this.vista.modelo.empresaId);
 	 }
 	 
 	 consultarProcedimientosResultado(resultado)

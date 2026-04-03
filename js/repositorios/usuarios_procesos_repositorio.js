@@ -41,11 +41,11 @@ class UsuariosProcesosRepositorio extends Repositorio
 	       },
 	       error: function( jqXhr, textStatus, errorThrown )
 	       {
-	      	 funcion.call(contexto,{ mensajeError : errorThrown});
+	      	 funcion.call(contexto, { mensajeError: Repositorio.getError(jqXhr,textStatus) });
 	       },
 	       fail: function( jqXhr, textStatus, errorThrown )
 	       {
-	      	 funcion.call(contexto,{ mensajeError : errorThrown});
+	      	 funcion.call(contexto, { mensajeError: Repositorio.getError(jqXhr,textStatus) });
 	       }
 	   });
 	}
@@ -63,11 +63,11 @@ class UsuariosProcesosRepositorio extends Repositorio
 	       },
 	       error: function( jqXhr, textStatus, errorThrown )
 	       {
-	      	 funcion.call(contexto,{ mensajeError : errorThrown});
+	      	 funcion.call(contexto, { mensajeError: Repositorio.getError(jqXhr,textStatus) });
 	       },
 	       fail: function( jqXhr, textStatus, errorThrown )
 	       {
-	      	 funcion.call(contexto,{ mensajeError : errorThrown});
+	      	 funcion.call(contexto, { mensajeError: Repositorio.getError(jqXhr,textStatus) });
 	       }
 	   });
 	}
@@ -85,11 +85,11 @@ class UsuariosProcesosRepositorio extends Repositorio
 	       },
 	       error: function( jqXhr, textStatus, errorThrown )
 	       {
-	      	 funcion.call(contexto,{ mensajeError : errorThrown});
+	      	 funcion.call(contexto, { mensajeError: Repositorio.getError(jqXhr,textStatus) });
 	       },
 	       fail: function( jqXhr, textStatus, errorThrown )
 	       {
-	      	 funcion.call(contexto,{ mensajeError : errorThrown});
+	      	 funcion.call(contexto, { mensajeError: Repositorio.getError(jqXhr,textStatus) });
 	       }
 	   });
 	}
@@ -108,11 +108,11 @@ class UsuariosProcesosRepositorio extends Repositorio
 	       },
 	       error: function( jqXhr, textStatus, errorThrown )
 	       {
-	      	 funcion.call(contexto,{ mensajeError : errorThrown});
+	      	 funcion.call(contexto, { mensajeError: Repositorio.getError(jqXhr,textStatus) });
 	       },
 	       fail: function( jqXhr, textStatus, errorThrown )
 	       {
-	      	 funcion.call(contexto,{ mensajeError : errorThrown});
+	      	 funcion.call(contexto, { mensajeError: Repositorio.getError(jqXhr,textStatus) });
 	       }
 	   });
 	}
@@ -129,16 +129,54 @@ class UsuariosProcesosRepositorio extends Repositorio
 				funcion.call(contexto, data);
 			},
 			error: function(jqXhr, textStatus, errorThrown) {
-				funcion.call(contexto, { mensajeError: errorThrown });
+				funcion.call(contexto, { mensajeError: Repositorio.getError(jqXhr,textStatus) });
 			},
 			fail: function(jqXhr, textStatus, errorThrown) {
-				funcion.call(contexto, { mensajeError: errorThrown });
+				funcion.call(contexto, { mensajeError: Repositorio.getError(jqXhr,textStatus) });
 			}
 		});
 	}
 	
+	consultarManualSeguridadAgrupados(contexto,funcion, criteriosSeleccion)
+	{
+		var url = HANDEL_API + "/" + this.servicio;
+		$.ajax({
+			url: url,
+			type: 'POST',
+			data: { accion: "consultarManualSeguridadAgrupados", criteriosSeleccion: JSON.stringify(criteriosSeleccion) },
+			success: function(data, textStatus, jQxhr) {
+				funcion.call(contexto, data);
+			},
+			error: function(jqXhr, textStatus, errorThrown) {
+				funcion.call(contexto, { mensajeError: Repositorio.getError(jqXhr,textStatus) });
+			},
+			fail: function(jqXhr, textStatus, errorThrown) {
+				funcion.call(contexto, { mensajeError: Repositorio.getError(jqXhr,textStatus) });
+			}
+		});
+	}
 	
-	
+	consultarUsuariosManualSeguridadPorEmpresaSedeDepartamento(contexto,funcion, empresaId, sedeId, departamentoId, opcional)
+	{		
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+           url: url,
+           type: 'POST',
+           data: {accion : "consultarUsuariosManualSeguridadPorEmpresaSedeDepartamento",empresaId : empresaId, sedeId: sedeId, departamentoId: departamentoId, opcional : opcional},
+           success: function( data, textStatus, jQxhr )
+           {
+               funcion.call(contexto,data);
+           },
+           error: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : textStatus});
+           },
+           fail: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : textStatus});
+           }
+       });
+	}
 	
 
 }

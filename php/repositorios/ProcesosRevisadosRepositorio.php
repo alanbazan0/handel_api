@@ -487,7 +487,7 @@ class ProcesosRevisadosRepositorio extends RepositorioBase implements IProcesosR
             " ORDER BY FIELD(U.id,$usuario->id) DESC,U.nombre, P.nombre";
         
         //var_dump($consulta);
-        
+        //var_dump($filtros);
         
         
         if($sentencia = $this->conexion->prepare($consulta))

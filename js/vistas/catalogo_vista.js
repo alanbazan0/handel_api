@@ -539,8 +539,11 @@ class CatalogoVista extends Vista
 	          'Este mes'  : [moment().startOf('month'), moment().endOf('month')],
 	          'Mes pasado'  : [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
 	        };
+	        
+	   //	const fecha = moment(fechaInicioTemporada, "DD/MM-YYYY", true);
 	     
-	    if(fechaInicioTemporada!=null && fechaInicioTemporada!="")
+	    if(fechaInicioTemporada!=null && fechaInicioTemporada!="" && fechaInicioTemporada!="00/00/0000")
+	    //if(fecha.isValid())
 	    {
 			this._inicioTemporadaConfigurada = true;
 			start = moment(fechaInicioTemporada, "DD-MM-YYYY");

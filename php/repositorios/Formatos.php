@@ -65,6 +65,10 @@ try
                 $sedeId = REQUEST('sedeId');
                 $resultado = $repositorio->consultarPorEmpresaSede($empresaId,$sedeId);
             break;
+            case 'consultarPorEmpresa':
+                $empresaId = REQUEST('empresaId');
+                $resultado = $repositorio->consultarPorEmpresa($empresaId);
+            break;
             case 'consultarPorLlaves':
                 $llaves = json_decode(REQUEST('llaves'));
                 $resultado = $repositorio->consultarPorLlaves($llaves);

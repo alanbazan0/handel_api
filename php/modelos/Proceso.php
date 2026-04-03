@@ -15,5 +15,7 @@ class Proceso
   public $ctpat;
   public $wrap;
   public $ipm;
-  
+  public $usuarios;
+  public $usuariosEliminados;
+  public $usuariosNuevos;
 }

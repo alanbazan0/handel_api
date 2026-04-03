@@ -27,16 +27,26 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
 
     public function insertar(Proceso $modelo)
     {
+        $this->conexion->autocommit(FALSE);
         $resultado = $this->calcularId('id','procesos');
         if($resultado->mensajeError=='')
         {
             $id = $resultado->valor;
+            $modelo->id = $id;
             $consulta = "INSERT INTO procesos(id, codigo, nombre, descripcion, ruta_archivo, empresa_id, sede_id, fecha_alta, fecha_modificacion, estatus, oea, ctpat, wrap, ipm)VALUES(?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?,?,?,?,?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
                 if($sentencia->bind_param('issssiiiiiii', $id, $modelo->codigo, $modelo->nombre, $modelo->descripcion, $modelo->rutaArchivo, $modelo->empresaId, $modelo->sedeId, $modelo->estatus, $modelo->oea, $modelo->ctpat, $modelo->wrap, $modelo->ipm))
                 {
-                    if(!$sentencia->execute())
+                    if($sentencia->execute())
+                    {
+                        $resultado = $this->insertarUsuarios($modelo->id,$modelo->usuarios);
+                        if($resultado->correcto())
+                        {
+                            $this->conexion->commit();
+                        }
+                    }
+                    else
                         $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
                 }
                 else
@@ -48,6 +58,80 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
         return $resultado;
     }
     
+    public function insertarUsuarios($procesoId,$usuarios)
+    {
+        $resultado = new Resultado();
+        for($i = 0; $i < count($usuarios); $i++)
+        {
+            $usuario = $usuarios[$i];
+            $resultado = $this->calcularId('id','usuarios_procesos');
+            if($resultado->correcto())
+            {
+                $id = $resultado->valor;
+                $consulta = "INSERT INTO usuarios_procesos(id, usuario_id, proceso_id, fecha_alta, fecha_modificacion,estatus)VALUES(?, ?, ?, NOW(),NOW(), 1)";
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if($sentencia->bind_param('iii', $id, $usuario->usuarioId, $procesoId))
+                    {
+                        if(!$sentencia->execute())
+                        {
+                            $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        $resultado->mensajeError = 'Falló el enlace de parámetros';
+                        break;
+                    }
+                    
+                }
+                else
+                {
+                    $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' .$this->conexion->error;
+                    break;
+                }
+            }
+        }
+        return $resultado;
+    }
+    
+    public function eliminarUsuarios($modelo)
+    {
+        $resultado = new Resultado();
+        for($i = 0; $i < count($modelo->usuariosEliminados); $i++)
+        {
+            $usuario = $modelo->usuariosEliminados[$i];
+            $consulta = "DELETE FROM usuarios_procesos WHERE proceso_id = ? AND usuario_id = ?";
+            if($sentencia = $this->conexion->prepare($consulta))
+            {
+                if($sentencia->bind_param('ii', $modelo->id, $usuario->usuarioId))
+                {
+                    if($sentencia->execute())
+                    {
+                        $sentencia->close();
+                    }
+                    else
+                    {
+                        $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                        break;
+                    }
+                }
+                else
+                {
+                    $resultado->mensajeError = 'Falló el enlace de parámetros';
+                    break;
+                }
+                
+            }
+            else
+            {
+                $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' .$this->conexion->error;
+                break;
+            }
+        }
+        return $resultado;
+    }
     
     
     public function copiarProcesos($empresaIdOrigen, $sedeIdOrigen, $procedimientos, $empresaIdDetino, $sedeIdDestino)
@@ -63,10 +147,10 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
             if($resultado->mensajeError=='')
             {
                 $id = $resultado->valor;
-                $consulta = "INSERT INTO procesos(id, codigo, nombre, descripcion, ruta_archivo, empresa_id, sede_id, fecha_alta, fecha_modificacion, estatus)VALUES(?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), 1)";
+                $consulta = "INSERT INTO procesos(id, codigo, nombre, descripcion, ruta_archivo, empresa_id, fecha_alta, fecha_modificacion, estatus)VALUES(?, ?, ?, ?, ?, ?, NOW(), NOW(), 1)";
                 if($sentencia = $this->conexion->prepare($consulta))
                 {
-                    if($sentencia->bind_param('issssii', $id, $procedimiento->codigo, $procedimiento->nombre, $procedimiento->descripcion, $procedimiento->rutaArchivo, $empresaIdDetino, $sedeIdDestino))
+                    if($sentencia->bind_param('issssi', $id, $procedimiento->codigo, $procedimiento->nombre, $procedimiento->descripcion, $procedimiento->rutaArchivo, $empresaIdDetino))
                     {
                         if(!$sentencia->execute())
                         {
@@ -120,6 +204,15 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
             {
                 if($sentencia->execute())
                 {
+                    $resultado = $this->eliminarUsuarios($modelo);
+                    if($resultado->correcto())
+                    {
+                        $resultado = $this->insertarUsuarios($modelo->id,$modelo->usuariosNuevos);
+                        if($resultado->correcto())
+                        {
+                            $this->conexion->commit();
+                        }
+                    }
                     $resultado->valor=true;
                 }
                 else
@@ -226,6 +319,45 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
             $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
             return $resultado;
     }   
+    
+    public function consultarPorEmpresa($empresaId)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        
+        $consulta =   $this->consultaBase .
+        " WHERE P.empresa_id = ? " .
+        "ORDER BY P.nombre";
+        
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i",$empresaId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus, $oea, $ctpat, $wrap, $ipm,$archivo)  )
+                    {
+                        while($row = $sentencia->fetch())
+                        {
+                            $registro = $this->crearRegistro($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus, $oea, $ctpat, $wrap, $ipm,$archivo);
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado.";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            return $resultado;
+    }   
 
     public function consultarPorLlaves($llaves)
     {
@@ -243,6 +375,14 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
                         if($sentencia->fetch())
                         {
                             $registro = $this->crearRegistro($id, $codigo, $nombre, $descripcion, $rutaArchivo, $empresaId, $empresaNombre,$sedeId, $sedeNombre, $fechaAlta, $fechaModificacion, $estatus, $oea, $ctpat, $wrap, $ipm,$archivo);
+                            $sentencia->close();
+                            $resultadoUsuarios = $this->consultarUsuarios($id);
+                            if($resultadoUsuarios->correcto())
+                            {
+                                $registro->usuarios = $resultadoUsuarios->valor;
+                            }
+                            else
+                                $resultado->mensajeError = $resultadoUsuarios->mensajeError;
                             $resultado->valor = $registro;
                         }
                         else
@@ -431,5 +571,48 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
                 array_push($filtros,(object)['tipoDato'=>'int','campo'=>'MONTH(E.fecha_alta)','valor'=>$criteriosSeleccion->mes]);
         }
         return $filtros;
+    }
+    
+    private function consultarUsuarios($procesoId)
+    {
+        $resultado = new Resultado();
+        $usuarios = array();
+        $consulta = "SELECT id, usuario_id " .
+            "FROM usuarios_procesos " .
+            " WHERE proceso_id = ? ".
+            "ORDER BY id";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            
+            if($sentencia->bind_param("i",$procesoId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($id,$usuarioId))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $usuario= (object) [
+                                'id' =>  $id,
+                                'usuarioId' =>  $usuarioId
+                            ];
+                            array_push($usuarios,$usuario);
+                        }
+                        $resultado->valor = $usuarios;
+                        $sentencia->close();
+                    }
+                    else
+                        $resultado->mensajeError = __FUNCTION__. " Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = __FUNCTION__. " Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = __FUNCTION__. " Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = __FUNCTION__. " Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
     }
 }

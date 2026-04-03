@@ -21,6 +21,7 @@ class UsuariosProcesosVista extends CatalogoVista
 	{
 		this.tabla.columnas = [
 			{longitud:200, 	titulo:"Id",   alias:"id", alineacion:"I", class: "desc" }, 
+			{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },	
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoPerfil},
 			{longitud:200, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I", class: "desc" }, 
 			{longitud:200, 	titulo:"Id proceso",   alias:"procedimientoId", alineacion:"D", class: "desc" }, 
@@ -200,7 +201,7 @@ class UsuariosProcesosVista extends CatalogoVista
 			//$('#sedeIdSelect').attr("disabled","disabled");
 			//$('#usuarioIdSelect').attr("disabled","disabled");
 			$('#sedeIdSelectProcedimiento').attr("disabled","disabled");
-			$('#procedimientoIdSelect').attr("disabled","disabled");
+			//$('#procedimientoIdSelect').attr("disabled","disabled");
 		}
 			
 		this.consultarEmpresas();
@@ -322,11 +323,12 @@ class UsuariosProcesosVista extends CatalogoVista
 	cambiarSede()
 	{
 		this.consultarUsuarios();
+		this.consultarProcesos();
 	}
 	
 	cambiarSedeProcedimiento()
 	{
-		this.consultarProcesos();
+		//this.consultarProcesos();
 	}
 	
 	consultarUsuarios()

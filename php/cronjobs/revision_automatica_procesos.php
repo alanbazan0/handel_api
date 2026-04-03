@@ -54,6 +54,11 @@ try
             
         $mes =  intval(date("m"));
         $ano = intval(date("Y"));
+        
+        /*$dia = 30;
+        $mes = 4;
+        $ano = 2026;*/
+        
         $ultimoDia = Mes::getUltimoDia($mes, $ano);
       
          if($dia == $ultimoDia)
@@ -72,26 +77,43 @@ try
                      $usuarios = array_slice($usuarios,0,$numeroUsuarios);
                      
                      $procesosRevisadosRepositorio = new ProcesosRevisadosRepositorio($conexion);
-                     //   var_dump($usuarios);
+                       
                      for ($i = 0; $i < count($usuarios); $i++)
                      {
                          $usuario = $usuarios[$i];
                          $procesos = array();
                          if($usuario->mesRevision!="")
                          {
+                             var_dump($usuario);
                              $revisar = false;
                              
-                             if($usuario->mesRevision<12)
+                             //si se revisa entre Enero y Noviembre
+                             if($usuario->mesRevision<=10)
                              {
-                                if($usuario->mesRevision + 1 == $mes)
+                                 //y el mes sean 2 meses despues, entonces revisar
+                                if($mes == $usuario->mesRevision + 2)
+                                {
                                      $revisar = true;
+                                     echo "\nReviso en $mes";
+                                }
                              }
                              else 
                              {
-                                 if($mes = 1)
+                                 
+                                //si la revision es en dicimenbre, cerrar automaticamente el dia ultimo de enero aprox 90 dias
+                                 if($usuario->mesRevision == 11 && $mes == 1)
                                      $revisar = true;
+                                 //si la revision es en dicimenbre, cerrar automaticamente el dia ultimo de enero aprox 90 dias
+                                 if($usuario->mesRevision == 12 && $mes == 2)
+                                         $revisar = true;
+                                 echo "codicion 2"; 
                              }
-                             $revisar = true;
+                             //$revisar = true;
+                             
+                             echo "\nMes revision: " . $usuario->mesRevision;
+                             echo "\nRevisar: " . $revisar;
+                             echo "\nFecha ejecucion: ".$dia."/".$mes."/".$ano;
+                             
                              if($revisar)
                              {
                                  $criteriosSeleccion = (object)["ano" => $ano];
@@ -108,16 +130,17 @@ try
                                          $proceso = $procesos[$j];
                                          //var_dump($proceso);
                                          $resultado = $procesosRevisadosRepositorio->reportarSinCambios($usuario, $proceso->id);
+                                         // $resultado = new Resultado(); //TESTING
                                          if($resultado->error())
                                              break;
                                      }
                                      if($resultado->error())
                                          break;
                                  }
-                                echo "<br>".$usuario->id . ". ".$usuario->usuarioNombreCompleto . ": " . count($procesos) . " procesos terminados."; 
+                                echo "\n".$usuario->id . ". ".$usuario->usuarioNombreCompleto . ": " . count($procesos) . " procesos terminados."; 
                              }
                              else 
-                                 echo "<br>".$usuario->id . ". ".$usuario->usuarioNombreCompleto .": No es mes de terminacion automatica";
+                                 echo "\n".$usuario->id . ". ".$usuario->usuarioNombreCompleto .": No es mes de terminacion automatica";
                          }
                      }
                      Logger::log("log_revision_automatica_procesos","Termimado!");

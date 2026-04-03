@@ -21,6 +21,7 @@ class UsuariosFormatosVista extends CatalogoVista
 	{
 		this.tabla.columnas = [
 			{longitud:200, 	titulo:"Id",   alias:"id", alineacion:"I", class: "desc" }, 
+			{longitud:200, 	titulo:"Empresa",   alias:"empresaNombre", alineacion:"I" },		
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderFotoPerfil},
 			{longitud:200, 	titulo:"Usuario",   alias:"usuarioNombreCompleto", alineacion:"I", class: "desc" }, 
 			{longitud:200, 	titulo:"Id formato",   alias:"formatoId", alineacion:"D", class: "desc" }, 
@@ -200,7 +201,7 @@ class UsuariosFormatosVista extends CatalogoVista
 			//$('#sedeIdSelect').attr("disabled","disabled");
 			//$('#usuarioIdSelect').attr("disabled","disabled");
 			$('#sedeIdSelectProcedimiento').attr("disabled","disabled");
-			$('#procedimientoIdSelect').attr("disabled","disabled");
+			//$('#procedimientoIdSelect').attr("disabled","disabled");
 		}
 			
 		this.consultarEmpresas();
@@ -322,11 +323,12 @@ class UsuariosFormatosVista extends CatalogoVista
 	cambiarSede()
 	{
 		this.consultarUsuarios();
+		this.consultarProcesos();
 	}
 	
 	cambiarSedeProcedimiento()
 	{
-		this.consultarProcesos();
+		//this.consultarProcesos();
 	}
 	
 	consultarUsuarios()
@@ -351,7 +353,7 @@ class UsuariosFormatosVista extends CatalogoVista
 	set sedes(registros)
 	{		
 		this.cargarOpciones('#sedeIdSelectUsuario', registros, this.modo, this.modeloEdicion, 'usuarioSedeId',"");
-		this.cargarOpciones('#sedeIdSelectProcedimiento', registros, this.modo, this.modeloEdicion, 'procedimientoSedeId',"");
+		this.cargarOpciones('#sedeIdSelectProcedimiento', registros, this.modo, this.modeloEdicion, 'formatoSedeId',"");
 	}
 	
 	set usuarios(registros)
@@ -361,7 +363,7 @@ class UsuariosFormatosVista extends CatalogoVista
 	
 	set procedimientos(registros)
 	{		
-		this.cargarOpciones('#procedimientoIdSelect', registros, this.modo, this.modeloEdicion, 'procedimientoId',"");
+		this.cargarOpciones('#procedimientoIdSelect', registros, this.modo, this.modeloEdicion, 'formatoId',"");
 	}
 
 	

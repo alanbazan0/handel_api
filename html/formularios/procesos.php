@@ -1,4 +1,3 @@
-
 <?php
 $origin = '*';
 if(isset($_SERVER['HTTP_ORIGIN']))
@@ -24,13 +23,13 @@ header('Access-Control-Allow-Credentials: true');
                           <select id='empresaIdSelect' name='empresaIdSelect' onchange="vista.cambiarEmpresa();" class='form-control'></select>
                       </div>
                   </div>
-                  <div class='form-group'>
+                 <!--   <div class='form-group'>
                       <div>
                           <label class='control-label mb-1'>Sede</label>
                           <select id='sedeIdSelect' name='sedeIdSelect' class='form-control'></select>
                       </div>
                   </div>
-                 
+-->                 
                   <div class='form-group'>
                       <div>
                           <label class='control-label mb-1'>Nombre</label>
@@ -81,6 +80,11 @@ header('Access-Control-Allow-Credentials: true');
 <!--                           <input  id='rutaArchivoInput' placeholder="http://" name='rutaArchivoInput' type='text' class='form-control'> -->
 <!--                       </div> -->
 <!--                   </div> -->
+
+				 <div class="form-group" style='position:relative; z-index:99999' >
+                             	<label class="control-label mb-1">Usuarios</label>
+                              	<select class='form-control selectpicker' data-placeholder='' style='margin:0px;height:40px;width:100%' id='usuariosCompartirSelect' multiple  data-campo="usuarios"></select>
+                 </div>
                  <div class="form-group">
 						<label class="control-label mb-1">Activo</label> <label
 							class="switch switch-3d switch-success mr-3"> <input

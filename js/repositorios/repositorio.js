@@ -216,6 +216,14 @@ class Repositorio
           }
       });
 	}
+	
+	static getError(jqXhr,textStatus)
+	{
+		if(textStatus=="parsererror")
+   			return jqXhr.responseText;
+   		else 
+   			return textStatus;
+	}
 //	
 //	eliminarResultado(resultado)
 //	{

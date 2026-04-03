@@ -18,7 +18,7 @@ class CorreosRepositorio extends RepositorioBase implements ICorreosRepositorio
     public function __construct($conexion)
     {
         $this->conexion = $conexion;
-        $this->consultaBase = "SELECT C.id, usuario_id, asunto, mensaje, C.estatus, IFNULL(DATE_FORMAT(fecha_envio,'%d/%m/%Y %H:%i:%s'),'') as fecha_envio, IFNULL(DATE_FORMAT(C.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, C.tipo, U.nombre, U.apellido, U.nombre_usuario, U.tipo_usuario_id, cabecera, U.recursos_humanos, U.empresa_id
+        $this->consultaBase = "SELECT C.id, usuario_id, asunto, mensaje, C.estatus, IFNULL(DATE_FORMAT(fecha_envio,'%d/%m/%Y %H:%i:%s'),'') as fecha_envio, IFNULL(DATE_FORMAT(C.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') as fecha_alta, C.tipo, U.nombre, U.apellido, U.nombre_usuario, U.tipo_usuario_id, cabecera, U.recursos_humanos, U.empresa_id, C.fecha_modificacion
                     FROM correos C
                     	INNER JOIN usuarios U ON U.id = C.usuario_id";
     }
@@ -29,7 +29,7 @@ class CorreosRepositorio extends RepositorioBase implements ICorreosRepositorio
         if($resultado->mensajeError=='')
         {
             $id = $resultado->valor;
-            $consulta = "INSERT INTO correos(id, usuario_id, asunto, mensaje, estatus, fecha_envio, fecha_alta, tipo, fecha_inicio_procesamiento, fecha_finalizacion_procesamiento)VALUES(?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)";
+            $consulta = "INSERT INTO correos(id, usuario_id, asunto, mensaje, estatus, fecha_envio, fecha_alta, tipo, fecha_inicio_procesamiento, fecha_finalizacion_procesamiento, fecha_modificacion)VALUES(?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, NOW())";
             if($sentencia = $this->conexion->prepare($consulta))
             {
                 if($sentencia->bind_param('iississss', $id, $modelo->usuarioId, $modelo->asunto, $modelo->mensaje, $modelo->estatus, $modelo->fechaEnvio, $modelo->tipo, $modelo->fechaInicioProcesamiento, $modelo->fechaFinalizacionProcesamiento))
@@ -52,7 +52,8 @@ class CorreosRepositorio extends RepositorioBase implements ICorreosRepositorio
         $consulta = "UPDATE correos
                      SET
                          estatus = ?,
-                         fecha_inicio_procesamiento = NOW()
+                         fecha_inicio_procesamiento = NOW(),
+                         fecha_modificacion = NOW()
                      WHERE id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -80,7 +81,8 @@ class CorreosRepositorio extends RepositorioBase implements ICorreosRepositorio
         $consulta = "UPDATE correos
                      SET
                          estatus = ?,
-                         fecha_envio = NOW()
+                         fecha_envio = NOW(),
+                         fecha_modificacion = NOW()
                      WHERE id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -108,7 +110,8 @@ class CorreosRepositorio extends RepositorioBase implements ICorreosRepositorio
         $consulta = "UPDATE correos
                      SET
                          estatus = ?,
-                         mensaje = ?
+                         mensaje = ?,
+                         fecha_modificacion = NOW()
                      WHERE id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -137,7 +140,8 @@ class CorreosRepositorio extends RepositorioBase implements ICorreosRepositorio
                      SET
                          estatus = ?,
                          error = ?,
-                         fecha_finalizacion_procesamiento = NOW()
+                         fecha_finalizacion_procesamiento = NOW(),
+                         fecha_modificacion = NOW()
                      WHERE id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -168,7 +172,8 @@ class CorreosRepositorio extends RepositorioBase implements ICorreosRepositorio
                          asunto = ?,
                          mensaje = ?,
                          cabecera = ?,
-                         fecha_finalizacion_procesamiento = NOW()
+                         fecha_finalizacion_procesamiento = NOW(),
+                         fecha_modificacion = NOW()
                      WHERE id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -200,7 +205,8 @@ class CorreosRepositorio extends RepositorioBase implements ICorreosRepositorio
                          mensaje = ?,
                          estatus = ?,
                          fecha_envio = ?,
-                         fecha_alta = ?
+                         fecha_alta = ?,
+                         fecha_modificacion = NOW()
                      WHERE id = ?";
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -250,11 +256,11 @@ class CorreosRepositorio extends RepositorioBase implements ICorreosRepositorio
             {
                 if($sentencia->execute())
                 {
-                    if($sentencia->bind_result($id, $usuarioId, $asunto, $mensaje, $estatus, $fechaEnvio, $fechaAlta, $tipo, $usuarioNombre, $usuarioApellido, $nombreUsuario, $tipoUsuarioId, $cabecera, $recursosHumanos, $empresaId))
+                    if($sentencia->bind_result($id, $usuarioId, $asunto, $mensaje, $estatus, $fechaEnvio, $fechaAlta, $tipo, $usuarioNombre, $usuarioApellido, $nombreUsuario, $tipoUsuarioId, $cabecera, $recursosHumanos, $empresaId, $fechaModificacion))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistro($id, $usuarioId, $asunto, $mensaje, $estatus, $fechaEnvio, $fechaAlta, $tipo,$usuarioNombre, $usuarioApellido, $nombreUsuario, $tipoUsuarioId, $cabecera, $recursosHumanos, $empresaId);
+                            $registro = $this->crearRegistro($id, $usuarioId, $asunto, $mensaje, $estatus, $fechaEnvio, $fechaAlta, $tipo,$usuarioNombre, $usuarioApellido, $nombreUsuario, $tipoUsuarioId, $cabecera, $recursosHumanos, $empresaId, $fechaModificacion);
                             array_push($registros,$registro);
                         }
                         $resultado->valor = $registros;
@@ -370,7 +376,7 @@ class CorreosRepositorio extends RepositorioBase implements ICorreosRepositorio
     }
     
     
-    private function crearRegistro($id, $usuarioId, $asunto, $mensaje, $estatus, $fechaEnvio, $fechaAlta, $tipo, $usuarioNombre, $usuarioApellido, $nombreUsuario, $tipoUsuarioId, $cabecera, $recursosHumanos, $empresaId)
+    private function crearRegistro($id, $usuarioId, $asunto, $mensaje, $estatus, $fechaEnvio, $fechaAlta, $tipo, $usuarioNombre, $usuarioApellido, $nombreUsuario, $tipoUsuarioId, $cabecera, $recursosHumanos, $empresaId, $fechaModificacion)
     {
         $registro= (object) 
         [
@@ -388,7 +394,8 @@ class CorreosRepositorio extends RepositorioBase implements ICorreosRepositorio
             'tipoUsuarioId' => $tipoUsuarioId,
             'cabecera' => $cabecera,
             'recursosHumanos' => $recursosHumanos,
-            'empresaId' => $empresaId
+            'empresaId' => $empresaId,
+            'fechaModificacion' => $fechaModificacion
         ];
         return $registro;
     }
@@ -398,7 +405,7 @@ class CorreosRepositorio extends RepositorioBase implements ICorreosRepositorio
         $resultado = new Resultado();
         $estatus = \EstatusCorreo::CREADO;
         $consulta = "UPDATE correos
-                SET estatus = ?
+                SET estatus = ?, fecha_modificacion = NOW()
                 WHERE estatus = 2 AND fecha_inicio_procesamiento IS NOT NULL
                   AND TIMESTAMPDIFF(MINUTE, fecha_inicio_procesamiento, NOW()) >= 10";
         if($sentencia = $this->conexion->prepare($consulta))

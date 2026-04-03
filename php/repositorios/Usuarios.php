@@ -121,6 +121,7 @@ try
                 $empresaId = REQUEST('empresaId');
                 $resultado = $repositorio->consultarUsuariosCorportarivoYAdministradoresPorEmpresa($empresaId);
             break;
+            
             case 'consultarUsuariosCorportarivoYAdministradoresPorEmpresaSIVAH':
                 $empresaId = REQUEST('empresaId');
                 $resultado = $repositorio->consultarUsuariosCorportarivoYAdministradoresPorEmpresaSIVAH($empresaId);
@@ -128,6 +129,10 @@ try
             case 'consultarUsuariosCorportarivoPorEmpresaSIVAH':
                 $empresaId = REQUEST('empresaId');
                 $resultado = $repositorio->consultarUsuariosCorportarivoPorEmpresaSIVAH($empresaId);
+            break;
+            case 'consultarUsuariosCorportarivoPorEmpresaSAHA':
+                $empresaId = REQUEST('empresaId');
+                $resultado = $repositorio->consultarUsuariosCorportarivoPorEmpresaSAHA($empresaId);
             break;
             case 'consultarPorEmpresaSede':
                 session_start();
