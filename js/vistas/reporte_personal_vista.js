@@ -79,10 +79,10 @@ class ReportePersonalVista extends CatalogoVista
 			{longitud:100, 	titulo:"Capacitación",   alias:"capacitacion", alineacion:"I", itemRenderer: this.rendererCapacitacion },
 			{longitud:100, 	titulo:"Fecha última capacitación",   alias:"fechaUltimaCapacitacion", alineacion:"I"},
 			{longitud:100, 	titulo:"Aprovechamiento",   alias:"porcentaje", alineacion:"C",itemRenderer: this.rendererPorcentaje },
+			{longitud:100, 	titulo:"Avance",   alias:"porcentajeAvance", alineacion:"C",itemRenderer: this.rendererPorcentajeAvance },
 			{longitud:100, 	titulo:"Preguntas correctas",   alias:"correctas", alineacion:"C"},
 			{longitud:100, 	titulo:"Total de preguntas",   alias:"total", alineacion:"C" },
 			{longitud:100, 	titulo:"Total de preguntas contestadas",   alias:"preguntasContestadas", alineacion:"C" },
-			{longitud:100, 	titulo:"Avance",   alias:"porcentajeAvance", alineacion:"C",itemRenderer: this.rendererPorcentajeAvance },
 			{longitud:100, 	titulo:"Capacitaciones completadas",   alias:"capacitacionesTerminadas", alineacion:"C"},
 			{longitud:100, 	titulo:"Total de capacitaciones",   alias:"totalCapacitaciones", alineacion:"C" },
 			{longitud:100, 	titulo:"Completado",   alias:"capacitacionesCompletadas", alineacion:"I", itemRenderer: this.rendererTermino},
@@ -294,11 +294,11 @@ class ReportePersonalVista extends CatalogoVista
 	
 	rendererPorcentaje(renglon, type, set)
 	{    
+		var label ="";
+		var porcentajeCumplimiento = parseFloat(renglon.porcentaje);
 		if(renglon.fechaUltimaCapacitacion!=null)
 		{
 			var cantidad = renglon.correctas + " / " + renglon.total;
-			var porcentajeCumplimiento = parseFloat(renglon.porcentaje);
-			var label ="";
 			if(porcentajeCumplimiento >= 0 && porcentajeCumplimiento < 51)
 			{
 				label = "text-red";
@@ -313,16 +313,19 @@ class ReportePersonalVista extends CatalogoVista
 			}
 			return "<span data-toggle='tooltip' data-placemen='bottom' title='"+cantidad+"' style='font-weight:bold' class='"+label+"'>"+porcentajeCumplimiento+"%</span>";
 		}
-		return "";
+		label = "text-red";
+		cantidad = 0;
+		porcentajeCumplimiento = 0;
+		return "<span data-toggle='tooltip' data-placemen='bottom' title='"+cantidad+"' style='font-weight:bold' class='"+label+"'>"+porcentajeCumplimiento+"%</span>";
 	}
 	
 	rendererPorcentajeAvance(renglon, type, set)
 	{    
+		var label ="";
+		var cantidad = renglon.capacitacionesTerminadas + " / " + renglon.totalCapacitaciones;
 		if(renglon.fechaUltimaCapacitacion!=null)
 		{
-			var cantidad = renglon.capacitacionesTerminadas + " / " + renglon.totalCapacitaciones;
 			var porcentajeCumplimiento = parseFloat(renglon.porcentajeAvance);
-			var label ="";
 			if(porcentajeCumplimiento >= 0 && porcentajeCumplimiento < 51)
 			{
 				label = "text-red";
@@ -337,7 +340,9 @@ class ReportePersonalVista extends CatalogoVista
 			}
 			return "<span data-toggle='tooltip' data-placemen='bottom' title='"+cantidad+"' style='font-weight:bold' class='"+label+"'>"+porcentajeCumplimiento+"%</span>";
 		}
-		return "";
+		label = "text-red";
+		porcentajeCumplimiento = 0;
+		return "<span data-toggle='tooltip' data-placemen='bottom' title='"+cantidad+"' style='font-weight:bold' class='"+label+"'>"+porcentajeCumplimiento+"%</span>";
 	}
 	
 	renderPermisoSAHA(renglon, type, set)

@@ -4669,7 +4669,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                 array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>'(capacitacionesTotal!=0 AND capacitacionesTotal=capacitacionesTerminadas)']);
             break;
             case \TipoReporte::CAPACITACION_NO_COMPLETADA:
-                array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>'((fechaUltimaCapacitacion is not null) OR (capacitacionesTerminadas<capacitacionesTotal))']);
+                array_push($filtrosSub,(object)['tipo'=>'estatico','texto'=>'capacitacionesTerminadas<capacitacionesTotal']);
             break;
             default:
                 
@@ -5980,6 +5980,7 @@ class CursosRepositorio extends RepositorioBase implements ICursosRepositorio
                     return $resultado;
 }
 
+/*
 
 public function consultarAvanceCapacitaciones($usuario,$criteriosSeleccion)
 {
@@ -5998,7 +5999,7 @@ public function consultarAvanceCapacitaciones($usuario,$criteriosSeleccion)
         if($criteriosSeleccion->mostrar == 1)
             array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'UC1','campo'=>'terminado','valor'=> 1]);
         if($criteriosSeleccion->mostrar == 2)
-                array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'UC1','campo'=>'terminado','valor'=> 0]);
+            array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'UC1','campo'=>'terminado','valor'=> 0]);
     }
     
     $filtroFechasCapacitaciones = "";
@@ -6177,6 +6178,245 @@ public function consultarAvanceCapacitaciones($usuario,$criteriosSeleccion)
                 
                 return $resultado;
     }
+    */
+            
+            
+            /*
+             * R-00022 — handel_api/php/repositorios/CursosRepositorio.php
+             *
+             * Reemplaza el método consultarAvanceCapacitaciones() completo (actualmente
+             * en la línea 5984) por esta versión. NO toques getFiltroEstructura() ni
+             * nada más del archivo.
+             *
+             * Cambios vs. original:
+             *   1. FROM invertido: ahora parte de `usuarios U` con INNER JOIN a
+             *      `cursos_perfiles CP_BASE` + `cursos CR`, y LEFT JOIN a
+             *      `usuarios_cursos UC1`. Los usuarios activos cuyo perfil tiene cursos
+             *      asignados aparecen aunque nunca hayan iniciado el curso (UC1 = NULL).
+             *
+             *   2. Se elimina del WHERE el `AND U.perfil_id IN (SELECT ... WHERE
+             *      CP.curso_id = CR.id)` porque ya lo garantiza el INNER JOIN con
+             *      cursos_perfiles CP_BASE.
+             *
+             *   3. Binding `cursoId` ahora sale de `CR.id` (no `UC1.curso_id`), para que
+             *      nunca sea NULL en filas de "no iniciado".
+             *
+             *   4. Subqueries `total`, `correctas`, `preguntasContestadas`:
+             *      `AND C.id = UC1.curso_id` → `AND C.id = CR.id`. Mismo motivo.
+             *
+             *   5. Filtro `cursoId` de entrada: ahora se aplica sobre `CR.id` (no UC1),
+             *      porque UC1 puede ser NULL.
+             *
+             *   6. Filtro `mostrar`: ya no se empuja a $filtros (el helper and() no sabe
+             *      hacer IS NULL). Se construye inline:
+             *        - mostrar = 0  → Todos (sin filtro, incluye no iniciados)
+             *        - mostrar = 1  → Terminados        UC1.terminado = 1
+             *        - mostrar = 2  → No terminados     UC1.terminado = 0 OR UC1.usuario_id IS NULL
+             *                          (incluye ahora a los que nunca empezaron)
+             *        - mostrar = 3  → No iniciados (nuevo)  UC1.usuario_id IS NULL
+             *
+             *   7. El `order by UNIX_TIMESTAMP(UC1.fecha_inicial) desc` se mantiene; las
+             *      filas con fecha_inicial NULL (no iniciados) caen naturalmente al final.
+             */
+            
+            public function consultarAvanceCapacitaciones($usuario, $criteriosSeleccion)
+            {
+                $resultado = new Resultado();
+                $registros = array();
+                $filtros = $this->getFiltroEstructura($usuario, $criteriosSeleccion);
+                
+                // Default a TODOS si no viene tipoReporte.
+                if(!isset($criteriosSeleccion->tipoReporte) || $criteriosSeleccion->tipoReporte === "" || $criteriosSeleccion->tipoReporte == null)
+                    $criteriosSeleccion->tipoReporte = \TipoReporte::TODOS;
+                    
+                    // cursoId filtra sobre CR.id (UC1.curso_id puede ser NULL en "no iniciado").
+                    if(isset($criteriosSeleccion->cursoId) && $criteriosSeleccion->cursoId != "")
+                        array_push($filtros, (object)['tipoDato'=>'int','tabla'=>'CR','campo'=>'id','valor'=>$criteriosSeleccion->cursoId]);
+                        
+                        $filtroFechasCapacitaciones = "";
+                        if(isset($criteriosSeleccion->fechaInicial) && isset($criteriosSeleccion->fechaFinal))
+                        {
+                            if($criteriosSeleccion->fechaInicial != null && $criteriosSeleccion->fechaInicial != "" && $criteriosSeleccion->fechaFinal != null && $criteriosSeleccion->fechaFinal != null)
+                            {
+                                list($diaInicial, $mesInicial, $anoInicial) = explode("/", $criteriosSeleccion->fechaInicial);
+                                list($diaFinal, $mesFinal, $anoFinal) = explode("/", $criteriosSeleccion->fechaFinal);
+                                //$filtroFechasCapacitaciones = " AND DATE(UC1.fecha_inicial) >= '$anoInicial-$mesInicial-$diaInicial' AND DATE(UC1.fecha_inicial) <= '$anoFinal-$mesFinal-$diaFinal' ";
+                               // $filtroFechasCapacitaciones = " AND (UC1.fecha_inicial IS NULL OR (DATE(UC1.fecha_inicial) >= '$anoInicial-$mesInicial-$diaInicial' AND DATE(UC1.fecha_inicial) <= '$anoFinal-$mesFinal-$diaFinal')) ";
+                                $filtroFechasCapacitaciones = " AND (UC1.fecha_inicial IS NULL OR (DATE(UC1.fecha_inicial) >= '$anoInicial-$mesInicial-$diaInicial' AND DATE(UC1.fecha_inicial) <= '$anoFinal-$mesFinal-$diaFinal')) ";
+                            }
+                        }
+                        
+            // Filtro tipoReporte — mismas constantes que consultarResultadosUsuarios,
+            // reinterpretadas a nivel de fila (usuario, curso).
+            switch($criteriosSeleccion->mostrar)
+            {
+                case 1:
+                    //$consulta .= " AND UC1.usuario_id IS NOT NULL ";
+                    array_push($filtros,(object)['tipo'=>'estatico','texto'=>'UC1.terminado = 1']);
+                   // array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'UC1','campo'=>'terminado','valor'=> 1]);
+                    break;
+                case 2:
+                    //$consulta .= " AND UC1.usuario_id IS NULL ";
+                    array_push($filtros,(object)['tipo'=>'estatico','texto'=>'(UC1.usuario_id IS NULL OR UC1.terminado = 0 OR UC1.terminado IS NULL)']);
+                    break;
+                case 3:
+                    //$consulta .= " AND UC1.terminado = 1 ";
+                    array_push($filtros,(object)['tipo'=>'estatico','texto'=>'UC1.usuario_id IS NULL']);
+                    break;
+                
+                default: // TipoReporte::TODOS
+                    break;
+            }
+            
+           /* if(isset($criteriosSeleccion->mostrar) && $criteriosSeleccion->mostrar!="")
+            {
+                if($criteriosSeleccion->mostrar == 1)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'UC1','campo'=>'terminado','valor'=> 1]);
+                    if($criteriosSeleccion->mostrar == 2)
+                        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'UC1','campo'=>'terminado','valor'=> 0]);
+            }
+            */
+                        
+            $consulta = "SELECT U.id as id, U.nombre_usuario as nombreUsuario, U.contrasena contrasena, U.nombre, U.apellido, U.numero_empleado, E.id empresaId, IFNULL(E.nombre,'') empresa, S.id sedeId, IFNULL(S.nombre,'') sede, P.id puestoId, IFNULL(P.nombre,'') puesto, A.id areaId, IFNULL(A.nombre,'') area, T.id tipoUsuarioId, T.nombre tipo_usuario, SU1.id supervisor1Id, CONCAT(IFNULL(SU1.nombre,''),' ',IFNULL(SU1.apellido,'')) supervisor1, SU2.id supervisor2Id, CONCAT(IFNULL(SU2.nombre,''),' ',IFNULL(SU2.apellido,'')) supervisor2, SU3.id supervisor3Id, CONCAT(IFNULL(SU3.nombre,''),' ',IFNULL(SU3.apellido,'')) supervisor3, IFNULL(DATE_FORMAT(U.fecha_alta,'%d/%m/%Y %H:%i:%s'),'') fecha_alta, IFNULL(DATE_FORMAT(U.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'') fecha_modificacion, IFNULL((SELECT IFNULL(DATE_FORMAT(fecha,'%d/%m/%Y %H:%i:%s'),'') as fecha FROM historial_acceso WHERE nombre_usuario= U.nombre_usuario ORDER BY id DESC LIMIT 1),'') ultimo_acceso, U.estatus, E.tipo_empresa_id, A.tipo_area_id, U.permiso_saha, U.permiso_sivah, U.permiso_10y7, U.departamento_id, TRIM(D.nombre) as departamentoNombre, U.permiso_cavi, U.perfil_id, PR.nombre perfilNombre, U.recursos_humanos recursosHumanos, " .
+                            "(SELECT count(*)
+            FROM cursos C
+                INNER JOIN cursos_preguntas CPR ON CPR.curso_id = C.id
+            WHERE U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id) AND C.id = CR.id
+            )total,
+            (
+                SELECT count(*)
+                FROM usuarios_cursos_lecciones_preguntas P
+                INNER JOIN cursos C on C.id = P.curso_id
+                INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
+                WHERE P.usuario_id = U.id
+                AND R.correcta=1 AND C.id = CR.id
+                AND U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)
+            )correctas, IFNULL(DATE_FORMAT(UC1.fecha_inicial,'%d/%m/%Y %H:%i:%s'),'') fecha_inicial, CR.titulo, UC1.terminado, IFNULL(DATE_FORMAT(UC1.fecha_final,'%d/%m/%Y %H:%i:%s'),'') fecha_final, CR.id cursoId,
+            (
+                SELECT count(*)
+                FROM usuarios_cursos_lecciones_preguntas P
+                INNER JOIN cursos C on C.id = P.curso_id
+                INNER JOIN usuarios_cursos UC ON UC.curso_id = C.id AND UC.usuario_id= P.usuario_id
+                INNER JOIN cursos_respuestas R ON R.curso_id = P.curso_id AND R.leccion_id = P.leccion_id AND R.pregunta_id = P.pregunta_id AND R.id = P.respuesta_id
+                WHERE P.usuario_id = U.id AND C.id = CR.id
+                AND U.perfil_id IN(SELECT perfil_id FROM cursos_perfiles CP WHERE CP.curso_id = C.id)
+            )preguntasContestadas
+          FROM usuarios U
+              INNER JOIN empresas E ON U.empresa_id = E.id
+              INNER JOIN sedes S ON U.sede_id = S.id
+              INNER JOIN departamentos D ON D.id = U.departamento_id
+              INNER JOIN cursos_perfiles CP_BASE ON CP_BASE.perfil_id = U.perfil_id
+              INNER JOIN cursos CR ON CR.id = CP_BASE.curso_id AND CR.publicado = 1
+              LEFT JOIN usuarios_cursos UC1 ON UC1.usuario_id = U.id AND UC1.curso_id = CR.id
+              LEFT JOIN puestos P ON U.puesto_id = P.id
+              LEFT JOIN areas A ON U.area_id = A.id
+              LEFT JOIN tipos_usuario T ON U.tipo_usuario_id = T.id
+              LEFT JOIN usuarios SU1 ON U.supervisor1_id = SU1.id
+              LEFT JOIN usuarios SU2 ON U.supervisor2_id = SU2.id
+              LEFT JOIN usuarios SU3 ON U.supervisor3_id = SU3.id
+              LEFT JOIN perfiles PR ON PR.id = U.perfil_id
+        WHERE U.permiso_cavi = 1 AND U.estatus = 1
+                $filtroFechasCapacitaciones ";
+                
+        $consulta .= $this->and($filtros);
+        
+        
+        
+        $consulta .= " ORDER BY U.nombre, U.apellido, CR.titulo, UNIX_TIMESTAMP(UC1.fecha_inicial) DESC";
+                
+               // echo $consulta;
+                
+                if($sentencia = $this->conexion->prepare($consulta))
+                {
+                    if($this->bind_param($sentencia, $filtros))
+                    {
+                        if($sentencia->execute())
+                        {
+                            if ($sentencia->bind_result($id, $nombreUsuario, $contrasena, $nombre, $apellido, $numeroEmpleado, $empresaId, $empresa, $sedeId, $sede, $puestoId, $puesto, $areaId, $area, $tipoUsuarioId, $tipoUsuario, $supervisor1Id, $supervisor1, $supervisor2Id, $supervisor2, $supervisor3Id, $supervisor3, $fechaAlta, $fechaModificacion, $ultimoAcceso, $estatus, $tipoEmpresaId, $tipoAreaId, $permisoSAHA, $permisoSIVAH, $permiso10y7, $departamentoId, $departamentoNombre, $permisoCAVI, $perfilId, $perfilNombre, $recursosHumanos, $total, $correctas, $fechaInicial, $titulo, $terminado, $fechaFinal, $cursoId, $preguntasContestadas))
+                            {
+                                while($row = $sentencia->fetch())
+                                {
+                                    $registro = (object)[
+                                        'id' => $id,
+                                        'usuarioId' => $id,
+                                        'nombreUsuario' => $nombreUsuario,
+                                        'contrasena' => $contrasena,
+                                        'nombre' => $nombre,
+                                        'apellido' => $apellido,
+                                        'numeroEmpleado' => $numeroEmpleado,
+                                        'empresaId' => $empresaId,
+                                        'empresaNombre' => $empresa,
+                                        'sedeId' => $sedeId,
+                                        'sedeNombre' => $sede,
+                                        'puestoId' => $puestoId,
+                                        'puestoNombre' => $puesto,
+                                        'areaId' => $areaId,
+                                        'areaNombre' => $area,
+                                        'tipoUsuarioId' => $tipoUsuarioId,
+                                        'tipoUsuarioNombre' => $tipoUsuario,
+                                        'supervisor1Id' => $supervisor1Id,
+                                        'supervisor1Nombre' => $supervisor1,
+                                        'supervisor2Id' => $supervisor2Id,
+                                        'supervisor2Nombre' => $supervisor2,
+                                        'supervisor3Id' => $supervisor3Id,
+                                        'supervisor3Nombre' => $supervisor3,
+                                        'ultimoAcceso' => $ultimoAcceso,
+                                        'fechaAlta' => $fechaAlta,
+                                        'fechaModificacion' => $fechaModificacion,
+                                        'estatus' => $estatus,
+                                        'tipoEmpresaId' => $tipoEmpresaId,
+                                        'tipoAreaId' => $tipoAreaId,
+                                        'permisoSAHA' => $permisoSAHA,
+                                        'permisoSIVAH' => $permisoSIVAH,
+                                        'permiso10y7' => $permiso10y7,
+                                        'departamentoId' => $departamentoId,
+                                        'departamentoNombre' => $departamentoNombre,
+                                        'permisoCAVI' => $permisoCAVI,
+                                        'perfilId' => $perfilId,
+                                        'perfilNombre' => $perfilNombre,
+                                        'recursosHumanos' => $recursosHumanos,
+                                        'total' => $total,
+                                        'correctas' => $correctas,
+                                        'fechaInicial' => $fechaInicial,
+                                        'titulo' => $titulo,
+                                        'terminado' => $terminado,
+                                        'fechaFinal' => $fechaFinal,
+                                        'cursoId' => $cursoId,
+                                        'preguntasContestadas' => $preguntasContestadas
+                                    ];
+                                    
+                                    $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
+                                    $registro->fotoPerfil = "../fotos/usuario" . $registro->id . ".jpg";
+                                    if(file_exists($registro->fotoPerfil))
+                                        $registro->fotoPerfil = "php/fotos/usuario" . $registro->id . ".jpg";
+                                        else
+                                            $registro->fotoPerfil = "php/fotos/default.jpg";
+                                            
+                                            $registro->nodeId = $id;
+                                            $registro->parentId = $registro->supervisor1Id;
+                                            $registro->text = $registro->nodeId . " - " . $registro->nombreCompleto;
+                                            
+                                            $this->calcularPorcentaje($registro, 'correctas', 'preguntasContestadas', "porcentaje");
+                                            
+                                            array_push($registros, $registro);
+                                }
+                                $resultado->valor = $registros;
+                            }
+                            else
+                                $resultado->mensajeError = "Falló el enlace del resultado.";
+                        }
+                        else
+                            $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace de parámetros";
+                }
+                else
+                    $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    
+                    return $resultado;
+            }
+            
     
     public function getFiltroEstructura($usuario,$criteriosSeleccion)
     {
