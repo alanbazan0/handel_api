@@ -1469,6 +1469,59 @@ class AuditoriaVista extends Vista
 		
 		this.calcularPuntuacionSeccion(puntuaciones);
 		this.calcularPreguntasSinContestar();
+		this.actualizarColoresSecciones();
+	}
+	
+	actualizarColoresSecciones()
+	{
+		var secciones = this.listaPreguntas.secciones;
+		for(var s = 0; s < secciones.length; s++)
+		{
+			var seccion = secciones[s];
+			var totalSn = 0;
+			var contestadasSn = 0;
+
+			var componentesPreguntas = seccion.componentes;
+			if(componentesPreguntas == null || componentesPreguntas == undefined)
+				continue;
+
+			for(var i = 0; i < componentesPreguntas.length; i++)
+			{
+				var componente = componentesPreguntas[i];
+				if(componente.pregunta.tipo == "sn" && componente.pregunta.campoId == null)
+				{
+					totalSn++;
+					if(componente.valor != "" && componente.valor != null && componente.valor != undefined)
+						contestadasSn++;
+				}
+			}
+
+			var color = "";
+			var fontWeight = "normal";
+			if(totalSn == 0)
+			{
+				color = "";
+			}
+			else if(contestadasSn == 0)
+			{
+				color = "#cc0000";
+				fontWeight = "bold";
+			}
+			else if(contestadasSn < totalSn)
+			{
+				color = "#e08000";
+				fontWeight = "bold";
+			}
+			else
+			{
+				color = "#1a8a1a";
+				fontWeight = "bold";
+			}
+
+			var $option = $("#secciones option[value='" + seccion.id + "']");
+			$option.css("color", color);
+			$option.css("font-weight", fontWeight);
+		}
 	}
 	
 	calcularPreguntasSinContestar()

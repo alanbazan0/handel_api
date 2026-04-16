@@ -169,7 +169,7 @@ abstract class PDF extends FPDF
     private function calcularFolio()
     {
         // $folio ="Seguimiento". $this->auditoria->id;
-        $folio.="Diploma";
+        $folio="Diploma";
 //         if($this->empresa!=null)
 //             $folio.="-".$this->empresa->nombreCorto;
 //         if($this->sede!=null)
@@ -177,7 +177,12 @@ abstract class PDF extends FPDF
         
         
         if($this->usuario!=null)
-            $folio.="-". str_replace(" ","-",$this->usuarioDiploma->nombreCompleto);
+        {
+            $nombre =  str_replace(" ","-",$this->usuarioDiploma->nombreCompleto);
+            $nombre =  str_replace("/","-",$nombre);
+            
+            $folio.="-". $nombre;
+        }
                 
         if($this->criteriosSeleccion->fechaInicialTerminado!=null && $this->criteriosSeleccion->fechaFinalTerminado!=null)
         {
