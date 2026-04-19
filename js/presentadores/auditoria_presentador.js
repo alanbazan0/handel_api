@@ -88,6 +88,8 @@ class AuditoriaPresentador extends CatalogoPresentador
 				 	seccionId: this.vista.seccionId
 		 			};
 		 repositorio.consultarValoresSeccion(this,this.consultarValoresResultado,llaves);
+		 
+		 this.consultarContadoresPreguntasPorSeccion();
 	}
 	
 	consultarValoresResultado(resultado)
@@ -308,5 +310,24 @@ class AuditoriaPresentador extends CatalogoPresentador
 				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
 		 }
 		,this.vista.auditoriaId);
+	}
+	
+	consultarContadoresPreguntasPorSeccion()
+	{
+		 var llaves ={plantillaId: this.vista.modeloEdicion.plantillaId,
+				 	id: this.vista.modeloEdicion.id};
+		this.vista.mostrarIndicador();	
+		 var repositorio = new AuditoriasRepositorio(this);		
+		 repositorio.consultarContadoresPreguntasPorSeccion(this, function(resultado)
+		 {
+			this.vista.ocultarIndicador();	
+			if(resultado.mensajeError=="")
+			{
+				this.vista.contadoresPreguntas = resultado.valor;			
+			}
+			else
+				this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 }
+		,llaves);
 	}
 }

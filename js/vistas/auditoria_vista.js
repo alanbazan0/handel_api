@@ -19,6 +19,7 @@ class AuditoriaVista extends Vista
 		this.preguntaEdicion = null;
 		this.seccionEdicion = null;
 		this.velocidadAnimacion = 400;
+		this._selectizeSecciones = null;
 		
 		this._modo = $("#modo").val()
 		if(this._modo==""  || this._modo==undefined)
@@ -193,6 +194,7 @@ class AuditoriaVista extends Vista
 		    $('#secciones').append($('<option></option>').val(p.id).html(p.texto));
 		});
 		
+		this.crearSelectSecciones(null);
 		
 		
 		if(this._modo==Modo.CAMBIO)
@@ -201,6 +203,7 @@ class AuditoriaVista extends Vista
 			this.modeloEdicion.id = this.auditoriaId;
 			this.modeloEdicion.seccionId = this.seccionId;
 			this.presentador.consultarValores();
+			
 		}
 	}
 	
@@ -212,6 +215,7 @@ class AuditoriaVista extends Vista
 			this.presentador.consultarValores();
 		else
 			this.calcularPorcentajes();
+		
 	}
 	
 	siguiente()
@@ -1469,64 +1473,15 @@ class AuditoriaVista extends Vista
 		
 		this.calcularPuntuacionSeccion(puntuaciones);
 		this.calcularPreguntasSinContestar();
-		this.actualizarColoresSecciones();
+		//this.actualizarColoresSeccion();
 	}
 	
-	actualizarColoresSecciones()
-	{
-		var secciones = this.listaPreguntas.secciones;
-		for(var s = 0; s < secciones.length; s++)
-		{
-			var seccion = secciones[s];
-			var totalSn = 0;
-			var contestadasSn = 0;
-
-			var componentesPreguntas = seccion.componentes;
-			if(componentesPreguntas == null || componentesPreguntas == undefined)
-				continue;
-
-			for(var i = 0; i < componentesPreguntas.length; i++)
-			{
-				var componente = componentesPreguntas[i];
-				if(componente.pregunta.tipo == "sn" && componente.pregunta.campoId == null)
-				{
-					totalSn++;
-					if(componente.valor != "" && componente.valor != null && componente.valor != undefined)
-						contestadasSn++;
-				}
-			}
-
-			var color = "";
-			var fontWeight = "normal";
-			if(totalSn == 0)
-			{
-				color = "";
-			}
-			else if(contestadasSn == 0)
-			{
-				color = "#cc0000";
-				fontWeight = "bold";
-			}
-			else if(contestadasSn < totalSn)
-			{
-				color = "#e08000";
-				fontWeight = "bold";
-			}
-			else
-			{
-				color = "#1a8a1a";
-				fontWeight = "bold";
-			}
-
-			var $option = $("#secciones option[value='" + seccion.id + "']");
-			$option.css("color", color);
-			$option.css("font-weight", fontWeight);
-		}
-	}
+	
 	
 	calcularPreguntasSinContestar()
 	{
 		var preguntasSinContestar = 0;
+		
 		var preguntas = this.preguntas;
 		for(var i=0; i < preguntas.length; i++)
 		{
@@ -1537,6 +1492,8 @@ class AuditoriaVista extends Vista
 				{
 					preguntasSinContestar++;	
 				}
+				else
+					contestadas++;
 			}
 		}
 		var indice = $("#secciones").prop('selectedIndex');
@@ -1554,6 +1511,22 @@ class AuditoriaVista extends Vista
         }
 		
 		$("#preguntasSinContestarDiv"+seccionId).html(html);
+		
+		var sn = ArrayUtils.filterWithValues("tipo",["sn"],preguntas);
+		var contestadas = 0;
+		for(var i=0; i < sn.length; i++)
+		{	
+			var pregunta = sn[i];
+			if(pregunta.valor!="")
+				contestadas++;
+		}
+		var contador = ArrayUtils.searchWithValues("seccionId",[seccionId],this._contadoresPreguntas);
+		if(contador!=null)
+		{
+			contador.contestadas = contestadas;
+		//var contadores = [{id:seccionId, total: sn.length, contestadas: contestadas}];
+			this.contadoresPreguntas = this._contadoresPreguntas;
+		}
 		
 	}
 	
@@ -1829,6 +1802,78 @@ class AuditoriaVista extends Vista
 	{
 		return this._usuarioXRay;
 	}
+	
+	consultarContadoresPreguntasPorSeccion()
+	{
+		this.presentador.consultarContadoresPreguntasPorSeccion();
+	}
+	
+	set contadoresPreguntas(valor)
+	{
+		this.crearSelectSecciones(valor);
+	}
+	
+	crearSelectSecciones(contadores)
+	{
+		this._contadoresPreguntas = contadores;
+		$('#secciones').select2({
+			dropdownAutoWidth: false, // importante
+  			width: 'resolve',
+		  	templateResult: this.formatOption,
+		 	 templateSelection: this.formatOption,
+		  	escapeMarkup: m => m
+		});
+	}
+	
+	getContadoresSeccion(id)
+	{
+		if(this._contadoresPreguntas!=null)
+		{
+			for(var i = 0; i < this._contadoresPreguntas.length; i++)
+			{
+				if(id == this._contadoresPreguntas[i].seccionId)
+					return this._contadoresPreguntas[i]; 
+			}
+		}
+		return null;
+	}	
+		
+	getColorByValue(value) 
+	{
+		var contador = vista.getContadoresSeccion(value);
+		if(contador!=null)
+		{
+			if(contador.contestadas == contador.total)
+				return "#2ecc71"; // verde
+			else if(contador.contestadas > 0 && contador.contestadas < contador.total)
+				return "#f1c40f"; // amarillo
+			else  if(contador.contestadas == 0) 
+				return "#e74c3c"; // rojo
+		}
+		else
+			return "#ccc";
+		
+	}
+
+	formatOption(option) {
+	  if (!option.id) 
+	  	return option.text;
+	
+	  var color = vista.getColorByValue(option.id);
+	
+	  return $(`
+	    <div style="display:flex;align-items:center;gap:8px;">
+	      <div style="
+	        width:12px;
+	        height:12px;
+	        border-radius:3px;
+	        background:${color};
+	      "></div>
+	      <span>${option.text}</span>
+	    </div>
+	  `);
+	}
+	
 }
 var vista = new AuditoriaVista();
 $(document).ready(function() 

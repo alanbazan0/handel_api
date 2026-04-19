@@ -195,6 +195,10 @@ try
                     $auditoriaId =  REQUEST('auditoriaId');
                     $resultado = $repositorio->enviarNotificacionCliente($usuario,$auditoriaId);
                 break;
+                case "consultarContadoresPreguntasPorSeccion":
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarContadoresPreguntasPorSeccion($llaves);
+                break;
                 default:
                     $resultado->mensajeError = "Acción no implementada";
                 break;

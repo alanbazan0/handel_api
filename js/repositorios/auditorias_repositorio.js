@@ -590,6 +590,29 @@ class AuditoriasRepositorio extends Repositorio
 	       }
 	   });
 	}
+	
+	consultarContadoresPreguntasPorSeccion(contexto,funcion, llaves)
+	{		
+		var llavesString = JSON.stringify(llaves);
+		var url = HANDEL_API + "/" + this.servicio;
+		 $.ajax({
+           url: url,
+           type: 'POST',
+           data: {accion : "consultarContadoresPreguntasPorSeccion",llaves: llavesString},
+           success: function( data, textStatus, jQxhr )
+           {
+               funcion.call(contexto,data);
+           },
+           error: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : textStatus});
+           },
+           fail: function( jqXhr, textStatus, errorThrown )
+           {
+          	 funcion.call(contexto,{ mensajeError : textStatus});
+           }
+       });
+	}
 
 
 }

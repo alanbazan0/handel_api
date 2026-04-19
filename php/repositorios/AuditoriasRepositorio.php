@@ -2431,6 +2431,62 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
         return $resultado;
     }
     
+    public function consultarContadoresPreguntasPorSeccion($llaves)
+    {
+        $resultado = new Resultado();
+        $preguntas = array();
+        $consulta =      $consulta = "SELECT 
+                                    s.id AS seccion_id,
+                                    COUNT(DISTINCT p.id) AS total_preguntas,
+                                    COUNT(DISTINCT ap.pregunta_id) AS preguntas_contestadas
+                                FROM secciones s
+                                INNER JOIN preguntas p ON p.plantilla_id = s.plantilla_id AND p.seccion_id = s.id AND p.tipo = 'sn'
+                                LEFT JOIN auditoria_preguntas ap ON ap.auditoria_id = ? 
+                                    AND ap.plantilla_id = s.plantilla_id 
+                                    AND ap.seccion_id = s.id 
+                                    AND ap.pregunta_id = p.id
+                                    AND ap.valor IS NOT NULL AND ap.valor != ''
+                                WHERE s.plantilla_id = ?
+                                GROUP BY s.id ";
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            
+            if($sentencia->bind_param("ii",$llaves->id,$llaves->plantillaId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($seccionId, $total, $contestadas))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            
+                            $pregunta= (object) [
+                                'seccionId' =>  $seccionId,
+                                'total' => $total,
+                                'contestadas' => $contestadas,
+                                
+                            ];
+                            array_push($preguntas,$pregunta);
+                        }
+                        $resultado->valor = $preguntas;
+                        
+                        
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
     private function consultarPreguntasCompletas($plantillaId,$auditoriaId,$seccionId)
     {
         
