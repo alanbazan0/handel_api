@@ -11,5 +11,6 @@ interface IAuditoriasRepositorio
     public function consultarPorLlaves($id); 
     public function consultar($criteriosSeleccion);  
     public function eliminar($llaves);
+    public function desregistrarPresencia($usuario, $llaves);
 }
 
