@@ -6075,38 +6075,55 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
     public function registrarPresencia($usuario, $llaves)
     {
         $resultado = new Resultado();
-       
-        $usuarioId    = $usuario->id;
-        //$nombre       = $usuario->nombre . ' ' . $usuario->apellido;
-       // $fotoPerfil   = $usuario->fotoPerfil ?? '';
-        $auditoriaId  = $llaves->auditoriaId;
-        $seccionId    = $llaves->seccionId;
-        
-        $consulta = "INSERT INTO auditoria_presencia
-                        (auditoria_id, seccion_id, usuario_id, ultima_actividad)
-                     VALUES (?, ?, ?,  NOW())
-                     ON DUPLICATE KEY UPDATE
-                        seccion_id       = VALUES(seccion_id),
-                        ultima_actividad = NOW()";
-        
-        if($sentencia = $this->conexion->prepare($consulta))
-        {
-            if($sentencia->bind_param("iii", $auditoriaId, $seccionId, $usuarioId))
-            {
-                if(!$sentencia->execute())
-                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
-                    else
-                        $resultado->valor = true;
-            }
-            else
-                $resultado->mensajeError = "Falló el enlace de parámetros";
-        }
-        else
-            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
-            
+
+        if ($usuario === null || !isset($usuario->id)) {
+            $resultado->mensajeError = "Sin sesión de usuario";
             return $resultado;
+        }
+        if ($llaves === null || !isset($llaves->auditoriaId) || !isset($llaves->seccionId)) {
+            $resultado->mensajeError = "Faltan llaves (auditoriaId y seccionId)";
+            return $resultado;
+        }
+
+        $usuarioId   = (int) $usuario->id;
+        $auditoriaId = (int) $llaves->auditoriaId;
+        $seccionId   = (int) $llaves->seccionId;
+
+        // PASO 1: borrar CUALQUIER registro anterior del mismo usuario en esta auditoría.
+        // Esto elimina automáticamente los registros de secciones anteriores (el usuario
+        // solo puede estar en UNA sección a la vez por auditoría).
+        if ($del = $this->conexion->prepare(
+            "DELETE FROM auditoria_presencia WHERE auditoria_id = ? AND usuario_id = ?"
+        )) {
+            $del->bind_param("ii", $auditoriaId, $usuarioId);
+            $del->execute();
+            $del->close();
+        }
+
+        // PASO 2: insertar el registro nuevo con la sección actual.
+        $ins = $this->conexion->prepare(
+            "INSERT INTO auditoria_presencia
+                (auditoria_id, seccion_id, usuario_id, ultima_actividad)
+             VALUES (?, ?, ?, NOW())"
+        );
+        if ($ins) {
+            if ($ins->bind_param("iii", $auditoriaId, $seccionId, $usuarioId)) {
+                if ($ins->execute()) {
+                    $resultado->valor = true;
+                } else {
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+            } else {
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+            }
+            $ins->close();
+        } else {
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        }
+
+        return $resultado;
     }
-    
+
     public function consultarPresencia($usuario, $llaves)
     {
         $resultado  = new Resultado();

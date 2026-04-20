@@ -1901,14 +1901,42 @@ class AuditoriaVista extends Vista
 			_this.presentador.consultarPresencia();
 		}, 5000);
 
-		// Registrar beforeunload una sola vez: desregistra al cerrar pestaña
+		// Registrar beforeunload/pagehide una sola vez con sendBeacon.
+		// sendBeacon garantiza que el POST llegue aunque la pestaña cierre,
+		// a diferencia de $.ajax que es cancelado por el browser.
 		if (!this._beforeUnloadBound)
 		{
 			this._beforeUnloadHandler = function()
 			{
-				try { _this.presentador.desregistrarPresencia(); } catch(e) { }
+				try
+				{
+					var llaves = {
+						auditoriaId: _this.auditoriaId,
+						seccionId:   _this.seccionId
+					};
+					var url = HANDEL_API + "/php/repositorios/Auditorias.php";
+					var fd = new FormData();
+					fd.append("accion", "desregistrarPresencia");
+					fd.append("llaves", JSON.stringify(llaves));
+					if (navigator.sendBeacon)
+					{
+						navigator.sendBeacon(url, fd);
+					}
+					else
+					{
+						// Fallback: XHR síncrono (deprecated pero funciona al cerrar)
+						var xhr = new XMLHttpRequest();
+						xhr.open("POST", url, false);
+						xhr.send(fd);
+					}
+				} catch(e) { }
 			};
 			window.addEventListener("beforeunload", this._beforeUnloadHandler);
+			window.addEventListener("pagehide",     this._beforeUnloadHandler);
+			// visibilitychange también — cuando el usuario cambia de pestaña/app
+			document.addEventListener("visibilitychange", function() {
+				if (document.visibilityState === "hidden") _this._beforeUnloadHandler();
+			});
 			this._beforeUnloadBound = true;
 		}
 	}
