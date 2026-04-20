@@ -613,6 +613,57 @@ class AuditoriasRepositorio extends Repositorio
            }
        });
 	}
+	
+	registrarPresencia(contexto, funcion, llaves)
+	{
+		var llavesString = JSON.stringify(llaves);
+		var url = HANDEL_API + "/" + this.servicio;
+		$.ajax({
+			url: url,
+			type: 'POST',
+			data: {accion: "registrarPresencia", llaves: llavesString},
+			success: function(data, textStatus, jQxhr)
+			{
+				funcion.call(contexto, data);
+			},
+			error: function(jqXhr, textStatus, errorThrown)
+			{
+				funcion.call(contexto, {mensajeError: textStatus});
+			}
+		});
+	}
 
+	consultarPresencia(contexto, funcion, llaves)
+	{
+		var llavesString = JSON.stringify(llaves);
+		var url = HANDEL_API + "/" + this.servicio;
+		$.ajax({
+			url: url,
+			type: 'POST',
+			data: {accion: "consultarPresencia", llaves: llavesString},
+			success: function(data, textStatus, jQxhr)
+			{
+				funcion.call(contexto, data);
+			},
+			error: function(jqXhr, textStatus, errorThrown)
+			{
+				funcion.call(contexto, {mensajeError: textStatus});
+			}
+		});
+	}
+
+
+	desregistrarPresencia(contexto, funcion, llaves)
+	{
+		var llavesString = JSON.stringify(llaves);
+		var url = HANDEL_API + "/" + this.servicio;
+		$.ajax({
+			url: url,
+			type: 'POST',
+			data: {accion: "desregistrarPresencia", llaves: llavesString},
+			success: function(data, textStatus, jQxhr) { funcion.call(contexto, data); },
+			error: function(jqXhr, textStatus, errorThrown) { funcion.call(contexto, {mensajeError: textStatus}); }
+		});
+	}
 
 }

@@ -20,6 +20,8 @@ class AuditoriaVista extends Vista
 		this.seccionEdicion = null;
 		this.velocidadAnimacion = 400;
 		this._selectizeSecciones = null;
+		this._presenciaInterval = null;
+		this._registroInterval  = null;
 		
 		this._modo = $("#modo").val()
 		if(this._modo==""  || this._modo==undefined)
@@ -195,7 +197,7 @@ class AuditoriaVista extends Vista
 		});
 		
 		this.crearSelectSecciones(null);
-		
+		this.iniciarPollingPresencia();
 		
 		if(this._modo==Modo.CAMBIO)
 		{
@@ -211,6 +213,8 @@ class AuditoriaVista extends Vista
 	{
 		var indice = $("#secciones").prop('selectedIndex');
 		this.listaPreguntas.mostrarSeccion(indice);
+		this.detenerPollingPresencia();
+		this.iniciarPollingPresencia();
 		if(this._modo==Modo.CAMBIO)
 			this.presentador.consultarValores();
 		else
@@ -911,7 +915,10 @@ class AuditoriaVista extends Vista
 	    });
 	    $(document).off('click', '.salirButton');
 	    $(document).on('click', '.salirButton', function() {
+			this.detenerPollingPresencia();
 	        window.close();
+	        
+	        
 	    });
 	    $(document).off('click', '.notificarButton');
 	    $(document).on('click', '.notificarButton', function() {
@@ -1872,6 +1879,155 @@ class AuditoriaVista extends Vista
 	      <span>${option.text}</span>
 	    </div>
 	  `);
+	}
+	
+	iniciarPollingPresencia()
+	{
+		var _this = this;
+		// Registrar presencia inmediatamente al abrir sección
+		this.presentador.registrarPresencia();
+		// Consultar quiénes más están presentes
+		this.presentador.consultarPresencia();
+
+		// Renovar presencia cada 5s (umbral server = 15s → 3 ventanas de gracia)
+		this._registroInterval = setInterval(function()
+		{
+			_this.presentador.registrarPresencia();
+		}, 5000);
+
+		// Actualizar avatares cada 5s (tiempo real más fluido)
+		this._presenciaInterval = setInterval(function()
+		{
+			_this.presentador.consultarPresencia();
+		}, 5000);
+
+		// Registrar beforeunload una sola vez: desregistra al cerrar pestaña
+		if (!this._beforeUnloadBound)
+		{
+			this._beforeUnloadHandler = function()
+			{
+				try { _this.presentador.desregistrarPresencia(); } catch(e) { }
+			};
+			window.addEventListener("beforeunload", this._beforeUnloadHandler);
+			this._beforeUnloadBound = true;
+		}
+	}
+
+	detenerPollingPresencia()
+	{
+		// Desregistrar antes de detener el polling
+		try { this.presentador.desregistrarPresencia(); } catch(e) { }
+
+		if(this._presenciaInterval != null)
+		{
+			clearInterval(this._presenciaInterval);
+			this._presenciaInterval = null;
+		}
+		if(this._registroInterval != null)
+		{
+			clearInterval(this._registroInterval);
+			this._registroInterval = null;
+		}
+	}
+	
+	set presencia(usuarios)
+	{
+		var _this = this;
+		var $contenedor = $("#presenciaAvatares");
+
+		if (!usuarios || usuarios.length === 0)
+		{
+			$contenedor.empty();
+			$("#presenciaDiv").hide();
+			return;
+		}
+
+		// ANTI-PARPADEO: diff inteligente en vez de empty + re-render.
+		// 1) Construir map { usuarioId: u } excluyendo al propio usuario
+		var nuevosIds = {};
+		$.each(usuarios, function(i, u)
+		{
+			if (_this.usuario && _this.usuario.id == u.usuarioId) return;
+			nuevosIds[u.usuarioId] = u;
+		});
+
+		// 2) Remover items existentes (avatar + nombre) que ya no están en la nueva lista
+		$contenedor.find(".presencia-item").each(function()
+		{
+			var id = $(this).attr("data-usuario-id");
+			if (!nuevosIds[id]) $(this).remove();
+		});
+
+		// 3) Agregar items NUEVOS (avatar + nombre) que no estén en el DOM
+		$.each(nuevosIds, function(id, u)
+		{
+			var existente = $contenedor.find(".presencia-item[data-usuario-id=\u0027" + id + "\u0027]");
+			if (existente.length > 0) return;
+
+			var nombreCorto = u.nombre ? String(u.nombre).split(" ")[0] : "";
+
+			var $avatar = $("<img>")
+				.addClass("presencia-avatar")
+				.attr("src", HANDEL_API + "/" + u.fotoPerfil)
+				.attr("title", u.nombre);
+
+			var $nombre = $("<span>")
+				.addClass("presencia-nombre")
+				.text(nombreCorto)
+				.attr("title", u.nombre);
+
+			var $item = $("<div>")
+				.addClass("presencia-item")
+				.attr("data-usuario-id", id)
+				.append($avatar)
+				.append($nombre);
+
+			$contenedor.append($item);
+		});
+
+		if ($contenedor.children().length === 0)
+			$("#presenciaDiv").hide();
+		else
+			$("#presenciaDiv").show();
+	}
+
+		_obtenerIniciales(nombre)
+	{
+		if(!nombre) return '?';
+		var partes = nombre.trim().split(' ');
+		var ini = partes[0].charAt(0).toUpperCase();
+		if(partes.length > 1) ini += partes[partes.length - 1].charAt(0).toUpperCase();
+		return ini;
+	}
+	
+	salir()
+	{
+		var _this = this;
+		swal({
+	            title: "\u00bfEst\u00E1 seguro de salir?",
+	            text: "Se perderan los cambios no guardados !!",
+	            type: "warning",
+	            showCancelButton: true,
+	            confirmButtonColor: "#DD6B55",
+	            confirmButtonText: "Si, Salir!!",
+	            cancelButtonText: "Cancelar",
+	            closeOnConfirm: false,
+	            closeOnCancel: true,
+	            showLoaderOnConfirm: true,
+	        },
+	        function(isConfirm)
+	        {
+	            if (isConfirm) 
+	            {
+	            	 setTimeout(function(){
+	            		window.close();
+	            		_this.detenerPollingPresencia();
+	 	            }, 1000);
+	            }
+				
+	        });
+			
+			
 	}
 	
 }

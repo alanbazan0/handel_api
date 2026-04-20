@@ -6072,5 +6072,145 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
         return  $administrador_correo->enviarCorreoUsuarios($tipo,$usuarios,$asuntoCorreo, $mensaje, "", "SIVAH",$imprimir);
     }
     
+    public function registrarPresencia($usuario, $llaves)
+    {
+        $resultado = new Resultado();
+       
+        $usuarioId    = $usuario->id;
+        //$nombre       = $usuario->nombre . ' ' . $usuario->apellido;
+       // $fotoPerfil   = $usuario->fotoPerfil ?? '';
+        $auditoriaId  = $llaves->auditoriaId;
+        $seccionId    = $llaves->seccionId;
+        
+        $consulta = "INSERT INTO auditoria_presencia
+                        (auditoria_id, seccion_id, usuario_id, ultima_actividad)
+                     VALUES (?, ?, ?,  NOW())
+                     ON DUPLICATE KEY UPDATE
+                        seccion_id       = VALUES(seccion_id),
+                        ultima_actividad = NOW()";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("iii", $auditoriaId, $seccionId, $usuarioId))
+            {
+                if(!$sentencia->execute())
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                    else
+                        $resultado->valor = true;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+            return $resultado;
+    }
+    
+    public function consultarPresencia($usuario, $llaves)
+    {
+        $resultado  = new Resultado();
+        $registros  = array();
+        $umbralSeg  = 15;
+        
+        // Cleanup automático: borrar registros más viejos que umbral x 3
+        $limpiezaSeg = $umbralSeg * 3;
+        if ($sentenciaClean = $this->conexion->prepare(
+            "DELETE FROM auditoria_presencia WHERE ultima_actividad < DATE_SUB(NOW(), INTERVAL ? SECOND)"
+        )) {
+            $sentenciaClean->bind_param("i", $limpiezaSeg);
+            $sentenciaClean->execute();
+            $sentenciaClean->close();
+        }
+
+        // Excluir al propio usuario para que no aparezca a sí mismo
+        $usuarioIdSelf = ($usuario !== null && isset($usuario->id)) ? (int) $usuario->id : 0;
+
+        $consulta = "SELECT usuario_id, U.nombre, U.apellido
+                     FROM auditoria_presencia P
+                            INNER JOIN usuarios U ON U.id = P.usuario_id
+                     WHERE auditoria_id = ?
+                       AND seccion_id   = ?
+                       AND usuario_id   != ?
+                       AND ultima_actividad >= DATE_SUB(NOW(), INTERVAL ? SECOND)";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            $auditoriaId = $llaves->auditoriaId;
+            $seccionId   = $llaves->seccionId;
+            if($sentencia->bind_param("iiii", $auditoriaId, $seccionId, $usuarioIdSelf, $umbralSeg))
+            {
+                if($sentencia->execute())
+                {
+                    if($sentencia->bind_result($usuarioId, $nombre, $apellido))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro = (object)[
+                                'usuarioId'   => $usuarioId,
+                                'nombre'      => $nombre,
+                                'apellido'  => $apellido
+                            ];
+                            $registro->nombreCompleto = $registro->nombre . " " . $registro->apellido;
+                            $registro->fotoPerfil =  "../fotos/usuario". $registro->usuarioId .".jpg";
+                            if(file_exists($registro->fotoPerfil))
+                                $registro->fotoPerfil =  "php/fotos/usuario". $registro->usuarioId .".jpg";
+                            else
+                                $registro->fotoPerfil =  "php/fotos/default.jpg";
+                            array_push($registros, $registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado.";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+            
+        return $resultado;
+    }
+    
+    public function desregistrarPresencia($usuario, $llaves)
+    {
+        $resultado = new Resultado();
+
+        if ($usuario === null || !isset($usuario->id)) {
+            $resultado->mensajeError = "Sin sesión de usuario";
+            return $resultado;
+        }
+        if ($llaves === null || !isset($llaves->auditoriaId)) {
+            $resultado->mensajeError = "Faltan llaves (auditoriaId)";
+            return $resultado;
+        }
+
+        $usuarioId   = (int) $usuario->id;
+        $auditoriaId = (int) $llaves->auditoriaId;
+
+        $consulta = "DELETE FROM auditoria_presencia WHERE auditoria_id = ? AND usuario_id = ?";
+
+        if ($sentencia = $this->conexion->prepare($consulta)) {
+            if ($sentencia->bind_param("ii", $auditoriaId, $usuarioId)) {
+                if ($sentencia->execute()) {
+                    $resultado->valor = true;
+                } else {
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+                }
+            } else {
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+            }
+            $sentencia->close();
+        } else {
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+        }
+
+        return $resultado;
+    }
+
 }
 

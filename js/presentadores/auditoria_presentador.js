@@ -330,4 +330,48 @@ class AuditoriaPresentador extends CatalogoPresentador
 		 }
 		,llaves);
 	}
+	
+	registrarPresencia()
+	 {
+		 var repositorio = new AuditoriasRepositorio();
+		 var llaves = {
+			 auditoriaId: this.vista.auditoriaId,
+			 seccionId:   this.vista.seccionId
+		 };
+		 repositorio.registrarPresencia(this, function(resultado){
+			
+			
+		 }, llaves);
+	 }
+
+
+
+	 consultarPresencia()
+	 {
+		 var repositorio = new AuditoriasRepositorio();
+		 var llaves = {
+			 auditoriaId: this.vista.auditoriaId,
+			 seccionId:   this.vista.seccionId
+		 };
+		 repositorio.consultarPresencia(this, function(resultado){
+			
+			 if(resultado.mensajeError == "")
+			 	this.vista.presencia = resultado.valor;
+		 }, llaves);
+	 }
+
+	
+
+
+	 desregistrarPresencia()
+	 {
+		 var repositorio = new AuditoriasRepositorio();
+		 var llaves = {
+			 auditoriaId: this.vista.auditoriaId,
+			 seccionId:   this.vista.seccionId
+		 };
+		 try {
+			 repositorio.desregistrarPresencia(this, function(resultado){ /* fire and forget */ }, llaves);
+		 } catch (e) { /* silencioso */ }
+	 }
 }

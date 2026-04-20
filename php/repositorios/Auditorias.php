@@ -199,6 +199,24 @@ try
                     $llaves = json_decode(REQUEST('llaves'));
                     $resultado = $repositorio->consultarContadoresPreguntasPorSeccion($llaves);
                 break;
+                case 'registrarPresencia':
+                    $usuario = null;
+                    if(isset($_SESSION['usuario']))
+                        $usuario = $_SESSION['usuario'];
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->registrarPresencia($usuario, $llaves);
+                break;
+                case 'consultarPresencia':
+                    $usuario = null;
+                    if(isset($_SESSION['usuario'])) $usuario = $_SESSION['usuario'];
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->consultarPresencia($usuario, $llaves);
+                break;
+                case 'desregistrarPresencia':
+                    $usuario = null;
+                    if(isset($_SESSION['usuario'])) $usuario = $_SESSION['usuario'];
+                    $llaves = json_decode(REQUEST('llaves'));
+                    $resultado = $repositorio->desregistrarPresencia($usuario, $llaves);
                 default:
                     $resultado->mensajeError = "Acción no implementada";
                 break;
