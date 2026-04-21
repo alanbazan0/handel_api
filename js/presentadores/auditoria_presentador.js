@@ -140,7 +140,7 @@ class AuditoriaPresentador extends CatalogoPresentador
 		{
 		 this.vista.mostrarIndicador();	
 		 var repositorio = new UsuariosRepositorio(this);		
-		 repositorio.consultarUsuariosCorportarivoYAdministradoresPorEmpresa(this, function(resultado)
+		 repositorio.consultarUsuariosCorportarivoYAdministradoresPorEmpresaSIVAH(this, function(resultado)
 		 {
 			this.vista.ocultarIndicador();	
 			if(resultado.mensajeError=="")
@@ -233,7 +233,7 @@ class AuditoriaPresentador extends CatalogoPresentador
 	 {
 		this.vista.mostrarIndicador();	
 		 var repositorio = new UsuariosRepositorio(this);		
-		 repositorio.consultarUsuariosCorportarivoYAdministradoresPorEmpresa(this, function(resultado)
+		 repositorio.consultarUsuariosCorportarivoYAdministradoresPorEmpresaSIVAH(this, function(resultado)
 		 {
 			this.vista.ocultarIndicador();	
 			if(resultado.mensajeError=="")
