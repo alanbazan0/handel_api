@@ -20,6 +20,8 @@
 						<div>
 							<label for="seccionLabel" class="control-label">Sección</label>
 							<span id="seccionLabel" class="" style='display:block;font-size:13px;'></span>
+								<!-- <label class="labelSeccion float-right" id="puntuacionPreliminarObservaciones" style="font-size:18px;"></label> -->
+					
 						</div>
 					</div>
     					

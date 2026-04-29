@@ -861,11 +861,11 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                  if($resultado->correcto())
                  {
                      $id = $resultado->valor;
-                    $consulta = "INSERT INTO auditoria_seccion_observaciones(id, auditoria_id, plantilla_id, seccion_id, hallazgo, recomendacion, responsable, reporte, notificacion) " .
-                        "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    $consulta = "INSERT INTO auditoria_seccion_observaciones(id, auditoria_id, plantilla_id, seccion_id, hallazgo, recomendacion, responsable, reporte, notificacion, valor) " .
+                        "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     if($sentencia = $this->conexion->prepare($consulta))
                     {
-                        if($sentencia->bind_param("iiiissiii",$id, $auditoriaId,$plantillaId,$seccionId, $observacion->hallazgo, $observacion->recomendacion,$observacion->responsableId, $observacion->reporte, $observacion->notificacion))
+                        if($sentencia->bind_param("iiiissiiii",$id, $auditoriaId,$plantillaId,$seccionId, $observacion->hallazgo, $observacion->recomendacion,$observacion->responsableId, $observacion->reporte, $observacion->notificacion, $observacion->valor))
                         {
                             if($sentencia->execute())
                             {
@@ -2373,7 +2373,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
         
         $resultado = new Resultado();
         $registros = array();
-        $consulta = "SELECT O.id, auditoria_id, plantilla_id, seccion_id, hallazgo, recomendacion, responsable,U.nombre, U.apellido, notificacion, reporte, D.nombre departamentoNombre 
+        $consulta = "SELECT O.id, auditoria_id, plantilla_id, seccion_id, hallazgo, recomendacion, responsable,U.nombre, U.apellido, notificacion, reporte, D.nombre departamentoNombre, O.valor
                         FROM auditoria_seccion_observaciones O
                             LEFT JOIN usuarios  U ON U.id = O.responsable
                             LEFT JOIN departamentos D ON D.id = U.departamento_id
@@ -2389,7 +2389,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $auditoriaId, $plantillaId, $seccionId, $hallazgo, $recomendacion, $responsableId, $responsableNombre, $responsableApellido, $notificacion, $reporte, $departamentoNombre))
+                    if ($sentencia->bind_result($id, $auditoriaId, $plantillaId, $seccionId, $hallazgo, $recomendacion, $responsableId, $responsableNombre, $responsableApellido, $notificacion, $reporte, $departamentoNombre, $valor))
                     {
                         while($sentencia->fetch())
                         {
@@ -2402,7 +2402,8 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                                 'responsableApellido' => $responsableApellido,
                                 'notificacion' => $notificacion,
                                 'reporte' => $reporte,
-                                'departamentoNombre' => $departamentoNombre
+                                'departamentoNombre' => $departamentoNombre,
+                                'valor' => $valor
                             ];
                             $registro->responsableNombreCompleto = $registro->responsableNombre . " " . $registro->responsableApellido;
                             $registro->fotoPerfil =  "../fotos/usuario". $registro->responsableId .".jpg";

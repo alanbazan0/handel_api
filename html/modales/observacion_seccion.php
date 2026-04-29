@@ -45,12 +45,18 @@
 					</div>
 					<div class="form-group">
 						<div>
-							<input class="respuesta" id="reporteCheck" type="checkbox" style="display:inline-block;width:40px">
+							<input class="respuesta" id="reporteCheck" type="checkbox" style="display:inline-block;width:40px" checked>
 							<label>Reporte</label>
-							<input class="respuesta" id="notificacionCheck" type="checkbox" style="display:inline-block;width:40px">
+							<input class="respuesta" id="notificacionCheck" type="checkbox" style="display:inline-block;width:40px" checked>
 							<label>Notificación</label>
+							
+							<label class="labelSeccion float-right"  id="puntuacionPreliminarObservacion" style="font-size:18px;"></label>
 						</div>
 					</div>
+	            <div class="form-group">
+                    <label for="valorObservacionInput">Valor</label>
+                    <input type="number" id="valorObservacionInput" name="valor" class="form-control" value="1" min="1" max="15">
+                </div>
 				</form>
 			</div>
 			<div class="modal-footer">

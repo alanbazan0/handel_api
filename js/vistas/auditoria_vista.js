@@ -528,7 +528,10 @@ class AuditoriaVista extends Vista
 
 			$("#agregarObservacionButton").click(function(){_this.mostrarObservacion(Modo.ALTA,seccionActual);});
 	
-			
+			_this.calcularPorcentajes();
+			$('#modalAlta').on('hide.bs.modal', function (e) {
+			  	_this.calcularPorcentajes();
+			});
 			
 			/*$("#hallazgoInput").val(seccionActual.hallazgo);
 			$("#recomendacionInput").val(seccionActual.recomendacion);
@@ -563,8 +566,10 @@ class AuditoriaVista extends Vista
 			seccionActual.responsable = $("#responsableSelect").val();
 			seccionActual.reporte =  $("#reporteCheck").is(':checked')?1:0;
 			seccionActual.notificacion =  $("#notificacionCheck").is(':checked')?1:0;
+			seccionActual.valor =  $("#valorObservacionInput").val();
 			//seccionActual.observaciones = _this.observacionesSeccion;
 			$("#modalAlta").modal('hide');
+			//_this.calcularPorcentajes();
 		});
 	}
 	
@@ -579,18 +584,50 @@ class AuditoriaVista extends Vista
 			if(modo==Modo.CAMBIO)
 				_this.modeloObservacion = observacion;
 			
-			
 			this.consultarUsuariosSeccion();
 		
+			$("#valorObservacionInput").on("keyup",function(){	
+				
+				_this.actualizarPuntosObservacion(seccionActual);
+			});
+			$("#valorObservacionInput").on("change",function(){	
+				
+				_this.actualizarPuntosObservacion(seccionActual);
+			});
 			
 			
-			
+			_this.calcularPorcentajes();
+			_this.actualizarPuntosObservacion(seccionActual);
 			
 		},null,"observacionModal","","guardarObservacionButton",function()
 		{
 			$("#observacionFormulario").submit();
 		});	
 		
+	}
+	
+	actualizarPuntosObservacion(seccionActual)
+	{
+		var val = $("#valorObservacionInput").val();
+		
+		var totalProvisional = seccionActual.puntosTotal;
+		if(val!="") 
+			totalProvisional+=parseInt(val);
+		
+		var porcentaje = 0;
+		if(totalProvisional!=0)
+			porcentaje = seccionActual.puntos / totalProvisional * 100;	
+		else
+			porcentaje = 0;
+		
+		var textoPorcentaje = parseFloat(porcentaje).toFixed(2);
+		var decimales = textoPorcentaje.split(".")[1];
+		if(decimales=="00")
+		{
+			textoPorcentaje =  textoPorcentaje.split(".")[0];
+		}	
+			
+		$("#puntuacionPreliminarObservacion").html(seccionActual.puntos + "/" + totalProvisional +  " (" + textoPorcentaje+"%)");
 	}
 	
 	inicializarValidacionesObservacion()
@@ -640,6 +677,7 @@ class AuditoriaVista extends Vista
 			{
 				$("#notificacionCheck").prop('checked', true);
 				$("#reporteCheck").prop('checked', true);
+				//$("#valorObservacionInput").val(observacion.valor);
 			}
 		}
 		else
@@ -666,6 +704,7 @@ class AuditoriaVista extends Vista
 			recomendacion:  $("#recomendacionInput").val(),
 			reporte :  $("#reporteCheck").is(':checked')?1:0,
 			notificacion :  $("#notificacionCheck").is(':checked')?1:0,
+			valor:  $("#valorObservacionInput").val()
 		 };
 		var usuario = $( "#responsableSelect option:selected" ).data("data");
 		if(usuario!=null)
@@ -703,6 +742,7 @@ class AuditoriaVista extends Vista
 			this._observacionSeleccionada.responsableNombreCompleto = observacion.responsableNombreCompleto;
 			this._observacionSeleccionada.reporte = observacion.reporte;
 			this._observacionSeleccionada.notificacion = observacion.notificacion;
+			this._observacionSeleccionada.valor = observacion.valor;
 		}
 		$("#observacionModal").modal("hide");
 		this.observacionesTabla.registros = seccionActual.observacionesSeccion;
@@ -763,6 +803,7 @@ class AuditoriaVista extends Vista
 			{longitud:200, 	titulo:"Responsable",   alias:"responsableNombreCompleto", alineacion:"I",class: "desc" }, 
 			{longitud:50, 	titulo:"Reporte",   alias:"reporte", alineacion:"C", itemRenderer:this.renderReporte},
 			{longitud:50, 	titulo:"Notificación",   alias:"notificacion", alineacion:"C", itemRenderer:this.renderNotificacion},
+			{longitud:50, 	titulo:"Valor",   alias:"valor", alineacion:"D", itemRenderer:this.renderValor},
 		
 		]
 	
@@ -798,8 +839,8 @@ class AuditoriaVista extends Vista
 	        {
 	            if (isConfirm) 
 	            {
-					_this.listaPreguntas.seccionActual.observacionesSeccion.slice(indice,1);
-					
+					_this.listaPreguntas.seccionActual.observacionesSeccion.splice(indice,1);
+				
 					swal.close();
 					tr.fadeOut();
 	            	 setTimeout(function()
@@ -833,6 +874,14 @@ class AuditoriaVista extends Vista
 			contenido += "<center><i class='fa fa-check text-success'></i></center>";
 		else
 			contenido += "<center><i class='fa fa-times text-danger'></i></center>";
+	    return contenido;
+	}
+	
+	renderValor(renglon, type, set)
+	{    
+		var contenido = "";
+		if(renglon.valor!=null)
+			contenido += renglon.valor;
 	    return contenido;
 	}
 	
@@ -1480,7 +1529,6 @@ class AuditoriaVista extends Vista
 		
 		this.calcularPuntuacionSeccion(puntuaciones);
 		this.calcularPreguntasSinContestar();
-		//this.actualizarColoresSeccion();
 	}
 	
 	
@@ -1539,6 +1587,9 @@ class AuditoriaVista extends Vista
 	
 	calcularPuntuacionSeccion(puntuaciones)
 	{
+		var indice = $("#secciones").prop('selectedIndex');
+		var seccionId = this.listaPreguntas.secciones[indice].id;
+
 		var x = 0;
 		var y = 0;
 		var porcentaje = 0;
@@ -1548,6 +1599,10 @@ class AuditoriaVista extends Vista
 			x+=puntuacion.x;
 			y+=puntuacion.y;
 		}
+		
+		var seccionActual = this.listaPreguntas.seccionActual;
+		var totalObservaciones = this.getTotalObservacionesSeccion(seccionActual.observacionesSeccion);
+		y+=totalObservaciones;
 		
 		if(y!=0)
 			porcentaje = x / y * 100;	
@@ -1561,21 +1616,33 @@ class AuditoriaVista extends Vista
 			textoPorcentaje =  textoPorcentaje.split(".")[0];
 		}
 		
-		var indice = $("#secciones").prop('selectedIndex');
-		var seccionId = this.listaPreguntas.secciones[indice].id;
-		
-		
 		var puntuacionTexto ="<span id='preguntasSinContestarDiv"+seccionId+"'></span>" + x + "/" + y + " (" +  textoPorcentaje + "%)";
 		
 		
+		$("#puntuacionPreliminarObservacion").html(puntuacionTexto);
+		$("#puntuacionPreliminarObservaciones").html(puntuacionTexto);
 		$("#listaPreguntas_labelPuntuacion"  +seccionId).html(puntuacionTexto);
 		
 		this.listaPreguntas.secciones[indice].puntos = x;
 		this.listaPreguntas.secciones[indice].puntosTotal = y;
 		this.listaPreguntas.secciones[indice].porcentaje = textoPorcentaje;
-		//else
-		//	$("#listaPreguntas_labelPuntuacion"  +seccionId).html("");
 		
+	}
+	
+	getTotalObservacionesSeccion(observacionesSeccion)
+	{
+		var totalObservaciones = 0;
+		if(observacionesSeccion)
+		{
+			for(var oi = 0; oi < observacionesSeccion.length; oi++)
+			{
+				var obs = observacionesSeccion[oi];
+				var v = parseInt(obs.valor);
+				if(!isNaN(v) && v > 0)
+					totalObservaciones += v;
+			}
+		}
+		return totalObservaciones;
 	}
 	
 	calcularPorcenjateEncabezado(indice, seccion)
