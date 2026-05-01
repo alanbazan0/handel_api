@@ -20,6 +20,8 @@ class ManualSeguridadVista extends CatalogoVista
 			$("#criteriosSeleccionDiv").show();
 			this.consultarEmpresasCriterio();
 		}
+		else
+			this.consultar();
 	}
 	
 	
