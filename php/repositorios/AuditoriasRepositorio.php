@@ -284,7 +284,10 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
         $registros = array();
         
         
-        $consulta = "SELECT S.id, S.texto, SUM(puntos) / SUM(puntos_total) * 100
+        $consulta = "SELECT S.id, S.texto, SUM(puntos) / (SUM(puntos_total) + (SELECT COALESCE(SUM(aso.valor), 0)
+                    	FROM auditoria_seccion_observaciones aso
+                    	WHERE aso.seccion_id = AP.seccion_id
+                    	  AND aso.auditoria_id = ?)) * 100
                 FROM auditoria_preguntas AP
                 	INNER JOIN preguntas P ON P.plantilla_id = AP.plantilla_id AND P.seccion_id = AP.seccion_id AND P.id = AP.pregunta_id
                     INNER JOIN secciones S ON P.plantilla_id = S.plantilla_id AND P.seccion_id = S.id
@@ -295,7 +298,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
             
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param('i',$auditoriaId))
+            if($sentencia->bind_param('ii',$auditoriaId,$auditoriaId))
             {
                 if($sentencia->execute())
                 {
@@ -335,14 +338,21 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
         $registros = array();
         
         
-        $consulta = "SELECT A.id, A.texto, A.porcentaje, B.porcentaje FROM(SELECT S.id, S.texto, SUM(puntos) / SUM(puntos_total) * 100 porcentaje
+        $consulta = "SELECT A.id, A.texto, A.porcentaje, B.porcentaje FROM
+                    (SELECT S.id, S.texto, SUM(puntos) / (SUM(puntos_total) + (SELECT COALESCE(SUM(aso.valor), 0)
+                        FROM auditoria_seccion_observaciones aso
+                        WHERE aso.seccion_id = AP.seccion_id
+                          AND aso.auditoria_id = ?)) * 100 porcentaje
                     FROM auditoria_preguntas AP
                     	INNER JOIN preguntas P ON P.plantilla_id = AP.plantilla_id AND P.seccion_id = AP.seccion_id AND P.id = AP.pregunta_id
                         INNER JOIN secciones S ON P.plantilla_id = S.plantilla_id AND P.seccion_id = S.id
                     WHERE P.tipo='e' AND auditoria_id = ?
                     GROUP BY AP.seccion_id) A
                     INNER JOIN
-                    (SELECT S.id, S.texto, 0 actual, SUM(puntos) / SUM(puntos_total) * 100 porcentaje
+                    (SELECT S.id, S.texto, 0 actual, SUM(puntos) / (SUM(puntos_total) + (SELECT COALESCE(SUM(aso.valor), 0)
+                        FROM auditoria_seccion_observaciones aso
+                        WHERE aso.seccion_id = AP.seccion_id
+                          AND aso.auditoria_id = ?)) * 100 porcentaje
                     FROM auditoria_preguntas AP
                     	INNER JOIN preguntas P ON P.plantilla_id = AP.plantilla_id AND P.seccion_id = AP.seccion_id AND P.id = AP.pregunta_id
                         INNER JOIN secciones S ON P.plantilla_id = S.plantilla_id AND P.seccion_id = S.id
@@ -354,7 +364,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
         
         if($sentencia = $this->conexion->prepare($consulta))
         {
-            if($sentencia->bind_param('ii',$auditoriaId,$auditoriaAnteriorId))
+            if($sentencia->bind_param('iiii',$auditoriaId,$auditoriaId,$auditoriaAnteriorId,$auditoriaAnteriorId))
             {
                 if($sentencia->execute())
                 {
@@ -3234,6 +3244,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                                                 'hallazgo' => $respuesta->hallazgo,
                                                 'recomendacion' => $respuesta->recomendacion,
                                                 'seccionId' => $seccion->id,
+                                                'seccionNombre' => $seccion->texto,
                                                 'observacion' => null,
                                                 'preguntaId' => $pregunta->preguntaId,
                                                 'respuestaId' => $respuesta->id,
@@ -3263,6 +3274,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                                         'observacion' => null,
                                         'recomendacion' => $pregunta->recomendacion,
                                         'seccionId' => $seccion->id,
+                                        'seccionNombre' => $seccion->texto,
                                         'preguntaId' => $pregunta->preguntaId,
                                         'respuestaId' => null,
                                         'reporte' => $pregunta->reporte,
@@ -3298,6 +3310,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                         'hallazgo' => $observacionSeccion->hallazgo,
                         'recomendacion' => $observacionSeccion->recomendacion,
                         'seccionId' => $seccion->id,
+                        'seccionNombre' => $seccion->texto,
                         'observacion' => $o + 1,
                         'preguntaId' => null,
                         'respuestaId' => null,
@@ -4804,38 +4817,28 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                     if($sentencia->execute())
                     {
                         $sentencia->close();
-                        
+                        $texto = "";
                         if($modelo->estatusValidacionId==\EstatusValidacion::VALIDADA)
                         {
+                            $texto = "Validada por: ";
                             $resultado = $this->enviarNotificacionEvidenciaValidada($modelo->id, $usuario, $modelo);
                         }
                         else if($modelo->estatusValidacionId==\EstatusValidacion::RECHAZADA)
                         {
+                            $texto = "Rechazada por: "; 
                             $resultado = $this->enviarNotificacionEvidenciaRechazada($modelo->id, $usuario, $modelo);
                         }
-//                         $estatusValidacionRepositorio = new EstatusValidacionRepositorio($this->conexion);
-//                         $resultado = $estatusValidacionRepositorio->consultarPorLlaves((object)["id" => $modelo->estatusValidacionId]);
-//                          if($resultado->correcto())
-//                          {
-//                             $estatusValidacion = $resultado->valor;
+                        $texto.=$usuario->nombreCompleto.". ";
+                        iF($resultado->correcto())
+                        {
+                            $comentariosRepositorio = new RecomendacionesComentariosRepositorio($this->conexion);
+                            $modeloComentario = new RecomendacionComentario();
+                            $modeloComentario->recomendacionId = $modelo->id;
+                            $modeloComentario->usuarioId = $usuario->id;
+                            $modeloComentario->comentario = $texto . $modelo->comentariosValidacion;
+                            $resultado = $comentariosRepositorio->insertar($usuario, $modeloComentario);
                             
-//                             $comentariosRepositorio = new RecomendacionesComentariosRepositorio($this->conexion);
-//                             $comentario= new RecomendacionComentario();
-//                             $comentario->usuarioId = $usuario->id;
-//                             $comentario->recomendacionId = $modelo->id;
-//                             $comentario->comentario = $estatusValidacion->nombre . ". " . $modelo->comentariosValidacion;
-                            
-//                             $resultado = $comentariosRepositorio->insertar($usuario,$comentario);
-//                             if($resultado->correcto())
-//                             {
-//                                 $resultado->valor=$modelo->id;
-//                             }
-                            
-                            
-                           
-                            
-//                         }
-                       
+                        }
                     }
                     else
                         $resultado->mensajeError = __FUNCTION__ .' Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;

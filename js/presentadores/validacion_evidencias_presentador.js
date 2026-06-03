@@ -366,7 +366,7 @@ class ValidacionEvidenciasPresentador extends CatalogoPresentador
 	 {
 		 this.vista.guardando = true;
 		 this.vista.mostrarIndicador();	
-		var modelo = this.vista._modeloRecomendacionValidacion;
+		var modelo = this.vista._modeloRecomendacionValidacion;	
 		 this._repositorio.validarRecomendacion(this,function(resultado)
 		 {
 			this.vista.ocultarIndicador();	

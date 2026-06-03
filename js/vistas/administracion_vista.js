@@ -223,6 +223,7 @@ class AdministracionVista extends CatalogoVista
 		columnas.push({longitud:250, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" });	
 		columnas.push({longitud:200, 	titulo:"Fecha de última modificación",   alias:"fechaModificacion", alineacion:"I" });
 		columnas.push({longitud:100, 	titulo:"Perfil",   alias:"perfilNombre", alineacion:"I" });
+		//columnas.push({longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}),
 		//{longitud:100, 	titulo:"Estatus",   alias:"estatus", alineacion:"D", itemRenderer:this.renderEstatus}
 
 	

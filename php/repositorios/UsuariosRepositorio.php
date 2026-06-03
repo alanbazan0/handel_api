@@ -584,6 +584,14 @@ class UsuariosRepositorio extends RepositorioBase implements IUsuariosRepositori
         if($modelo->departamentoId=="")
             $modelo->departamentoId=null;
         
+        if($modelo->estatus==0)
+        {
+            $modelo->permiso10y7 = 0;
+            $modelo->permisoCAVI = 0;
+            $modelo->permisoSAHA = 0;
+            $modelo->permisoSIVAH = 0;
+        }
+        
          $this->ajustarCampos($modelo);
             
         $resultado = new Resultado();

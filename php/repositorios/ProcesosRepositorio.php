@@ -99,6 +99,7 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
     public function eliminarUsuarios($modelo)
     {
         $resultado = new Resultado();
+        //var_dump($modelo->usuariosEliminados);    
         for($i = 0; $i < count($modelo->usuariosEliminados); $i++)
         {
             $usuario = $modelo->usuariosEliminados[$i];
@@ -204,6 +205,7 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
             {
                 if($sentencia->execute())
                 {
+                    
                     $resultado = $this->eliminarUsuarios($modelo);
                     if($resultado->correcto())
                     {
@@ -577,10 +579,11 @@ class ProcesosRepositorio extends RepositorioBase implements IProcesosRepositori
     {
         $resultado = new Resultado();
         $usuarios = array();
-        $consulta = "SELECT id, usuario_id " .
-            "FROM usuarios_procesos " .
-            " WHERE proceso_id = ? ".
-            "ORDER BY id";
+        $consulta = "SELECT P.id, usuario_id 
+            FROM usuarios_procesos P
+                INNER JOIN usuarios U ON P.usuario_id = U.id
+            WHERE proceso_id = ? AND U.estatus = 1
+            ORDER BY U.nombre,U.apellido";
         if($sentencia = $this->conexion->prepare($consulta))
         {
             

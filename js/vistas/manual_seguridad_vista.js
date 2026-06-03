@@ -585,11 +585,13 @@ class ManualSeguridadVista extends CatalogoVista
 					
 					
 					var usuariosAsignados = "";
-					if(_this._registroSeleccionado.fotosPerfil.length==1)
-						usuariosAsignados = "1 usuario asignado: " + _this._registroSeleccionado.usuariosNombres;
-					else
-						usuariosAsignados = _this._registroSeleccionado.fotosPerfil.length + " usuarios asignados: " + _this._registroSeleccionado.usuariosNombres;
-					
+					if(_this._registroSeleccionado.fotosPerfil!=undefined)
+					{
+						if(_this._registroSeleccionado.fotosPerfil.length==1)
+							usuariosAsignados = "1 usuario asignado: " + _this._registroSeleccionado.usuariosNombres;
+						else
+							usuariosAsignados = _this._registroSeleccionado.fotosPerfil.length + " usuarios asignados: " + _this._registroSeleccionado.usuariosNombres;
+					}
 					vistaPrevia.visualizar(_this, "php/archivos_procesos", _this._registroSeleccionado.procedimientoId, _this._registroSeleccionado.archivo, _this._registroSeleccionado.nombre, usuariosAsignados);
 				}
 				else
@@ -994,11 +996,13 @@ class ManualSeguridadVista extends CatalogoVista
 					var vistaPrevia = new VistaPreviaArchivo();
 					
 					var usuariosAsignados = "";
-					if(_this._registroSeleccionado.fotosPerfil.length==1)
-						usuariosAsignados = "1 usuario asignado: " + _this._registroSeleccionado.usuariosNombres;
-					else
-						usuariosAsignados = _this._registroSeleccionado.fotosPerfil.length + " usuarios asignados: " + _this._registroSeleccionado.usuariosNombres;
-					
+					if(_this._registroSeleccionado.fotosPerfil!=undefined)
+					{
+						if(_this._registroSeleccionado.fotosPerfil.length==1)
+							usuariosAsignados = "1 usuario asignado: " + _this._registroSeleccionado.usuariosNombres;
+						else
+							usuariosAsignados = _this._registroSeleccionado.fotosPerfil.length + " usuarios asignados: " + _this._registroSeleccionado.usuariosNombres;
+					}
 					vistaPrevia.visualizar(_this, "php/archivos_formatos", _this._registroSeleccionado.formatoId, _this._registroSeleccionado.archivo, _this._registroSeleccionado.nombre, usuariosAsignados);
 				}
 			}

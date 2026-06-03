@@ -209,18 +209,31 @@ class AuditoriaVista extends Vista
 		}
 	}
 	
-	cambiarSeccion(event)
+	cambiarSeccion(event, mostrarObservaciones)
 	{
 		var indice = $("#secciones").prop('selectedIndex');
 		this.listaPreguntas.mostrarSeccion(indice);
 		this.detenerPollingPresencia();
 		this.iniciarPollingPresencia();
 		if(this._modo==Modo.CAMBIO)
-			this.presentador.consultarValores();
+			this.presentador.consultarValores(mostrarObservaciones);
 		else
 			this.calcularPorcentajes();
 		
 	}
+	
+	/*cambiarSeccionYMostrarObservaciones()
+	{
+		var indice = $("#secciones").prop('selectedIndex');
+		this.listaPreguntas.mostrarSeccion(indice);
+		this.detenerPollingPresencia();
+		this.iniciarPollingPresencia();
+		if(this._modo==Modo.CAMBIO)
+			this.presentador.consultarValores(true);
+		else
+			this.calcularPorcentajes();
+		
+	}*/
 	
 	siguiente()
 	{
@@ -247,8 +260,9 @@ class AuditoriaVista extends Vista
 			 $("#consultarRecomendacionesButton").click(function(){
 				_this.filtrarRecomendaciones();
 			});
-			 this.crearTablaRecomendaciones();
-			 this.consultarHallazgosSecciones();
+			this.crearTablaRecomendaciones();
+ 			
+			this.consultarHallazgosSecciones();
 			
 		},null,"xRayModal","","guardarButton",function()
 		{
@@ -270,6 +284,8 @@ class AuditoriaVista extends Vista
 		this.cargarOpciones("#usuariosXRaySelect", usuarios,"", null, "id", null, "nombreCompleto",false)
 		
 		this.filtrarRecomendaciones();
+		
+		
 	}
 	
 	filtrarRecomendaciones()
@@ -299,6 +315,8 @@ class AuditoriaVista extends Vista
             }, 1000);
           
         this._usuarioXRay = usuarioId;
+        
+        this.inicializarEventosXray("#" + this.hallazgosTabla._id+"Table tbody",this.hallazgosTabla.datatable.DataTable());
 	}
 	
 	mostrarEnviarCorreoXRay()
@@ -353,9 +371,9 @@ class AuditoriaVista extends Vista
 		this.hallazgosTabla.buscar = false;
 		this.hallazgosTabla.paginacion = false;
 		this.hallazgosTabla.columnas = [
-			{longitud:200, 	titulo:"Hallazgo",   alias:"hallazgo", alineacion:"I"},
+			{longitud:200, 	titulo:"Hallazgo",   alias:"hallazgo", alineacion:"I", itemRenderer:this.renderHallazgoXray},
 			{longitud:200, 	titulo:"Recomendación",   alias:"recomendacion", alineacion:"I"},
-			//{longitud:200, 	titulo:"Sección",   alias:"texto", alineacion:"I"},
+			{longitud:200, 	titulo:"Sección",   alias:"seccionNombre", alineacion:"I"},
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogoResponsable},
 			{longitud:200, 	titulo:"Responsable",   alias:"responsableNombreCompleto", alineacion:"I",class: "desc" }, 
 			{longitud:50, 	titulo:"Reporte",   alias:"reporte", alineacion:"C", itemRenderer:this.renderReporte},
@@ -378,6 +396,12 @@ class AuditoriaVista extends Vista
 		//this.filtrarRecomendaciones();
 		
 		//this.hallazgosTabla.registros = this._recomendacionesXRay;
+	}
+	
+	renderHallazgoXray(renglon)
+	{
+		var contenido = "<div class='hallazgoXray' data-nombre='"+renglon.hallazgo+"'><a href='#' onclick='event.preventDefault();'>"+renglon.hallazgo+"</a></div>";
+	    return contenido;
 	}
 	
 	getUsuarios(recomendaciones)
@@ -787,6 +811,45 @@ class AuditoriaVista extends Vista
 			
 			}
 		});
+		
+	}
+	
+	inicializarEventosXray(tbody, table, nombresCamposLlave)
+	{
+		var _this = this;
+		$(tbody).on("click", "div.hallazgoXray", function()
+		{			
+			 var tr = $(this).closest('tr');
+			    
+		    if ( $(tr).hasClass('child') ) {
+		      tr = $(tr).prev();  
+		    }
+
+			_this._hallazgoSeleccionado  = table.row( tr ).data();
+			if (_this._hallazgoSeleccionado != undefined)
+			{
+				//_this.seccionEdicion =  _this.listaPreguntas.getSeccion(_this._hallazgoSeleccionado.seccionId);
+				//_this.mostrarSeccion(_this.seccionEdicion);
+				
+				//TODO: cambiar combo, seleccionar secciom correcta dependiendo del id
+				
+				//var targetVal = $('#secciones option[id="'+_this._hallazgoSeleccionado.seccionId+'"]').val();
+				$('#secciones').val(_this._hallazgoSeleccionado.seccionId);
+				_this.cambiarSeccion(null,true);
+				//$('#secciones').trigger('change');
+				
+				
+				//_this.seccionActual =  _this.listaPreguntas.getSeccion(_this._hallazgoSeleccionado.seccionId);
+				//$('#secciones').find('option[id="'+ _this._hallazgoSeleccionado +'"]').prop('selected', true);
+				//$('#secciones').trigger('change');
+				//_this.cambiarSeccion(null);
+				
+				
+				//_this.mostrarObservaciones();
+				$("#xRayModal").modal("hide");
+			}
+		});
+		
 		
 	}
 	

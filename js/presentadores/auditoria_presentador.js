@@ -79,7 +79,7 @@ class AuditoriaPresentador extends CatalogoPresentador
 		 }
 	 }
 	
-	consultarValores()
+	consultarValores(mostrarObservaciones)
 	{
 		 this.vista.mostrarIndicador();	
 		 var repositorio = new AuditoriasRepositorio();
@@ -87,21 +87,23 @@ class AuditoriaPresentador extends CatalogoPresentador
 				 	auditoriaId: this.vista.modeloEdicion.id,
 				 	seccionId: this.vista.seccionId
 		 			};
-		 repositorio.consultarValoresSeccion(this,this.consultarValoresResultado,llaves);
-		 
+		 repositorio.consultarValoresSeccion(this,function(resultado)
+		 {		
+			 this.vista.ocultarIndicador();	
+			 if(resultado.mensajeError=="")
+			 {
+				 this.vista.modeloDatos = resultado.valor;
+				 if(mostrarObservaciones)
+				 		this.vista.mostrarObservaciones();
+			 }
+			 else
+				 this.vista.mostrarMensajeError("Error",resultado.mensajeError);
+		 },llaves);
+			 
 		 this.consultarContadoresPreguntasPorSeccion();
 	}
 	
-	consultarValoresResultado(resultado)
-	 {		
-		 this.vista.ocultarIndicador();	
-		 if(resultado.mensajeError=="")
-		 {
-			 this.vista.modeloDatos = resultado.valor;
-		 }
-		 else
-			 this.vista.mostrarMensajeError("Error",resultado.mensajeError);
-	 }
+	
 	
 	 consultarPorLlaves()
 	 {

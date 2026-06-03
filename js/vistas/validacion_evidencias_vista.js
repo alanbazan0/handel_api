@@ -105,7 +105,7 @@ class ValidacionEvidenciasVista extends CatalogoVista
 			this.recomendacionesTabla = new Tabla("recomendacionesTabla");
 			
 			this.recomendacionesTabla.columnas = [
-				//º	{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"C" },
+					{longitud:50, 	titulo:"Id",   	alias:"id", alineacion:"C" },
 					{longitud:70, 	titulo:"Fecha de alta",   alias:"fechaAlta", alineacion:"I" }, 
 					{longitud:300, 	titulo:"Acciones",   alias:"titulo", alineacion:"I" }, 	
 					{longitud:110, 	titulo:"% Cumplimiento",   alias:"cumplimiento", alineacion:"C", itemRenderer: this.renderCumplimientoRecomendacion  }, 	
@@ -182,7 +182,8 @@ class ValidacionEvidenciasVista extends CatalogoVista
 		var comentarios = "";
 		if(renglon.comentariosValidacion!=null)
 		{
-			comentarios = renglon.administradorNombreCompleto + " comentó el "+renglon.fechaValidacion.substring(0,10) +": " + renglon.comentariosValidacion;
+			if(renglon.fechaValidacion!="")
+				comentarios = renglon.validadorNombreCompleto + " comentó el "+renglon.fechaValidacion.substring(0,10) +": " + renglon.comentariosValidacion;
 		}
 		var descripcion = renglon.estatusValidacionDescripcion+". "+ comentarios;
 				
