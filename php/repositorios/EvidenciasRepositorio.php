@@ -739,7 +739,8 @@ class EvidenciasRepositorio extends RepositorioBase implements IEvidenciasReposi
                    "\nGROUP BY departamentoId,departamentoNombre".
                    "\nORDER BY departamentoNombre";
                    
-        
+        echo $consulta;
+                   
         if($sentencia = $this->conexion->prepare($consulta))
         {
           // if($sentencia->bind_param('i',$usuario->empresaId))

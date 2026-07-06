@@ -328,15 +328,161 @@ class PDF extends FPDF
         $this->SetFont($this->font,'',20);
       
         $this->encabezado();
-        $this->datosGenerales();
-        $this->metodologia();
-        $this->graficosCompania();
-        $this->aplicacionResultados();
-        $this->comparacionGlobal();
-        $this->observaciones();
-        $this->incidencias();
-        $this->buenasPracticas();
+        $this->datosGenerales("I");
+        $this->metodologia("II");
+        $this->graficosCompania("III");
+        $this->aplicacionResultados("IV");
+        $this->distribucion("V");
+        $this->comparacionGlobal("VI");
+        $this->observaciones("VII");
+        $this->incidencias("VIII");
+        $this->buenasPracticas("IX");
+        $this->hallazgosPrioritarios("X");
                         
+    }
+    
+    function hallazgosPrioritarios($numero)
+    {
+        $this->AddPage();
+        $this->imprimirTituloHoja("$numero. Hallazgos Prioritarios");
+        
+        $borde = 0;
+        $this->Ln();
+        $this->Ln();
+        $this->cMargin=10;
+        $this->SetFillColor(242, 242, 242);
+        $this->SetLeftMargin(20);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(170, 6,$this->texto("Esta sección destaca los hallazgos que, por su nivel de riesgo, impacto potencial o relevancia para"), $borde, 1, 'FJ',1);
+        $this->Cell(170, 6,$this->texto("el cumplimiento de los requisitos aplicables, requieren atención prioritaria por parte de la"), $borde, 1, 'FJ',1);
+        $this->Cell(170, 6,$this->texto("organización."), $borde, 1, 'L',1);
+        $this->Cell(170, 6,$this->texto(""), $borde, 1, 'L',1);
+        $this->Cell(170, 6,$this->texto("La inclusión de un hallazgo en esta sección tiene como propósito facilitar la definición"), $borde, 1, 'FJ',1);
+        $this->Cell(170, 6,$this->texto("de prioridades y la asignación de recursos para su atención. No obstante, todos los hallazgos"), $borde, 1, 'FJ',1);
+        $this->Cell(170, 6,$this->texto("identificados durante la auditoría son importantes y deberán ser atendidos conforme a los planes"), $borde, 1, 'FJ',1);
+        $this->Cell(170, 6,$this->texto("de acción establecidos. El orden en sí no representa una prioridad en este listado."), $borde, 1, 'L',1);
+        
+        $this->SetFont($this->font, '', 9);
+        $this->SetLeftMargin(5);
+        
+        $this->Ln();
+        $borde = 1;
+        
+        $this->cMargin = 1;
+        $this->SetLeftMargin(20);
+        $this->fontSizes = array(9, 9, 9, 9);
+        $this->fontWeights = array("B","B","B","B");
+        $this->fontNames = array($this->font, $this->font, $this->font, $this->font);
+        $this->aligns = array("C","C","C","C");
+        $this->widths = array(15, 45, 35, 75);
+        $this->textColors = array("#000000","#000000","#000000","#000000");
+        $this->borders = array(1,1,1,1);
+        $this->borderColors = array("#afb2b0","#afb2b0","#afb2b0","#afb2b0");
+        $this->backgroundColors = array("#bdc1bf","#bdc1bf","#bdc1bf","#bdc1bf");
+        $this->Row2(array("Item","Criterio","Departamento","Hallazgo"),5);
+        $this->fontWeights = array("B","","","");
+        $this->aligns = array("C","L","L","L");
+        
+        $repositorio = new AuditoriasRepositorio($this->conexion);
+        $observaciones = array();
+       /* $resultado = $repositorio->getHallazgos($this->secciones,"reporteCierre");
+        
+        if($resultado->correcto())
+        {
+            $observaciones = $resultado->valor;
+            for($i = 0; $i < count($observaciones); $i++)
+            {
+                $observacion = $observaciones[$i];
+                $renglon = (object)["criterio" => $observacion->criterio,
+                    "departamento" => $observacion->departamento,
+                    "hallazgo" => $observacion->hallazgo
+                ];
+                array_push($renglones, $renglon);
+            }
+        }*/
+        
+        
+        
+      
+        
+        for($i = 0; $i < count($this->secciones); $i++)
+        {
+            $seccion = $this->secciones[$i];
+            $criterio = "Información general";
+            $elementos = explode(". ", $seccion->texto);
+            if(count($elementos)>1)
+            {
+                $criterio = $elementos[1];
+            }
+            
+            for ($j = 0; $j < count($seccion->preguntas); $j++)
+            {
+                $pregunta = $seccion->preguntas[$j];
+                if($pregunta->valor == "N")
+                {
+                    //9: Añadir a reporte de cierre
+                    if($repositorio->esCategoria(9,$pregunta->categorias))
+                    {
+                        $renglon = (object)["criterio" => $criterio,
+                            "departamento" => $pregunta->departamentoNombre,
+                            "hallazgo" => $pregunta->hallazgo
+                        ];
+                        array_push($observaciones, $renglon);
+                    }
+                }
+            }
+            
+            
+            for ($o = 0; $o < count($seccion->observacionesSeccion); $o++)
+            {
+                $observacionSeccion = $seccion->observacionesSeccion[$o];
+                if($observacionSeccion->reporteCierre==1 && $observacionSeccion->hallazgo!="")
+                {
+                    $departamento = $observacionSeccion->departamentoNombre;
+                    if($observacionSeccion->responsableId=="")
+                        $departamento = "No asignado";
+                    else if($departamento=="")
+                        $departamento = "Sin departamento";
+                        
+                    $observacion = (object)['criterio' =>$criterio,
+                        'departamento' => $departamento,
+                        'responsableId' => $observacionSeccion->responsableId,
+                        'hallazgo' => $observacionSeccion->hallazgo,
+                        'recomendacion' => $observacionSeccion->recomendacion,
+                        'seccionId' => $seccion->id,
+                        'seccionNombre' => $seccion->texto,
+                        'observacion' => $o + 1,
+                        'preguntaId' => null,
+                        'respuestaId' => null,
+                        'reporte' => $observacionSeccion->reporte,
+                        'notificacion' => $observacionSeccion->notificacion,
+                        'responsableNombreCompleto' => $observacionSeccion->responsableNombreCompleto,
+                        'fotoPerfil' => $observacionSeccion->fotoPerfil
+                    ];
+                    array_push($observaciones,$observacion);
+                }
+                
+            }
+        }
+        
+        for($i = 0; $i < count($observaciones); $i++)
+        {
+            $renglon = $observaciones[$i];
+            $color = "";
+            if($i%2==0)
+                $color = "#ffffff";
+            else
+                $color = "#f5f5f5";
+            $this->backgroundColors = array("#e6e6e6",$color,$color,$color,$color);
+            
+            $numero = "HP-".str_pad($i+1, 2, "0", STR_PAD_LEFT);
+                    
+            $this->Row2(array($numero,$this->texto($renglon->criterio),$this->texto($renglon->departamento),$this->texto($renglon->hallazgo)),5);
+        }
+        
+        
+        
     }
     
     public function imprimir()
@@ -355,7 +501,7 @@ class PDF extends FPDF
         }
     }
     
-    function datosGenerales()
+    function datosGenerales($numero)
     {
         $this->AddPage();
         
@@ -365,7 +511,7 @@ class PDF extends FPDF
         $w1 = 85;
         $w2 = 85;
 
-        $this->imprimirTituloHoja("I. Datos generales");
+        $this->imprimirTituloHoja("$numero. Datos generales");
         
      
         $this->Ln();
@@ -612,7 +758,7 @@ class PDF extends FPDF
             return false;
     }
     
-    function metodologia()
+    function metodologia($numero)
     {
         $this->AddPage();
        // $this->SetY(20);
@@ -628,7 +774,7 @@ class PDF extends FPDF
 //         $this->SetFont($this->font, '', 10);
 //         $this->Cell(170, 10,$this->texto("II. Metodología"), 'B', 0, 'L');
 
-        $this->imprimirTituloHoja("II. Metodología");
+        $this->imprimirTituloHoja("$numero. Metodología");
         
         $this->Ln();
         $this->SetLeftMargin(30);
@@ -835,13 +981,13 @@ class PDF extends FPDF
     
     
     
-    function graficosCompania()
+    function graficosCompania($numero)
     {
         $this->AddPage();
 //         $this->SetY(20);
 //         $this->SetX(20);
 
-        $this->imprimirTituloHoja("III. Gráficos de la compañia");
+        $this->imprimirTituloHoja("$numero. Gráficos de la compañia");
         $borde = 0;
         $w1 = 60;
         $w2 = 110;
@@ -916,10 +1062,10 @@ class PDF extends FPDF
         $this->Cell(170, 10,$this->texto($titulo), 'B', 0, 'L');
     }
     
-    function aplicacionResultados()
+    function aplicacionResultados($numero)
     {
         $this->AddPage();
-        $this->imprimirTituloHoja("IV. Aplicación de resultados");
+        $this->imprimirTituloHoja("$numero. Comparación global de referencia");
 
         $borde = 0;
         $this->Ln();
@@ -987,10 +1133,12 @@ class PDF extends FPDF
        
     }
     
-    function comparacionGlobal()
+    function comparacionGlobal($numero)
     {
         $this->AddPage();
-        $this->imprimirTituloHoja("V. Comparación global de referencia");
+        $this->imprimirTituloHoja("$numero. Aplicación de resultados");
+        
+        $tipoEmpresa = strtolower($this->empresa->tipoEmpresa);
         
         $borde = 0;
         $this->Ln();
@@ -1001,7 +1149,7 @@ class PDF extends FPDF
         $this->SetTextColor(0, 0, 0);
         $this->SetFont($this->font, '', 10);
         $this->Cell(170, 6,$this->texto("Ilustra el estado actual de la compañía en los puntos básicos de seguridad del programa"), $borde, 1, 'FJ',1);
-        $this->Cell(170, 6,$this->texto("C-TPAT	referente a empresas de transporte."), $borde, 1, 'L',1);
+        $this->Cell(170, 6,$this->texto("CTPAT	referente a una empresa de $tipoEmpresa."), $borde, 1, 'L',1);
         
         $this->SetX(0);
         $y = 80;
@@ -1193,12 +1341,84 @@ class PDF extends FPDF
         return $chartURL;
         
     }
+  
+    
+    private function cierreHallazgosPersona()
+    {
+        //VII
+        $this->AddPage();
+        $this->SetY(25);
+        $this->subtitulo("Cierre de hallazgos por persona");
+        
+        
+        $pdfWidth = $this->GetPageWidth();
+        $chartWidth = 220;
+        $repositorio = new AuditoriasRepositorio($this->conexion);
+        $resultado = $repositorio->consultarHallazgosUsuarios($this->auditoria->id);
+        if($resultado->correcto())
+        {
+            $hallazgos = $resultado->valor;
+            $image = $this->graficaBarrasAvance("",'','',$hallazgos,"nombreCompleto",true);
+            if($image!='')
+                $this->Image($image,$pdfWidth/2 -$chartWidth/2 ,40, $chartWidth);
+                
+        }
+    }
     
     
-    function observaciones()
+    private function distribucion($numero)
+    {
+        //VI
+        $this->AddPage();
+        $this->imprimirTituloHoja("$numero. Distribución de Hallazgos");
+        
+        $borde = 0;
+        $this->Ln();
+        $this->Ln();
+        $this->cMargin=10;
+        $this->SetFillColor(242, 242, 242);
+        $this->SetLeftMargin(20);
+        $this->SetTextColor(0, 0, 0);
+        $this->SetFont($this->font, '', 10);
+        $this->Cell(170, 6,$this->texto("Ilustra la distribución de hallazgos por departamentos en porcentaje y cantidad"), $borde, 1, 'FJ',1);
+        
+        $this->SetX(0);
+        $y = 80;
+        
+        $pdfWidth = $this->GetPageWidth();
+        $chartWidth = 120;
+        $repositorio = new AuditoriasRepositorio($this->conexion);
+        $resultado = $repositorio->consultarHallazgosDepartamento($this->modelo->id);
+        if($resultado->correcto())
+        {
+            $hallazgos = $resultado->valor;
+            $coloresBase = [ "#78d34b", "#f6ba36", "#0c9cfb","#e13d47","#ca3675","#6a666a","#958b34","#81bede"];
+            $colores  =  $this->generarColores($coloresBase,count($hallazgos));
+            $image = toPieChartWithLabels("",'','',$hallazgos,"nombre","total",$colores,20);
+            if($image!='')
+                $this->Image($image,$pdfWidth/2 -$chartWidth/2  ,60, $chartWidth);
+                
+            $image = toColumnChartColors("",'Hallazgos','',$hallazgos,"nombre","total",$colores,false,0);
+            if($image!='')
+                $this->Image($image,$pdfWidth/2 -$chartWidth/2 , 160, $chartWidth);
+        }
+    }
+    function generarColores($colores,$n)
+    {
+        $limite = $n -  count($colores);
+        for ($i = 0; $i < $limite; $i++)
+        {
+            $color = $this->generarColor();
+            array_push($colores,$color);
+        }
+        return $colores;
+    }
+    
+    
+    function observaciones($numero)
     {
         $this->AddPage();
-        $this->imprimirTituloHoja("VI. Observaciones, acciones y recomendaciones");
+        $this->imprimirTituloHoja("$numero. Observaciones, acciones y recomendaciones");
         
         $borde = 0;
         $this->Ln();
@@ -1320,12 +1540,12 @@ class PDF extends FPDF
     }
     
     
-    function incidencias()
+    function incidencias($numero)
     {
         //if($this->modelo->observaciones!=null && $this->modelo->observaciones!="")
         //{
             $this->AddPage();
-            $this->imprimirTituloHoja("VII. Incidencias y observaciones varias");
+            $this->imprimirTituloHoja("$numero. Incidencias y observaciones varias");
             
             $borde = 0;
             $this->Ln();
@@ -1374,12 +1594,12 @@ class PDF extends FPDF
             }
     }
     
-    function buenasPracticas()
+    function buenasPracticas($numero)
     {
         //if($this->modelo->buenasPracticas!=null && $this->modelo->buenasPracticas!="")
         //{
             $this->AddPage();
-            $this->imprimirTituloHoja("VIII. Buenas prácticas");
+            $this->imprimirTituloHoja("$numero. Buenas prácticas");
             
             $borde = 0;
             $this->Ln();

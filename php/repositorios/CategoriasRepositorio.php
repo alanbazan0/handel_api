@@ -86,7 +86,7 @@ class CategoriasRepositorio extends RepositorioBase implements ICategoriasReposi
                 $where = $this->where($filtros);
         }
         $consulta = $this->consultaBase .
-        $where;
+        $where . " ORDER BY nombre";
         
         if($sentencia = $this->conexion->prepare($consulta))
         {

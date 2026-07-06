@@ -18,6 +18,7 @@ class Auditoria
     public $sedeId;
     public $fecha;
     public $hora;
+    public $funcion;
     
 }
 

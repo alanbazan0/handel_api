@@ -377,7 +377,7 @@ class AuditoriaVista extends Vista
 			{longitud:50, 	titulo:"",   	alias:"logo", alineacion:"D" ,itemRenderer:this.renderLogoResponsable},
 			{longitud:200, 	titulo:"Responsable",   alias:"responsableNombreCompleto", alineacion:"I",class: "desc" }, 
 			{longitud:50, 	titulo:"Reporte",   alias:"reporte", alineacion:"C", itemRenderer:this.renderReporte},
-			{longitud:50, 	titulo:"Notificación",   alias:"notificacion", alineacion:"C", itemRenderer:this.renderNotificacion},
+			{longitud:50, 	titulo:"Notificación",   alias:"notificacion", alineacion:"C", itemRenderer:this.renderNotificacion}
 		
 		]
 	
@@ -453,6 +453,7 @@ class AuditoriaVista extends Vista
 						responsableNombreCompleto  : observacion.responsableNombreCompleto,
 						departamentoNombre  : observacion.departamentoNombre,
 						fotoPerfil  : observacion.fotoPerfil,
+						reporteCierre: observacion.reporteCierre
 					};
 					if(recomendacion.hallazgo!="" && recomendacion.recomendacion!="")
 						recomendaciones.push(recomendacion);
@@ -591,6 +592,7 @@ class AuditoriaVista extends Vista
 			seccionActual.reporte =  $("#reporteCheck").is(':checked')?1:0;
 			seccionActual.notificacion =  $("#notificacionCheck").is(':checked')?1:0;
 			seccionActual.valor =  $("#valorObservacionInput").val();
+			seccionActual.reporteCierre =  $("#reporteCierreCheck").is(':checked')?1:0;
 			//seccionActual.observaciones = _this.observacionesSeccion;
 			$("#modalAlta").modal('hide');
 			//_this.calcularPorcentajes();
@@ -712,10 +714,16 @@ class AuditoriaVista extends Vista
 				$("#reporteCheck").prop('checked', true);
 			else
 				$("#reporteCheck").prop('checked', false);
+				
 			if(observacion.notificacion)
 				$("#notificacionCheck").prop('checked', true);
 			else
 				$("#notificacionCheck").prop('checked', false);
+				
+			if(observacion.reporteCierre)
+				$("#reporteCierreCheck").prop('checked', true);
+			else
+				$("#reporteCierreCheck").prop('checked', false);
 		}
 		
 	}
@@ -728,6 +736,7 @@ class AuditoriaVista extends Vista
 			recomendacion:  $("#recomendacionInput").val(),
 			reporte :  $("#reporteCheck").is(':checked')?1:0,
 			notificacion :  $("#notificacionCheck").is(':checked')?1:0,
+			reporteCierre :  $("#reporteCierreCheck").is(':checked')?1:0,
 			valor:  $("#valorObservacionInput").val()
 		 };
 		var usuario = $( "#responsableSelect option:selected" ).data("data");
@@ -767,6 +776,7 @@ class AuditoriaVista extends Vista
 			this._observacionSeleccionada.reporte = observacion.reporte;
 			this._observacionSeleccionada.notificacion = observacion.notificacion;
 			this._observacionSeleccionada.valor = observacion.valor;
+			this._observacionSeleccionada.reporteCierre = observacion.reporteCierre;
 		}
 		$("#observacionModal").modal("hide");
 		this.observacionesTabla.registros = seccionActual.observacionesSeccion;
@@ -867,6 +877,8 @@ class AuditoriaVista extends Vista
 			{longitud:50, 	titulo:"Reporte",   alias:"reporte", alineacion:"C", itemRenderer:this.renderReporte},
 			{longitud:50, 	titulo:"Notificación",   alias:"notificacion", alineacion:"C", itemRenderer:this.renderNotificacion},
 			{longitud:50, 	titulo:"Valor",   alias:"valor", alineacion:"D", itemRenderer:this.renderValor},
+			{longitud:50, 	titulo:"Añadir a Reporte de cierre",   alias:"reporteCierre", alineacion:"C", itemRenderer:this.renderReporteCierre},
+
 		
 		]
 	
@@ -934,6 +946,16 @@ class AuditoriaVista extends Vista
 	{    
 		var contenido = "";
 		if(renglon.notificacion==1)
+			contenido += "<center><i class='fa fa-check text-success'></i></center>";
+		else
+			contenido += "<center><i class='fa fa-times text-danger'></i></center>";
+	    return contenido;
+	}
+	
+	renderReporteCierre(renglon, type, set)
+	{    
+		var contenido = "";
+		if(renglon.reporteCierre==1)
 			contenido += "<center><i class='fa fa-check text-success'></i></center>";
 		else
 			contenido += "<center><i class='fa fa-times text-danger'></i></center>";
@@ -1322,10 +1344,7 @@ class AuditoriaVista extends Vista
 			sedeId: this.listaPreguntas.getValorCampo("sedeId"),
 			fecha: this.listaPreguntas.getValorCampo("fecha"),
 			hora: this.listaPreguntas.getValorCampo("hora"),
-		 	// sedeId: this.sedeId,	
-	 		//fecha: this.fecha,	
- 			//hora: this.hora
-			 //preguntas: this.preguntasAuditoria
+		 	funcion: this.funcion
 		 };
 		 if(this.modo=="CAMBIO" && this.modeloEdicion!=null)
 			 modelo.id = this.modeloEdicion.id;

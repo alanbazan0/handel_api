@@ -49,7 +49,8 @@
 							<label>Reporte</label>
 							<input class="respuesta" id="notificacionCheck" type="checkbox" style="display:inline-block;width:40px" checked>
 							<label>Notificación</label>
-							
+							<input class="respuesta" id="reporteCierreCheck" type="checkbox" style="display:inline-block;width:40px">
+							<label>Añadir a Reporte de cierre</label>
 							<label class="labelSeccion float-right"  id="puntuacionPreliminarObservacion" style="font-size:18px;"></label>
 						</div>
 					</div>

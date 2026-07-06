@@ -81,7 +81,8 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                        LEFT JOIN empresas E1 ON E1.id = U.empresa_id
                        LEFT JOIN usuarios V ON V.id = E1.administrador_sivah_id
                        LEFT JOIN usuarios VL ON VL.id = RC.validacion_usuario_id
-                       INNER JOIN estatus_validacion EST ON RC.estatus_validacion_id = EST.id";
+                       INNER JOIN estatus_validacion EST ON RC.estatus_validacion_id = EST.id
+                       INNER JOIN auditorias A ON RC.auditoria_id = A.id";
         
         $this->consultaBaseAvances = "SELECT RA.id, comentario, cumplimiento, IFNULL(DATE_FORMAT(RA.fecha_alta,'%d/%m/%Y %H:%i:%s'),'')fecha_alta,IFNULL(DATE_FORMAT(RA.fecha_modificacion,'%d/%m/%Y %H:%i:%s'),'')fecha_modificacion, 
                     (SELECT COUNT(*) FROM recomendaciones_avances_archivos ARC WHERE ARC.avance_id = RA.id) archivos, 
@@ -871,11 +872,11 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                  if($resultado->correcto())
                  {
                      $id = $resultado->valor;
-                    $consulta = "INSERT INTO auditoria_seccion_observaciones(id, auditoria_id, plantilla_id, seccion_id, hallazgo, recomendacion, responsable, reporte, notificacion, valor) " .
-                        "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    $consulta = "INSERT INTO auditoria_seccion_observaciones(id, auditoria_id, plantilla_id, seccion_id, hallazgo, recomendacion, responsable, reporte, notificacion, valor, reporte_cierre) " .
+                        "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     if($sentencia = $this->conexion->prepare($consulta))
                     {
-                        if($sentencia->bind_param("iiiissiiii",$id, $auditoriaId,$plantillaId,$seccionId, $observacion->hallazgo, $observacion->recomendacion,$observacion->responsableId, $observacion->reporte, $observacion->notificacion, $observacion->valor))
+                        if($sentencia->bind_param("iiiissiiiii",$id, $auditoriaId,$plantillaId,$seccionId, $observacion->hallazgo, $observacion->recomendacion,$observacion->responsableId, $observacion->reporte, $observacion->notificacion, $observacion->valor, $observacion->reporteCierre))
                         {
                             if($sentencia->execute())
                             {
@@ -1473,7 +1474,22 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                                         $auditoria = $resultado->valor;
                                         if($puntuacion!=$auditoria->puntuacion)
                                         {
-                                            $this->calcularAleatorios($modelo->id,$auditoria->puntuacion);
+                                            $resultadoAleatorios = $this->calcularAleatorios($modelo->id,$auditoria->puntuacion);
+                                            if($resultadoAleatorios->correcto())
+                                            {
+                                                if($modelo->funcion=="finalizar")
+                                                {
+                                                    $resultadoHallazgos = $this->generarHallazgos($modelo->id, $modelo->plantillaId);
+                                                    if($resultadoHallazgos->correcto())
+                                                    {
+                                                        
+                                                    }
+                                                    else
+                                                        $resultado->mensajeError = $resultadoHallazgos->mensajeError;
+                                                }
+                                            }
+                                            else
+                                                $resultado->mensajeError = $resultadoAleatorios->mensajeError;
                                         }
                                     }
                                     
@@ -2359,6 +2375,18 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                                 $resultado->mensajeError = $resultadoRespuestas->mensajeError;
                                 break;
                             }
+                            
+                            $resultadoCategorias = $this->consultarPreguntasCategorias($plantillaId,$seccionId,$pregunta->preguntaId);
+                            if($resultadoCategorias->correcto())
+                            {
+                                $pregunta->categorias = $resultadoCategorias->valor;
+                            }
+                            else
+                            {
+                                $resultado->mensajeError = $resultadoCategorias->mensajeError;
+                                break;
+                            }
+                            
                         }
                         
                     }
@@ -2383,7 +2411,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
         
         $resultado = new Resultado();
         $registros = array();
-        $consulta = "SELECT O.id, auditoria_id, plantilla_id, seccion_id, hallazgo, recomendacion, responsable,U.nombre, U.apellido, notificacion, reporte, D.nombre departamentoNombre, O.valor
+        $consulta = "SELECT O.id, auditoria_id, plantilla_id, seccion_id, hallazgo, recomendacion, responsable,U.nombre, U.apellido, notificacion, reporte, D.nombre departamentoNombre, O.valor, O.reporte_cierre
                         FROM auditoria_seccion_observaciones O
                             LEFT JOIN usuarios  U ON U.id = O.responsable
                             LEFT JOIN departamentos D ON D.id = U.departamento_id
@@ -2399,7 +2427,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id, $auditoriaId, $plantillaId, $seccionId, $hallazgo, $recomendacion, $responsableId, $responsableNombre, $responsableApellido, $notificacion, $reporte, $departamentoNombre, $valor))
+                    if ($sentencia->bind_result($id, $auditoriaId, $plantillaId, $seccionId, $hallazgo, $recomendacion, $responsableId, $responsableNombre, $responsableApellido, $notificacion, $reporte, $departamentoNombre, $valor, $reporteCierre))
                     {
                         while($sentencia->fetch())
                         {
@@ -2413,7 +2441,8 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                                 'notificacion' => $notificacion,
                                 'reporte' => $reporte,
                                 'departamentoNombre' => $departamentoNombre,
-                                'valor' => $valor
+                                'valor' => $valor,
+                                'reporteCierre' => $reporteCierre
                             ];
                             $registro->responsableNombreCompleto = $registro->responsableNombre . " " . $registro->responsableApellido;
                             $registro->fotoPerfil =  "../fotos/usuario". $registro->responsableId .".jpg";
@@ -3363,7 +3392,8 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                 $resultado = $this->actualizarSeguimientoIniciado($llaves->id);
                 if($resultado->correcto())
                 {
-                    $llaves= (object) [
+                    $this->enviarNotificacionInicioSeguimiento($llaves->id,"","","");
+                    /*$llaves= (object) [
                         'auditoriaId' =>  $llaves->id,
                         'plantillaId' =>  $llaves->plantillaId
                     ];
@@ -3383,7 +3413,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                                 $this->enviarNotificacionInicioSeguimiento($llaves->auditoriaId,"","","");
                             }
                         }
-                    }
+                    }*/
                     
                 }
                 if($resultado->correcto())
@@ -3403,6 +3433,189 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
        
         return $resultado;
     }
+    
+    private function generarHallazgos($auditoriaId, $plantillaId)
+    {
+        $resultado = new Resultado();
+        $this->conexion->autocommit(FALSE);
+        $llaves= (object) [
+            'auditoriaId' =>  $auditoriaId,
+            'plantillaId' =>  $plantillaId  
+        ];
+        $secciones = array();
+        $resultado = $this->consultarValoresSecciones($llaves);
+        if($resultado->correcto())
+        {
+            
+            $secciones = $resultado->valor;
+            $resultado = $this->getHallazgos($secciones,"notificacion");
+            if($resultado->correcto())
+            {
+                $hallazgos = $resultado->valor;
+                
+                $resultado = $this->eliminarAvancesArchivos($llaves->auditoriaId);
+                if($resultado->correcto())
+                {
+                    $resultado = $this->eliminarAvances($llaves->auditoriaId);
+                    if($resultado->correcto())
+                    {
+                        $resultado = $this->eliminarComentarios($llaves->auditoriaId);
+                        if($resultado->correcto())
+                        {
+                            $resultado = $this->eliminarRecomendaciones($llaves->auditoriaId);
+                            if($resultado->correcto())
+                                $resultado = $this->insertarRecomendaciones($llaves->auditoriaId,$hallazgos);
+                        }
+                    }
+                }
+            }
+        }
+        if($resultado->correcto())
+            $this->conexion->commit();
+        return $resultado;
+    }
+    
+    public function eliminarAvancesArchivos($auditoriaId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta = "DELETE FROM recomendaciones_avances_archivos
+                 WHERE avance_id IN (
+                     SELECT ra.id
+                     FROM recomendaciones_avances ra
+                     INNER JOIN recomendaciones r ON ra.recomendacion_id = r.id
+                     WHERE r.auditoria_id = ?
+                 )";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param('i',$auditoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    $resultado->valor = $auditoriaId;
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                }
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        }
+        
+        return $resultado;
+    }
+    
+    public function eliminarAvances($auditoriaId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta = "DELETE FROM recomendaciones_avances
+                 WHERE recomendacion_id IN (
+                     SELECT id FROM recomendaciones WHERE auditoria_id = ?
+                 )";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param('i',$auditoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    $resultado->valor = $auditoriaId;
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                }
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        }
+        
+        return $resultado;
+    }
+    
+    public function eliminarComentarios($auditoriaId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta = "DELETE FROM recomendaciones_comentarios
+                 WHERE recomendacion_id IN (
+                     SELECT id FROM recomendaciones WHERE auditoria_id = ?
+                 )";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param('i',$auditoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    $resultado->valor = $auditoriaId;
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                }
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        }
+        
+        return $resultado;
+    }
+    
+    public function eliminarRecomendaciones($auditoriaId)
+    {
+        $resultado = new Resultado();
+        
+        $consulta = "DELETE FROM recomendaciones WHERE auditoria_id = ?";
+        
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param('i',$auditoriaId))
+            {
+                if($sentencia->execute())
+                {
+                    $resultado->valor = $auditoriaId;
+                }
+                else
+                {
+                    $resultado->codigoError = $this->conexion->errno;
+                    $resultado->mensajeError = 'Falló la ejecución (' . $this->conexion->errno . ') ' . $this->conexion->error;
+                }
+            }
+            else
+                $resultado->mensajeError = 'Falló el enlace de parámetros';
+        }
+        else
+        {
+            $resultado->codigoError = $this->conexion->errno;
+            $resultado->mensajeError = 'Falló la preparación: (' . $this->conexion->errno . ') ' . $this->conexion->error;
+        }
+            
+        return $resultado;
+    }
+    
+  
     
     public function finalizarSeguimiento($llaves)
     {
@@ -4015,7 +4228,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
             }
         }
         
-        
+        array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'A','campo'=>'seguimiento','valor'=>1]);
         
         $where = $this->where($filtros);
         $consulta = $this->consultaBaseRecomendaciones .
@@ -4181,6 +4394,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                 LEFT JOIN paises PS ON PS.id = EM.pais_id
                 LEFT JOIN sedes S ON A.sede_id = S.id
                 LEFT JOIN tipos_auditoria TA ON TA.id = A.tipo_auditoria_id
+               WHERE A.seguimiento = 1 
             ORDER BY UNIX_TIMESTAMP(fecha) desc, hora desc
             )SB 
             WHERE recomendacionesTotal > 0";
@@ -4254,7 +4468,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                 LEFT JOIN paises PS ON PS.id = EM.pais_id
                 LEFT JOIN sedes S ON A.sede_id = S.id
                 LEFT JOIN tipos_auditoria TA ON TA.id = A.tipo_auditoria_id
-            WHERE EM.id IN(SELECT empresa_id
+            WHERE A.seguimiento = 1 AND EM.id IN(SELECT empresa_id
                     FROM empresas_socios_comerciales ESC
                     	INNER join empresas E ON E.id = ESC.empresa_id
                     WHERE E.socio_comercial = 1 
@@ -6231,6 +6445,18 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
         }
 
         return $resultado;
+    }
+    
+    public function esCategoria($id, $categorias)
+    {
+        for ($i = 0; $i < count($categorias); $i++) 
+        {
+            $categoria = $categorias[$i];
+            if($categoria->categoriaId == $id)
+                return true;
+            
+        }
+        return false;
     }
 
 }
