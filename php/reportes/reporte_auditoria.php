@@ -422,7 +422,7 @@ class PDF extends FPDF
                 if($pregunta->valor == "N")
                 {
                     //9: Añadir a reporte de cierre
-                    if($repositorio->esCategoria(9,$pregunta->categorias))
+                    if($repositorio->esCategoria(9,$pregunta->categorias) && $pregunta->reporte==1)
                     {
                         $renglon = (object)["criterio" => $criterio,
                             "departamento" => $pregunta->departamentoNombre,
