@@ -74,7 +74,14 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                             validacion_usuario_id AS validadorId, VL.nombre AS validadorNombre, VL.apellido AS validadorApellido,
                             E1.administrador_sivah_id AS administradorId, V.nombre AS administradorNombre, V.apellido AS administradorApellido,
                             E1.id AS empresaId, E1.nombre AS empresaNombre,(SELECT count(C.id) FROM recomendaciones_comentarios C WHERE C.recomendacion_id = RC.id) numeroComentarios, EST.icono, EST.color,comentarios_validacion,
-                        IFNULL(DATE_FORMAT(RC.fecha_modificacion,'%d/%m/%Y'),'')fechaModificacion 
+                        IFNULL(DATE_FORMAT(RC.fecha_modificacion,'%d/%m/%Y'),'')fechaModificacion, 
+                        (SELECT count(*) 
+                        FROM preguntas_categorias
+                        WHERE plantilla_id = (SELECT plantilla_id FROM auditorias A1 WHERE A1.id = RC.auditoria_id)	
+                        	AND seccion_id = RC.seccion_id
+                        	AND pregunta_id = RC.pregunta_id
+                            AND categoria_id = 9
+                        ) reporteCierre  
                        FROM recomendaciones RC
                        LEFT JOIN usuarios U ON U.id =  RC.responsable_id
                        LEFT JOIN tipos_usuario TU ON TU.id = U.tipo_usuario_id
@@ -1985,11 +1992,11 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor, $comentariosValidacion, $fechaModificacion))
+                    if ($sentencia->bind_result($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId, $validadorNombre, $validadorApellido, $administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor, $comentariosValidacion, $fechaModificacion, $reporteCierre))
                     {
                         if($sentencia->fetch())
                         {
-                            $registro = $this->crearRegistroRecomendacion($id, $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion, $terminada, $estatusValidacionId, $estatusValidacionDescripcion,$fechaValidacion, $validadorId,$validadorNombre, $validadorApellido,$administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion, $fechaModificacion);
+                            $registro = $this->crearRegistroRecomendacion($id, $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion, $terminada, $estatusValidacionId, $estatusValidacionDescripcion,$fechaValidacion, $validadorId,$validadorNombre, $validadorApellido,$administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion, $fechaModificacion, $reporteCierre);
                             $resultado->valor = $registro;
                             
                             $sentencia->close();
@@ -2991,7 +2998,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
         return $registro;
     }
     
-    private function crearRegistroRecomendacion($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId, $estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido, $administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre, $numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion, $fechaModificacion)
+    private function crearRegistroRecomendacion($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId, $estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido, $administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre, $numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion, $fechaModificacion, $reporteCierre)
     {
         $registro =  (object)[
             "id" => $id,
@@ -3021,7 +3028,8 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
             "empresaNombre" => $empresaNombre,
             "numeroComentarios" => $numeroComentarios,
             "comentariosValidacion" => $comentariosValidacion,
-            "fechaModificacion" => $fechaModificacion
+            "fechaModificacion" => $fechaModificacion,
+            "reporteCierre" => $reporteCierre
             
         ];
         $registro->usuarioNombreCompleto = $registro->usuarioNombre . " " . $registro->usuarioApellido;
@@ -4233,7 +4241,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
         $where = $this->where($filtros);
         $consulta = $this->consultaBaseRecomendaciones .
                    $where .
-                   "ORDER BY TU.orden, U.nombre, RC.titulo";
+                   "ORDER BY reporteCierre desc, TU.orden, U.nombre, RC.titulo";
 
         if($sentencia = $this->conexion->prepare($consulta))
         {
@@ -4241,11 +4249,11 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido, $administradorId,$administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion, $fechaModificacion))
+                    if ($sentencia->bind_result($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido, $administradorId,$administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion, $fechaModificacion, $reporteCierre))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistroRecomendacion($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido,$administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre, $numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion, $fechaModificacion);
+                            $registro = $this->crearRegistroRecomendacion($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido,$administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre, $numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion, $fechaModificacion, $reporteCierre);
                          
                             
                             array_push($registros,$registro);
@@ -4315,11 +4323,11 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
             {
                 if($sentencia->execute())
                 {
-                    if ($sentencia->bind_result($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido, $administradorId,$administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion, $fechaModificacion))
+                    if ($sentencia->bind_result($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido, $administradorId,$administradorNombre, $administradorApellido, $empresaId, $empresaNombre,$numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion, $fechaModificacion, $reporteCierre))
                     {
                         while($row = $sentencia->fetch())
                         {
-                            $registro = $this->crearRegistroRecomendacion($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido,$administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre, $numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion,$fechaModificacion);
+                            $registro = $this->crearRegistroRecomendacion($id,  $edt, $titulo, $responsableId, $responsableNombre, $reponsableApellido, $fechaAlta, $prioridad, $cumplimiento, $fechaVencimiento, $fechaFinalizacion , $terminada, $estatusValidacionId,$estatusValidacionDescripcion, $fechaValidacion, $validadorId,$validadorNombre, $validadorApellido,$administradorId, $administradorNombre, $administradorApellido, $empresaId, $empresaNombre, $numeroComentarios, $estatusValidacionIcono, $estatusValidacionColor,$comentariosValidacion,$fechaModificacion, $reporteCierre);
                             
                             
                             array_push($registros,$registro);

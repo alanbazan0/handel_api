@@ -79,6 +79,8 @@ class SeguimientoVista extends CatalogoVista
 
 			}
 			
+			this.recomendacionesTabla.columnas.push({longitud:30, 	titulo:"",   alias:"reporteCierre", alineacion:"I", itemRenderer: this.renderReporteCierreRecomendacion}),
+			
 			this.recomendacionesTabla.columnas.push({longitud:30, 	titulo:"",   alias:"terminada", alineacion:"I", itemRenderer: this.renderEstatusValidacionRecomendacion}),
 			this.recomendacionesTabla.columnas.push({longitud:30, 	titulo:"",   alias:"comentarios", alineacion:"I", itemRenderer:this.renderComentariosRecomendacion}),		
 			this.recomendacionesTabla.columnas.push({longitud:30, 	titulo:"",  alias:"", alineacion:"I" ,itemRenderer:this.renderAvance});
@@ -214,6 +216,18 @@ class SeguimientoVista extends CatalogoVista
 		}
 	
 		
+		
+		return contenido;
+	}
+	
+	getReporteCierreRecomendacion(renglon)
+	{    
+		var contenido = "";
+		
+		if(renglon.reporteCierre==1)
+			contenido += "<center><span data-toggle='tooltip' data-placemen='bottom' title='Hallazgo prioritario' class='fas fa-star fa-lg text-yellow' style='color:#fba535;'></span></center>";
+		else
+			contenido += "";    
 		
 		return contenido;
 	}
@@ -770,6 +784,12 @@ class SeguimientoVista extends CatalogoVista
 	renderArchivosAvance(renglon, type, set)
 	{  
 		return "<div id='archivosAvanceTabla"+renglon.id+"'>" + vista.getArchivosAvance(renglon) + "</div>";
+	}
+	
+	
+	renderReporteCierreRecomendacion(renglon, type, set)
+	{  
+		return "<div id='estatusValidacionRecomendacionTabla"+renglon.id+"'>" + vista.getReporteCierreRecomendacion(renglon) + "</div>";
 	}
 	
 	renderEstatusValidacionRecomendacion(renglon, type, set)
