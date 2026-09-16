@@ -3427,7 +3427,7 @@ IFNULL(seguimiento_finalizado,0)seguimiento_finalizado, IFNULL(DATE_FORMAT(A.fec
                 if($resultado->correcto())
                 {
                     $this->conexion->commit();
-                    $resultado->valor = $llaves->auditoriaId;;
+                    $resultado->valor = $llaves->id;;
                 }
                 else
                     $this->conexion->rollback();
