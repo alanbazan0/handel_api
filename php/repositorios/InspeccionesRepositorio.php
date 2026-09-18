@@ -86,15 +86,20 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
         
         if($modelo->inspectorAleatorioId==0 || $modelo->inspectorAleatorioId=="")
             $modelo->inspectorAleatorioId = null;
-        
-            
+
+        if($modelo->ajusteManual!=1)
+            $modelo->ajusteManual = 0;
+
         if($modelo->usuarioId==0)
         {
             $resultado = $this->consultarUsuarioMasUsado($modelo->sedeId);
             if($resultado->correcto())
                 $modelo->usuarioId = $resultado->valor;
         }
-       
+
+        if($modelo->inspectorId==0 || $modelo->inspectorId=="" || $modelo->inspectorId==null)
+            $modelo->inspectorId = $modelo->usuarioId;
+
         $resultado =  $this->calcularId("id","inspecciones");
      
         if($resultado->mensajeError=="")
@@ -103,11 +108,11 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             
            
             
-            $consulta = "INSERT INTO inspecciones(id, sede_id, usuario_id, inspector_id, area_id, fecha_inspeccion, fecha_finalizacion, numero_caja,  transportista, chofer, numero_tractor, placas_tractor, placas_caja, color_tractor, color_caja, numero_contenedor, tipo_caja, sello, sello_viajero, alto, ancho, profundidad, entrada_salida, tipo_inspeccion_id, fecha_inicio,tablet_id,destino, numero_orden,piezas, bultos, peso, otras_mercancias, turno_inicio, turno_fin, fecha_subida,manifiesto, inspector_termina, sello_colocado, tiene_impreso_sello,caja_libre_objetos_organicos,factura,inspector_aleatorio_id,caja_libre_objetos_organicos_justificacion,unidad_libre_objetos_organicos,unidad_libre_objetos_organicos_justificacion,chofer_no_firma,chofer_no_firma_justificacion, sello_vvtt) " .
-                "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, NOW(),?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            $consulta = "INSERT INTO inspecciones(id, sede_id, usuario_id, inspector_id, area_id, fecha_inspeccion, fecha_finalizacion, numero_caja,  transportista, chofer, numero_tractor, placas_tractor, placas_caja, color_tractor, color_caja, numero_contenedor, tipo_caja, sello, sello_viajero, alto, ancho, profundidad, entrada_salida, tipo_inspeccion_id, fecha_inicio,tablet_id,destino, numero_orden,piezas, bultos, peso, otras_mercancias, turno_inicio, turno_fin, fecha_subida,manifiesto, inspector_termina, sello_colocado, tiene_impreso_sello,caja_libre_objetos_organicos,factura,inspector_aleatorio_id,caja_libre_objetos_organicos_justificacion,unidad_libre_objetos_organicos,unidad_libre_objetos_organicos_justificacion,chofer_no_firma,chofer_no_firma_justificacion, sello_vvtt, ajuste_manual, ajuste_manual_motivo) " .
+                "VALUE(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? , ?, NOW(),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             if($sentencia = $this->conexion->prepare($consulta))
             {
-                if( $sentencia->bind_param("iiiiissssssssssssssssssisisssssssssissssissssss", $modelo->id, $modelo->sedeId,$modelo->usuarioId, $modelo->inspectorId, $modelo->areaId, $modelo->fechaInspeccion, $modelo->fechaFinalizacion, $modelo->numeroCaja, $modelo->transportista, $modelo->chofer, $modelo->numeroTractor, $modelo->placasTractor, $modelo->placasCaja, $modelo->colorTractor, $modelo->colorCaja, $modelo->numeroContenedor, $modelo->tipoCaja, $modelo->sello, $modelo->selloViajero,$modelo->alto, $modelo->ancho, $modelo->profundidad, $modelo->entradaSalida, $modelo->tipoInspeccionId, $modelo->fechaInicio, $modelo->tabletId,$modelo->destino,$modelo->numeroOrden, $modelo->piezas, $modelo->bultos, $modelo->peso, $modelo->otrasMercancias, $modelo->turnoInicio, $modelo->turnoFin, $modelo->manifiesto, $modelo->inspectorTerminaId, $modelo->selloColocado,$modelo->tieneImpresoSello,$modelo->cajaLibreObjetosOrganicos,$modelo->factura,$modelo->inspectorAleatorioId,$modelo->cajaLibreObjetosOrganicosJustificacion, $modelo->unidadLibreObjetosOrganicos, $modelo->unidadLibreObjetosOrganicosJustificacion, $modelo->choferNoFirma, $modelo->choferNoFirmaJustificacion,$modelo->selloVVTT ))
+                if( $sentencia->bind_param("iiiiissssssssssssssssssisisssssssssissssissssssis", $modelo->id, $modelo->sedeId,$modelo->usuarioId, $modelo->inspectorId, $modelo->areaId, $modelo->fechaInspeccion, $modelo->fechaFinalizacion, $modelo->numeroCaja, $modelo->transportista, $modelo->chofer, $modelo->numeroTractor, $modelo->placasTractor, $modelo->placasCaja, $modelo->colorTractor, $modelo->colorCaja, $modelo->numeroContenedor, $modelo->tipoCaja, $modelo->sello, $modelo->selloViajero,$modelo->alto, $modelo->ancho, $modelo->profundidad, $modelo->entradaSalida, $modelo->tipoInspeccionId, $modelo->fechaInicio, $modelo->tabletId,$modelo->destino,$modelo->numeroOrden, $modelo->piezas, $modelo->bultos, $modelo->peso, $modelo->otrasMercancias, $modelo->turnoInicio, $modelo->turnoFin, $modelo->manifiesto, $modelo->inspectorTerminaId, $modelo->selloColocado,$modelo->tieneImpresoSello,$modelo->cajaLibreObjetosOrganicos,$modelo->factura,$modelo->inspectorAleatorioId,$modelo->cajaLibreObjetosOrganicosJustificacion, $modelo->unidadLibreObjetosOrganicos, $modelo->unidadLibreObjetosOrganicosJustificacion, $modelo->choferNoFirma, $modelo->choferNoFirmaJustificacion,$modelo->selloVVTT, $modelo->ajusteManual, $modelo->ajusteManualMotivo ))
                 {
                     if($sentencia->execute())
                     {
@@ -439,7 +444,169 @@ class InspeccionesRepositorio extends RepositorioBase implements IInspeccionesRe
             
             return $resultado;
     }
-    
+
+    /**
+     * Cajas/contenedores con una Entrada registrada que todavía no tienen
+     * una Salida posterior de esa MISMA caja en la MISMA sede (comparación
+     * case-insensitive). Replica la lógica de "disponibles" ya usada por la
+     * app Android (BaseDatosDatasource.consultarCajasDisponibles): no es
+     * "la última fila es Entrada", es "no existe ninguna Salida con fecha
+     * posterior a esta Entrada específica".
+     */
+    public function consultarDentroInstalacion($usuario,$criteriosSeleccion)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+        $filtros = array();
+        $where="";
+        if($criteriosSeleccion!=null)
+        {
+            if(isset($criteriosSeleccion->empresaId))
+            {
+                if($criteriosSeleccion->empresaId!="" && $criteriosSeleccion->empresaId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'S','campo'=>'empresa_id','valor'=>$criteriosSeleccion->empresaId]);
+                else
+                {
+                    if($usuario!=null && ($usuario->tipoUsuarioId == \TipoUsuario::SUPERVISOR || $usuario->tipoUsuarioId == \TipoUsuario::COORDINADOR))
+                    {
+                        $usuariosRepositorio = new UsuariosRepositorio($this->conexion);
+                        $resultado = $usuariosRepositorio->consultarIdsEmpresas($usuario->empresaId);
+                        if($resultado->correcto())
+                        {
+                            $empresasIds = implode(",", $resultado->valor);
+                            array_push($filtros,(object)['tipoDato'=>'int','tabla' => 'E', 'campo'=>'id','operador'=>'IN','valor'=>$empresasIds]);
+                        }
+                    }
+                }
+            }
+            if(isset($criteriosSeleccion->sedeId))
+            {
+                if($criteriosSeleccion->sedeId!="" && $criteriosSeleccion->sedeId!=null)
+                    array_push($filtros,(object)['tipoDato'=>'int','tabla'=>'I','campo'=>'sede_id','valor'=>$criteriosSeleccion->sedeId]);
+            }
+            if(isset($criteriosSeleccion->fechaInicial))
+            {
+                if($criteriosSeleccion->fechaInicial!="" && $criteriosSeleccion->fechaInicial!=null)
+                    array_push($filtros,(object)['tipoDato'=>'date','operador'=>'>=','tabla'=>'I','campo'=>'fecha_inspeccion','valor'=>$criteriosSeleccion->fechaInicial]);
+            }
+            if(isset($criteriosSeleccion->fechaFinal))
+            {
+                if($criteriosSeleccion->fechaFinal!="" && $criteriosSeleccion->fechaFinal!=null)
+                    array_push($filtros,(object)['tipoDato'=>'date','operador'=>'<=','tabla'=>'I','campo'=>'fecha_inspeccion','valor'=>$criteriosSeleccion->fechaFinal]);
+            }
+            array_push($filtros,(object)['tipo'=>'estatico','texto'=>"I.entrada_salida = 'Entrada' AND I.numero_contenedor IS NOT NULL AND I.numero_contenedor <> '' AND NOT EXISTS (SELECT 1 FROM inspecciones S2 WHERE S2.entrada_salida = 'Salida' AND S2.sede_id = I.sede_id AND LOWER(S2.numero_contenedor) = LOWER(I.numero_contenedor) AND S2.fecha_inspeccion > I.fecha_inspeccion)"]);
+            $where = $this->where($filtros);
+        }
+
+        $consulta = " SELECT E.id empresaId, E.nombre empresaNombre, S.id sedeId, S.nombre sedeNombre, I.id inspeccionId, " .
+            " I.numero_contenedor numeroContenedor, I.numero_tractor numeroTractor, I.chofer, I.transportista, " .
+            " I.placas_tractor placasTractor, I.placas_caja placasCaja, I.color_tractor colorTractor, I.color_caja colorCaja, " .
+            " I.tipo_caja tipoCaja, I.sello, I.manifiesto, I.factura, I.tipo_inspeccion_id tipoInspeccionId, " .
+            " IFNULL(DATE_FORMAT(I.fecha_inspeccion,'%d/%m/%Y %H:%i:%s'),'') fechaEntrada " .
+            " FROM inspecciones I " .
+            " INNER JOIN sedes S ON S.id = I.sede_id " .
+            " INNER JOIN empresas E ON E.id = S.empresa_id " .
+            $where . " ORDER BY I.fecha_inspeccion ASC";
+
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($this->bind_param($sentencia, $filtros))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($empresaId, $empresaNombre, $sedeId, $sedeNombre, $inspeccionId, $numeroContenedor, $numeroTractor, $chofer, $transportista, $placasTractor, $placasCaja, $colorTractor, $colorCaja, $tipoCaja, $sello, $manifiesto, $factura, $tipoInspeccionId, $fechaEntrada))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro = (object) [
+                                'empresaId' => $empresaId,
+                                'empresaNombre' => $empresaNombre,
+                                'sedeId' => $sedeId,
+                                'sedeNombre' => $sedeNombre,
+                                'inspeccionId' => $inspeccionId,
+                                'numeroContenedor' => $numeroContenedor,
+                                'numeroTractor' => $numeroTractor,
+                                'chofer' => $chofer,
+                                'transportista' => $transportista,
+                                'placasTractor' => $placasTractor,
+                                'placasCaja' => $placasCaja,
+                                'colorTractor' => $colorTractor,
+                                'colorCaja' => $colorCaja,
+                                'tipoCaja' => $tipoCaja,
+                                'sello' => $sello,
+                                'manifiesto' => $manifiesto,
+                                'factura' => $factura,
+                                'tipoInspeccionId' => $tipoInspeccionId,
+                                'fechaEntrada' => $fechaEntrada
+                            ];
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado.";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+
+        return $resultado;
+    }
+
+    /**
+     * Ajustes manuales de salida activos de una sede, para que la app
+     * Android los descargue y excluya esas cajas/tractores de sus propias
+     * consultas de "disponibles" (no requiere sesión web).
+     */
+    public function consultarAjustesManuales($sedeId)
+    {
+        $resultado = new Resultado();
+        $registros = array();
+
+        $consulta = "SELECT numero_contenedor numeroCaja, numero_tractor numeroTractor, " .
+            " DATE_FORMAT(fecha_inspeccion,'%Y-%m-%d %H:%i:%s') fecha " .
+            " FROM inspecciones " .
+            " WHERE entrada_salida = 'Salida' AND ajuste_manual = 1 AND sede_id = ?";
+
+        if($sentencia = $this->conexion->prepare($consulta))
+        {
+            if($sentencia->bind_param("i", $sedeId))
+            {
+                if($sentencia->execute())
+                {
+                    if ($sentencia->bind_result($numeroCaja, $numeroTractor, $fecha))
+                    {
+                        while($sentencia->fetch())
+                        {
+                            $registro = (object) [
+                                'numeroCaja' => $numeroCaja,
+                                'numeroTractor' => $numeroTractor,
+                                'fecha' => $fecha
+                            ];
+                            array_push($registros,$registro);
+                        }
+                        $resultado->valor = $registros;
+                    }
+                    else
+                        $resultado->mensajeError = "Falló el enlace del resultado.";
+                }
+                else
+                    $resultado->mensajeError = "Falló la ejecución (" . $this->conexion->errno . ") " . $this->conexion->error;
+            }
+            else
+                $resultado->mensajeError = "Falló el enlace de parámetros";
+        }
+        else
+            $resultado->mensajeError = "Falló la preparación: (" . $this->conexion->errno . ") " . $this->conexion->error;
+
+        return $resultado;
+    }
+
     public function consultarPorcentajeAleatorias($usuario,$criteriosSeleccion)
     {
         $resultado = new Resultado();

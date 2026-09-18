@@ -54,5 +54,7 @@ class Inspeccion
     public $choferNoFirma;
     public $choferNoFirmaJustificacion;
     public $selloVVTT;
+    public $ajusteManual;
+    public $ajusteManualMotivo;
 }
 
