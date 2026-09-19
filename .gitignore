@@ -1,0 +1,4 @@
+/vendor/
+/vendor.zip
+.DS_Store
+.env.deploy
